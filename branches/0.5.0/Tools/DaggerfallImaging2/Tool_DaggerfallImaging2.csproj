@@ -161,6 +161,7 @@
     <Content Include="AboutDaggerfallImaging2.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Dependencies\ImageListView.dll" />
     <Content Include="Icons Readme.txt" />
     <Content Include="Licenses\DaggerfallImaging2.txt" />
     <Content Include="Licenses\ImageListView.txt" />
