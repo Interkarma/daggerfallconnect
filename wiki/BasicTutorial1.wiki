@@ -19,7 +19,6 @@ This tutorial will demonstrate how to:
   # Build and run your application pressing *Ctrl+F5*.
 
 == Code ==
-
 <pre>
 {{{
 using System;
