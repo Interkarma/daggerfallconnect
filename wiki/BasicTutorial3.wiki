@@ -1,11 +1,5 @@
 #summary Introduces working with BSA files.
 
-  * [BSA_Basics BSA Basics]
-  * [Getting_Started Getting Started]
-  * [Code Code]
-  * [Output Output]
-  * [Further_Information Further Information]
-
 = BSA Basics =
 
 This tutorial will show you how to:
