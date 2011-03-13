@@ -1,2 +1,3 @@
 * Tutorials
  * [BasicTutorial1]
+ * [BasicTutorial2]
