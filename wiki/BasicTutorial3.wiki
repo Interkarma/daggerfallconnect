@@ -10,8 +10,7 @@ This tutorial will show you how to:
 
 == Getting Started ==
 
-  # If you aren't sure how to create a project, look at BasicTutorial1.
-  # Add a reference to !DaggerfallConnect.dll.
+  # Check [BasicTutorial1] for steps on creating a project and adding a reference to !DaggerfallConnect.dll.
   # Open Program.cs in the *Solution Explorer* and replace all the code with the block shown below.
   # Set variable !MyArena2Path to your Daggerfall installation's ARENA2 folder.
   # Build and run your program by pressing *Ctrl+F5*.
