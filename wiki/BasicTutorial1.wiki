@@ -15,7 +15,7 @@ This tutorial will demonstrate how to:
   # Create a new project in Visual C# Express using *File* -> *New Project* and select _"Console Application"_ as the project type. Name the project and click *OK*.
   # Add a reference to the !DaggerfallConnect.dll using *Project* -> *Add Reference*. Click the *Browse* tab and navigate to *!DaggerfallConnect.dll* from your downloaded.
   # Open *Program.cs* in *Solution Explorer* and replace all code with the block shown below.
-  # Set variable MyArena2Path to your Daggerfall installations ARENA2 folder. Daggerfall Connect is read only and will not modify your game files.
+  # Set variable !MyArena2Path to your Daggerfall installations ARENA2 folder. Daggerfall Connect is read only and will not modify your game files.
   # Build and run your application pressing *Ctrl+F5*.
 
 == Code ==
