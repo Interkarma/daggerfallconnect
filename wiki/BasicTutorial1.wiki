@@ -1,0 +1,81 @@
+#Getting started with Daggerfall Connect.
+
+= Your First Daggerfall Connect Application =
+
+This tutorial will demonstrate how to:
+  * Create a new project in Visual C# Express.
+  * Import the Daggerfall Connect DLL.
+  * Enumerate texture files from Daggerfall's ARENA2 folder.
+  * Open each texture file and output a description.
+
+== Getting Started ==
+
+  # Download and extract the latest version of Daggerfall Connect from [http://code.google.com/p/daggerfallconnect/downloads/list Downloads].
+  # Create a new project in Visual C# Express using *File* -> *New Project* and select _"Console Application"_ as the project type. Name the project and click *OK*.
+  # Add a reference to the !DaggerfallConnect.dll using *Project* -> *Add Reference*. Click the *Browse* tab and navigate to *!DaggerfallConnect.dll* from your downloaded.
+  # Open *Program.cs* in *Solution Explorer* and replace all code with the block shown below.
+  # Set variable MyArena2Path to your Daggerfall installations ARENA2 folder. Daggerfall Connect is read only and will not modify your game files.
+  # Build and run your application pressing *Ctrl+F5*.
+
+== Code ==
+
+{{{
+using System;
+using DaggerfallConnect;
+
+namespace Tutorial_BasicSeries_1
+{
+    /// <summary>
+    /// This tutorial demonstrates basic enumeration of image files.
+    /// </summary>
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Specify Arena2 path of local Daggerfall installation
+            string MyArena2Path = "C:\\dosgames\\DAGGER\\ARENA2";
+
+            // Instantiate ImageFileReader
+            ImageFileReader MyImageFileReader = new ImageFileReader(MyArena2Path);
+
+            // Set desired library type
+            MyImageFileReader.LibraryType = LibraryTypes.Texture;
+
+            // Output information about each file in library
+            foreach (DFImageFile file in MyImageFileReader)
+                Console.WriteLine("{0} - {1}", file.FileName, file.Description);
+        }
+    }
+}
+}}}
+
+== Output ==
+
+{{{
+...
+TEXTURE.484 - Light Thief
+TEXTURE.485 - Normal Mage
+TEXTURE.486 - Normal Mage
+TEXTURE.487 - Medium Fighter
+TEXTURE.488 - Medium Fighter
+TEXTURE.489 - Thief Mage
+TEXTURE.490 - Thief Mage
+TEXTURE.491 - Female heavy horse
+TEXTURE.492 - Male heavy horse
+TEXTURE.493 - Female medium horse
+TEXTURE.494 - Male medium horse
+TEXTURE.495 - Female light horse
+TEXTURE.500 - Rain Forest
+TEXTURE.501 - Sub_Tropical
+TEXTURE.502 - Swamp
+TEXTURE.503 - Desert
+TEXTURE.504 - Temperate woodland
+TEXTURE.505 - Snow woodland
+TEXTURE.506 - Woodland Hills
+TEXTURE.507 - Snow woodland Hills
+TEXTURE.508 - Haunted woodland
+TEXTURE.509 - Snow haunted woodlan
+TEXTURE.510 - mountains
+TEXTURE.511 - Snow Mountains
+Press any key to continue . . .
+}}}
