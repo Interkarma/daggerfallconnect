@@ -20,6 +20,7 @@ This tutorial will demonstrate how to:
 
 == Code ==
 
+<pre>
 {{{
 using System;
 using DaggerfallConnect;
@@ -49,10 +50,11 @@ namespace Tutorial_BasicSeries_1
     }
 }
 }}}
+</pre>
 
 == Output ==
 
-{{{
+<pre>
 ...
 TEXTURE.484 - Light Thief
 TEXTURE.485 - Normal Mage
@@ -79,4 +81,4 @@ TEXTURE.509 - Snow haunted woodlan
 TEXTURE.510 - mountains
 TEXTURE.511 - Snow Mountains
 Press any key to continue . . .
-}}}
+</pre>
