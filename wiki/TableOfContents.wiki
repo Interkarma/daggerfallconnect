@@ -1,3 +1,4 @@
-* Tutorials
- * [BasicTutorial1]
- * [BasicTutorial2]
+* [Tutorials]
+ * Basic Series
+  * [BasicTutorial1]
+  * [BasicTutorial2]
