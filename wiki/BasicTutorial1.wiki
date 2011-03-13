@@ -21,6 +21,7 @@ This tutorial will demonstrate how to:
 == Code ==
 
 <pre>
+{{{
 using System;
 using DaggerfallConnect;
 
@@ -48,6 +49,7 @@ namespace Tutorial_BasicSeries_1
         }
     }
 }
+}}}
 </pre>
 
 == Output ==
