@@ -82,6 +82,6 @@ Press any key to continue . . .
 
 == Further Information ==
 
-The BsaFile class can be used if you want to get BSA records directly for any reason. Normally, you would use higher-level classes like Arch3dFile and BlocksFile to handle these file formats.
+The !BsaFile class can be used if you want to get BSA records directly for any reason. Normally, you would use higher-level classes like !Arch3dFile and !BlocksFile to handle these file formats.
 
-The BsaFile class could be used as a starting point for writing your own format readers, or working with data in a way not provided by DaggerfallConnect.
+The !BsaFile class could be used as a starting point for writing your own format readers, or working with data in a way not provided by !DaggerfallConnect.
