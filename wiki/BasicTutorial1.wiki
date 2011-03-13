@@ -1,4 +1,5 @@
-#Getting started with Daggerfall Connect.
+#labels Featured
+# Getting started with Daggerfall Connect.
 
 = Your First Daggerfall Connect Application =
 
