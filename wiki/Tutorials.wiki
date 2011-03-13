@@ -16,3 +16,6 @@ Explains how to create a new project and enumerate an image library (collection 
 
 ==== BasicTutorial2 ====
 Demonstrates opening a texture archive (collection of images in a single file) and reading each record and frame. It also shows how to get a Daggerfall texture as a managed bitmap.
+
+==== BasicTutorial3 ====
+Introduces BSA files. This is a common content archive used in ARENA2 files. BSA files contain information such as 3D models and map layouts. Many of the higher-level Daggerfall Connect classes work with BSA files.
