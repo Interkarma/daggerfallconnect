@@ -1102,6 +1102,28 @@ namespace DaggerfallConnect
         /// <returns>Index of file.</returns>
         private int GetFileIndex(LibraryTypes Type, string FileName)
         {
+            // Check file exists
+            switch (Type)
+            {
+                case LibraryTypes.Texture:
+                    if (!TextureHashtable.ContainsKey(FileName)) return -1;
+                    break;
+                case LibraryTypes.Img:
+                    if (!ImgHashtable.ContainsKey(FileName)) return -1;
+                    break;
+                case LibraryTypes.Cif:
+                    if (!CifHashtable.ContainsKey(FileName)) return -1;
+                    break;
+                case LibraryTypes.Rci:
+                    if (!RciHashtable.ContainsKey(FileName)) return -1;
+                    break;
+                case LibraryTypes.Sky:
+                    if (!SkyHashtable.ContainsKey(FileName)) return -1;
+                    break;
+                default:
+                    return -1;
+            }
+
             // Get index based on type
             switch (Type)
             {

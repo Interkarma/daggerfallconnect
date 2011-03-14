@@ -19,7 +19,7 @@ using DaggerfallConnect.Arena2;
 
 #endregion
 
-namespace DaggerfallImaging2.MyClasses
+namespace DaggerfallImaging2.Classes
 {
     /// <summary>
     /// Fast image flow layout control for Daggerfall Imaging.

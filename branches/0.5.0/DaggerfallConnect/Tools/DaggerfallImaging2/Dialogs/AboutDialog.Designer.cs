@@ -1,4 +1,4 @@
-﻿namespace DaggerfallImaging2.MyDialogs
+﻿namespace DaggerfallImaging2.Dialogs
 {
     partial class AboutDialog
     {

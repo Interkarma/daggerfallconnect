@@ -14,7 +14,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace DaggerfallImaging2.MyDialogs
+namespace DaggerfallImaging2.Dialogs
 {
     public partial class SetDescription : Form
     {

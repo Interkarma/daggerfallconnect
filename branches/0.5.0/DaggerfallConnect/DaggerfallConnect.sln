@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial_XNASeries_3", "Tut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_XNALibrary", "Tools\XNALibrary\Tool_XNALibrary.csproj", "{0ECB9CDB-3312-4ECF-9531-56AD53ABA796}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallAtlas", "Tools\DaggerfallAtlas\Tool_DaggerfallAtlas.csproj", "{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -183,6 +185,16 @@ Global
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|Any CPU.ActiveCfg = Release|x86
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|x86.ActiveCfg = Release|x86
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E1B49EEB-F2CF-4153-BA58-BD72B2BEC89A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

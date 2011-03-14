@@ -40,6 +40,7 @@
             this.MainToolTips = new System.Windows.Forms.ToolTip(this.components);
             this.LibraryThumbnailsBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.LibraryImageListView = new Manina.Windows.Forms.ImageListView();
             this.LibraryFilesContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.FileCheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
@@ -48,6 +49,11 @@
             this.InvertSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FileDescriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ManageCategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
+            this.ShowAllCategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ShowExportPaneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LibraryToolStrip = new System.Windows.Forms.ToolStrip();
@@ -60,12 +66,16 @@
             this.RciFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SkyFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.FileGroupsToolStripDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
+            this.ManageCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.ShowAllCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewTilesToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewThumbnailsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.ShowExportPaneToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
-            this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ExportManagerPanel = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.UseDescriptionsCheckBox = new System.Windows.Forms.CheckBox();
@@ -82,7 +92,7 @@
             this.ExportFormatComboBox = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.ImageViewPanel = new System.Windows.Forms.Panel();
-            this.FileImageFlowView = new DaggerfallImaging2.MyClasses.DFImageFlow();
+            this.FileImageFlowView = new DaggerfallImaging2.Classes.DFImageFlow();
             this.FileToolStrip = new System.Windows.Forms.ToolStrip();
             this.ZoomToolStripDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
             this.Zoom25MenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -94,6 +104,7 @@
             this.ToggleAnimationtoolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.MakeTransparentToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ImagesContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.CopyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
@@ -108,7 +119,6 @@
             this.TransparencyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ImageAnimTimer = new System.Windows.Forms.Timer(this.components);
             this.ExportBackgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.LibraryImageListView = new Manina.Windows.Forms.ImageListView();
             this.MainStatusStrip.SuspendLayout();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -204,6 +214,59 @@
             this.MainSplitContainer.SplitterDistance = 320;
             this.MainSplitContainer.TabIndex = 6;
             // 
+            // LibraryImageListView
+            // 
+            this.LibraryImageListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            imageListViewColor1.BackColor = System.Drawing.SystemColors.Window;
+            imageListViewColor1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.CellForeColor = System.Drawing.SystemColors.ControlText;
+            imageListViewColor1.ColumnHeaderBackColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            imageListViewColor1.ColumnHeaderBackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            imageListViewColor1.ColumnHeaderForeColor = System.Drawing.SystemColors.WindowText;
+            imageListViewColor1.ColumnHeaderHoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ColumnHeaderHoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ColumnSelectColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.ColumnSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.ControlBackColor = System.Drawing.SystemColors.Window;
+            imageListViewColor1.ForeColor = System.Drawing.SystemColors.ControlText;
+            imageListViewColor1.HoverBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.HoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.HoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ImageInnerBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ImageOuterBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            imageListViewColor1.InsertionCaretColor = System.Drawing.SystemColors.Highlight;
+            imageListViewColor1.PaneBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.PaneLabelColor = System.Drawing.SystemColors.GrayText;
+            imageListViewColor1.PaneSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.SelectedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectionRectangleBorderColor = System.Drawing.SystemColors.Highlight;
+            imageListViewColor1.SelectionRectangleColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectionRectangleColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.UnFocusedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.UnFocusedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.UnFocusedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            this.LibraryImageListView.Colors = imageListViewColor1;
+            this.LibraryImageListView.ContextMenuStrip = this.LibraryFilesContextMenu;
+            this.LibraryImageListView.DefaultImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.DefaultImage")));
+            this.LibraryImageListView.ErrorImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.ErrorImage")));
+            this.LibraryImageListView.HeaderFont = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LibraryImageListView.Location = new System.Drawing.Point(-3, 25);
+            this.LibraryImageListView.MultiSelect = false;
+            this.LibraryImageListView.Name = "LibraryImageListView";
+            this.LibraryImageListView.ShowCheckBoxes = true;
+            this.LibraryImageListView.Size = new System.Drawing.Size(320, 715);
+            this.LibraryImageListView.TabIndex = 2;
+            this.LibraryImageListView.Text = "";
+            this.LibraryImageListView.ThumbnailSize = new System.Drawing.Size(128, 128);
+            this.LibraryImageListView.ItemCheckBoxClick += new Manina.Windows.Forms.ItemCheckBoxClickEventHandler(this.LibraryImageListView_ItemCheckBoxClick);
+            this.LibraryImageListView.SelectionChanged += new System.EventHandler(this.LibraryImageListView_SelectionChanged);
+            this.LibraryImageListView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LibraryImageListView_KeyPress);
+            this.LibraryImageListView.Resize += new System.EventHandler(this.LibraryImageListView_Resize);
+            // 
             // LibraryFilesContextMenu
             // 
             this.LibraryFilesContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -214,10 +277,11 @@
             this.InvertSelectedToolStripMenuItem,
             this.toolStripSeparator5,
             this.FileDescriptionToolStripMenuItem,
+            this.CategoriesContextMenuItem,
             this.toolStripSeparator6,
             this.ShowExportPaneToolStripMenuItem});
             this.LibraryFilesContextMenu.Name = "LibraryFilesContextMenu";
-            this.LibraryFilesContextMenu.Size = new System.Drawing.Size(158, 154);
+            this.LibraryFilesContextMenu.Size = new System.Drawing.Size(158, 176);
             this.LibraryFilesContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.LibraryFilesContextMenu_Opening);
             // 
             // FileCheckedToolStripMenuItem
@@ -264,11 +328,49 @@
             // 
             // FileDescriptionToolStripMenuItem
             // 
-            this.FileDescriptionToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.pencil;
+            this.FileDescriptionToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.comment;
             this.FileDescriptionToolStripMenuItem.Name = "FileDescriptionToolStripMenuItem";
             this.FileDescriptionToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.FileDescriptionToolStripMenuItem.Text = "Description...";
             this.FileDescriptionToolStripMenuItem.Click += new System.EventHandler(this.FileDescriptionToolStripMenuItem_Click);
+            // 
+            // CategoriesContextMenuItem
+            // 
+            this.CategoriesContextMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ManageCategoriesContextMenuItem,
+            this.toolStripSeparator15,
+            this.ShowAllCategoriesContextMenuItem,
+            this.toolStripSeparator16});
+            this.CategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
+            this.CategoriesContextMenuItem.Name = "CategoriesContextMenuItem";
+            this.CategoriesContextMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.CategoriesContextMenuItem.Text = "Category";
+            // 
+            // ManageCategoriesContextMenuItem
+            // 
+            this.ManageCategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.pencil;
+            this.ManageCategoriesContextMenuItem.Name = "ManageCategoriesContextMenuItem";
+            this.ManageCategoriesContextMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ManageCategoriesContextMenuItem.Text = "Manage";
+            // 
+            // toolStripSeparator15
+            // 
+            this.toolStripSeparator15.Name = "toolStripSeparator15";
+            this.toolStripSeparator15.Size = new System.Drawing.Size(149, 6);
+            // 
+            // ShowAllCategoriesContextMenuItem
+            // 
+            this.ShowAllCategoriesContextMenuItem.Checked = true;
+            this.ShowAllCategoriesContextMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ShowAllCategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.application_view_list;
+            this.ShowAllCategoriesContextMenuItem.Name = "ShowAllCategoriesContextMenuItem";
+            this.ShowAllCategoriesContextMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ShowAllCategoriesContextMenuItem.Text = "Show All";
+            // 
+            // toolStripSeparator16
+            // 
+            this.toolStripSeparator16.Name = "toolStripSeparator16";
+            this.toolStripSeparator16.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripSeparator6
             // 
@@ -290,12 +392,12 @@
             this.toolStripSeparator2,
             this.SelectLibraryToolStripDropDownButton,
             this.toolStripSeparator1,
+            this.FileGroupsToolStripDropDownButton,
+            this.toolStripSeparator11,
             this.ViewTilesToolStripButton,
             this.ViewThumbnailsToolStripButton,
             this.toolStripSeparator3,
-            this.ShowExportPaneToolStripButton,
-            this.toolStripSeparator11,
-            this.AboutToolStripButton});
+            this.ShowExportPaneToolStripButton});
             this.LibraryToolStrip.Location = new System.Drawing.Point(0, 0);
             this.LibraryToolStrip.Name = "LibraryToolStrip";
             this.LibraryToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -379,6 +481,51 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
+            // FileGroupsToolStripDropDownButton
+            // 
+            this.FileGroupsToolStripDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.FileGroupsToolStripDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ManageCategoriesToolStripMenuItem,
+            this.toolStripSeparator12,
+            this.ShowAllCategoriesToolStripMenuItem,
+            this.toolStripSeparator13});
+            this.FileGroupsToolStripDropDownButton.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
+            this.FileGroupsToolStripDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.FileGroupsToolStripDropDownButton.Name = "FileGroupsToolStripDropDownButton";
+            this.FileGroupsToolStripDropDownButton.Size = new System.Drawing.Size(29, 22);
+            this.FileGroupsToolStripDropDownButton.Text = "Category";
+            // 
+            // ManageCategoriesToolStripMenuItem
+            // 
+            this.ManageCategoriesToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.pencil;
+            this.ManageCategoriesToolStripMenuItem.Name = "ManageCategoriesToolStripMenuItem";
+            this.ManageCategoriesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ManageCategoriesToolStripMenuItem.Text = "Manage";
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(149, 6);
+            // 
+            // ShowAllCategoriesToolStripMenuItem
+            // 
+            this.ShowAllCategoriesToolStripMenuItem.Checked = true;
+            this.ShowAllCategoriesToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ShowAllCategoriesToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.application_view_list;
+            this.ShowAllCategoriesToolStripMenuItem.Name = "ShowAllCategoriesToolStripMenuItem";
+            this.ShowAllCategoriesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ShowAllCategoriesToolStripMenuItem.Text = "Show All";
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(149, 6);
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
+            // 
             // ViewTilesToolStripButton
             // 
             this.ViewTilesToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -416,22 +563,6 @@
             this.ShowExportPaneToolStripButton.Text = "Export";
             this.ShowExportPaneToolStripButton.ToolTipText = "Toggle Export Manager";
             this.ShowExportPaneToolStripButton.Click += new System.EventHandler(this.ShowExportPaneToolStripButton_Click);
-            // 
-            // toolStripSeparator11
-            // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
-            // 
-            // AboutToolStripButton
-            // 
-            this.AboutToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.AboutToolStripButton.Image = global::DaggerfallImaging2.Properties.Resources.help;
-            this.AboutToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AboutToolStripButton.Name = "AboutToolStripButton";
-            this.AboutToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.AboutToolStripButton.Text = "About";
-            this.AboutToolStripButton.ToolTipText = "About Daggerfall Imaging 2";
-            this.AboutToolStripButton.Click += new System.EventHandler(this.AboutToolStripButton_Click);
             // 
             // ExportManagerPanel
             // 
@@ -639,7 +770,7 @@
             this.FileImageFlowView.DFImageFile = null;
             this.FileImageFlowView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.FileImageFlowView.InnerMargin = new System.Windows.Forms.Padding(6);
-            this.FileImageFlowView.LayoutStyle = DaggerfallImaging2.MyClasses.DFImageFlow.LayoutStyles.Flow;
+            this.FileImageFlowView.LayoutStyle = DaggerfallImaging2.Classes.DFImageFlow.LayoutStyles.Flow;
             this.FileImageFlowView.Location = new System.Drawing.Point(0, 0);
             this.FileImageFlowView.Margin = new System.Windows.Forms.Padding(4);
             this.FileImageFlowView.Name = "FileImageFlowView";
@@ -647,8 +778,8 @@
             this.FileImageFlowView.TabIndex = 2;
             this.FileImageFlowView.Transparency = true;
             this.FileImageFlowView.ZoomAmount = 1F;
-            this.FileImageFlowView.ShowContextMenu += new DaggerfallImaging2.MyClasses.DFImageFlow.ShowContextMenuEventHandler(this.FileImageFlowView_ShowContextMenu);
-            this.FileImageFlowView.MouseOverItem += new DaggerfallImaging2.MyClasses.DFImageFlow.MouseOverItemEventHandler(this.FileImageFlowView_MouseOverItem);
+            this.FileImageFlowView.ShowContextMenu += new DaggerfallImaging2.Classes.DFImageFlow.ShowContextMenuEventHandler(this.FileImageFlowView_ShowContextMenu);
+            this.FileImageFlowView.MouseOverItem += new DaggerfallImaging2.Classes.DFImageFlow.MouseOverItemEventHandler(this.FileImageFlowView_MouseOverItem);
             // 
             // FileToolStrip
             // 
@@ -657,7 +788,8 @@
             this.toolStripSeparator4,
             this.ToggleAnimationtoolStripButton,
             this.toolStripSeparator8,
-            this.MakeTransparentToolStripButton});
+            this.MakeTransparentToolStripButton,
+            this.AboutToolStripButton});
             this.FileToolStrip.Location = new System.Drawing.Point(0, 0);
             this.FileToolStrip.Name = "FileToolStrip";
             this.FileToolStrip.Size = new System.Drawing.Size(860, 25);
@@ -749,6 +881,17 @@
             this.MakeTransparentToolStripButton.Text = "Transparency";
             this.MakeTransparentToolStripButton.ToolTipText = "Toggle Transparency";
             this.MakeTransparentToolStripButton.Click += new System.EventHandler(this.MakeTransparentToolStripButton_Click);
+            // 
+            // AboutToolStripButton
+            // 
+            this.AboutToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.AboutToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.AboutToolStripButton.Image = global::DaggerfallImaging2.Properties.Resources.help;
+            this.AboutToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.AboutToolStripButton.Name = "AboutToolStripButton";
+            this.AboutToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.AboutToolStripButton.Text = "About Daggerfall Imaging 2";
+            this.AboutToolStripButton.Click += new System.EventHandler(this.AboutToolStripButton_Click);
             // 
             // ImagesContextMenuStrip
             // 
@@ -857,59 +1000,6 @@
             this.ExportBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ExportBackgroundWorker_RunWorkerCompleted);
             this.ExportBackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ExportBackgroundWorker_ProgressChanged);
             // 
-            // LibraryImageListView
-            // 
-            this.LibraryImageListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            imageListViewColor1.BackColor = System.Drawing.SystemColors.Window;
-            imageListViewColor1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.CellForeColor = System.Drawing.SystemColors.ControlText;
-            imageListViewColor1.ColumnHeaderBackColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            imageListViewColor1.ColumnHeaderBackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            imageListViewColor1.ColumnHeaderForeColor = System.Drawing.SystemColors.WindowText;
-            imageListViewColor1.ColumnHeaderHoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.ColumnHeaderHoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.ColumnSelectColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.ColumnSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.ControlBackColor = System.Drawing.SystemColors.Window;
-            imageListViewColor1.ForeColor = System.Drawing.SystemColors.ControlText;
-            imageListViewColor1.HoverBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.HoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.HoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.ImageInnerBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            imageListViewColor1.ImageOuterBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            imageListViewColor1.InsertionCaretColor = System.Drawing.SystemColors.Highlight;
-            imageListViewColor1.PaneBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.PaneLabelColor = System.Drawing.SystemColors.GrayText;
-            imageListViewColor1.PaneSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.SelectedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.SelectedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.SelectedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.SelectionRectangleBorderColor = System.Drawing.SystemColors.Highlight;
-            imageListViewColor1.SelectionRectangleColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.SelectionRectangleColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor1.UnFocusedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.UnFocusedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor1.UnFocusedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            this.LibraryImageListView.Colors = imageListViewColor1;
-            this.LibraryImageListView.ContextMenuStrip = this.LibraryFilesContextMenu;
-            this.LibraryImageListView.DefaultImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.DefaultImage")));
-            this.LibraryImageListView.ErrorImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.ErrorImage")));
-            this.LibraryImageListView.HeaderFont = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LibraryImageListView.Location = new System.Drawing.Point(0, 25);
-            this.LibraryImageListView.MultiSelect = false;
-            this.LibraryImageListView.Name = "LibraryImageListView";
-            this.LibraryImageListView.ShowCheckBoxes = true;
-            this.LibraryImageListView.Size = new System.Drawing.Size(320, 715);
-            this.LibraryImageListView.TabIndex = 2;
-            this.LibraryImageListView.Text = "";
-            this.LibraryImageListView.ThumbnailSize = new System.Drawing.Size(128, 128);
-            this.LibraryImageListView.ItemCheckBoxClick += new Manina.Windows.Forms.ItemCheckBoxClickEventHandler(this.LibraryImageListView_ItemCheckBoxClick);
-            this.LibraryImageListView.SelectionChanged += new System.EventHandler(this.LibraryImageListView_SelectionChanged);
-            this.LibraryImageListView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LibraryImageListView_KeyPress);
-            this.LibraryImageListView.Resize += new System.EventHandler(this.LibraryImageListView_Resize);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -975,7 +1065,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton ViewTilesToolStripButton;
         private System.Windows.Forms.ToolStrip FileToolStrip;
-        private DaggerfallImaging2.MyClasses.DFImageFlow FileImageFlowView;
+        private DaggerfallImaging2.Classes.DFImageFlow FileImageFlowView;
         private System.Windows.Forms.ToolStripButton ToggleAnimationtoolStripButton;
         private System.Windows.Forms.ToolStripDropDownButton ZoomToolStripDropDownButton;
         private System.Windows.Forms.ToolStripMenuItem Zoom25MenuItem;
@@ -987,7 +1077,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripButton MakeTransparentToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ToolStripButton AboutToolStripButton;
         private System.Windows.Forms.ContextMenuStrip LibraryFilesContextMenu;
         private System.Windows.Forms.ToolStripMenuItem SelectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem SelectNoneToolStripMenuItem;
@@ -1023,7 +1112,6 @@
         private System.Windows.Forms.ToolStripButton ShowExportPaneToolStripButton;
         private System.Windows.Forms.ToolStripMenuItem FileDescriptionToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ImageList ExportPreviewImageList;
         private System.Windows.Forms.ComboBox ExportFormatComboBox;
         private System.Windows.Forms.Label label3;
@@ -1031,6 +1119,18 @@
         private System.Windows.Forms.CheckBox UseDescriptionsCheckBox;
         private System.ComponentModel.BackgroundWorker ExportBackgroundWorker;
         private Manina.Windows.Forms.ImageListView LibraryImageListView;
+        private System.Windows.Forms.ToolStripDropDownButton FileGroupsToolStripDropDownButton;
+        private System.Windows.Forms.ToolStripButton AboutToolStripButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripMenuItem ShowAllCategoriesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripMenuItem ManageCategoriesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem CategoriesContextMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ManageCategoriesContextMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
+        private System.Windows.Forms.ToolStripMenuItem ShowAllCategoriesContextMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator16;
 
 
     }

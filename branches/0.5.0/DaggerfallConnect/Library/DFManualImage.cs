@@ -87,6 +87,33 @@ namespace DaggerfallConnect
             manualBitmap = dfBitmap;
         }
 
+        /// <summary>
+        /// Constructor to create an empty image of size and format.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="format"></param>
+        public DFManualImage(int width, int height, DFBitmap.Formats format)
+        {
+            // Create bitmap data
+            manualBitmap = new DFBitmap();
+            manualBitmap.Width = width;
+            manualBitmap.Height = height;
+            manualBitmap.Format = format;
+            manualBitmap.Data = new byte[width * height];
+
+            // Set stride (1 byte per pixel for indexed, 4 bytes per pixel for all other formats)
+            switch (format)
+            {
+                case DFBitmap.Formats.Indexed:
+                    manualBitmap.Stride = width;
+                    break;
+                default:
+                    manualBitmap.Stride = width*4;
+                    break;
+            }
+        }
+
         #endregion
 
         #region Public Methods

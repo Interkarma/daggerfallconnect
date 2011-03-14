@@ -42,7 +42,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,7 +51,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>
     </DocumentationFile>
   </PropertyGroup>
@@ -64,20 +64,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyClasses\DFImageFlow.cs">
+    <Compile Include="Classes\DFImageFlow.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MyClasses\DFTilesRenderer.cs" />
-    <Compile Include="MyDialogs\AboutDialog.cs">
+    <Compile Include="Classes\DFTilesRenderer.cs" />
+    <Compile Include="Dialogs\AboutDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MyDialogs\AboutDialog.Designer.cs">
+    <Compile Include="Dialogs\AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyDialogs\BrowseArena2Folder.cs">
+    <Compile Include="Dialogs\BrowseArena2Folder.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MyDialogs\BrowseArena2Folder.Designer.cs">
+    <Compile Include="Dialogs\BrowseArena2Folder.Designer.cs">
       <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
@@ -86,24 +86,24 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyDialogs\SetDescription.cs">
+    <Compile Include="Dialogs\SetDescription.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MyDialogs\SetDescription.Designer.cs">
+    <Compile Include="Dialogs\SetDescription.Designer.cs">
       <DependentUpon>SetDescription.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="MyDialogs\AboutDialog.resx">
+    <EmbeddedResource Include="Dialogs\AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MyDialogs\BrowseArena2Folder.resx">
+    <EmbeddedResource Include="Dialogs\BrowseArena2Folder.resx">
       <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MyDialogs\SetDescription.resx">
+    <EmbeddedResource Include="Dialogs\SetDescription.resx">
       <DependentUpon>SetDescription.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -163,6 +163,11 @@
     <Content Include="Licenses\DaggerfallImaging2.txt" />
     <Content Include="Licenses\ImageListView.txt" />
     <Content Include="mainform.ico" />
+    <None Include="Resources\bricks.png" />
+    <None Include="Resources\comment_edit.png" />
+    <None Include="Resources\comment.png" />
+    <None Include="Resources\add.png" />
+    <None Include="Resources\tag_orange.png" />
     <None Include="Resources\images.png" />
     <None Include="Resources\application_delete.png" />
     <None Include="Resources\arrow_switch.png" />

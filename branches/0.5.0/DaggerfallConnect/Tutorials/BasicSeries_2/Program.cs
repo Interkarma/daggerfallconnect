@@ -28,8 +28,8 @@ namespace Tutorial_BasicSeries_2
             // Set desired library type
             MyImageFileReader.LibraryType = LibraryTypes.Texture;
 
-            // Load first file in library
-            MyImageFileReader.LoadFile(MyImageFileReader.FirstFileName);
+            // Load TEXTURE.285 file
+            MyImageFileReader.LoadFile("TEXTURE.285");
             
             // Output some information about this file
             Console.WriteLine("Image file {0} has {1} records",

@@ -299,7 +299,7 @@ namespace DaggerfallImaging2
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
         {
-            MyDialogs.AboutDialog dlg = new MyDialogs.AboutDialog();
+            Dialogs.AboutDialog dlg = new Dialogs.AboutDialog();
             dlg.ShowDialog();
         }
 
@@ -425,7 +425,7 @@ namespace DaggerfallImaging2
         private void FileDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Create dialog
-            MyDialogs.SetDescription dlg = new MyDialogs.SetDescription();
+            Dialogs.SetDescription dlg = new Dialogs.SetDescription();
             dlg.Location = new Point(LibraryFilesContextMenu.Left, LibraryFilesContextMenu.Top);
             dlg.Description = ReadXmlDescription(SelectedFileName);
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -1236,7 +1236,7 @@ namespace DaggerfallImaging2
 
         #region FileImageFlowView Events
 
-        private void FileImageFlowView_ShowContextMenu(object sender, MyClasses.DFImageFlow.ShowContextMenuEventArgs e)
+        private void FileImageFlowView_ShowContextMenu(object sender, Classes.DFImageFlow.ShowContextMenuEventArgs e)
         {
             // Enable or disable clipboard copy command
             if (FileImageFlowView.SelectedIndex >= 0)
@@ -1258,7 +1258,7 @@ namespace DaggerfallImaging2
             ImagesContextMenuStrip.Show(pos);
         }
 
-        private void FileImageFlowView_MouseOverItem(object sender, MyClasses.DFImageFlow.SelectedImageEventArgs e)
+        private void FileImageFlowView_MouseOverItem(object sender, Classes.DFImageFlow.SelectedImageEventArgs e)
         {
             // Handle no selection
             if (-1 == e.FrameCount)

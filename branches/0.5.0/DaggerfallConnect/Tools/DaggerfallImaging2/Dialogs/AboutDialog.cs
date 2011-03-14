@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.IO;
 
-namespace DaggerfallImaging2.MyDialogs
+namespace DaggerfallImaging2.Dialogs
 {
     public partial class AboutDialog : Form
     {

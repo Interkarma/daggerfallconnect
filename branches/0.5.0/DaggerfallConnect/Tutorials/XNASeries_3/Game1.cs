@@ -41,8 +41,8 @@ namespace XNASeries_3
         {
             graphics = new GraphicsDeviceManager(this);
 
-            fps = new FPS(this);
-            Components.Add(fps);
+            //fps = new FPS(this);
+            //Components.Add(fps);
 
             input = new InputHandler(this);
             Components.Add(input);

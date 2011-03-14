@@ -39,8 +39,8 @@ namespace XNASeries_2
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            fps = new FPS(this);
-            Components.Add(fps);
+            //fps = new FPS(this);
+            //Components.Add(fps);
         }
 
         /// <summary>
