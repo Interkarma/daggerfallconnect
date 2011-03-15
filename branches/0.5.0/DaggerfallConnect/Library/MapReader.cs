@@ -181,5 +181,143 @@ namespace DaggerfallConnect
 
         #region Private Methods
         #endregion
+
+        #region Unused For Now
+
+        // This code has not been checked for correctness.
+        // It will be moved and reworked down the track.
+
+        /*
+        /// <summary>
+        /// Modify a texture archive based on region and weather combinations. Only textures that support terrain changing
+        ///  will be returned modified. Otherwise, sourceArchive will be returned unchanged.
+        /// </summary>
+        /// <param name="SourceArchive">The source archive to modify.</param>
+        /// <param name="TerrainBase">Desired terrain base.</param>
+        /// <param name="WeatherBase">Desired weather base.</param>
+        /// <returns>Texture archive index modified to specified terrain and weather base.</returns>
+        private int GetRegionalTextureArchive(int SourceArchive, TerrainBases TerrainBase, WeatherBases WeatherBase)
+        {
+            // Handle no terrain base
+            if (TerrainBase == TerrainBases.None)
+                return SourceArchive;
+
+            // Get base and offset for this archive
+            int baseTexture = SourceArchive / 100;
+            int textureOffset = SourceArchive - (baseTexture * 100);
+            int terrainOffset = (int)TerrainBase;
+            int weatherOffset = (int)WeatherBase;
+
+            // Process supported offsets
+            TextureOffsets sto = (TextureOffsets)textureOffset;
+            int result = SourceArchive;
+            switch (sto)
+            {
+                // Case with weather offsets
+                case TextureOffsets.Terrain:
+                case TextureOffsets.Ruins:
+                case TextureOffsets.Castle:
+                case TextureOffsets.CityA:
+                case TextureOffsets.CityB:
+                case TextureOffsets.CityWalls:
+                case TextureOffsets.Farm:
+                case TextureOffsets.Fences:
+                case TextureOffsets.MagesGuild:
+                case TextureOffsets.Manor:
+                case TextureOffsets.MerchantHomes:
+                case TextureOffsets.TavernExteriors:
+                case TextureOffsets.TempleExteriors:
+                case TextureOffsets.Village:
+                case TextureOffsets.Roofs:
+                    result = terrainOffset + textureOffset + weatherOffset;
+                    break;
+
+                // Cases without weather offsets
+                case TextureOffsets.DungeonsA:
+                case TextureOffsets.DungeonsB:
+                case TextureOffsets.DungeonsC:
+                case TextureOffsets.DungeonsNEWCs:
+                    result = terrainOffset + textureOffset;
+                    break;
+
+                default:
+                    break;
+            };
+
+            return result;
+        }
+
+        /// <summary>
+        /// Obtain the correct scenery texture archive (plants, rocks, etc.) for use in the specified climate.
+        /// </summary>
+        /// <param name="Climate">The climate value. Must be between in the range 223-232.</param>
+        /// <returns>The climate texture archive if successful, otherwise -1.</returns>
+        private int GetClimateSceneryArchive(int Climate)
+        {
+            switch (Climate)
+            {
+                case 223:
+                    return 502;
+                case 224:
+                    return 503;
+                case 225:
+                    return 503;
+                case 226:
+                    return 510;
+                case 227:
+                    return 500;
+                case 228:
+                    return 502;
+                case 229:
+                    return 501;
+                case 230:
+                    return 504;
+                case 231:
+                    return 504;
+                case 232:
+                    return 508;
+                default:
+                    return -1;
+            }
+        }
+
+        /// <summary>
+        /// Obtain the correct base texture archive for the specified climate. This texture base is used to
+        ///  determine which series of textures are used in different regions. For example, the 100 series
+        ///  textures is Mountainous, the 300 series is Temperate.
+        /// </summary>
+        /// <param name="Climate">The climate value. Must be between in the range 223-232.</param>
+        /// <returns>The terrain texture archive if successful, otherwise -1.</returns>
+        private int GetClimateTerrainBase(int Climate)
+        {
+            switch (Climate)
+            {
+                case 223:
+                    return 400;
+                case 224:
+                    return 0;
+                case 225:
+                    return 0;
+                case 226:
+                    return 100;
+                case 227:
+                    return 400;
+                case 228:
+                    return 400;
+                case 229:
+                    return 0;
+                case 230:
+                    return 300;
+                case 231:
+                    return 300;
+                case 232:
+                    return 300;
+                default:
+                    return -1;
+            }
+        }
+        */
+
+        #endregion
     }
 }

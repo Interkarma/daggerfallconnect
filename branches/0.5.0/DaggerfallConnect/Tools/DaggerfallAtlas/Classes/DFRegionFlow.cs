@@ -28,7 +28,9 @@ namespace DaggerfallAtlas.Classes
         #region Class Variables
 
         private string arena2Path;
-        string[] regionNames;
+        private string[] regionStrings;
+        private int[] regionIndices;
+        private Bitmap[] regionBitmaps;
         private MapsFile mapsFile = new MapsFile();
         private ImageFileReader imageFileReader = new ImageFileReader();
 
@@ -53,7 +55,7 @@ namespace DaggerfallAtlas.Classes
 
         protected override Size GetItemSize(int index)
         {
-            return new Size(300, 79);
+            return new Size(320, 160);
         }
 
         protected override void PaintItem(int index, Point position, Graphics gr)
@@ -64,7 +66,7 @@ namespace DaggerfallAtlas.Classes
                 return;
 
             // Get region index
-            int regionIndex = mapsFile.GetRegionIndex(regionNames[index]);
+            int regionIndex = regionIndices[index];
 
             // Compose region bitmap filename.
             // Not all regions have a bitmap, and some use more than one bitmap.
@@ -83,7 +85,7 @@ namespace DaggerfallAtlas.Classes
             // Paint bitmap
             Bitmap bm = dfImageFile.GetManagedBitmap(0, 0, true, false);
             Rectangle src = new Rectangle(0, 0, bm.Width, bm.Height);
-            Rectangle dst = new Rectangle(position.X, position.Y, bm.Width / 2, bm.Height / 2);
+            Rectangle dst = new Rectangle(position.X, position.Y, bm.Width, bm.Height);
             gr.DrawImage(bm, dst, src, GraphicsUnit.Pixel);
         }
 
@@ -93,10 +95,10 @@ namespace DaggerfallAtlas.Classes
 
         int GetItemCount()
         {
-            if (mapsFile == null || regionNames == null)
+            if (mapsFile == null || regionIndices == null || regionStrings == null)
                 return 0;
 
-            return regionNames.Length;
+            return regionIndices.Length;
         }
 
         void SetArena2Path(string path)
@@ -112,31 +114,36 @@ namespace DaggerfallAtlas.Classes
             // Store new value
             arena2Path = path;
 
-            // Populate region names array only with regions that have > 0 locations
-            int validRegionCount = 0;
-            string[] validRegions = new string[mapsFile.RegionCount];
-            for (int i = 0; i < mapsFile.RegionCount; i++)
-            {
-                DFRegion dfRegion = mapsFile.GetRegion(i);
-                if (dfRegion.MapNames.LocationCount > 0)
-                {
-                    validRegions[validRegionCount] = dfRegion.Name;
-                    validRegionCount++;
-                }
-            }
-
-            // Copy valid regions to stored array
-            regionNames = new string[validRegionCount];
-            for (int i = 0; i < validRegionCount; i++)
-            {
-                regionNames[i] = validRegions[i];
-            }
-
-            // Sort array of names
-            Array.Sort(regionNames);
+            // Index regions
+            IndexRegions();
 
             // Update base layout
             base.NewLayout();
+        }
+
+        void IndexRegions()
+        {
+            // Populate sorted region dictionary with valid regions.
+            // A valid region has >0 locations.
+            SortedDictionary<string, int> regionDict = regionDict = new SortedDictionary<string, int>();
+            for (int i = 0; i < mapsFile.RegionCount; i++)
+            {
+                // Skip "High Rock sea coast" (index=31)
+                if (i == 31)
+                    continue;
+
+                // Add any other region with >0 locations
+                DFRegion dfRegion = mapsFile.GetRegion(i);
+                if (dfRegion.MapNames.LocationCount > 0)
+                    regionDict.Add(dfRegion.Name, i);
+            }
+
+            // Copy region keys and values to simple arrays.
+            // This doesn't change for the lifetime of class.
+            regionStrings = new string[regionDict.Keys.Count];
+            regionIndices = new int[regionDict.Values.Count];
+            regionDict.Keys.CopyTo(regionStrings, 0);
+            regionDict.Values.CopyTo(regionIndices, 0);
         }
 
         #endregion
