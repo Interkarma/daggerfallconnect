@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            Manina.Windows.Forms.ImageListViewColor imageListViewColor2 = new Manina.Windows.Forms.ImageListViewColor();
+            Manina.Windows.Forms.ImageListViewColor imageListViewColor1 = new Manina.Windows.Forms.ImageListViewColor();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -49,11 +49,7 @@
             this.InvertSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FileDescriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.CategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ManageCategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
-            this.ShowAllCategoriesContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
+            this.ChangeCategoryContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ShowExportPaneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LibraryToolStrip = new System.Windows.Forms.ToolStrip();
@@ -219,37 +215,37 @@
             this.LibraryImageListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            imageListViewColor2.BackColor = System.Drawing.SystemColors.Window;
-            imageListViewColor2.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.CellForeColor = System.Drawing.SystemColors.ControlText;
-            imageListViewColor2.ColumnHeaderBackColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            imageListViewColor2.ColumnHeaderBackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
-            imageListViewColor2.ColumnHeaderForeColor = System.Drawing.SystemColors.WindowText;
-            imageListViewColor2.ColumnHeaderHoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.ColumnHeaderHoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.ColumnSelectColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.ColumnSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.ControlBackColor = System.Drawing.SystemColors.Window;
-            imageListViewColor2.ForeColor = System.Drawing.SystemColors.ControlText;
-            imageListViewColor2.HoverBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.HoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.HoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.ImageInnerBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            imageListViewColor2.ImageOuterBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            imageListViewColor2.InsertionCaretColor = System.Drawing.SystemColors.Highlight;
-            imageListViewColor2.PaneBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.PaneLabelColor = System.Drawing.SystemColors.GrayText;
-            imageListViewColor2.PaneSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.SelectedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.SelectedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.SelectedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.SelectionRectangleBorderColor = System.Drawing.SystemColors.Highlight;
-            imageListViewColor2.SelectionRectangleColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.SelectionRectangleColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
-            imageListViewColor2.UnFocusedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.UnFocusedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            imageListViewColor2.UnFocusedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
-            this.LibraryImageListView.Colors = imageListViewColor2;
+            imageListViewColor1.BackColor = System.Drawing.SystemColors.Window;
+            imageListViewColor1.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.CellForeColor = System.Drawing.SystemColors.ControlText;
+            imageListViewColor1.ColumnHeaderBackColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            imageListViewColor1.ColumnHeaderBackColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(196)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            imageListViewColor1.ColumnHeaderForeColor = System.Drawing.SystemColors.WindowText;
+            imageListViewColor1.ColumnHeaderHoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ColumnHeaderHoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ColumnSelectColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.ColumnSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.ControlBackColor = System.Drawing.SystemColors.Window;
+            imageListViewColor1.ForeColor = System.Drawing.SystemColors.ControlText;
+            imageListViewColor1.HoverBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.HoverColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.HoverColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ImageInnerBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            imageListViewColor1.ImageOuterBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            imageListViewColor1.InsertionCaretColor = System.Drawing.SystemColors.Highlight;
+            imageListViewColor1.PaneBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.PaneLabelColor = System.Drawing.SystemColors.GrayText;
+            imageListViewColor1.PaneSeparatorColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.SelectedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectionRectangleBorderColor = System.Drawing.SystemColors.Highlight;
+            imageListViewColor1.SelectionRectangleColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.SelectionRectangleColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(51)))), ((int)(((byte)(153)))), ((int)(((byte)(255)))));
+            imageListViewColor1.UnFocusedBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.UnFocusedColor1 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            imageListViewColor1.UnFocusedColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(109)))));
+            this.LibraryImageListView.Colors = imageListViewColor1;
             this.LibraryImageListView.ContextMenuStrip = this.LibraryFilesContextMenu;
             this.LibraryImageListView.DefaultImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.DefaultImage")));
             this.LibraryImageListView.ErrorImage = ((System.Drawing.Image)(resources.GetObject("LibraryImageListView.ErrorImage")));
@@ -277,7 +273,7 @@
             this.InvertSelectedToolStripMenuItem,
             this.toolStripSeparator5,
             this.FileDescriptionToolStripMenuItem,
-            this.CategoriesContextMenuItem,
+            this.ChangeCategoryContextMenuItem,
             this.toolStripSeparator6,
             this.ShowExportPaneToolStripMenuItem});
             this.LibraryFilesContextMenu.Name = "LibraryFilesContextMenu";
@@ -334,43 +330,12 @@
             this.FileDescriptionToolStripMenuItem.Text = "Description...";
             this.FileDescriptionToolStripMenuItem.Click += new System.EventHandler(this.FileDescriptionToolStripMenuItem_Click);
             // 
-            // CategoriesContextMenuItem
+            // ChangeCategoryContextMenuItem
             // 
-            this.CategoriesContextMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ManageCategoriesContextMenuItem,
-            this.toolStripSeparator15,
-            this.ShowAllCategoriesContextMenuItem,
-            this.toolStripSeparator16});
-            this.CategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
-            this.CategoriesContextMenuItem.Name = "CategoriesContextMenuItem";
-            this.CategoriesContextMenuItem.Size = new System.Drawing.Size(157, 22);
-            this.CategoriesContextMenuItem.Text = "Category";
-            // 
-            // ManageCategoriesContextMenuItem
-            // 
-            this.ManageCategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.pencil;
-            this.ManageCategoriesContextMenuItem.Name = "ManageCategoriesContextMenuItem";
-            this.ManageCategoriesContextMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.ManageCategoriesContextMenuItem.Text = "Manage";
-            // 
-            // toolStripSeparator15
-            // 
-            this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(117, 6);
-            // 
-            // ShowAllCategoriesContextMenuItem
-            // 
-            this.ShowAllCategoriesContextMenuItem.Checked = true;
-            this.ShowAllCategoriesContextMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ShowAllCategoriesContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.application_view_list;
-            this.ShowAllCategoriesContextMenuItem.Name = "ShowAllCategoriesContextMenuItem";
-            this.ShowAllCategoriesContextMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.ShowAllCategoriesContextMenuItem.Text = "Show All";
-            // 
-            // toolStripSeparator16
-            // 
-            this.toolStripSeparator16.Name = "toolStripSeparator16";
-            this.toolStripSeparator16.Size = new System.Drawing.Size(117, 6);
+            this.ChangeCategoryContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
+            this.ChangeCategoryContextMenuItem.Name = "ChangeCategoryContextMenuItem";
+            this.ChangeCategoryContextMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.ChangeCategoryContextMenuItem.Text = "Category...";
             // 
             // toolStripSeparator6
             // 
@@ -1126,11 +1091,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
         private System.Windows.Forms.ToolStripMenuItem ManageCategoriesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
-        private System.Windows.Forms.ToolStripMenuItem CategoriesContextMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ManageCategoriesContextMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
-        private System.Windows.Forms.ToolStripMenuItem ShowAllCategoriesContextMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator16;
+        private System.Windows.Forms.ToolStripMenuItem ChangeCategoryContextMenuItem;
 
 
     }
