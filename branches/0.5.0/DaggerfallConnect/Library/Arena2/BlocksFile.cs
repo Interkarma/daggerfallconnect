@@ -296,7 +296,39 @@ namespace DaggerfallConnect.Arena2
         /// <returns>DFBlock object.</returns>
         public DFBlock GetBlock(string Name)
         {
-            return GetBlock(GetBlockIndex(Name));
+            // Look for block index
+            int index = GetBlockIndex(Name);
+            if (index == -1)
+            {
+                string alternateName = SearchAlternateRMBName(ref Name);
+                if (!string.IsNullOrEmpty(alternateName))
+                    index = GetBlockIndex(alternateName);
+            }
+
+            return GetBlock(index);
+        }
+
+        /// <summary>
+        /// Not all RMB block names can be resolved.
+        ///  This method attempts to find a suitable match for these cases
+        ///  by matching prefix and suffix of failed block name to a 
+        ///  valid block name.
+        /// </summary>
+        /// <param name="Name">Name of invalid block.</param>
+        /// <returns>Valid block name with same prefix and suffix, or string.Empty if no match found.</returns>
+        private string SearchAlternateRMBName(ref string Name)
+        {
+            string found = string.Empty;
+            string prefix = Name.Substring(0, 4);
+            string suffix = Name.Substring(Name.Length - 6, 6);
+            for (int block = 0; block < Count; block++)
+            {
+                string test = GetBlockName(block);
+                if (test.StartsWith(prefix) && test.EndsWith(suffix))
+                    found = test;
+            }
+
+            return found;
         }
 
         /// <summary>
