@@ -202,7 +202,7 @@ namespace DaggerfallConnect.Arena2
         public bool LoadBlock(int Block)
         {
             // Validate
-            if (Block >= BsaFile.Count)
+            if (Block < 0 || Block >= BsaFile.Count)
                 return false;
 
             // Exit if file has already been opened
@@ -297,6 +297,27 @@ namespace DaggerfallConnect.Arena2
         public DFBlock GetBlock(string Name)
         {
             return GetBlock(GetBlockIndex(Name));
+        }
+
+        /// <summary>
+        /// Gets block AutoMap by name.
+        /// </summary>
+        /// <param name="Name">Name of block.</param>
+        /// <returns>DFBitmap object.</returns>
+        public DFBitmap GetBlockAutoMap(string Name)
+        {
+            DFBlock dfBlock = GetBlock(Name);
+            if (string.IsNullOrEmpty(dfBlock.Name))
+                return new DFBitmap();
+
+            DFBitmap dfBitmap = new DFBitmap();
+            dfBitmap.Data = dfBlock.RmbBlock.FldHeader.AutoMapData;
+            dfBitmap.Width = 64;
+            dfBitmap.Height = 64;
+            dfBitmap.Stride = 64;
+            dfBitmap.Format = DFBitmap.Formats.Indexed;
+
+            return dfBitmap;
         }
 
         #endregion

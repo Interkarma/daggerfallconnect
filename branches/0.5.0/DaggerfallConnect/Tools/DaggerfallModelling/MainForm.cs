@@ -23,7 +23,7 @@ namespace DaggerfallModelling
         private int minSearchLength = 2;
 
         private bool searchModels = false;
-        private bool searchBlocks = false;
+        private bool searchBlocks = true;
         private bool searchLocations = true;
 
         private Dictionary<int, uint> modelsFound;
@@ -42,6 +42,10 @@ namespace DaggerfallModelling
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
             mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
+
+            // Initialise map browser
+            mapBlockBrowser1.BlocksFile = blocksFile;
+            mapBlockBrowser1.MapsFile = mapsFile;
         }
 
         #endregion
@@ -60,6 +64,23 @@ namespace DaggerfallModelling
             // Handle expanding region nodes
             if (e.Node.ImageIndex == SearchResultsImageList.Images.IndexOfKey("region"))
                 ExpandRegionNode(e.Node);
+        }
+
+        private void SearchResultsTree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            // Look for location select
+            if (e.Node.Tag is string)
+            {
+                if ("LOC" == (string)e.Node.Tag)
+                {
+                    int key, region, location;
+                    if (int.TryParse(e.Node.Name, out key))
+                    {
+                        KeyToRegionLocation(key, out region, out location);
+                        mapBlockBrowser1.SetLocation(region, location);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -395,11 +416,13 @@ namespace DaggerfallModelling
 
         private void AddLocationNode(ref string name, ref int key, ref TreeNode parent, string imageKey)
         {
-            parent.Nodes.Add(
+            TreeNode locationNode = parent.Nodes.Add(
                 key.ToString(),
                 name,
                 SearchResultsImageList.Images.IndexOfKey(imageKey),
                 SearchResultsImageList.Images.IndexOfKey(imageKey));
+
+            locationNode.Tag = "LOC";
         }
 
         #endregion

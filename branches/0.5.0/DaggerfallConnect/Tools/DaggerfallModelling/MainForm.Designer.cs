@@ -50,17 +50,19 @@
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.ActionProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.mapBlockBrowser1 = new DaggerfallModelling.BrowserControls.MapBlockBrowser();
+            this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
             this.SearchResultsPanel.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.LayoutPanel.SuspendLayout();
             this.SearchPaneToolStrip.SuspendLayout();
             this.ViewPaneToolStrip.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -101,20 +103,22 @@
             this.SearchResultsPanel.Controls.Add(this.SearchResultsTreeView);
             this.SearchResultsPanel.Location = new System.Drawing.Point(-2, 56);
             this.SearchResultsPanel.Name = "SearchResultsPanel";
-            this.SearchResultsPanel.Size = new System.Drawing.Size(318, 366);
+            this.SearchResultsPanel.Size = new System.Drawing.Size(318, 364);
             this.SearchResultsPanel.TabIndex = 4;
             // 
             // SearchResultsTreeView
             // 
             this.SearchResultsTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SearchResultsTreeView.HideSelection = false;
             this.SearchResultsTreeView.ImageIndex = 0;
             this.SearchResultsTreeView.ImageList = this.SearchResultsImageList;
             this.SearchResultsTreeView.Location = new System.Drawing.Point(0, 0);
             this.SearchResultsTreeView.Name = "SearchResultsTreeView";
             this.SearchResultsTreeView.SelectedImageIndex = 0;
-            this.SearchResultsTreeView.Size = new System.Drawing.Size(318, 366);
+            this.SearchResultsTreeView.Size = new System.Drawing.Size(318, 364);
             this.SearchResultsTreeView.TabIndex = 2;
             this.SearchResultsTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.SearchResultsTreeView_BeforeExpand);
+            this.SearchResultsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SearchResultsTree_AfterSelect);
             // 
             // SearchResultsImageList
             // 
@@ -154,7 +158,6 @@
             // 
             // SearchTextBox
             // 
-            this.SearchTextBox.AcceptsReturn = true;
             this.SearchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.SearchTextBox.Location = new System.Drawing.Point(29, 6);
@@ -177,10 +180,10 @@
             this.LayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.LayoutPanel.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.LayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.LayoutPanel.Location = new System.Drawing.Point(-2, 424);
+            this.LayoutPanel.Controls.Add(this.mapBlockBrowser1);
+            this.LayoutPanel.Location = new System.Drawing.Point(-2, 420);
             this.LayoutPanel.Name = "LayoutPanel";
-            this.LayoutPanel.Size = new System.Drawing.Size(318, 314);
+            this.LayoutPanel.Size = new System.Drawing.Size(318, 318);
             this.LayoutPanel.TabIndex = 3;
             // 
             // SearchPaneToolStrip
@@ -292,15 +295,6 @@
             this.panel1.Size = new System.Drawing.Size(858, 715);
             this.panel1.TabIndex = 2;
             // 
-            // modelBrowser1
-            // 
-            this.modelBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.modelBrowser1.Location = new System.Drawing.Point(0, 0);
-            this.modelBrowser1.Name = "modelBrowser1";
-            this.modelBrowser1.Size = new System.Drawing.Size(858, 715);
-            this.modelBrowser1.TabIndex = 0;
-            this.modelBrowser1.Text = "modelBrowser1";
-            // 
             // MainStatusStrip
             // 
             this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -338,6 +332,26 @@
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
             // 
+            // mapBlockBrowser1
+            // 
+            this.mapBlockBrowser1.BlocksFile = null;
+            this.mapBlockBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mapBlockBrowser1.Location = new System.Drawing.Point(0, 0);
+            this.mapBlockBrowser1.MapsFile = null;
+            this.mapBlockBrowser1.Name = "mapBlockBrowser1";
+            this.mapBlockBrowser1.Size = new System.Drawing.Size(318, 318);
+            this.mapBlockBrowser1.TabIndex = 0;
+            this.mapBlockBrowser1.Text = "mapBlockBrowser1";
+            // 
+            // modelBrowser1
+            // 
+            this.modelBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.modelBrowser1.Location = new System.Drawing.Point(0, 0);
+            this.modelBrowser1.Name = "modelBrowser1";
+            this.modelBrowser1.Size = new System.Drawing.Size(858, 715);
+            this.modelBrowser1.TabIndex = 0;
+            this.modelBrowser1.Text = "modelBrowser1";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -357,6 +371,7 @@
             this.SearchResultsPanel.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.LayoutPanel.ResumeLayout(false);
             this.SearchPaneToolStrip.ResumeLayout(false);
             this.SearchPaneToolStrip.PerformLayout();
             this.ViewPaneToolStrip.ResumeLayout(false);
@@ -397,6 +412,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolTip MainTips;
         private System.Windows.Forms.ImageList SearchResultsImageList;
+        private DaggerfallModelling.BrowserControls.MapBlockBrowser mapBlockBrowser1;
     }
 }
 
