@@ -20,17 +20,15 @@ namespace DaggerfallModelling
         private BlocksFile blocksFile;
         private MapsFile mapsFile;
 
-        private bool searchModels = true;
-        private bool searchBlocks = true;
+        private int minSearchLength = 2;
+
+        private bool searchModels = false;
+        private bool searchBlocks = false;
         private bool searchLocations = true;
 
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
-
-        #endregion
-
-        #region Class Structures
 
         #endregion
 
@@ -44,12 +42,6 @@ namespace DaggerfallModelling
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
             mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
-
-            // Turn off auto-discard to speed up searches and layouts.
-            // This increases memory footprint by ~150MB.
-            //arch3dFile.AutoDiscard = false;
-            //blocksFile.AutoDiscard = false;
-            //mapsFile.AutoDiscard = false;
         }
 
         #endregion
@@ -58,11 +50,16 @@ namespace DaggerfallModelling
 
         private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
         {
+            // Start search
             if (e.KeyCode == Keys.Enter)
-            {
-                SearchResultsTreeView.Focus();
                 DoSearch(SearchTextBox.Text);
-            }
+        }
+
+        private void SearchResultsTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            // Handle expanding region nodes
+            if (e.Node.ImageIndex == SearchResultsImageList.Images.IndexOfKey("region"))
+                ExpandRegionNode(e.Node);
         }
 
         #endregion
@@ -71,12 +68,18 @@ namespace DaggerfallModelling
 
         private void DoSearch(string pattern)
         {
-            // Clear existing search results
-            SearchResultsTreeView.Nodes.Clear();
+            // Enforce minimum search length
+            if (pattern.Length < minSearchLength)
+            {
+                string msg = string.Format("Search must be at least {0} characters", minSearchLength);
+                MainTips.Show(msg, SearchTextBox, 0, -45, 2000);
+                return;
+            }
 
             // Disable search controls
             SearchTextBox.Enabled = false;
             ClearSearchButton.Enabled = false;
+            SearchResultsTreeView.Visible = false;
 
             // Drop in searching image
             PictureBox pb = new PictureBox();
@@ -94,12 +97,19 @@ namespace DaggerfallModelling
             if (searchLocations)
                 SearchMaps(ref pattern, out mapsFound);
 
+            // Show search results
+            ShowSearchResults();
+
             // Enable search controls
             SearchTextBox.Enabled = true;
             ClearSearchButton.Enabled = true;
+            SearchResultsTreeView.Visible = true;
 
             // Clear searching image
             SearchResultsPanel.Controls.Remove(pb);
+
+            // Set focus to results tree
+            SearchResultsTreeView.Focus();
         }
 
         private void SearchModels(ref string pattern, out Dictionary<int, uint> searchOut)
@@ -113,25 +123,14 @@ namespace DaggerfallModelling
                 return;
             }
 
-            // Try string to uint
-            uint npattern;
-            try
-            {
-                npattern = uint.Parse(pattern);
-            }
-            catch
-            {
-                searchOut = modelsFound;
-                return;
-            }
-
             // Search all models for a match
             for (int model = 0; model < arch3dFile.Count; model++)
             {
                 Application.DoEvents();
                 DFMesh dfMesh = arch3dFile.GetMesh(model);
-                if (dfMesh.ObjectId == npattern)
-                    modelsFound.Add(model, npattern);
+                string objectId = dfMesh.ObjectId.ToString();
+                if (ContainsCaseInsensitive(ref objectId, ref pattern))
+                    modelsFound.Add(model, dfMesh.ObjectId);
             }
 
             searchOut = modelsFound;
@@ -179,22 +178,228 @@ namespace DaggerfallModelling
                 for (int location = 0; location < dfRegion.LocationCount; location++)
                 {
                     if (ContainsCaseInsensitive(ref dfRegion.MapNames[location], ref pattern))
-                        mapsFound.Add(RegionLocationKey(region, location), dfRegion.MapNames[location]);
+                        mapsFound.Add(RegionLocationToKey(region, location), dfRegion.MapNames[location]);
                 }
             }
 
             searchOut = mapsFound;
         }
 
-        private int RegionLocationKey(int region, int location)
+        private int RegionLocationToKey(int region, int location)
         {
-            return region * 10000 + location;
+            return region * 100000 + location;
+        }
+
+        private void KeyToRegionLocation(int key, out int region, out int location)
+        {
+            int s = key / 100000;
+            region = s;
+            location = key - (s * 100000);
         }
 
         private bool ContainsCaseInsensitive(ref string source, ref string value)
         {
             int results = source.IndexOf(value, StringComparison.CurrentCultureIgnoreCase);
             return results == -1 ? false : true;
+        }
+
+        #endregion
+
+        #region SearchResults Methods
+
+        private void ShowSearchResults()
+        {
+            // Clear existing search results
+            SearchResultsTreeView.Nodes.Clear();
+
+            // Create results nodes
+            TreeNode modelsNode, blocksNode, mapsNode;
+            if (searchModels)
+            {
+                string modelsTitle = string.Format("Models [{0}]", modelsFound.Count);
+                modelsNode = SearchResultsTreeView.Nodes.Add(
+                    "modelsNode",
+                    modelsTitle,
+                    SearchResultsImageList.Images.IndexOfKey("models"),
+                    SearchResultsImageList.Images.IndexOfKey("models"));
+                ShowModelsFound(ref modelsNode);
+            }
+            if (searchBlocks)
+            {
+                string blocksTitle = string.Format("Blocks [{0}]", blocksFound.Count);
+                blocksNode = SearchResultsTreeView.Nodes.Add(
+                    "blocksNode",
+                    blocksTitle,
+                    SearchResultsImageList.Images.IndexOfKey("blocks"),
+                    SearchResultsImageList.Images.IndexOfKey("blocks"));
+                ShowBlocksFound(ref blocksNode);
+            }
+            if (searchLocations)
+            {
+                string locationsTitle = string.Format("Locations [{0}]", mapsFound.Count);
+                mapsNode = SearchResultsTreeView.Nodes.Add(
+                    "locationsNode",
+                    locationsTitle,
+                    SearchResultsImageList.Images.IndexOfKey("locations"),
+                    SearchResultsImageList.Images.IndexOfKey("locations"));
+                ShowMapsFound(ref mapsNode);
+            }
+
+            // Sort results tree
+            SearchResultsTreeView.Sort();
+        }
+
+        private void ShowModelsFound(ref TreeNode node)
+        {
+            foreach (var model in modelsFound)
+            {
+                node.Nodes.Add(model.Value.ToString());
+            }
+        }
+
+        private void ShowBlocksFound(ref TreeNode node)
+        {
+            foreach (var block in blocksFound)
+            {
+                node.Nodes.Add(block.Value);
+            }
+        }
+
+        private void ShowMapsFound(ref TreeNode node)
+        {
+            foreach (var map in mapsFound)
+            {
+                // Tick events to animate spinner
+                Application.DoEvents();
+
+                // Get region and location
+                int region, location;
+                KeyToRegionLocation(map.Key, out region, out location);
+
+                // Add region node
+                TreeNode regionNode = AddRegionNode(region, ref node);
+            }
+        }
+
+        private TreeNode AddRegionNode(int region, ref TreeNode parent)
+        {
+            string regionName = mapsFile.GetRegionName(region);
+            TreeNode regionNode = parent.Nodes[regionName];
+            if (regionNode == null)
+            {
+                // Add new region node
+                string regionTitle = string.Format("{0} [{1}]", regionName, 1);
+                regionNode = parent.Nodes.Add(
+                    regionName,
+                    regionTitle,
+                    SearchResultsImageList.Images.IndexOfKey("region"),
+                    SearchResultsImageList.Images.IndexOfKey("region"));
+                regionNode.Tag = 1;
+
+                // Add single virtual location node to populate later
+                regionNode.Nodes.Add("VIRT");
+            }
+            else
+            {
+                // Use existing region and increment count
+                regionNode.Tag = (int)regionNode.Tag + 1;
+                string regionTitle = string.Format("{0} [{1}]", regionName, (int)regionNode.Tag);
+                regionNode.Text = regionTitle;
+            }
+
+            return regionNode;
+        }
+
+        private void ExpandRegionNode(TreeNode node)
+        {
+            // Does this node only have one member
+            if (node.Nodes.Count != 1)
+                return;
+
+            // Is the only node "VIRT"
+            if (node.Nodes[0].Text != "VIRT")
+                return;
+
+            // Remove virtual node
+            node.Nodes[0].Remove();
+
+            // Get target region
+            int targetRegion = mapsFile.GetRegionIndex(node.Name);
+
+            // Build sorted dictionary of locations belonging to this region
+            SortedDictionary<string, int> sortedLocations = new SortedDictionary<string, int>();
+            foreach (var map in mapsFound)
+            {
+                int region, location;
+                KeyToRegionLocation(map.Key, out region, out location);
+                if (region == targetRegion)
+                {
+                    try
+                    {
+                        sortedLocations.Add(map.Value, map.Key);
+                    }
+                    catch
+                    {
+                        // Duplicate name found, burn it with fire
+                    }
+                }
+            }
+
+            // Add sorted dictionary to tree
+            foreach (var item in sortedLocations)
+                AddLocation(item.Key, item.Value, node);
+        }
+
+        private void AddLocation(string locationName, int key, TreeNode parent)
+        {
+            DFRegion dfRegion = mapsFile.GetRegion(parent.Name);
+            int locationIndex = dfRegion.MapNameLookup[locationName];
+            DFRegion.LocationTypes locationType = dfRegion.MapTable[locationIndex].Type;
+            switch (locationType)
+            {
+                case DFRegion.LocationTypes.DungeonKeep:
+                case DFRegion.LocationTypes.DungeonLabyrinth:
+                case DFRegion.LocationTypes.DungeonRuin:
+                    AddLocationNode(ref locationName, ref key, ref parent, "dungeons");
+                    break;
+
+                case DFRegion.LocationTypes.GraveyardCommon:
+                case DFRegion.LocationTypes.GraveyardForgotten:
+                    AddLocationNode(ref locationName, ref key, ref parent, "graveyards");
+                    break;
+
+                case DFRegion.LocationTypes.HomeFarms:
+                case DFRegion.LocationTypes.HomePoor:
+                case DFRegion.LocationTypes.HomeWealthy:
+                case DFRegion.LocationTypes.HomeYourShips:
+                    AddLocationNode(ref locationName, ref key, ref parent, "homes");
+                    break;
+
+                case DFRegion.LocationTypes.ReligionCoven:
+                case DFRegion.LocationTypes.ReligionCult:
+                case DFRegion.LocationTypes.ReligionTemple:
+                    AddLocationNode(ref locationName, ref key, ref parent, "religions");
+                    break;
+
+                case DFRegion.LocationTypes.Tavern:
+                    AddLocationNode(ref locationName, ref key, ref parent, "taverns");
+                    break;
+
+                case DFRegion.LocationTypes.TownCity:
+                case DFRegion.LocationTypes.TownHamlet:
+                case DFRegion.LocationTypes.TownVillage:
+                    AddLocationNode(ref locationName, ref key, ref parent, "cities");
+                    break;
+            }
+        }
+
+        private void AddLocationNode(ref string name, ref int key, ref TreeNode parent, string imageKey)
+        {
+            parent.Nodes.Add(
+                key.ToString(),
+                name,
+                SearchResultsImageList.Images.IndexOfKey(imageKey),
+                SearchResultsImageList.Images.IndexOfKey(imageKey));
         }
 
         #endregion

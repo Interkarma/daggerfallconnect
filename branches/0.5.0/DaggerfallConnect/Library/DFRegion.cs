@@ -61,6 +61,34 @@ namespace DaggerfallConnect
         #region Child Structures
 
         /// <summary>
+        /// Describes location types that appear on the travel map.
+        /// </summary>
+        public enum LocationTypes
+        {
+            DungeonLabyrinth = 132,		// Dungeons
+            DungeonKeep = 135,
+            DungeonRuin = 138,
+
+            GraveyardCommon = 172,		// Graveyards
+            GraveyardForgotten = 140,
+
+            HomeFarms = 163,		    // Homes
+            HomeWealthy = 168,
+            HomePoor = 171,
+            HomeYourShips = 174,
+
+            Tavern = 166,		        // Taverns
+
+            ReligionTemple = 165,		// Temples
+            ReligionCult = 169,
+            ReligionCoven = 141,
+
+            TownCity = 160,		        // Towns
+            TownHamlet = 161,
+            TownVillage = 162,
+        }
+
+        /// <summary>
         /// Describes a single location.
         /// </summary>
         public struct RegionMapTable
@@ -82,7 +110,7 @@ namespace DaggerfallConnect
             public UInt32 Longitude;
 
             /// <summary>Type value read from bitfield.</summary>
-            public UInt32 Type;
+            public LocationTypes Type;
 
             /// <summary>Latitude of this location.</summary>
             public UInt16 Latitude;

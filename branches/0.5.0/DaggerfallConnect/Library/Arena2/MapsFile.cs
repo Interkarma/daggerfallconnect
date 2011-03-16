@@ -569,7 +569,7 @@ namespace DaggerfallConnect.Arena2
                 bitfield = Reader.ReadUInt32();
                 Regions[Region].DFRegion.MapTable[i].LongitudeTypeBitfield = bitfield;
                 Regions[Region].DFRegion.MapTable[i].Longitude = bitfield & 0x1ffff;
-                Regions[Region].DFRegion.MapTable[i].Type = bitfield >> 17;
+                Regions[Region].DFRegion.MapTable[i].Type = (DFRegion.LocationTypes)(bitfield >> 17);
                 Regions[Region].DFRegion.MapTable[i].Latitude = Reader.ReadUInt16();
                 Regions[Region].DFRegion.MapTable[i].Unknown2 = Reader.ReadUInt16();
                 Regions[Region].DFRegion.MapTable[i].Unknown3 = Reader.ReadUInt32();
