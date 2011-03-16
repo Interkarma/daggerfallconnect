@@ -309,6 +309,31 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Gets block AutoMap by name.
+        /// </summary>
+        /// <param name="Name">Name of block.</param>
+        /// <returns>DFBitmap object.</returns>
+        public DFBitmap GetBlockAutoMap(string Name)
+        {
+            DFBlock dfBlock = GetBlock(Name);
+            if (string.IsNullOrEmpty(dfBlock.Name))
+                return new DFBitmap();
+
+            DFBitmap dfBitmap = new DFBitmap();
+            dfBitmap.Data = dfBlock.RmbBlock.FldHeader.AutoMapData;
+            dfBitmap.Width = 64;
+            dfBitmap.Height = 64;
+            dfBitmap.Stride = 64;
+            dfBitmap.Format = DFBitmap.Formats.Indexed;
+
+            return dfBitmap;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
         /// Not all RMB block names can be resolved.
         ///  This method attempts to find a suitable match for these cases
         ///  by matching prefix and suffix of failed block name to a 
@@ -329,27 +354,6 @@ namespace DaggerfallConnect.Arena2
             }
 
             return found;
-        }
-
-        /// <summary>
-        /// Gets block AutoMap by name.
-        /// </summary>
-        /// <param name="Name">Name of block.</param>
-        /// <returns>DFBitmap object.</returns>
-        public DFBitmap GetBlockAutoMap(string Name)
-        {
-            DFBlock dfBlock = GetBlock(Name);
-            if (string.IsNullOrEmpty(dfBlock.Name))
-                return new DFBitmap();
-
-            DFBitmap dfBitmap = new DFBitmap();
-            dfBitmap.Data = dfBlock.RmbBlock.FldHeader.AutoMapData;
-            dfBitmap.Width = 64;
-            dfBitmap.Height = 64;
-            dfBitmap.Stride = 64;
-            dfBitmap.Format = DFBitmap.Formats.Indexed;
-
-            return dfBitmap;
         }
 
         #endregion
