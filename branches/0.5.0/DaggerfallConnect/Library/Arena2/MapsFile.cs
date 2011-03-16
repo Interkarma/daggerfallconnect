@@ -533,19 +533,19 @@ namespace DaggerfallConnect.Arena2
         {
             // Location count
             Reader.BaseStream.Position = 0;
-            Regions[Region].DFRegion.MapNames.LocationCount = Reader.ReadUInt32();
+            Regions[Region].DFRegion.LocationCount = Reader.ReadUInt32();
 
             // Read names
-            Regions[Region].DFRegion.MapNames.LocationNames = new String[Regions[Region].DFRegion.MapNames.LocationCount];
+            Regions[Region].DFRegion.MapNames = new String[Regions[Region].DFRegion.LocationCount];
             Regions[Region].DFRegion.MapNameLookup = new System.Collections.Generic.Dictionary<string, int>();
-            for (int i = 0; i < Regions[Region].DFRegion.MapNames.LocationCount; i++)
+            for (int i = 0; i < Regions[Region].DFRegion.LocationCount; i++)
             {
                 // Read map name data
-                Regions[Region].DFRegion.MapNames.LocationNames[i] = Regions[Region].MapNames.ReadCStringSkip(Reader, 0, 32);
+                Regions[Region].DFRegion.MapNames[i] = Regions[Region].MapNames.ReadCStringSkip(Reader, 0, 32);
 
                 // Add to dictionary
-                if (!Regions[Region].DFRegion.MapNameLookup.ContainsKey(Regions[Region].DFRegion.MapNames.LocationNames[i]))
-                    Regions[Region].DFRegion.MapNameLookup.Add(Regions[Region].DFRegion.MapNames.LocationNames[i], i);
+                if (!Regions[Region].DFRegion.MapNameLookup.ContainsKey(Regions[Region].DFRegion.MapNames[i]))
+                    Regions[Region].DFRegion.MapNameLookup.Add(Regions[Region].DFRegion.MapNames[i], i);
             }
         }
 
@@ -559,9 +559,9 @@ namespace DaggerfallConnect.Arena2
             // Read map table for each location
             UInt32 bitfield;
             Reader.BaseStream.Position = 0;
-            Regions[Region].DFRegion.MapTable = new DFRegion.RegionMapTable[Regions[Region].DFRegion.MapNames.LocationCount];
+            Regions[Region].DFRegion.MapTable = new DFRegion.RegionMapTable[Regions[Region].DFRegion.LocationCount];
             Regions[Region].DFRegion.MapIdLookup = new System.Collections.Generic.Dictionary<int, int>();
-            for (int i = 0; i < Regions[Region].DFRegion.MapNames.LocationCount; i++)
+            for (int i = 0; i < Regions[Region].DFRegion.LocationCount; i++)
             {
                 // Read map table data
                 Regions[Region].DFRegion.MapTable[i].MapId = Reader.ReadInt32();
@@ -591,10 +591,10 @@ namespace DaggerfallConnect.Arena2
         {
             // Position reader at location record by reading offset and adding to end of offset table
             Reader.BaseStream.Position = Location * 4;
-            Reader.BaseStream.Position = (Regions[Region].DFRegion.MapNames.LocationCount * 4) + Reader.ReadUInt32();
+            Reader.BaseStream.Position = (Regions[Region].DFRegion.LocationCount * 4) + Reader.ReadUInt32();
 
             // Store name
-            dfLocation.Name = Regions[Region].DFRegion.MapNames.LocationNames[Location];
+            dfLocation.Name = Regions[Region].DFRegion.MapNames[Location];
 
             // Read LocationRecordElement
             ReadLocationRecordElement(ref Reader, Region, ref dfLocation.Exterior.RecordElement);

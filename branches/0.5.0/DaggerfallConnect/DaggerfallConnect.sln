@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial_XNASeries_3", "Tut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_XNALibrary", "Tools\XNALibrary\Tool_XNALibrary.csproj", "{0ECB9CDB-3312-4ECF-9531-56AD53ABA796}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallModelling", "Tools\DaggerfallModelling\Tool_DaggerfallModelling.csproj", "{7E721B19-62EE-4C6F-BCE8-A8A973662D19}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -183,6 +185,16 @@ Global
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|Any CPU.ActiveCfg = Release|x86
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{13D69ADB-C63D-40F9-898C-83CBDBFA5057}.Release|x86.ActiveCfg = Release|x86
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

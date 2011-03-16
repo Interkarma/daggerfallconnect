@@ -169,7 +169,7 @@ namespace XNALibrary
         public string GetMapKey(int regionIndex, int locationIndex)
         {
             DFRegion dfRegion = mapsFile.GetRegion(regionIndex);
-            return GetMapKey(mapsFile.GetRegionName(regionIndex), dfRegion.MapNames.LocationNames[locationIndex]);
+            return GetMapKey(mapsFile.GetRegionName(regionIndex), dfRegion.MapNames[locationIndex]);
         }
 
         /// <summary>
@@ -264,12 +264,12 @@ namespace XNALibrary
         {
             // Get region. Some regions have zero locations and we just ignore these.
             DFRegion dfRegion = mapsFile.GetRegion(regionIndex);
-            if (dfRegion.MapNames.LocationCount == 0)
+            if (dfRegion.LocationCount == 0)
                 return string.Empty;
 
             // Get names
             string regionName = mapsFile.GetRegionName(regionIndex);
-            string locationName = mapsFile.GetRegion(regionIndex).MapNames.LocationNames[locationIndex];
+            string locationName = mapsFile.GetRegion(regionIndex).MapNames[locationIndex];
 
             // Look for existing map data
             string mapKey = GetMapKey(regionName, locationName);

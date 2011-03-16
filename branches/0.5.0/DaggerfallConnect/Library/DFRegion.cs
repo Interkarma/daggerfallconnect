@@ -29,9 +29,15 @@ namespace DaggerfallConnect
         public String Name;
 
         /// <summary>
+        /// Number of locations in this region. Not all regions have locations.
+        ///  Always check LocationCount before working with MapNames array.
+        /// </summary>
+        public UInt32 LocationCount;
+
+        /// <summary>
         /// Contains the names of all locations for this region.
         /// </summary>
-        public RegionMapNames MapNames;
+        public string[] MapNames;
 
         /// <summary>
         /// Contains extended data about each location in this region.
@@ -53,18 +59,6 @@ namespace DaggerfallConnect
         #endregion
 
         #region Child Structures
-
-        /// <summary>
-        /// Stores location counts and names for a region.
-        /// </summary>
-        public struct RegionMapNames
-        {
-            /// <summary>Number of locations in this region.</summary>
-            public UInt32 LocationCount;
-
-            /// <summary>Array of location names in this region.</summary>
-            public String[] LocationNames;
-        }
 
         /// <summary>
         /// Describes a single location.
