@@ -23,7 +23,7 @@ namespace DaggerfallModelling
         private int minSearchLength = 2;
 
         private bool searchModels = false;
-        private bool searchBlocks = true;
+        private bool searchBlocks = false;
         private bool searchLocations = true;
 
         private Dictionary<int, uint> modelsFound;
@@ -52,11 +52,15 @@ namespace DaggerfallModelling
 
         #region Form Events
 
-        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void SearchTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Start search
-            if (e.KeyCode == Keys.Enter)
+            // Start search on enter key
+            if (e.KeyChar == 13)
+            {
+                e.Handled = true;
                 DoSearch(SearchTextBox.Text);
+            }
+
         }
 
         private void SearchResultsTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
@@ -77,10 +81,40 @@ namespace DaggerfallModelling
                     if (int.TryParse(e.Node.Name, out key))
                     {
                         KeyToRegionLocation(key, out region, out location);
-                        mapBlockBrowser1.SetLocation(region, location);
+                        mapBlockBrowser1.ShowLocation(region, location);
                     }
                 }
             }
+        }
+
+        private void SearchModelsToolStripButton_Click(object sender, EventArgs e)
+        {
+            searchModels = true;
+            searchBlocks = false;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = true;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = false;
+        }
+
+        private void SearchBlocksToolStripButton_Click(object sender, EventArgs e)
+        {
+            searchModels = false;
+            searchBlocks = true;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = true;
+            SearchLocationsToolStripButton.Checked = false;
+        }
+
+        private void SearchLocationsToolStripButton_Click(object sender, EventArgs e)
+        {
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
         }
 
         #endregion
@@ -274,7 +308,11 @@ namespace DaggerfallModelling
         {
             foreach (var model in modelsFound)
             {
-                node.Nodes.Add(model.Value.ToString());
+                node.Nodes.Add(
+                    model.Key.ToString(),
+                    model.Value.ToString(),
+                    SearchResultsImageList.Images.IndexOfKey("models"),
+                    SearchResultsImageList.Images.IndexOfKey("models"));
             }
         }
 
@@ -282,7 +320,11 @@ namespace DaggerfallModelling
         {
             foreach (var block in blocksFound)
             {
-                node.Nodes.Add(block.Value);
+                node.Nodes.Add(
+                    block.Key.ToString(),
+                    block.Value,
+                    SearchResultsImageList.Images.IndexOfKey("blocks"),
+                    SearchResultsImageList.Images.IndexOfKey("blocks"));
             }
         }
 

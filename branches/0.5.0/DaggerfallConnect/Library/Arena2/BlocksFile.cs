@@ -300,6 +300,7 @@ namespace DaggerfallConnect.Arena2
             int index = GetBlockIndex(Name);
             if (index == -1)
             {
+                // Not found, search for alternate name
                 string alternateName = SearchAlternateRMBName(ref Name);
                 if (!string.IsNullOrEmpty(alternateName))
                     index = GetBlockIndex(alternateName);
@@ -312,19 +313,32 @@ namespace DaggerfallConnect.Arena2
         /// Gets block AutoMap by name.
         /// </summary>
         /// <param name="Name">Name of block.</param>
+        /// <param name="RemoveGroundFlats">Filters ground flat "speckles" from the AutoMap.</param>
         /// <returns>DFBitmap object.</returns>
-        public DFBitmap GetBlockAutoMap(string Name)
+        public DFBitmap GetBlockAutoMap(string Name, bool RemoveGroundFlats)
         {
+            // Test block is valid
             DFBlock dfBlock = GetBlock(Name);
             if (string.IsNullOrEmpty(dfBlock.Name))
                 return new DFBitmap();
 
+            // Create DFBitmap and copy data
             DFBitmap dfBitmap = new DFBitmap();
             dfBitmap.Data = dfBlock.RmbBlock.FldHeader.AutoMapData;
             dfBitmap.Width = 64;
             dfBitmap.Height = 64;
             dfBitmap.Stride = 64;
             dfBitmap.Format = DFBitmap.Formats.Indexed;
+
+            // Filter ground flats if specified
+            if (RemoveGroundFlats)
+            {
+                for (int i = 0; i < dfBitmap.Data.Length; i++)
+                {
+                    if (dfBitmap.Data[i] == 0xfb)
+                        dfBitmap.Data[i] = 0x00;
+                }
+            }
 
             return dfBitmap;
         }

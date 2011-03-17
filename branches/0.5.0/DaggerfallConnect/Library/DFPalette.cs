@@ -149,22 +149,38 @@ namespace DaggerfallConnect
         /// </summary>
         public void MakeAutomap()
         {
-            // Reset palette
-            Fill(0xff, 0, 0);
+            // Fill to most common colour
+            Fill(69, 60, 40);
 
-            // Set colours. This needs to be expanded and refined, but will do for now.
-            Set(0x00, 0, 0, 0);
-            Set(0x03, 240, 120, 0);
-            Set(0x10, 0, 200, 0);
-            Set(0x11, 100, 100, 50);
-            Set(0x12, 100, 100, 50);
-            Set(0x13, 100, 100, 50);
-            Set(0x14, 100, 100, 50);
-            Set(0x15, 100, 100, 50);
-            Set(0x16, 100, 100, 50);
-            Set(0x0e, 1, 1, 1);
-            Set(0xfa, 0, 0, 200);
-            Set(0xfb, 0, 0, 200);
+            // Guild halls
+            Set(12, 69, 125, 195);
+
+            // Temples
+            Set(15, 69, 125, 195);
+
+            // Taverns
+            Set(16, 85, 117, 48);
+
+            // Stores
+            Set(1, 190, 85, 24);       // Alchemist
+            Set(3, 190, 85, 24);       // Amorer
+            Set(4, 190, 85, 24);       // Bank
+            Set(6, 190, 85, 24);       // Bookseller
+            Set(7, 190, 85, 24);       // Clothing Store
+            Set(8, 190, 85, 24);       // Furniture Store
+            Set(9, 190, 85, 24);       // Gem Store
+            Set(10, 190, 85, 24);      // General Store
+            Set(11, 190, 85, 24);      // Library
+            Set(13, 190, 85, 24);      // Pawn Shop
+            Set(14, 190, 85, 24);      // Weapon Smith
+
+            // Special 1-4
+            //Set(0x75, 255, 0, 0);
+            //Set(0xe0, 255, 0, 0);
+            //Set(0xfa, 255, 0, 0);
+
+            // Ground flats
+            Set(0xfb, 0, 0, 0);
         }
 
         /// <summary>

@@ -23,6 +23,7 @@ namespace DaggerfallModelling.BrowserControls
 
         private BlocksFile blocksFile;
         private MapsFile mapsFile;
+        private DFBlock dfBlock;
         private DFLocation dfLocation;
 
         private int mapSquares = -1;
@@ -31,6 +32,16 @@ namespace DaggerfallModelling.BrowserControls
         private int startX;
         private int startY;
         private Bitmap locationBitmap;
+
+        #endregion
+
+        #region Class Structures
+
+        enum ViewTypes
+        {
+            Block,
+            Map,
+        }
 
         #endregion
 
@@ -65,7 +76,7 @@ namespace DaggerfallModelling.BrowserControls
 
         #region Public Methods
 
-        public void SetLocation(int region, int location)
+        public void ShowLocation(int region, int location)
         {
             // Get location
             dfLocation = mapsFile.GetLocation(region, location);
@@ -88,6 +99,10 @@ namespace DaggerfallModelling.BrowserControls
             CreateLocationBitmap();
 
             this.Invalidate();
+        }
+
+        public void ShowBlock(int block)
+        {
         }
 
         #endregion
@@ -195,6 +210,16 @@ namespace DaggerfallModelling.BrowserControls
             int ypos = locationBitmap.Height - gridSpacingY;
             Graphics gr = Graphics.FromImage(locationBitmap);
 
+            // Draw automap background
+            //for (int y = 0; y < mapSquares; y++)
+            //{
+            //    for (int x = 0; x < mapSquares; x++)
+            //    {
+            //        gr.DrawImage(Properties.Resources.MapBackground, x * gridSpacingX, y * gridSpacingY, gridSpacingX, gridSpacingY);
+            //    }
+            //}
+
+            // Draw automap tiles
             DFManualImage dfManualImage = new DFManualImage();
             dfManualImage.Palette.MakeAutomap();
             for (int y = 0; y < dfLocation.Exterior.ExteriorData.Height; y++)
@@ -202,7 +227,7 @@ namespace DaggerfallModelling.BrowserControls
                 for (int x = 0; x < dfLocation.Exterior.ExteriorData.Width; x++)
                 {
                     string blockName = mapsFile.GetRmbBlockName(ref dfLocation, x, y);
-                    dfManualImage.DFBitmap = blocksFile.GetBlockAutoMap(blockName);
+                    dfManualImage.DFBitmap = blocksFile.GetBlockAutoMap(blockName, true);
 
                     Bitmap bm = dfManualImage.GetManagedBitmap(0, 0, false, true);
                     gr.DrawImage(bm, xpos, ypos, gridSpacingY, gridSpacingY);

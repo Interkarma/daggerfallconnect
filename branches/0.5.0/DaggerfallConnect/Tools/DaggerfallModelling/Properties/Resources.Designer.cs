@@ -172,6 +172,13 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap MapBackground {
+            get {
+                object obj = ResourceManager.GetObject("MapBackground", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap ReligionsFilter {
             get {
                 object obj = ResourceManager.GetObject("ReligionsFilter", resourceCulture);
