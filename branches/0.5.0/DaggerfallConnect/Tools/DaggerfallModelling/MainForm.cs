@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
+using DaggerfallModelling.BrowserControls;
 
 namespace DaggerfallModelling
 {
@@ -82,9 +83,13 @@ namespace DaggerfallModelling
                     {
                         KeyToRegionLocation(key, out region, out location);
                         mapBlockBrowser1.ShowLocation(region, location);
+                        return;
                     }
                 }
             }
+
+            // Clear map block browser
+            mapBlockBrowser1.Clear();
         }
 
         private void SearchModelsToolStripButton_Click(object sender, EventArgs e)
@@ -117,6 +122,39 @@ namespace DaggerfallModelling
             SearchLocationsToolStripButton.Checked = true;
         }
 
+        private void mapBlockBrowser1_ModeChanged(object sender, DaggerfallModelling.BrowserControls.MapBlockBrowser.ModeChangedEventArgs e)
+        {
+            // Enable mode changes based on allowed modes
+            if (e.CityModeAllowed) CityModeToolStripButton.Enabled = true; else CityModeToolStripButton.Enabled = false;
+            if (e.DungeonModeAllowed) DungeonModeToolStripButton.Enabled = true; else DungeonModeToolStripButton.Enabled = false;
+            if (e.BlockModeAllowed) BlockModeToolStripButton.Enabled = true; else BlockModeToolStripButton.Enabled = false;
+
+            // Uncheck all modes
+            switch (e.ViewMode)
+            {
+                case MapBlockBrowser.ViewModes.City:
+                    CityModeToolStripButton.Checked = true;
+                    DungeonModeToolStripButton.Checked = false;
+                    BlockModeToolStripButton.Checked = false;
+                    break;
+                case MapBlockBrowser.ViewModes.Dungeon:
+                    CityModeToolStripButton.Checked = false;
+                    DungeonModeToolStripButton.Checked = true;
+                    BlockModeToolStripButton.Checked = false;
+                    break;
+                case MapBlockBrowser.ViewModes.Block:
+                    CityModeToolStripButton.Checked = false;
+                    DungeonModeToolStripButton.Checked = false;
+                    BlockModeToolStripButton.Checked = true;
+                    break;
+                default:
+                    CityModeToolStripButton.Checked = false;
+                    DungeonModeToolStripButton.Checked = false;
+                    BlockModeToolStripButton.Checked = false;
+                    break;
+            }
+        }
+
         #endregion
 
         #region Search Methods
@@ -130,6 +168,9 @@ namespace DaggerfallModelling
                 MainTips.Show(msg, SearchTextBox, 0, -45, 2000);
                 return;
             }
+
+            // Clear map block browser
+            mapBlockBrowser1.Clear();
 
             // Disable search controls
             SearchTextBox.Enabled = false;

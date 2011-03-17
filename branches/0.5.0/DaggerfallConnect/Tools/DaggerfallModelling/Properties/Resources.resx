@@ -142,20 +142,32 @@
   <data name="house" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\house.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="accept" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\accept.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="control_stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\control_stop.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="accept" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\accept.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CitiesFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CitiesFilter.gif;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="world" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\world.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="TavernsFilter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TavernsFilter.gif;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="disk_multiple" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\disk_multiple.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MapBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MapBackground.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_left.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="brick" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\brick.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -172,10 +184,10 @@
   <data name="lightbulb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\lightbulb.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="world" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\world.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="MapBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\MapBackground.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="arrow_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_right.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

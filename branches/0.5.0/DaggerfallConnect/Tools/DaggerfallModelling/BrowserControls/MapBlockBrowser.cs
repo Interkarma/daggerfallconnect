@@ -33,14 +33,21 @@ namespace DaggerfallModelling.BrowserControls
         private int startY;
         private Bitmap locationBitmap;
 
+        private bool cityModeAllowed = false;
+        private bool dungeonModeAllowed = false;
+        private bool blockModeAllowed = false;
+        private ViewModes viewMode = ViewModes.None;
+
         #endregion
 
         #region Class Structures
 
-        enum ViewTypes
+        public enum ViewModes
         {
+            None,
+            City,
+            Dungeon,
             Block,
-            Map,
         }
 
         #endregion
@@ -74,7 +81,46 @@ namespace DaggerfallModelling.BrowserControls
 
         #endregion
 
+        #region ModeChanged Event
+
+        public class ModeChangedEventArgs
+        {
+            public bool CityModeAllowed;
+            public bool DungeonModeAllowed;
+            public bool BlockModeAllowed;
+            public ViewModes ViewMode;
+        }
+
+        public delegate void ModeChangedEventHandler(object sender, ModeChangedEventArgs e);
+        public event ModeChangedEventHandler ModeChanged;
+
+        protected virtual void RaiseModeChangedEvent()
+        {
+            // Populate event args based on modes
+            ModeChangedEventArgs e = new ModeChangedEventArgs();
+            e.CityModeAllowed = cityModeAllowed;
+            e.DungeonModeAllowed = dungeonModeAllowed;
+            e.BlockModeAllowed = blockModeAllowed;
+            e.ViewMode = viewMode;
+
+            // Raise event
+            ModeChanged(this, e);
+        }
+
+        #endregion
+
         #region Public Methods
+
+        public void Clear()
+        {
+            // Clear connect resources
+            dfLocation = new DFLocation();
+            dfBlock = new DFBlock();
+
+            // Reset modes and redraw
+            SetModes();
+            this.Invalidate();
+        }
 
         public void ShowLocation(int region, int location)
         {
@@ -97,6 +143,9 @@ namespace DaggerfallModelling.BrowserControls
 
             // Create location image
             CreateLocationBitmap();
+
+            // Enable modes
+            SetModes();
 
             this.Invalidate();
         }
@@ -121,14 +170,15 @@ namespace DaggerfallModelling.BrowserControls
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
+            // Handle design mode
             if (DesignMode)
             {
                 base.OnPaintBackground(e);
                 return;
             }
 
-            // Handle location not set
-            if (string.IsNullOrEmpty(dfLocation.Name))
+            // Handle not ready
+            if (!IsReady())
             {
                 base.OnPaintBackground(e);
                 return;
@@ -150,12 +200,8 @@ namespace DaggerfallModelling.BrowserControls
                 return;
             }
 
-            // Handle connect objects null
-            if (blocksFile == null || mapsFile == null)
-                return;
-
-            // Handle location not set
-            if (string.IsNullOrEmpty(dfLocation.Name))
+            // Handle not ready
+            if (!IsReady())
                 return;
 
             // Draw location bitmap
@@ -201,6 +247,49 @@ namespace DaggerfallModelling.BrowserControls
         #endregion
 
         #region Private Methods
+
+        private bool IsReady()
+        {
+            // Handle connect objects null
+            if (blocksFile == null || mapsFile == null)
+                return false;
+
+            // Handle location not set
+            if (string.IsNullOrEmpty(dfLocation.Name))
+                return false;
+
+            return true;
+        }
+
+        private void SetModes()
+        {
+            if (!IsReady())
+            {
+                // Everything off
+                cityModeAllowed = false;
+                blockModeAllowed = false;
+                dungeonModeAllowed = false;
+                viewMode = ViewModes.None;
+                RaiseModeChangedEvent();
+                return;
+            }
+
+            // Always enable city mode and block mode
+            cityModeAllowed = true;
+            blockModeAllowed = true;
+
+            // Only enable dungeon mode when the location has a dungeon
+            if (dfLocation.HasDungeon)
+                dungeonModeAllowed = true;
+            else
+                dungeonModeAllowed = false;
+
+            // Always start in city mode
+            viewMode = ViewModes.City;
+
+            // Raise event to update form
+            RaiseModeChangedEvent();
+        }
 
         private void CreateLocationBitmap()
         {
