@@ -45,6 +45,11 @@ namespace DaggerfallConnect
         /// </summary>
         public RdbBlockDesc RdbBlock;
 
+        /// <summary>
+        /// Contains RDI (unknown) block data.
+        /// </summary>
+        public RdiBlockDesc RdiBlock;
+
         #endregion
 
         #region Child Structures
@@ -65,6 +70,22 @@ namespace DaggerfallConnect
 
             /// <summary>RDI blocks are currently unsupported and should be ignored.</summary>
             Rdi,
+        }
+
+        /// <summary>
+        /// RDB block types, derived from first letter of block name.
+        ///  RdbTypes.Start is a special case as this can only be derived from
+        ///  map data. The value is here in case you want to track start blocks.
+        /// </summary>
+        public enum RdbTypes
+        {
+            Unknown,
+            Border,
+            Normal,
+            Wet,
+            Quest,
+            Mausoleum,
+            Start,
         }
 
         #endregion
@@ -582,7 +603,7 @@ namespace DaggerfallConnect
             /// <summary>List of 750 sequential model indices.</summary>
             public RdbModelReference[] ModelReferenceList;
 
-            /// <summary>List of 750 sequential units of unknown data.</summary>
+            /// <summary>List of 750 4-byte values of unknown use.</summary>
             internal RdbModelData[] ModelDataList;
 
             /// <summary>Object section header.</summary>
@@ -810,6 +831,22 @@ namespace DaggerfallConnect
 
             /// <summary>The type of action to perform.</summary>
             public RdbActionType ActionType;
+        }
+
+        #endregion
+
+        #region RDI Structures
+
+        /// <summary>
+        /// Monolithic RDI bytes.
+        ///  Format of Data is currently unknown.
+        /// </summary>
+        public struct RdiBlockDesc
+        {
+            /// <summary>
+            /// 512 bytes of unknown data.
+            /// </summary>
+            public byte[] Data;
         }
 
         #endregion

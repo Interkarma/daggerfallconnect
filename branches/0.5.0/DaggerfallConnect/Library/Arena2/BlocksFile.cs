@@ -169,6 +169,30 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Get RDB block type (quest, normal, wet, etc.)
+        ///  Does not return RdbTypes.Start as this can only be derived from
+        ///  map data.
+        /// </summary>
+        /// <param name="BlockName">Name of RDB block.</param>
+        /// <returns>DFBlock.RdbTypes object.</returns>
+        public DFBlock.RdbTypes GetRdbType(string BlockName)
+        {
+            // Determine block type
+            if (BlockName.StartsWith("B"))
+                return DFBlock.RdbTypes.Border;
+            else if (BlockName.StartsWith("W"))
+                return DFBlock.RdbTypes.Wet;
+            else if (BlockName.StartsWith("S"))
+                return DFBlock.RdbTypes.Quest;
+            else if (BlockName.StartsWith("M"))
+                return DFBlock.RdbTypes.Mausoleum;
+            else if (BlockName.StartsWith("N"))
+                return DFBlock.RdbTypes.Normal;
+            else
+                return DFBlock.RdbTypes.Unknown;
+        }
+
+        /// <summary>
         /// Gets index of block with specified name. Does not change the currently loaded block.
         ///  Uses a dictionary to map name to index so this method will be faster on subsequent calls.
         /// </summary>
@@ -407,6 +431,7 @@ namespace DaggerfallConnect.Arena2
             Reader.BaseStream.Position = 0;
             if (Blocks[Block].DFBlock.Type == DFBlock.BlockTypes.Rmb)
             {
+                // Read RMB data
                 ReadRmbFldHeader(ref Reader, Block);
                 ReadRmbBlockData(ref Reader, Block);
                 ReadRmbMisc3dObjects(ref Reader, Block);
@@ -414,6 +439,7 @@ namespace DaggerfallConnect.Arena2
             }
             else if (Blocks[Block].DFBlock.Type == DFBlock.BlockTypes.Rdb)
             {
+                // Read RDB data
                 ReadRdbHeader(ref Reader, Block);
                 ReadRdbModelReferenceList(ref Reader, Block);
                 ReadRdbModelDataList(ref Reader, Block);
@@ -423,6 +449,8 @@ namespace DaggerfallConnect.Arena2
             }
             else if (Blocks[Block].DFBlock.Type == DFBlock.BlockTypes.Rdi)
             {
+                // Read RDI data
+                ReadRdiRecord(ref Reader, Block);
             }
             else
             {
@@ -759,7 +787,7 @@ namespace DaggerfallConnect.Arena2
 
         private void ReadRdbModelDataList(ref BinaryReader Reader, int Block)
         {
-            // Read model data list
+            // Read unknown model data list
             Blocks[Block].DFBlock.RdbBlock.ModelDataList = new DFBlock.RdbModelData[750];
             for (int i = 0; i < 750; i++)
             {
@@ -945,6 +973,21 @@ namespace DaggerfallConnect.Arena2
             RdbObject.Resources.LightResource.Unknown1 = Reader.ReadUInt32();
             RdbObject.Resources.LightResource.Unknown2 = Reader.ReadUInt32();
             RdbObject.Resources.LightResource.Unknown3 = Reader.ReadUInt16();
+        }
+
+        #endregion
+
+        #region RDI Readers
+
+        /// <summary>
+        /// RDI data is currently an unknown format of 512 bytes in length.
+        /// </summary>
+        /// <param name="Reader">BinaryReader to start of data.</param>
+        /// <param name="Block">Block index.</param>
+        private void ReadRdiRecord(ref BinaryReader Reader, int Block)
+        {
+            // Each RDI block is 512 bytes of unknown data
+            Blocks[Block].DFBlock.RdiBlock.Data = Reader.ReadBytes(512);
         }
 
         #endregion

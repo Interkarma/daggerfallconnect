@@ -296,10 +296,10 @@ namespace DaggerfallConnect
         public struct DungeonBlock
         {
             /// <summary>X position of block.</summary>
-            public Byte X;
+            public SByte X;
             
             /// <summary>Y position of block.</summary>
-            public Byte Z;
+            public SByte Z;
 
             /// <summary>Bitfield containing BlockNumber, start bit, and BlockIndex.</summary>
             public UInt16 BlockNumberStartIndexBitfield;

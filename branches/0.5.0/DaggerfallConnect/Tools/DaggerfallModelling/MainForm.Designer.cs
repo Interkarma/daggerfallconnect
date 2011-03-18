@@ -64,7 +64,6 @@
             this.SearchModelsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchBlocksToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchLocationsToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.mapBlockBrowser1 = new DaggerfallModelling.BrowserControls.MapBlockBrowser();
             this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
@@ -212,7 +211,6 @@
             // ViewPaneToolStrip
             // 
             this.ViewPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton1,
             this.AboutToolStripButton});
             this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
             this.ViewPaneToolStrip.Name = "ViewPaneToolStrip";
@@ -247,7 +245,7 @@
             // toolStripStatusLabel2
             // 
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(837, 17);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(825, 17);
             this.toolStripStatusLabel2.Spring = true;
             // 
             // ActionProgressBar
@@ -301,10 +299,10 @@
             // 
             // toolStripStatusLabel1
             // 
-            this.toolStripStatusLabel1.Image = global::DaggerfallModelling.Properties.Resources.lightbulb_off;
+            this.toolStripStatusLabel1.Image = global::DaggerfallModelling.Properties.Resources.lightbulb;
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(180, 17);
-            this.toolStripStatusLabel1.Text = "Please set your Arena2 Folder.";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(274, 17);
+            this.toolStripStatusLabel1.Text = "C:\\dosgames\\DAGGER\\ARENA2 [HARDCODED]";
             // 
             // ClearSearchButton
             // 
@@ -398,7 +396,7 @@
             // SetArena2ToolStripButton
             // 
             this.SetArena2ToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SetArena2ToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.lightbulb_off;
+            this.SetArena2ToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.lightbulb;
             this.SetArena2ToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SetArena2ToolStripButton.Name = "SetArena2ToolStripButton";
             this.SetArena2ToolStripButton.Size = new System.Drawing.Size(23, 22);
@@ -435,15 +433,6 @@
             this.SearchLocationsToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.SearchLocationsToolStripButton.Text = "Search Locations";
             this.SearchLocationsToolStripButton.Click += new System.EventHandler(this.SearchLocationsToolStripButton_Click);
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton1.Text = "toolStripButton1";
             // 
             // AboutToolStripButton
             // 
@@ -523,7 +512,6 @@
         private System.Windows.Forms.Panel LayoutPanel;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStrip ViewPaneToolStrip;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripProgressBar ActionProgressBar;
         private System.Windows.Forms.ToolStripButton AboutToolStripButton;

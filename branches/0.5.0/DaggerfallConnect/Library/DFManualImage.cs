@@ -226,6 +226,22 @@ namespace DaggerfallConnect
             return base.GetManagedBitmap(ref manualBitmap, IndexedColour, MakeTransparent);
         }
 
+        /// <summary>
+        /// Set data byte array to anything.
+        ///  Other image properties must also be set manually.
+        ///  Byte array Must be equal to stride*height.
+        /// </summary>
+        /// <param name="Data">Byte array.</param>
+        public void SetData(byte[] Data)
+        {
+            // Check size of incoming array against image dimensions
+            //if (Data.Length != manualBitmap.Stride * manualBitmap.Height)
+            //    throw new Exception("Invalid buffer length for DFManualImage.SetData().");
+
+            // Store the data
+            manualBitmap.Data = Data;
+        }
+
         #endregion
     }
 }

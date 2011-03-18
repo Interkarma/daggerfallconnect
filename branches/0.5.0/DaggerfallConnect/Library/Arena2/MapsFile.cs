@@ -733,8 +733,8 @@ namespace DaggerfallConnect.Arena2
             for (int i = 0; i < dfLocation.Dungeon.Header.BlockCount; i++)
             {
                 // Read data
-                dfLocation.Dungeon.Blocks[i].X = Reader.ReadByte();
-                dfLocation.Dungeon.Blocks[i].Z = Reader.ReadByte();
+                dfLocation.Dungeon.Blocks[i].X = Reader.ReadSByte();
+                dfLocation.Dungeon.Blocks[i].Z = Reader.ReadSByte();
                 dfLocation.Dungeon.Blocks[i].BlockNumberStartIndexBitfield = Reader.ReadUInt16();
 
                 // Decompose bitfield
