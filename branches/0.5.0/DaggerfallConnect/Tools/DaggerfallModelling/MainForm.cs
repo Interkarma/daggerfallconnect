@@ -125,32 +125,23 @@ namespace DaggerfallModelling
         private void mapBlockBrowser1_ModeChanged(object sender, DaggerfallModelling.BrowserControls.MapBlockBrowser.ModeChangedEventArgs e)
         {
             // Enable mode changes based on allowed modes
-            if (e.CityModeAllowed) CityModeToolStripButton.Enabled = true; else CityModeToolStripButton.Enabled = false;
+            if (e.ExteriorModeAllowed) ExteriorModeToolStripButton.Enabled = true; else ExteriorModeToolStripButton.Enabled = false;
             if (e.DungeonModeAllowed) DungeonModeToolStripButton.Enabled = true; else DungeonModeToolStripButton.Enabled = false;
-            if (e.BlockModeAllowed) BlockModeToolStripButton.Enabled = true; else BlockModeToolStripButton.Enabled = false;
 
             // Uncheck all modes
             switch (e.ViewMode)
             {
-                case MapBlockBrowser.ViewModes.City:
-                    CityModeToolStripButton.Checked = true;
+                case MapBlockBrowser.ViewModes.Exterior:
+                    ExteriorModeToolStripButton.Checked = true;
                     DungeonModeToolStripButton.Checked = false;
-                    BlockModeToolStripButton.Checked = false;
                     break;
                 case MapBlockBrowser.ViewModes.Dungeon:
-                    CityModeToolStripButton.Checked = false;
+                    ExteriorModeToolStripButton.Checked = false;
                     DungeonModeToolStripButton.Checked = true;
-                    BlockModeToolStripButton.Checked = false;
-                    break;
-                case MapBlockBrowser.ViewModes.Block:
-                    CityModeToolStripButton.Checked = false;
-                    DungeonModeToolStripButton.Checked = false;
-                    BlockModeToolStripButton.Checked = true;
                     break;
                 default:
-                    CityModeToolStripButton.Checked = false;
+                    ExteriorModeToolStripButton.Checked = false;
                     DungeonModeToolStripButton.Checked = false;
-                    BlockModeToolStripButton.Checked = false;
                     break;
             }
         }

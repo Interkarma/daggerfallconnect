@@ -514,6 +514,9 @@ namespace DaggerfallConnect.Arena2
                 // Read MapDItem for this location
                 reader = Regions[Region].MapDItem.GetReader();
                 ReadMapDItem(ref reader, Region, Location, ref dfLocation);
+
+                // Copy RegionMapTable data to this location
+                dfLocation.MapTableData = Regions[Region].DFRegion.MapTable[Location];
             }
             catch (Exception e)
             {

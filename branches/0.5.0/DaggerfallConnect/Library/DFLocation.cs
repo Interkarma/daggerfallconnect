@@ -34,6 +34,11 @@ namespace DaggerfallConnect
         public bool HasDungeon;
 
         /// <summary>
+        /// RegionMapTable data for this location.
+        /// </summary>
+        public DFRegion.RegionMapTable MapTableData;
+
+        /// <summary>
         /// Exterior location.
         /// </summary>
         public LocationExterior Exterior;
