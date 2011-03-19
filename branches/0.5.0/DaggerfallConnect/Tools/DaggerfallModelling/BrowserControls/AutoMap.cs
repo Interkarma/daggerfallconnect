@@ -15,15 +15,14 @@ using DaggerfallConnect.Arena2;
 namespace DaggerfallModelling.BrowserControls
 {
     /// <summary>
-    /// Renders a small map representing a location.
+    /// Renders a small map representing a location exterior or dungeon.
     /// </summary>
-    public class MapBlockBrowser : Control
+    public class AutoMap : Control
     {
         #region Class Variables
 
         private BlocksFile blocksFile;
         private MapsFile mapsFile;
-        private DFBlock dfBlock;
         private DFLocation dfLocation;
 
         private BlockLayout[] exteriorLayout;
@@ -34,6 +33,7 @@ namespace DaggerfallModelling.BrowserControls
         private bool exteriorModeAllowed = false;
         private bool dungeonModeAllowed = false;
         private ViewModes viewMode = ViewModes.None;
+        private ViewModes userPreferredViewMode = ViewModes.None;
 
         #endregion
 
@@ -64,13 +64,6 @@ namespace DaggerfallModelling.BrowserControls
             public DFBlock.RdbTypes rdbType;
         }
 
-        private struct DungeonBlock
-        {
-            public Rectangle layoutRect;
-            public DFBlock.RdbTypes blockType;
-            string blockName;
-        }
-
         #endregion
 
         #region Public Properties
@@ -94,7 +87,7 @@ namespace DaggerfallModelling.BrowserControls
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public MapBlockBrowser()
+        public AutoMap()
         {
             // Set value of double-buffering style bits to true
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
@@ -134,10 +127,9 @@ namespace DaggerfallModelling.BrowserControls
         {
             // Clear connect resources
             dfLocation = new DFLocation();
-            dfBlock = new DFBlock();
 
             // Reset modes and redraw
-            SetModes();
+            ConfigureModes();
             this.Invalidate();
         }
 
@@ -153,13 +145,35 @@ namespace DaggerfallModelling.BrowserControls
 
             // Conditionally create dungeon map
             if (dfLocation.HasDungeon)
-                CreateDungeonBitmap();
+                CreateDungeonMap();
             else
                 dungeonLayoutBitmap = null;
 
-            // Enable modes
-            SetModes();
+            // Configure modes for new location
+            ConfigureModes();
 
+            // Redraw
+            this.Invalidate();
+        }
+
+        public void SetViewMode(ViewModes mode)
+        {
+            // Can always allow exterior mode
+            if (mode == ViewModes.Exterior)
+                viewMode = mode;
+
+            // Only allow dungeon when dungeon present
+            if (mode == ViewModes.Dungeon && dungeonLayoutBitmap != null)
+                viewMode = mode;
+
+            // This is now the user preferred mode and will be
+            // automatically selected later when possible
+            userPreferredViewMode = mode;
+
+            // Raise event
+            RaiseModeChangedEvent();
+
+            // Redraw
             this.Invalidate();
         }
 
@@ -280,7 +294,7 @@ namespace DaggerfallModelling.BrowserControls
             return true;
         }
 
-        private void SetModes()
+        private void ConfigureModes()
         {
             if (!IsReady())
             {
@@ -310,16 +324,32 @@ namespace DaggerfallModelling.BrowserControls
                     isDungeonMapType = true;
             }
 
-            // Start in dungeon mode when a dungeon is present and this is a dedicated dungeon type.
-            // Otherwise start in exterior mode.
-            if (dfLocation.HasDungeon && isDungeonMapType)
-                viewMode = ViewModes.Dungeon;
+            // Try to keep user preferred mode if possible
+            if (userPreferredViewMode != ViewModes.None)
+            {
+                if (userPreferredViewMode == ViewModes.Dungeon && dfLocation.HasDungeon)
+                    viewMode = ViewModes.Dungeon;
+                else
+                    viewMode = ViewModes.Exterior;
+            }
             else
-                viewMode = ViewModes.Exterior;
+            {
+                // Work out view mode based on location
+                // Start in dungeon mode when a dungeon is present and this is a dedicated dungeon type.
+                // Otherwise start in exterior mode.
+                if (dfLocation.HasDungeon && isDungeonMapType)
+                    viewMode = ViewModes.Dungeon;
+                else
+                    viewMode = ViewModes.Exterior;
+            }
 
             // Raise event to update form
             RaiseModeChangedEvent();
         }
+
+        #endregion
+
+        #region AutoMap Layout
 
         private void CreateExteriorMap()
         {
@@ -392,7 +422,7 @@ namespace DaggerfallModelling.BrowserControls
             }
         }
 
-        private void CreateDungeonBitmap()
+        private void CreateDungeonMap()
         {
             // Quick pass over blocks to find dimensions of dungeon relative to 0,0
             // This is done because the 0,0 block is not typically at origin.
@@ -479,5 +509,6 @@ namespace DaggerfallModelling.BrowserControls
         }
 
         #endregion
+
     }
 }

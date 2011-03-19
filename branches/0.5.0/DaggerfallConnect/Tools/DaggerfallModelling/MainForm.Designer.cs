@@ -39,7 +39,8 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
-            this.MapBlockBrowserToolStrip = new System.Windows.Forms.ToolStrip();
+            this.AutoMapView = new DaggerfallModelling.BrowserControls.AutoMap();
+            this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
             this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -56,20 +57,19 @@
             this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.ActionProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
-            this.mapBlockBrowser1 = new DaggerfallModelling.BrowserControls.MapBlockBrowser();
-            this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
             this.SearchResultsPanel.SuspendLayout();
             this.panel2.SuspendLayout();
             this.LayoutPanel.SuspendLayout();
-            this.MapBlockBrowserToolStrip.SuspendLayout();
+            this.AutoMapToolStrip.SuspendLayout();
             this.SearchPaneToolStrip.SuspendLayout();
             this.ViewPaneToolStrip.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -191,27 +191,39 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.LayoutPanel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.LayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.LayoutPanel.Controls.Add(this.mapBlockBrowser1);
-            this.LayoutPanel.Controls.Add(this.MapBlockBrowserToolStrip);
+            this.LayoutPanel.Controls.Add(this.AutoMapView);
+            this.LayoutPanel.Controls.Add(this.AutoMapToolStrip);
             this.LayoutPanel.Location = new System.Drawing.Point(-2, 392);
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
             // 
-            // MapBlockBrowserToolStrip
+            // AutoMapView
             // 
-            this.MapBlockBrowserToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.AutoMapView.BlocksFile = null;
+            this.AutoMapView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.AutoMapView.Location = new System.Drawing.Point(0, 25);
+            this.AutoMapView.MapsFile = null;
+            this.AutoMapView.Name = "AutoMapView";
+            this.AutoMapView.Size = new System.Drawing.Size(320, 320);
+            this.AutoMapView.TabIndex = 2;
+            this.AutoMapView.Text = "AutoMapView";
+            this.AutoMapView.ModeChanged += new DaggerfallModelling.BrowserControls.AutoMap.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
+            // 
+            // AutoMapToolStrip
+            // 
+            this.AutoMapToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ExteriorModeToolStripButton,
             this.DungeonModeToolStripButton,
             this.toolStripSeparator3,
             this.MapPaletteToolStripButton,
             this.toolStripSeparator4,
             this.BlockNameToolStripLabel});
-            this.MapBlockBrowserToolStrip.Location = new System.Drawing.Point(0, 0);
-            this.MapBlockBrowserToolStrip.Name = "MapBlockBrowserToolStrip";
-            this.MapBlockBrowserToolStrip.Size = new System.Drawing.Size(320, 25);
-            this.MapBlockBrowserToolStrip.TabIndex = 1;
-            this.MapBlockBrowserToolStrip.Text = "toolStrip1";
+            this.AutoMapToolStrip.Location = new System.Drawing.Point(0, 0);
+            this.AutoMapToolStrip.Name = "AutoMapToolStrip";
+            this.AutoMapToolStrip.Size = new System.Drawing.Size(320, 25);
+            this.AutoMapToolStrip.TabIndex = 1;
+            this.AutoMapToolStrip.Text = "toolStrip1";
             // 
             // ExteriorModeToolStripButton
             // 
@@ -222,6 +234,7 @@
             this.ExteriorModeToolStripButton.Name = "ExteriorModeToolStripButton";
             this.ExteriorModeToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.ExteriorModeToolStripButton.Text = "Exterior Mode";
+            this.ExteriorModeToolStripButton.Click += new System.EventHandler(this.ExteriorModeToolStripButton_Click);
             // 
             // DungeonModeToolStripButton
             // 
@@ -232,6 +245,7 @@
             this.DungeonModeToolStripButton.Name = "DungeonModeToolStripButton";
             this.DungeonModeToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.DungeonModeToolStripButton.Text = "Dungeon Mode";
+            this.DungeonModeToolStripButton.Click += new System.EventHandler(this.DungeonModeToolStripButton_Click);
             // 
             // toolStripSeparator3
             // 
@@ -361,6 +375,15 @@
             this.panel1.Size = new System.Drawing.Size(862, 715);
             this.panel1.TabIndex = 2;
             // 
+            // modelBrowser1
+            // 
+            this.modelBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.modelBrowser1.Location = new System.Drawing.Point(0, 0);
+            this.modelBrowser1.Name = "modelBrowser1";
+            this.modelBrowser1.Size = new System.Drawing.Size(862, 715);
+            this.modelBrowser1.TabIndex = 0;
+            this.modelBrowser1.Text = "modelBrowser1";
+            // 
             // MainStatusStrip
             // 
             this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -398,27 +421,6 @@
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
             // 
-            // mapBlockBrowser1
-            // 
-            this.mapBlockBrowser1.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.mapBlockBrowser1.BlocksFile = null;
-            this.mapBlockBrowser1.Location = new System.Drawing.Point(0, 25);
-            this.mapBlockBrowser1.MapsFile = null;
-            this.mapBlockBrowser1.Name = "mapBlockBrowser1";
-            this.mapBlockBrowser1.Size = new System.Drawing.Size(320, 320);
-            this.mapBlockBrowser1.TabIndex = 0;
-            this.mapBlockBrowser1.Text = "mapBlockBrowser1";
-            this.mapBlockBrowser1.ModeChanged += new DaggerfallModelling.BrowserControls.MapBlockBrowser.ModeChangedEventHandler(this.mapBlockBrowser1_ModeChanged);
-            // 
-            // modelBrowser1
-            // 
-            this.modelBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.modelBrowser1.Location = new System.Drawing.Point(0, 0);
-            this.modelBrowser1.Name = "modelBrowser1";
-            this.modelBrowser1.Size = new System.Drawing.Size(862, 715);
-            this.modelBrowser1.TabIndex = 0;
-            this.modelBrowser1.Text = "modelBrowser1";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -440,8 +442,8 @@
             this.panel2.PerformLayout();
             this.LayoutPanel.ResumeLayout(false);
             this.LayoutPanel.PerformLayout();
-            this.MapBlockBrowserToolStrip.ResumeLayout(false);
-            this.MapBlockBrowserToolStrip.PerformLayout();
+            this.AutoMapToolStrip.ResumeLayout(false);
+            this.AutoMapToolStrip.PerformLayout();
             this.SearchPaneToolStrip.ResumeLayout(false);
             this.SearchPaneToolStrip.PerformLayout();
             this.ViewPaneToolStrip.ResumeLayout(false);
@@ -481,14 +483,14 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolTip MainTips;
         private System.Windows.Forms.ImageList SearchResultsImageList;
-        private DaggerfallModelling.BrowserControls.MapBlockBrowser mapBlockBrowser1;
-        private System.Windows.Forms.ToolStrip MapBlockBrowserToolStrip;
+        private System.Windows.Forms.ToolStrip AutoMapToolStrip;
         private System.Windows.Forms.ToolStripButton ExteriorModeToolStripButton;
         private System.Windows.Forms.ToolStripButton DungeonModeToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton MapPaletteToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel BlockNameToolStripLabel;
+        private DaggerfallModelling.BrowserControls.AutoMap AutoMapView;
     }
 }
 

@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BrowserControls\MapBlockBrowser.cs">
+    <Compile Include="BrowserControls\AutoMap.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="BrowserControls\ModelBrowser.cs">
