@@ -39,13 +39,11 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
-            this.AutoMapView = new DaggerfallModelling.BrowserControls.AutoMap();
+            this.autoMapView1 = new DaggerfallModelling.ViewControls.AutoMapView();
             this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
             this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.MapPaletteToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.BlockNameToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             this.SearchPaneToolStrip = new System.Windows.Forms.ToolStrip();
             this.SetArena2ToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -57,7 +55,7 @@
             this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.modelBrowser1 = new DaggerfallModelling.BrowserControls.ModelBrowser();
+            this.modelBrowser1 = new DaggerfallModelling.ViewControls.ModelBrowser();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -191,24 +189,24 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.LayoutPanel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.LayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.LayoutPanel.Controls.Add(this.AutoMapView);
+            this.LayoutPanel.Controls.Add(this.autoMapView1);
             this.LayoutPanel.Controls.Add(this.AutoMapToolStrip);
             this.LayoutPanel.Location = new System.Drawing.Point(-2, 392);
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
             // 
-            // AutoMapView
+            // autoMapView1
             // 
-            this.AutoMapView.BlocksFile = null;
-            this.AutoMapView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AutoMapView.Location = new System.Drawing.Point(0, 25);
-            this.AutoMapView.MapsFile = null;
-            this.AutoMapView.Name = "AutoMapView";
-            this.AutoMapView.Size = new System.Drawing.Size(320, 320);
-            this.AutoMapView.TabIndex = 2;
-            this.AutoMapView.Text = "AutoMapView";
-            this.AutoMapView.ModeChanged += new DaggerfallModelling.BrowserControls.AutoMap.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
+            this.autoMapView1.BlocksFile = null;
+            this.autoMapView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.autoMapView1.Location = new System.Drawing.Point(0, 25);
+            this.autoMapView1.MapsFile = null;
+            this.autoMapView1.Name = "autoMapView1";
+            this.autoMapView1.Size = new System.Drawing.Size(320, 320);
+            this.autoMapView1.TabIndex = 2;
+            this.autoMapView1.Text = "autoMapView1";
+            this.autoMapView1.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
             // 
             // AutoMapToolStrip
             // 
@@ -216,8 +214,6 @@
             this.ExteriorModeToolStripButton,
             this.DungeonModeToolStripButton,
             this.toolStripSeparator3,
-            this.MapPaletteToolStripButton,
-            this.toolStripSeparator4,
             this.BlockNameToolStripLabel});
             this.AutoMapToolStrip.Location = new System.Drawing.Point(0, 0);
             this.AutoMapToolStrip.Name = "AutoMapToolStrip";
@@ -251,23 +247,6 @@
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // MapPaletteToolStripButton
-            // 
-            this.MapPaletteToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.MapPaletteToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.MapPaletteToolStripButton.Enabled = false;
-            this.MapPaletteToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.palette;
-            this.MapPaletteToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.MapPaletteToolStripButton.Name = "MapPaletteToolStripButton";
-            this.MapPaletteToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.MapPaletteToolStripButton.Text = "Map Palette";
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
             // BlockNameToolStripLabel
             // 
@@ -471,7 +450,7 @@
         private System.Windows.Forms.ToolStripProgressBar ActionProgressBar;
         private System.Windows.Forms.ToolStripButton AboutToolStripButton;
         private System.Windows.Forms.Panel panel1;
-        private DaggerfallModelling.BrowserControls.ModelBrowser modelBrowser1;
+        private DaggerfallModelling.ViewControls.ModelBrowser modelBrowser1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox SearchTextBox;
@@ -487,10 +466,8 @@
         private System.Windows.Forms.ToolStripButton ExteriorModeToolStripButton;
         private System.Windows.Forms.ToolStripButton DungeonModeToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton MapPaletteToolStripButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel BlockNameToolStripLabel;
-        private DaggerfallModelling.BrowserControls.AutoMap AutoMapView;
+        private DaggerfallModelling.ViewControls.AutoMapView autoMapView1;
     }
 }
 

@@ -41,10 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BrowserControls\AutoMap.cs">
+    <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="BrowserControls\ModelBrowser.cs">
+    <Compile Include="ViewControls\ModelBrowser.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="XNAClasses\GraphicsDeviceService.cs" />

@@ -8,7 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-using DaggerfallModelling.BrowserControls;
+using DaggerfallModelling.ViewControls;
 
 namespace DaggerfallModelling
 {
@@ -45,8 +45,8 @@ namespace DaggerfallModelling
             mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
 
             // Initialise map browser
-            AutoMapView.BlocksFile = blocksFile;
-            AutoMapView.MapsFile = mapsFile;
+            autoMapView1.BlocksFile = blocksFile;
+            autoMapView1.MapsFile = mapsFile;
         }
 
         #endregion
@@ -82,14 +82,14 @@ namespace DaggerfallModelling
                     if (int.TryParse(e.Node.Name, out key))
                     {
                         KeyToRegionLocation(key, out region, out location);
-                        AutoMapView.ShowLocation(region, location);
+                        autoMapView1.ShowLocation(region, location);
                         return;
                     }
                 }
             }
 
             // Clear map block browser
-            AutoMapView.Clear();
+            autoMapView1.Clear();
         }
 
         private void SearchModelsToolStripButton_Click(object sender, EventArgs e)
@@ -122,7 +122,7 @@ namespace DaggerfallModelling
             SearchLocationsToolStripButton.Checked = true;
         }
 
-        private void AutoMapView_ModeChanged(object sender, DaggerfallModelling.BrowserControls.AutoMap.ModeChangedEventArgs e)
+        private void AutoMapView_ModeChanged(object sender, DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventArgs e)
         {
             // Enable mode changes based on allowed modes
             if (e.ExteriorModeAllowed) ExteriorModeToolStripButton.Enabled = true; else ExteriorModeToolStripButton.Enabled = false;
@@ -131,11 +131,11 @@ namespace DaggerfallModelling
             // Uncheck all modes
             switch (e.ViewMode)
             {
-                case AutoMap.ViewModes.Exterior:
+                case AutoMapView.ViewModes.Exterior:
                     ExteriorModeToolStripButton.Checked = true;
                     DungeonModeToolStripButton.Checked = false;
                     break;
-                case AutoMap.ViewModes.Dungeon:
+                case AutoMapView.ViewModes.Dungeon:
                     ExteriorModeToolStripButton.Checked = false;
                     DungeonModeToolStripButton.Checked = true;
                     break;
@@ -148,12 +148,12 @@ namespace DaggerfallModelling
 
         private void ExteriorModeToolStripButton_Click(object sender, EventArgs e)
         {
-            AutoMapView.SetViewMode(AutoMap.ViewModes.Exterior);
+            autoMapView1.SetViewMode(AutoMapView.ViewModes.Exterior);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
         {
-            AutoMapView.SetViewMode(AutoMap.ViewModes.Dungeon);
+            autoMapView1.SetViewMode(AutoMapView.ViewModes.Dungeon);
         }
 
         #endregion
@@ -171,7 +171,7 @@ namespace DaggerfallModelling
             }
 
             // Clear map block browser
-            AutoMapView.Clear();
+            autoMapView1.Clear();
 
             // Disable search controls
             SearchTextBox.Enabled = false;
