@@ -30,16 +30,24 @@ namespace DaggerfallModelling.ViewControls
         private Bitmap exteriorLayoutBitmap;
         private Bitmap dungeonLayoutBitmap;
 
+        private Point mapOffset;
+
         private bool exteriorModeAllowed = false;
         private bool dungeonModeAllowed = false;
         private ViewModes viewMode = ViewModes.None;
         private ViewModes userPreferredViewMode = ViewModes.None;
+
+        Point mousePos;
+        int mouseOverBlock = -1;
+        int selectedExteriorBlock = -1;
+        int selectedDungeonBlock = -1;
 
         #endregion
 
         #region Drawing Colours
 
         private Color gridColour = Color.SlateGray;
+        private Color mouseOverBlockColour = Color.Blue;
         private Color dungeonStartColour = Color.FromArgb(85, 154, 154);
         private Color dungeonNormalColour = Color.FromArgb(243, 239, 44);
         private Color dungeonBorderColour = Color.FromArgb(213, 209, 14);
@@ -58,6 +66,8 @@ namespace DaggerfallModelling.ViewControls
 
         private struct BlockLayout
         {
+            public int x;
+            public int y;
             public Rectangle rect;
             public string name;
             public DFBlock.BlockTypes blocktype;
@@ -80,6 +90,11 @@ namespace DaggerfallModelling.ViewControls
             set { blocksFile = value; }
         }
 
+        public ViewModes ViewMode
+        {
+            get { return viewMode; }
+        }
+
         #endregion
 
         #region Constructors
@@ -91,6 +106,64 @@ namespace DaggerfallModelling.ViewControls
         {
             // Set value of double-buffering style bits to true
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+        }
+
+        #endregion
+
+        #region MouseOverBlock Event
+
+        public class BlockEventArgs
+        {
+            public int X;
+            public int Y;
+            public string Name;
+            public ViewModes ViewMode;
+            public DFBlock.BlockTypes BlockType;
+            public DFBlock.RdbTypes RdbType;
+        }
+
+        public delegate void MouseOverBlockChangedEventHandler(object sender, BlockEventArgs e);
+        public event MouseOverBlockChangedEventHandler MouseOverBlockChanged;
+
+        protected virtual void RaiseMouseOverBlockChangedEvent()
+        {
+            BlockEventArgs e = new BlockEventArgs();
+
+            if (mouseOverBlock == -1)
+            {
+                // Dummy args
+                e.X = -1;
+                e.Y = -1;
+                e.Name = string.Empty;
+                e.ViewMode = viewMode;
+                e.BlockType = DFBlock.BlockTypes.Unknown;
+                e.RdbType = DFBlock.RdbTypes.Unknown;
+            }
+            else
+            {
+                // Populate args
+                e.ViewMode = viewMode;
+                switch (viewMode)
+                {
+                    case ViewModes.Exterior:
+                        e.X = exteriorLayout[mouseOverBlock].x;
+                        e.Y = exteriorLayout[mouseOverBlock].y;
+                        e.Name = exteriorLayout[mouseOverBlock].name;
+                        e.BlockType = DFBlock.BlockTypes.Rmb;
+                        e.RdbType = DFBlock.RdbTypes.Unknown;
+                        break;
+                    case ViewModes.Dungeon:
+                        e.X = dungeonLayout[mouseOverBlock].x;
+                        e.Y = dungeonLayout[mouseOverBlock].y;
+                        e.Name = dungeonLayout[mouseOverBlock].name;
+                        e.BlockType = DFBlock.BlockTypes.Rdb;
+                        e.RdbType = dungeonLayout[mouseOverBlock].rdbType;
+                        break;
+                }
+            }
+
+            // Raise event
+            MouseOverBlockChanged(this, e);
         }
 
         #endregion
@@ -152,6 +225,12 @@ namespace DaggerfallModelling.ViewControls
             // Configure modes for new location
             ConfigureModes();
 
+            // Clear block mouse over and selection
+            selectedExteriorBlock = -1;
+            selectedDungeonBlock = -1;
+            mouseOverBlock = -1;
+            RaiseMouseOverBlockChangedEvent();
+
             // Redraw
             this.Invalidate();
         }
@@ -170,8 +249,12 @@ namespace DaggerfallModelling.ViewControls
             // automatically selected later when possible
             userPreferredViewMode = mode;
 
-            // Raise event
+            // Clear mouse over block
+            mouseOverBlock = -1;
+
+            // Raise events
             RaiseModeChangedEvent();
+            RaiseMouseOverBlockChangedEvent();
 
             // Redraw
             this.Invalidate();
@@ -189,6 +272,92 @@ namespace DaggerfallModelling.ViewControls
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+
+            // Clear mouse-over value and redraw
+            mouseOverBlock = -1;
+            RaiseMouseOverBlockChangedEvent();
+            this.Invalidate();
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            // Record mouse position and test for mouse over block
+            mousePos.X = e.X;
+            mousePos.Y = e.Y;
+            TestMouse();
+        }
+
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+
+            // Select block under mouse
+            if (mouseOverBlock != -1)
+            {
+                if (viewMode == ViewModes.Exterior)
+                    selectedExteriorBlock = mouseOverBlock;
+                else if (viewMode == ViewModes.Dungeon)
+                    selectedDungeonBlock = mouseOverBlock;
+                this.Invalidate();
+            }
+        }
+
+        #endregion
+
+        #region Mouse
+
+        private void TestMouse()
+        {
+            int newMouseOverBlock = -1;
+
+            // Test if mouse point is inside an exterior block rect
+            if (viewMode == ViewModes.Exterior)
+            {
+                int index = 0;
+                foreach (var layout in exteriorLayout)
+                {
+                    Rectangle rect = layout.rect;
+                    rect.Offset(mapOffset);
+                    if (rect.Contains(mousePos))
+                    {
+                        newMouseOverBlock = index;
+                        break;
+                    }
+                    index++;
+                }
+            }
+
+            // Test if mouse point is inside a dungeon block rect
+            if (viewMode == ViewModes.Dungeon)
+            {
+                int index = 0;
+                foreach (var layout in dungeonLayout)
+                {
+                    Rectangle rect = layout.rect;
+                    rect.Offset(mapOffset);
+                    if (rect.Contains(mousePos))
+                    {
+                        newMouseOverBlock = index;
+                        break;
+                    }
+                    index++;
+                }
+            }
+
+            // Redraw if new mouse over block different to current
+            if (newMouseOverBlock != mouseOverBlock)
+            {
+                mouseOverBlock = newMouseOverBlock;
+                RaiseMouseOverBlockChangedEvent();
+                this.Invalidate();
+            }
         }
 
         #endregion
@@ -218,6 +387,51 @@ namespace DaggerfallModelling.ViewControls
                 Color.FromArgb(240, 240, 240),
                 LinearGradientMode.Vertical);
             e.Graphics.FillRectangle(brush, this.ClientRectangle);
+
+            // Calculate offset of location bitmap inside client area
+            switch (viewMode)
+            {
+                case ViewModes.Exterior:
+                    mapOffset = new Point(
+                        this.Width / 2 - exteriorLayoutBitmap.Width / 2,
+                        this.Height / 2 - exteriorLayoutBitmap.Height / 2);
+                    break;
+                case ViewModes.Dungeon:
+                    mapOffset = new Point(
+                        this.Width / 2 - dungeonLayoutBitmap.Width / 2,
+                        this.Height / 2 - dungeonLayoutBitmap.Height / 2);
+                    break;
+            }
+
+            // Highlight exterior blocks
+            if (viewMode == ViewModes.Exterior)
+            {
+                // Highlight block under mouse (unless over selected block)
+                if (mouseOverBlock != -1 && mouseOverBlock != selectedExteriorBlock)
+                {
+                    Rectangle rect = exteriorLayout[mouseOverBlock].rect;
+                    rect.Offset(mapOffset);
+                    Brush b = new LinearGradientBrush(
+                        rect,
+                        Color.AliceBlue,
+                        Color.CornflowerBlue,
+                        LinearGradientMode.Vertical);
+                    e.Graphics.FillRectangle(b, rect);
+                }
+
+                // Highlight selected block
+                if (selectedExteriorBlock != -1)
+                {
+                    Rectangle rect = exteriorLayout[selectedExteriorBlock].rect;
+                    rect.Offset(mapOffset);
+                    Brush b = new LinearGradientBrush(
+                        rect,
+                        Color.White,
+                        Color.Gold,
+                        LinearGradientMode.Vertical);
+                    e.Graphics.FillRectangle(b, rect);
+                }
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -236,19 +450,42 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Render map area
-            int offx, offy;
             switch (viewMode)
             {
                 case ViewModes.Exterior:
-                    offx = this.Width / 2 - exteriorLayoutBitmap.Width / 2;
-                    offy = this.Height / 2 - exteriorLayoutBitmap.Height / 2;
-                    e.Graphics.DrawImageUnscaled(exteriorLayoutBitmap, new Point(offx, offy));
+                    e.Graphics.DrawImageUnscaled(exteriorLayoutBitmap, mapOffset);
                     break;
                 case ViewModes.Dungeon:
-                    offx = this.Width / 2 - dungeonLayoutBitmap.Width / 2;
-                    offy = this.Height / 2 - dungeonLayoutBitmap.Height / 2;
-                    e.Graphics.DrawImageUnscaled(dungeonLayoutBitmap, new Point(offx, offy));
+                    e.Graphics.DrawImageUnscaled(dungeonLayoutBitmap, mapOffset);
                     break;
+            }
+
+            // Highlight dungeon blocks
+            if (viewMode == ViewModes.Dungeon)
+            {
+                // Highlight block under mouse
+                if (mouseOverBlock != -1)
+                {
+                    Rectangle rect = dungeonLayout[mouseOverBlock].rect;
+                    rect.Offset(mapOffset);
+                    Pen p = new Pen(Color.Red);
+                    e.Graphics.DrawRectangle(p, rect);
+                }
+
+                // Highlight selected block
+                if (selectedDungeonBlock != -1)
+                {
+                    Rectangle rect = dungeonLayout[selectedDungeonBlock].rect;
+                    rect.Offset(mapOffset);
+                    Pen p = new Pen(dungeonSelectedColour);
+                    int width = rect.Width / 4;
+                    int height = rect.Height / 4;
+                    rect.X += width;
+                    rect.Y += height;
+                    rect.Width -= width*2;
+                    rect.Height -= height*2;
+                    e.Graphics.FillRectangle(p.Brush, rect);
+                }
             }
         }
 
@@ -390,6 +627,8 @@ namespace DaggerfallModelling.ViewControls
                 for (int x = 0; x < width; x++)
                 {
                     int index = y * width + x;
+                    exteriorLayout[index].x = x;
+                    exteriorLayout[index].y = y;
                     exteriorLayout[index].rect = new Rectangle(xpos, ypos, blockSize.Width, blockSize.Height);
                     exteriorLayout[index].name = mapsFile.GetRmbBlockName(ref dfLocation, x, y);
                     exteriorLayout[index].blocktype = DFBlock.BlockTypes.Rmb;
@@ -456,6 +695,10 @@ namespace DaggerfallModelling.ViewControls
             dungeonLayout = new BlockLayout[dfLocation.Dungeon.Blocks.Length];
             foreach (var block in dfLocation.Dungeon.Blocks)
             {
+                // Store coordinates
+                dungeonLayout[index].x = block.X;
+                dungeonLayout[index].y = block.Z;
+
                 // Calc layout rect.
                 // Invert block.Z as blocks are laid out bottom to top.
                 dungeonLayout[index].rect = new Rectangle(

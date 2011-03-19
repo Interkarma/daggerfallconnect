@@ -156,6 +156,21 @@ namespace DaggerfallModelling
             autoMapView1.SetViewMode(AutoMapView.ViewModes.Dungeon);
         }
 
+        private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
+        {
+            if (string.IsNullOrEmpty(e.Name))
+            {
+                BlockNameToolStripLabel.Text = string.Empty;
+                BlockNameToolStripLabel.Visible = false;
+            }
+            else
+            {
+                string text = string.Format("{0} [{1},{2}]", e.Name, e.X, e.Y);
+                BlockNameToolStripLabel.Text = text;
+                BlockNameToolStripLabel.Visible = true;
+            }
+        }
+
         #endregion
 
         #region Search Methods
