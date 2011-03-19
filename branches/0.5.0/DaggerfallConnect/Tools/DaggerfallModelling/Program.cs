@@ -1,4 +1,12 @@
-﻿using System;
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
+
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 

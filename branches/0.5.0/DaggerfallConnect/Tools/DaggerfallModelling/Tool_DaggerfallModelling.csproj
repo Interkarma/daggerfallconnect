@@ -44,7 +44,7 @@
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewControls\ModelBrowser.cs">
+    <Compile Include="ViewControls\ModelView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="XNAClasses\GraphicsDeviceService.cs" />
@@ -167,6 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\palette.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License\DaggerfallModelling.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

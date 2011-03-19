@@ -1,4 +1,12 @@
-﻿#region Imports
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
+
+#region Imports
 
 using System;
 using System.Collections.Generic;
@@ -14,11 +22,13 @@ using DaggerfallConnect.Arena2;
 
 namespace DaggerfallModelling.ViewControls
 {
+
     /// <summary>
     /// Renders a small map representing a location exterior or dungeon.
     /// </summary>
     public class AutoMapView : Control
     {
+
         #region Class Variables
 
         private BlocksFile blocksFile;
@@ -110,7 +120,7 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region MouseOverBlock Event
+        #region Event Arguments
 
         public class BlockEventArgs
         {
@@ -121,6 +131,77 @@ namespace DaggerfallModelling.ViewControls
             public DFBlock.BlockTypes BlockType;
             public DFBlock.RdbTypes RdbType;
         }
+
+        public class ModeChangedEventArgs
+        {
+            public bool ExteriorModeAllowed;
+            public bool DungeonModeAllowed;
+            public ViewModes ViewMode;
+        }
+
+        #endregion
+
+        #region SelectedBlockChanged Event
+
+        public delegate void SelectedBlockChangedEventHandler(object sender, BlockEventArgs e);
+        public event SelectedBlockChangedEventHandler SelectedBlockChanged;
+
+        protected virtual void RaiseSelectedBlockChangedEvent()
+        {
+            BlockEventArgs e = new BlockEventArgs();
+
+            // Get selected block based on view mode
+            int selectedBlock = -1;
+            switch (viewMode)
+            {
+                case ViewModes.Exterior:
+                    selectedBlock = selectedExteriorBlock;
+                    break;
+                case ViewModes.Dungeon:
+                    selectedBlock = selectedDungeonBlock;
+                    break;
+            }
+
+            if (selectedBlock == -1)
+            {
+                // Dummy args
+                e.X = -1;
+                e.Y = -1;
+                e.Name = string.Empty;
+                e.ViewMode = viewMode;
+                e.BlockType = DFBlock.BlockTypes.Unknown;
+                e.RdbType = DFBlock.RdbTypes.Unknown;
+            }
+            else
+            {
+                // Populate args
+                e.ViewMode = viewMode;
+                switch (viewMode)
+                {
+                    case ViewModes.Exterior:
+                        e.X = exteriorLayout[mouseOverBlock].x;
+                        e.Y = exteriorLayout[mouseOverBlock].y;
+                        e.Name = exteriorLayout[mouseOverBlock].name;
+                        e.BlockType = DFBlock.BlockTypes.Rmb;
+                        e.RdbType = DFBlock.RdbTypes.Unknown;
+                        break;
+                    case ViewModes.Dungeon:
+                        e.X = dungeonLayout[mouseOverBlock].x;
+                        e.Y = dungeonLayout[mouseOverBlock].y;
+                        e.Name = dungeonLayout[mouseOverBlock].name;
+                        e.BlockType = DFBlock.BlockTypes.Rdb;
+                        e.RdbType = dungeonLayout[mouseOverBlock].rdbType;
+                        break;
+                }
+            }
+
+            // Raise event
+            SelectedBlockChanged(this, e);
+        }
+
+        #endregion
+
+        #region MouseOverBlockChanged Event
 
         public delegate void MouseOverBlockChangedEventHandler(object sender, BlockEventArgs e);
         public event MouseOverBlockChangedEventHandler MouseOverBlockChanged;
@@ -169,13 +250,6 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region ModeChanged Event
-
-        public class ModeChangedEventArgs
-        {
-            public bool ExteriorModeAllowed;
-            public bool DungeonModeAllowed;
-            public ViewModes ViewMode;
-        }
 
         public delegate void ModeChangedEventHandler(object sender, ModeChangedEventArgs e);
         public event ModeChangedEventHandler ModeChanged;
@@ -301,10 +375,18 @@ namespace DaggerfallModelling.ViewControls
             // Select block under mouse
             if (mouseOverBlock != -1)
             {
-                if (viewMode == ViewModes.Exterior)
-                    selectedExteriorBlock = mouseOverBlock;
-                else if (viewMode == ViewModes.Dungeon)
-                    selectedDungeonBlock = mouseOverBlock;
+                switch (viewMode)
+                {
+                    case ViewModes.Exterior:
+                        selectedExteriorBlock = mouseOverBlock;
+                        break;
+                    case ViewModes.Dungeon:
+                        selectedDungeonBlock = mouseOverBlock;
+                        break;
+                }
+
+                // Raise select event and redraw
+                RaiseSelectedBlockChangedEvent();
                 this.Invalidate();
             }
         }
@@ -755,4 +837,5 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
     }
+
 }

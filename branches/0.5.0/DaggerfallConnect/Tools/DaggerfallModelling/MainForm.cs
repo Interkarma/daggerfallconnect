@@ -1,4 +1,14 @@
-﻿using System;
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
+
+#region Imports
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,6 +19,8 @@ using System.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DaggerfallModelling.ViewControls;
+
+#endregion
 
 namespace DaggerfallModelling
 {
@@ -61,7 +73,6 @@ namespace DaggerfallModelling
                 e.Handled = true;
                 DoSearch(SearchTextBox.Text);
             }
-
         }
 
         private void SearchResultsTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
@@ -169,6 +180,11 @@ namespace DaggerfallModelling
                 BlockNameToolStripLabel.Text = text;
                 BlockNameToolStripLabel.Visible = true;
             }
+        }
+
+        private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
+        {
+            modelView1.SetBlock(e.Name);
         }
 
         #endregion
