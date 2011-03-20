@@ -79,12 +79,25 @@ namespace DaggerfallConnect
         /// </summary>
         public enum RdbTypes
         {
+            /// <summary>Rdb type is not defined.</summary>
             Unknown,
+
+            /// <summary>Border block used to seal dungeon.</summary>
             Border,
+
+            /// <summary>Normal block.</summary>
             Normal,
+
+            /// <summary>Flooded block.</summary>
             Wet,
+
+            /// <summary>Used in main quest.</summary>
             Quest,
+
+            /// <summary>Crypt block.</summary>
             Mausoleum,
+
+            /// <summary>Optional. Can be used when tracking start block.</summary>
             Start,
         }
 

@@ -1,5 +1,5 @@
-﻿// Project:         DaggerfallConnect
-// Description:     Read data from Daggerfall's file formats.
+﻿// Project:         XNALibrary
+// Description:     Simple XNA game library for DaggerfallConnect.
 // Copyright:       Copyright (C) 2011 Gavin Clayton
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Web Site:        http://www.dfworkshop.net
@@ -21,7 +21,8 @@ namespace XNALibrary
 {
     /// <summary>
     /// Helper class to load and store Daggerfall textures for XNA.
-    ///  This class uses a dictionary for converted textures so the same data is not converted more than once.
+    ///  All textures are grouped into a texture atlas to reduce state changes.
+    ///  Certain texture types will be grouped together. For example, region terrain tiles all go in a single atlas.
     /// </summary>
     public class TextureManager
     {
@@ -29,7 +30,11 @@ namespace XNALibrary
 
         private GraphicsDevice graphicsDevice;
         private ImageFileReader imageFileReader;
-        private Dictionary<int, Texture2D> textureDictionary;
+        //private Dictionary<int, Texture> textureDictionary;
+
+        // Atlases for reserved texture groups
+        private Texture2D terrainTilesAtlas;
+        private Texture2D regionalTexturesAtlas;
 
         #endregion
 
@@ -48,7 +53,7 @@ namespace XNALibrary
         #region Constructors
 
         /// <summary>
-        /// Default constructor.
+        /// Constructor.
         /// </summary>
         /// <param name="device">Graphics Device.</param>
         /// <param name="arena2Folder">Path to Arena2 folder.</param>
@@ -56,7 +61,7 @@ namespace XNALibrary
         {
             graphicsDevice = device;
             imageFileReader = new ImageFileReader(arena2Folder);
-            textureDictionary = new Dictionary<int, Texture2D>();
+            //textureDictionary = new Dictionary<int, Texture2D>();
         }
 
         #endregion
@@ -70,10 +75,10 @@ namespace XNALibrary
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        public int GetTextureKey(int archive, int record, int frame)
-        {
-            return (archive * 10000) + (record * 100) + frame;
-        }
+        //public int GetTextureKey(int archive, int record, int frame)
+        //{
+        //    return (archive * 10000) + (record * 100) + frame;
+        //}
 
         /// <summary>
         /// Loads texture based on index.
@@ -82,39 +87,39 @@ namespace XNALibrary
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        public int LoadTexture(int archive, int record, int frame)
-        {
-            // Just return key if already in dictionary
-            int textureKey = GetTextureKey(archive, record, frame);
-            if (textureDictionary.ContainsKey(textureKey))
-                return textureKey;
+        //public int LoadTexture(int archive, int record, int frame)
+        //{
+        //    // Just return key if already in dictionary
+        //    int textureKey = GetTextureKey(archive, record, frame);
+        //    if (textureDictionary.ContainsKey(textureKey))
+        //        return textureKey;
 
-            // Get DF texture in ARGB format so we can just SetData the byte array into XNA
-            DFImageFile textureFile = imageFileReader.LoadFile(TextureFile.IndexToFileName(archive));
-            DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
+        //    // Get DF texture in ARGB format so we can just SetData the byte array into XNA
+        //    DFImageFile textureFile = imageFileReader.LoadFile(TextureFile.IndexToFileName(archive));
+        //    DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
 
-            // Create XNA texture
-            Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            texture.SetData<byte>(dfbitmap.Data);
+        //    // Create XNA texture
+        //    Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+        //    texture.SetData<byte>(dfbitmap.Data);
 
-            // Store texture in dictionary
-            textureDictionary.Add(textureKey, texture);
+        //    // Store texture in dictionary
+        //    textureDictionary.Add(textureKey, texture);
 
-            return textureKey;
-        }
+        //    return textureKey;
+        //}
 
         /// <summary>
         /// Get texture based on key. The manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="textureKey"></param>
         /// <returns></returns>
-        public Texture2D GetTexture(int textureKey)
-        {
-            if (!textureDictionary.ContainsKey(textureKey))
-                return null;
-            else
-                return textureDictionary[textureKey];
-        }
+        //public Texture2D GetTexture(int textureKey)
+        //{
+        //    if (!textureDictionary.ContainsKey(textureKey))
+        //        return null;
+        //    else
+        //        return textureDictionary[textureKey];
+        //}
 
         #endregion
     }

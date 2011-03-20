@@ -31,7 +31,7 @@ namespace DaggerfallModelling.ViewControls
         int blockIndex = -1;
 
         SpriteBatch spriteBatch;
-        BlockManager blockManager;
+        //BlockManager blockManager;
         VertexDeclaration vertexDeclaration;
         BasicEffect effect;
 
@@ -75,7 +75,7 @@ namespace DaggerfallModelling.ViewControls
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Create MapManager
-            blockManager = new BlockManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
+            //blockManager = new BlockManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
@@ -113,7 +113,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Draw the block
             Matrix matrix = Matrix.Identity;
-            blockManager.DrawBlock(blockIndex, ref effect, ref matrix);
+            //blockManager.DrawBlock(blockIndex, ref effect, ref matrix);
 
             //spriteBatch.Begin();
             //spriteBatch.Draw(GetThumbnailTexture(0), new Vector2(0, 0), XNAColor.White);
@@ -138,13 +138,13 @@ namespace DaggerfallModelling.ViewControls
         public void SetBlock(string name)
         {
             // Load content
-            int index = blockManager.BlocksFile.GetBlockIndex(name);
-            if (index != -1)
-            {
-                blockIndex = index;
-                blockManager.LoadBlock(blockIndex);
-                this.Invalidate();
-            }
+            //int index = blockManager.BlocksFile.GetBlockIndex(name);
+            //if (index != -1)
+            //{
+            //    blockIndex = index;
+            //    blockManager.LoadBlock(blockIndex);
+            //    this.Invalidate();
+            //}
         }
 
         #endregion

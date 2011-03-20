@@ -65,26 +65,42 @@ namespace DaggerfallConnect
         /// </summary>
         public enum LocationTypes
         {
-            DungeonLabyrinth = 132,		// Dungeons
+            /// <summary>Large dungeon.</summary>
+            DungeonLabyrinth = 132,
+            /// <summary>Medium dungeon.</summary>
             DungeonKeep = 135,
+            /// <summary>Small dungeon.</summary>
             DungeonRuin = 138,
 
-            GraveyardCommon = 172,		// Graveyards
+            /// <summary>Graveyard visible.</summary>
+            GraveyardCommon = 172,
+            /// <summary>Graveyard hidden.</summary>
             GraveyardForgotten = 140,
 
-            HomeFarms = 163,		    // Homes
+            /// <summary>Farmhouse.</summary>
+            HomeFarms = 163,
+            /// <summary>Wealthy home.</summary>
             HomeWealthy = 168,
+            /// <summary>Poor home.</summary>
             HomePoor = 171,
+            /// <summary>Player ship.</summary>
             HomeYourShips = 174,
 
-            Tavern = 166,		        // Taverns
+            /// <summary>Tavern</summary>
+            Tavern = 166,
 
-            ReligionTemple = 165,		// Temples
+            /// <summary>Temple.</summary>
+            ReligionTemple = 165,
+            /// <summary>Cult.</summary>
             ReligionCult = 169,
+            /// <summary>Coven.</summary>
             ReligionCoven = 141,
 
-            TownCity = 160,		        // Towns
+            /// <summary>Large settlement.</summary>
+            TownCity = 160,
+            /// <summary>Medium settlement.</summary>
             TownHamlet = 161,
+            /// <summary>Small settlement.</summary>
             TownVillage = 162,
         }
 

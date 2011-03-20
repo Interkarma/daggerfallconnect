@@ -17,21 +17,6 @@ using System.Text;
 namespace DaggerfallConnect
 {
     /// <summary>
-    /// Terrain base enumeration for regional texture swaps.
-    /// </summary>
-    public enum TerrainBases
-    {
-        /// <summary>Desert terrain base.</summary>
-        Desert = 0,
-        /// <summary>Mountain terrain base.</summary>
-        Mountain = 100,
-        /// <summary>Temperate terrain base.</summary>
-        Temperate = 300,
-        /// <summary>Swamp terrain base.</summary>
-        Swamp = 400,
-    }
-
-    /// <summary>
     /// Weather base enumeration for regional texture swaps.
     /// </summary>
     public enum WeatherBases
@@ -50,40 +35,68 @@ namespace DaggerfallConnect
     /// </summary>
     public enum BuildingTypes
     {
+        /// <summary>Alchemist</summary>
         Alchemist = 0x00,
+        /// <summary>HouseForSale</summary>
         HouseForSale = 0x01,
+        /// <summary>Amorer</summary>
         Amorer = 0x02,
+        /// <summary>Bank</summary>
         Bank = 0x03,
+        /// <summary>Town4</summary>
         Town4 = 0x04,
+        /// <summary>Bookseller</summary>
         Bookseller = 0x05,
+        /// <summary>ClothingStore</summary>
         ClothingStore = 0x06,
+        /// <summary>FurnitureStore</summary>
         FurnitureStore = 0x07,
+        /// <summary>GemStore</summary>
         GemStore = 0x08,
+        /// <summary>GeneralStore</summary>
         GeneralStore = 0x09,
+        /// <summary>Library</summary>
         Library = 0x0a,
+        /// <summary>Guildhall</summary>
         Guildhall = 0x0b,
+        /// <summary>PawnShop</summary>
         PawnShop = 0x0c,
+        /// <summary>WeaponSmith</summary>
         WeaponSmith = 0x0d,
+        /// <summary>Temple</summary>
         Temple = 0x0e,
+        /// <summary>Tavern</summary>
         Tavern = 0x0f,
+        /// <summary>Palace</summary>
         Palace = 0x10,
+        /// <summary>House1</summary>
         House1 = 0x11,
+        /// <summary>House2</summary>
         House2 = 0x12,
+        /// <summary>House3</summary>
         House3 = 0x13,
+        /// <summary>House4</summary>
         House4 = 0x14,
+        /// <summary>House5</summary>
         House5 = 0x15,
+        /// <summary>House6</summary>
         House6 = 0x16,
+        /// <summary>Town23</summary>
         Town23 = 0x17,
+        /// <summary>Ship</summary>
         Ship = 0x18,
+        /// <summary>Special1</summary>
         Special1 = 0x74,
+        /// <summary>Special2</summary>
         Special2 = 0xdf,
+        /// <summary>Special3</summary>
         Special3 = 0xf9,
+        /// <summary>Special4</summary>
         Special4 = 0xfa,
     }
 
     /// <summary>
-    /// Helper class to read all world map information. This includes political alignment, climate data,
-    ///  heightmaps, regional texture calculations, landscape texture calculations, and town and dungeon layouts.
+    // This class is deprecated and will be removed.
     /// </summary>
     public class MapReader
     {
@@ -91,51 +104,6 @@ namespace DaggerfallConnect
         #endregion
 
         #region Class Structures
-
-        /// <summary>
-        /// Offsets from base to specified texture set.
-        /// </summary>
-        private enum TextureOffsets
-        {
-            /// <summary>Terrain</summary>
-            Terrain = 2,
-            /// <summary>Ruins</summary>
-            Ruins = 7,
-            /// <summary>Castle</summary>
-            Castle = 9,
-            /// <summary>CityA</summary>
-            CityA = 12,
-            /// <summary>CityB</summary>
-            CityB = 14,
-            /// <summary>CityWalls</summary>
-            CityWalls = 17,
-            /// <summary>DungeonsA</summary>
-            DungeonsA = 22,
-            /// <summary>DungeonsB</summary>
-            DungeonsB = 23,
-            /// <summary>DungeonsC</summary>
-            DungeonsC = 24,
-            /// <summary>DungeonsNEWCs</summary>
-            DungeonsNEWCs = 25,
-            /// <summary>Farm</summary>
-            Farm = 26,
-            /// <summary>Fences</summary>
-            Fences = 29,
-            /// <summary>MagesGuild</summary>
-            MagesGuild = 35,
-            /// <summary>Manor</summary>
-            Manor = 38,
-            /// <summary>MerchantHomes</summary>
-            MerchantHomes = 42,
-            /// <summary>TavernExteriors</summary>
-            TavernExteriors = 58,
-            /// <summary>TempleExteriors</summary>
-            TempleExteriors = 61,
-            /// <summary>Village</summary>
-            Village = 64,
-            /// <summary>Roofs</summary>
-            Roofs = 69,
-        }
 
         #endregion
 
@@ -160,17 +128,17 @@ namespace DaggerfallConnect
         /// </summary>
         /// <param name="Type">Terrain type.</param>
         /// <returns>File name of texture archive for specified terrain type.</returns>
-        public string GetTerrainFileName(TerrainBases Type)
+        public string GetTerrainFileName(DFLocation.ClimateBases Type)
         {
             switch (Type)
             {
-                case TerrainBases.Desert:
+                case DFLocation.ClimateBases.Desert:
                     return "TEXTURE.002";
-                case TerrainBases.Mountain:
+                case DFLocation.ClimateBases.Mountain:
                     return "TEXTURE.102";
-                case TerrainBases.Temperate:
+                case DFLocation.ClimateBases.Temperate:
                     return "TEXTURE.302";
-                case TerrainBases.Swamp:
+                case DFLocation.ClimateBases.Swamp:
                     return "TEXTURE.402";
                 default:
                     return string.Empty;

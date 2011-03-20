@@ -48,6 +48,120 @@ namespace DaggerfallConnect
         /// </summary>
         public LocationDungeon Dungeon;
 
+        /// <summary>
+        /// Climate of this location.
+        /// </summary>
+        public ClimateBases Climate;
+
+        /// <summary>
+        /// Political alignment of this location (equal to region index).
+        /// </summary>
+        public int Politic;
+
+        #endregion
+
+        #region Climate Enumerations
+
+        /// <summary>
+        /// Climate base enumeration for climate-swapping textures.
+        /// </summary>
+        public enum ClimateBases
+        {
+            /// <summary>Unknown climate.</summary>
+            Unknown = -1,
+            /// <summary>Desert climate base.</summary>
+            Desert = 0,
+            /// <summary>Mountain climate base.</summary>
+            Mountain = 100,
+            /// <summary>Temperate/Woodland climate base.</summary>
+            Temperate = 300,
+            /// <summary>Swamp climate base.</summary>
+            Swamp = 400,
+        }
+
+        /// <summary>
+        /// Offsets from climate base to texture set for climate-swapping textures.
+        /// </summary>
+        private enum ClimateOffsets
+        {
+            /// <summary>Unknown</summary>
+            Unknown = -1,
+            /// <summary>Terrain</summary>
+            Terrain = 2,
+            /// <summary>Ruins</summary>
+            Ruins = 7,
+            /// <summary>Castle</summary>
+            Castle = 9,
+            /// <summary>PalaceInt</summary>
+            PalaceInt = 11,
+            /// <summary>CityA</summary>
+            CityA = 12,
+            /// <summary>CityB</summary>
+            CityB = 14,
+            /// <summary>CityInt</summary>
+            CityInt = 16,
+            /// <summary>CityWalls</summary>
+            CityWalls = 17,
+            /// <summary>CryptA</summary>
+            CryptA = 19,
+            /// <summary>CryptB</summary>
+            CryptB = 20,
+            /// <summary>DungeonsA</summary>
+            DungeonsA = 22,
+            /// <summary>DungeonsB</summary>
+            DungeonsB = 23,
+            /// <summary>DungeonsC</summary>
+            DungeonsC = 24,
+            /// <summary>DungeonsNEWCs</summary>
+            DungeonsNEWCs = 25,
+            /// <summary>Farm</summary>
+            Farm = 26,
+            /// <summary>FarmInt</summary>
+            FarmInt = 28,
+            /// <summary>Fences</summary>
+            Fences = 29,
+            /// <summary>MagesGuild</summary>
+            MagesGuild = 35,
+            /// <summary>MagesGuildInt</summary>
+            MagesGuildInt = 37,
+            /// <summary>Manor</summary>
+            Manor = 38,
+            /// <summary>ManorInt</summary>
+            ManorInt = 40,
+            /// <summary>MarbleFloors</summary>
+            MarbleFloors = 41,
+            /// <summary>MerchantHomes</summary>
+            MerchantHomes = 42,
+            /// <summary>MerchantHomesInt</summary>
+            MerchantHomesInt = 44,
+            /// <summary>Mines</summary>
+            Mines = 45,
+            /// <summary>Misc</summary>
+            Misc = 46,
+            /// <summary>Caves</summary>
+            Caves = 47,
+            /// <summary>Paintings</summary>
+            Paintings = 48,
+            /// <summary>TavernExteriors</summary>
+            TavernExteriors = 58,
+            /// <summary>TavernInt</summary>
+            TavernInt = 60,
+            /// <summary>TempleExteriors</summary>
+            TempleExteriors = 61,
+            /// <summary>TempleInt</summary>
+            TempleInt = 63,
+            /// <summary>Village</summary>
+            Village = 64,
+            /// <summary>VillageInt</summary>
+            VillageInt = 66,
+            /// <summary>Sewer</summary>
+            Sewer = 68,
+            /// <summary>Roofs</summary>
+            Roofs = 69,
+            /// <summary>Doors</summary>
+            Doors = 74,
+        }
+
         #endregion
 
         #region Shared Child Structures
