@@ -95,12 +95,11 @@ namespace DaggerfallConnect
         /// <param name="format"></param>
         public DFManualImage(int width, int height, DFBitmap.Formats format)
         {
-            // Create bitmap data
+            // Create bitmap object
             manualBitmap = new DFBitmap();
             manualBitmap.Width = width;
             manualBitmap.Height = height;
             manualBitmap.Format = format;
-            manualBitmap.Data = new byte[width * height];
 
             // Set stride (1 byte per pixel for indexed, 4 bytes per pixel for all other formats)
             switch (format)
@@ -112,6 +111,9 @@ namespace DaggerfallConnect
                     manualBitmap.Stride = width*4;
                     break;
             }
+
+            // Create bitmap data
+            manualBitmap.Data = new byte[manualBitmap.Stride * height];
         }
 
         #endregion
@@ -235,11 +237,61 @@ namespace DaggerfallConnect
         public void SetData(byte[] Data)
         {
             // Check size of incoming array against image dimensions
-            //if (Data.Length != manualBitmap.Stride * manualBitmap.Height)
-            //    throw new Exception("Invalid buffer length for DFManualImage.SetData().");
+            if (Data.Length != manualBitmap.Stride * manualBitmap.Height)
+                throw new Exception("Invalid buffer length for DFManualImage.SetData().");
 
             // Store the data
             manualBitmap.Data = Data;
+        }
+
+        /// <summary>
+        /// Clears image to specified color.
+        /// </summary>
+        /// <param name="a">Alpha.</param>
+        /// <param name="r">Red.</param>
+        /// <param name="g">Green.</param>
+        /// <param name="b">Blue.</param>
+        public void Clear(byte a, byte r, byte g, byte b)
+        {
+            // Check data buffer created
+            if (manualBitmap.Data == null)
+                throw new Exception("Invalid image buffer in DFManualImage.Clear().");
+
+            // Clear to color, respecting format
+            int index = 0;
+            for (int i = 0; i < manualBitmap.Width * manualBitmap.Height; i++ )
+            {
+                // Write colour values
+                switch (manualBitmap.Format)
+                {
+                    case DFBitmap.Formats.ARGB:
+                        manualBitmap.Data[index++] = b;
+                        manualBitmap.Data[index++] = g;
+                        manualBitmap.Data[index++] = r;
+                        manualBitmap.Data[index++] = a;
+                        break;
+                    case DFBitmap.Formats.RGBA:
+                        manualBitmap.Data[index++] = a;
+                        manualBitmap.Data[index++] = b;
+                        manualBitmap.Data[index++] = g;
+                        manualBitmap.Data[index++] = r;
+                        break;
+                    case DFBitmap.Formats.ABGR:
+                        manualBitmap.Data[index++] = r;
+                        manualBitmap.Data[index++] = g;
+                        manualBitmap.Data[index++] = b;
+                        manualBitmap.Data[index++] = a;
+                        break;
+                    case DFBitmap.Formats.BGRA:
+                        manualBitmap.Data[index++] = a;
+                        manualBitmap.Data[index++] = r;
+                        manualBitmap.Data[index++] = g;
+                        manualBitmap.Data[index++] = b;
+                        break;
+                    default:
+                        throw new Exception("Unknown image format used in DFManualImage.Clear().");
+                }
+            }
         }
 
         #endregion

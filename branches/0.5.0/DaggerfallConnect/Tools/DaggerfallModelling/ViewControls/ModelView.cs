@@ -28,6 +28,8 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        string arena2Folder = string.Empty;
+
         int blockIndex = -1;
 
         SpriteBatch spriteBatch;
@@ -49,7 +51,16 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Public Properties
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets Arena2 folder.
+        /// </summary>
+        string Arena2Folder
+        {
+            get { return arena2Folder; }
+            set { SetArena2Folder(value); }
+        }
 
         #endregion
 
@@ -74,8 +85,8 @@ namespace DaggerfallModelling.ViewControls
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // Create MapManager
-            //blockManager = new BlockManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
+            // TEST: Create texture manager
+            TextureManager textureManager = new TextureManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
@@ -150,6 +161,15 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Private Methods
+
+        void SetArena2Folder(string path)
+        {
+            // Check folder valid
+            if (!Directory.Exists(path))
+                throw new Exception("Specified ARENA2 path does not exist.");
+
+            arena2Folder = path;
+        }
 
         #endregion
 

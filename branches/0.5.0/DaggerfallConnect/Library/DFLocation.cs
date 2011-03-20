@@ -80,9 +80,9 @@ namespace DaggerfallConnect
         }
 
         /// <summary>
-        /// Offsets from climate base to texture set for climate-swapping textures.
+        /// Offsets from ClimateBases to texture set for climate-swapping textures.
         /// </summary>
-        private enum ClimateOffsets
+        public enum ClimateSets
         {
             /// <summary>Unknown</summary>
             Unknown = -1,
@@ -160,6 +160,19 @@ namespace DaggerfallConnect
             Roofs = 69,
             /// <summary>Doors</summary>
             Doors = 74,
+        }
+
+        /// <summary>
+        /// Offsets from ClimateSets for weather variations.
+        /// </summary>
+        public enum ClimateWeather
+        {
+            /// <summary>Dry summer weather. Use outdoors and indoors.</summary>
+            Normal = 0,
+            /// <summary>Buildings and ground covered in snow (do not use indoors).</summary>
+            Snow = 1,
+            /// <summary>Ground wet from rain (do not apply to buildings or use indoors).</summary>
+            Rain = 2,
         }
 
         #endregion

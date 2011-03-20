@@ -56,6 +56,15 @@ namespace DaggerfallModelling
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
             mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
 
+            // TEST
+            ImageFileReader imageFileReader = new ImageFileReader(arena2Path);
+            DFImageFile dfImageFile = imageFileReader.LoadFile("TEXTURE.025");
+            //Bitmap bm = dfImageFile.GetManagedBitmap(0, 0, false, true);
+            DFBitmap dfBitmap = dfImageFile.GetBitmapFormat(0, 0, 0, DFBitmap.Formats.ARGB);
+            //DFManualImage mi = new DFManualImage(dfBitmap);
+            //Bitmap bm = mi.GetManagedBitmap(0, 0, false, true);
+            //bm.Save("C:\\test\\bla.png", System.Drawing.Imaging.ImageFormat.Png);
+
             // Initialise map browser
             autoMapView1.BlocksFile = blocksFile;
             autoMapView1.MapsFile = mapsFile;

@@ -208,13 +208,18 @@ namespace DaggerfallConnect
         /// <returns>DFBitmap object.</returns>
         public DFBitmap GetBitmapFormat(int Record, int Frame, byte AlphaIndex, DFBitmap.Formats Format)
         {
+            // Get as indexed image
+            if (Format == DFBitmap.Formats.Indexed)
+                return GetDFBitmap(Record, Frame);
+
             // Create new bitmap
+            const int format = 4;
             DFBitmap srcBitmap = GetDFBitmap(Record, Frame);
             DFBitmap dstBitmap = new DFBitmap();
             dstBitmap.Format = Format;
             dstBitmap.Width = srcBitmap.Width;
             dstBitmap.Height = srcBitmap.Height;
-            dstBitmap.Stride = dstBitmap.Width * 4;
+            dstBitmap.Stride = dstBitmap.Width * format;
             dstBitmap.Data = new byte[dstBitmap.Stride * dstBitmap.Height];
 
             // Write pixel data to array
@@ -259,7 +264,14 @@ namespace DaggerfallConnect
                             dstBitmap.Data[dstPos++] = g;
                             dstBitmap.Data[dstPos++] = b;
                             break;
+                        default:
+                            throw new Exception("Unknown output format.");
                     }
+                }
+                else
+                {
+                    // Step over alpha pixels
+                    dstPos += format;
                 }
             }
 
@@ -281,8 +293,8 @@ namespace DaggerfallConnect
         internal Bitmap GetManagedBitmap(ref DFBitmap DFBitmap, bool IndexedColour, bool MakeTransparent)
         {
             // Validate
-            if (DFBitmap.Data == null)
-                return new Bitmap(4, 4);
+            if (DFBitmap.Data == null || DFBitmap.Format != DFBitmap.Formats.Indexed)
+                throw new Exception("Invalid bitmap data or format.");
 
             // Specify a special colour unused in Daggerfall's palette for transparency check
             Color TransparentRGB = Color.FromArgb(255, 1, 2);

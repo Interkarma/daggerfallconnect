@@ -61,7 +61,7 @@ namespace DaggerfallConnect
         #region Child Structures
 
         /// <summary>
-        /// Describes location types that appear on the travel map.
+        /// Describes location types that appear on the automap.
         /// </summary>
         public enum LocationTypes
         {
@@ -102,6 +102,72 @@ namespace DaggerfallConnect
             TownHamlet = 161,
             /// <summary>Small settlement.</summary>
             TownVillage = 162,
+        }
+
+        /// <summary>
+        /// These are the building types used for the automap (as value+1), quest subsystem, and
+        ///  location building database.
+        /// </summary>
+        public enum BuildingTypes
+        {
+            /// <summary>Alchemist</summary>
+            Alchemist = 0x00,
+            /// <summary>HouseForSale</summary>
+            HouseForSale = 0x01,
+            /// <summary>Amorer</summary>
+            Amorer = 0x02,
+            /// <summary>Bank</summary>
+            Bank = 0x03,
+            /// <summary>Town4</summary>
+            Town4 = 0x04,
+            /// <summary>Bookseller</summary>
+            Bookseller = 0x05,
+            /// <summary>ClothingStore</summary>
+            ClothingStore = 0x06,
+            /// <summary>FurnitureStore</summary>
+            FurnitureStore = 0x07,
+            /// <summary>GemStore</summary>
+            GemStore = 0x08,
+            /// <summary>GeneralStore</summary>
+            GeneralStore = 0x09,
+            /// <summary>Library</summary>
+            Library = 0x0a,
+            /// <summary>Guildhall</summary>
+            Guildhall = 0x0b,
+            /// <summary>PawnShop</summary>
+            PawnShop = 0x0c,
+            /// <summary>WeaponSmith</summary>
+            WeaponSmith = 0x0d,
+            /// <summary>Temple</summary>
+            Temple = 0x0e,
+            /// <summary>Tavern</summary>
+            Tavern = 0x0f,
+            /// <summary>Palace</summary>
+            Palace = 0x10,
+            /// <summary>House1</summary>
+            House1 = 0x11,
+            /// <summary>House2</summary>
+            House2 = 0x12,
+            /// <summary>House3</summary>
+            House3 = 0x13,
+            /// <summary>House4</summary>
+            House4 = 0x14,
+            /// <summary>House5</summary>
+            House5 = 0x15,
+            /// <summary>House6</summary>
+            House6 = 0x16,
+            /// <summary>Town23</summary>
+            Town23 = 0x17,
+            /// <summary>Ship</summary>
+            Ship = 0x18,
+            /// <summary>Special1</summary>
+            Special1 = 0x74,
+            /// <summary>Special2</summary>
+            Special2 = 0xdf,
+            /// <summary>Special3</summary>
+            Special3 = 0xf9,
+            /// <summary>Special4</summary>
+            Special4 = 0xfa,
         }
 
         /// <summary>
