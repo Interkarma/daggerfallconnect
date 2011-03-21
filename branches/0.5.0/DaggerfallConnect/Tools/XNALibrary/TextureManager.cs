@@ -28,7 +28,11 @@ namespace XNALibrary
     using ClimateWeather = DFLocation.ClimateWeather;
 
     /// <summary>
-    /// Helper class to load and store Daggerfall textures for XNA.
+    /// Helper class to load and store Daggerfall textures for XNA. This class will pre-load
+    ///  textures for each climate set in a different thread at construct time. Each climate
+    ///  set is compiled into a texture atlas, reducing state changes for large scenes (whole
+    ///  dungeons and cities). It is also possible to load miscellaneous textures for very
+    ///  small scenes or when using a climate atlas is not desired.
     /// </summary>
     public class TextureManager
     {
@@ -39,9 +43,9 @@ namespace XNALibrary
         private ImageFileReader imageFileReader;
 
         // Flag raised when thread loading climate textures completed
-        bool threadLoadCompleted = false;
+        bool climatePreLoadCompleted = false;
 
-        // Atlas dictionaries for each climate type
+        // Atlas layout dictionaries for each climate type
         private Dictionary<int, RectangleF> desertDict;
         private Dictionary<int, RectangleF> mountainDict;
         private Dictionary<int, RectangleF> temperateDict;
@@ -59,17 +63,32 @@ namespace XNALibrary
         private Texture2D temperateAtlas;
         private Texture2D swampAtlas;
 
+        // Dictionary for misc textures
+        private Dictionary<int, Texture2D> miscTexturesDict;
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Parameters of climate atlas during build.
+        /// </summary>
+        private struct AtlasParams
+        {
+            public ClimateBases climate;
+            public int width;
+            public int height;
+            public int format;
+            public int stride;
+            public int xpos;
+            public int ypos;
+            public int maxRowHeight;
+            public byte[] buffer;
+        }
+
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets ImageFileReader.
-        /// </summary>
-        public ImageFileReader ImageFileReader
-        {
-            get { return imageFileReader; }
-        }
 
         /// <summary>
         /// Gets Arena2 path set at construction.
@@ -88,11 +107,11 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// True if thread preloading textures has finished.
+        /// True if thread preloading climate textures has finished.
         /// </summary>
-        public bool ThreadLoadCompleted
+        public bool ClimatePreLoadCompleted
         {
-            get { return threadLoadCompleted; }
+            get { return climatePreLoadCompleted; }
         }
 
         #endregion
@@ -112,24 +131,97 @@ namespace XNALibrary
             imageFileReader.AutoDiscard = true;
 
             // Create dictionaries
+            miscTexturesDict = new Dictionary<int, Texture2D>();
             desertDict = new Dictionary<int, RectangleF>();
             mountainDict = new Dictionary<int, RectangleF>();
             temperateDict = new Dictionary<int, RectangleF>();
             swampDict = new Dictionary<int, RectangleF>();
 
             // Start reading climate textures in another thread
-            Thread thread = new Thread(this.ThreadLoadTextures);
+            Thread thread = new Thread(this.ThreadLoadClimateTextures);
             thread.Start();
         }
 
         #endregion
 
-        #region Public Methods
+        #region Misc Textures
+
+        /// <summary>
+        /// Get unique key for misc texture.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
+        /// <returns>Misc texture key.</returns>
+        public int GetMiscTextureKey(int archive, int record, int frame)
+        {
+            return (archive * 10000) + (record * 100) + frame;
+        }
+
+        /// <summary>
+        /// Loads a misc texture based on indices.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
+        /// <returns>Misc texture key.</returns>
+        public int LoadMiscTexture(int archive, int record, int frame)
+        {
+            // Just return key if already in dictionary
+            int key = GetMiscTextureKey(archive, record, frame);
+            if (miscTexturesDict.ContainsKey(key))
+                return key;
+
+            // Get DF texture in ARGB format so we can just SetData the byte array into XNA
+            DFImageFile textureFile = imageFileReader.LoadFile(TextureFile.IndexToFileName(archive));
+            DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
+
+            // Create XNA texture
+            Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            texture.SetData<byte>(dfbitmap.Data);
+
+            // Store texture in dictionary
+            miscTexturesDict.Add(key, texture);
+
+            return key;
+        }
+
+        /// <summary>
+        /// Get misc texture based on key. The manager will return NULL if texture does not exist.
+        /// </summary>
+        /// <param name="key">Misc texture key.</param>
+        /// <returns>Texture2D.</returns>
+        public Texture2D GetMiscTexture(int key)
+        {
+            if (!miscTexturesDict.ContainsKey(key))
+                return null;
+            else
+                return miscTexturesDict[key];
+        }
+
+        /// <summary>
+        /// Removes misc texture based on key.
+        /// </summary>
+        /// <param name="key"></param>
+        public void RemoveMiscTexture(int key)
+        {
+            if (miscTexturesDict.ContainsKey(key))
+                miscTexturesDict.Remove(key);
+        }
+
+        /// <summary>
+        /// Clear all misc textures.
+        /// </summary>
+        public void ClearMiscTextures()
+        {
+            miscTexturesDict.Clear();
+        }
+
         #endregion
 
         #region Threading Methods
 
-        private void ThreadLoadTextures()
+        private void ThreadLoadClimateTextures()
         {
             // Build texture atlas for each climate type
             long startTime = DateTime.Now.Ticks;
@@ -138,31 +230,15 @@ namespace XNALibrary
             BuildClimateAtlas(ClimateBases.Temperate, out temperateParams, out temperateAtlas);
             BuildClimateAtlas(ClimateBases.Swamp, out swampParams, out swampAtlas);
             long totalTime = DateTime.Now.Ticks - startTime;
-            threadLoadCompleted = true;
+            climatePreLoadCompleted = true;
 #if DEBUG
-            Console.WriteLine("Texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);
+            Console.WriteLine("Climate texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);
 #endif
         }
 
         #endregion
 
         #region Atlas Building
-
-        /// <summary>
-        /// Parameters of atlas during build.
-        /// </summary>
-        private struct AtlasParams
-        {
-            public ClimateBases climate;
-            public int width;
-            public int height;
-            public int format;
-            public int stride;
-            public int xpos;
-            public int ypos;
-            public int maxRowHeight;
-            public byte[] buffer;
-        }
 
         /// <summary>
         /// Builds atlas of all textures specific to a climate.
@@ -298,7 +374,9 @@ namespace XNALibrary
             DFImageFile imageFile = imageFileReader.LoadFile(filename);
             if (imageFile == null)
             {
+#if DEBUG
                 Console.WriteLine("Image file `{0}` does not exist.", filename);
+#endif
                 return;
             }
 
@@ -324,7 +402,9 @@ namespace XNALibrary
             int stepx = 64;
             if (dfBitmap.Width > 64)
             {
+#if DEBUG
                 Console.WriteLine("Width > 64.");
+#endif
                 return;
             }
 
@@ -336,7 +416,9 @@ namespace XNALibrary
                 stepy = 128;
             else
             {
+#if DEBUG
                 Console.WriteLine("Height > 128.");
+#endif
                 return;
             }
 
@@ -392,7 +474,7 @@ namespace XNALibrary
 
         #endregion
 
-        #region Dictionary Management
+        #region Atlas Dictionary Management
 
         private int TextureKey(ClimateSets set, ClimateWeather weather, int record)
         {

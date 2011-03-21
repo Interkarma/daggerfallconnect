@@ -22,14 +22,15 @@ using DaggerfallConnect.Arena2;
 namespace XNALibrary
 {
     /// <summary>
-    /// Helper class to load and store Daggerfall models for XNA.
+    /// Helper class to load and store Daggerfall models for XNA. Does not load textures or normalise UV coordinates.
+    ///  UV coordinates are left as per DFMesh. This is to allow users to apply their own texturing scheme
+    ///  independant of model loading. Mesh data is otherwise completely refactored for XNA.
     /// </summary>
     public class ModelManager
     {
 
         #region Class Variables
 
-        private TextureManager textureManager;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
         private Dictionary<int, Model> modelDict;
@@ -41,30 +42,35 @@ namespace XNALibrary
         /// <summary>Defines mesh data and bounding box.</summary>
         public struct Model
         {
+            /// <summary>Axis-aligned bounding box of mesh data.</summary>
             public BoundingBox BoundingBox;
+
+            /// <summary>Vertex array containing position, normal, and texture coordinates.</summary>
             public VertexPositionNormalTexture[] Vertices;
+
+            /// <summary>Data for each SubMesh, grouped by texture.</summary>
             public SubMeshData[] SubMeshes;
         }
 
         /// <summary>Defines submesh data.</summary>
         public struct SubMeshData
         {
+            /// <summary>Texture archive index.</summary>
+            public int TextureArchive;
+
+            /// <summary>Texture record index.</summary>
+            public int TextureRecord;
+
+            /// <summary>User-defined texture key.</summary>
             public int TextureKey;
+
+            /// <summary>Index array desribing the triangles of this SubMesh.</summary>
             public short[] Indices;
         }
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets the texture manager set at construction.
-        /// </summary>
-        TextureManager TextureManager
-        {
-            get { return textureManager; }
-        }
-
         #endregion
 
         #region Constructors
@@ -72,13 +78,11 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ModelManager(TextureManager textureManager)
+        public ModelManager(GraphicsDevice device, string arena2Path)
         {
             // Setup
-            graphicsDevice = textureManager.GraphicsDevice;
-            this.textureManager = textureManager;
-            string path = Path.Combine(textureManager.Arena2Path, "ARCH3D.BSA");
-            arch3dFile = new Arch3dFile(path, FileUsage.UseDisk, true);
+            graphicsDevice = device;
+            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             modelDict = new Dictionary<int, Model>();
         }
 
@@ -87,20 +91,40 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
-        /// Load and convert a Daggerfall mesh.
+        /// Load and convert Daggerfall mesh data.
         /// </summary>
-        /// <param name="index">Index of mesh.</param>
+        /// <param name="key">ID of mesh.</param>
+        /// <returns>True if successful.</returns>
+        public bool LoadModel(int key)
+        {
+            // Exit if already loaded
+            if (modelDict.ContainsKey(key))
+                return true;
+
+            // Load mesh data
+            int index = arch3dFile.GetRecordIndex((uint)key);
+            Model model = LoadMeshData(index);
+            modelDict.Add(key, model);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets a Daggerfall model. Loads mesh if not already loaded.
+        /// </summary>
+        /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
-        public Model LoadMesh(int index)
+        public Model GetModel(int key)
         {
             // Return model if already loaded
-            if (modelDict.ContainsKey(index))
-                return modelDict[index];
+            if (modelDict.ContainsKey(key))
+                return modelDict[key];
 
-            // Load mesh if not already loaded
-            Model model = LoadMeshData(index);
-            modelDict.Add(index, model);
-            return model;
+            // Load model
+            if (!LoadModel(key))
+                throw new Exception(string.Format("Failed to load model with key `{0}`.", key));
+
+            return modelDict[key];
         }
 
         #endregion
@@ -118,28 +142,11 @@ namespace XNALibrary
             Model model = new Model();
             DFMesh dfMesh = arch3dFile.GetMesh(index);
 
-            // Load mesh data. These methods could be combined to save on loops over the submeshes and vertices.
-            // They have been split out here for clarity and to demonstrate each step in isolation.
-            // Whatever buffer scheme you use, the same basic process for converting to XNA formats will be applied.
-            LoadTextures(ref dfMesh);
+            // Load mesh data
             LoadVertices(ref dfMesh, ref model);
             LoadIndices(ref dfMesh, ref model);
 
             return model;
-        }
-
-        /// <summary>
-        /// Loads all textures for this DFMesh.
-        /// </summary>
-        /// <param name="dfMesh">DFMesh object.</param>
-        private void LoadTextures(ref DFMesh dfMesh)
-        {
-            // Loop through all submeshes
-            foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
-            {
-                // TODO: Handle textures
-                //textureManager.LoadTexture(dfSubMesh.TextureArchive, dfSubMesh.TextureRecord, 0);
-            }
         }
 
         /// <summary>
@@ -160,10 +167,6 @@ namespace XNALibrary
             int vertexCount = 0;
             foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
             {
-                // TODO: Get texture dimensions. This is required to normalise Daggerfall's texture coordinates
-                //int textureKey = textureManager.GetTextureKey(dfSubMesh.TextureArchive, dfSubMesh.TextureRecord, 0);
-                //Texture2D texture = textureManager.GetTexture(textureKey);
-
                 // Loop through all planes in this submesh
                 foreach (DFMesh.DFPlane dfPlane in dfSubMesh.Planes)
                 {
@@ -179,7 +182,7 @@ namespace XNALibrary
                         // Store vertex data
                         model.Vertices[vertexCount].Position = position;
                         model.Vertices[vertexCount].Normal = normal;
-                        //mesh.Vertices[vertexCount].TextureCoordinate = new Vector2(dfPoint.U / texture.Width, dfPoint.V / texture.Height);
+                        model.Vertices[vertexCount].TextureCoordinate = new Vector2(dfPoint.U, dfPoint.V);
                         vertexCount++;
 
                         // Compare min and max vectors
@@ -201,7 +204,7 @@ namespace XNALibrary
         /// Build indices for this DFMesh.
         /// </summary>
         /// <param name="dfMesh">DFMesh source object.</param>
-        /// <param name="model">Mesh object.</param>
+        /// <param name="model">Model object.</param>
         private void LoadIndices(ref DFMesh dfMesh, ref Model model)
         {
             // Allocate local submesh buffer
@@ -211,11 +214,12 @@ namespace XNALibrary
             int subMeshCount = 0, vertexCount = 0;
             foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
             {
+                // Set texture indices
+                model.SubMeshes[subMeshCount].TextureArchive = dfSubMesh.TextureArchive;
+                model.SubMeshes[subMeshCount].TextureRecord = dfSubMesh.TextureRecord;
+
                 // Allocate index buffer
                 model.SubMeshes[subMeshCount].Indices = new short[dfSubMesh.TotalTriangles * 3];
-
-                // TODO: Store texture key for this submesh
-                //mesh.SubMeshes[subMeshCount].textureKey = textureManager.GetTextureKey(dfSubMesh.TextureArchive, dfSubMesh.TextureRecord, 0);
 
                 // Loop through all planes in this submesh
                 int indexCount = 0;

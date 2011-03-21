@@ -28,11 +28,13 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
-        string arena2Folder = string.Empty;
+        private string arena2Folder = string.Empty;
+        private TextureManager textureManager;
+        private ModelManager modelManager;
 
-        SpriteBatch spriteBatch;
-        VertexDeclaration vertexDeclaration;
-        BasicEffect effect;
+        private SpriteBatch spriteBatch;
+        private VertexDeclaration vertexDeclaration;
+        private BasicEffect effect;
 
         private float nearPlaneDistance = 1.0f;
         private float farPlaneDistance = 50000.0f;
@@ -40,7 +42,7 @@ namespace DaggerfallModelling.ViewControls
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
 
-        private Vector3 cameraPosition = new Vector3(1024, 1000, 3000);
+        private Vector3 cameraPosition = new Vector3(0, 400, 2000);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
         //private float cameraYaw = 0.0f;
@@ -50,11 +52,18 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Structures
 
+        /// <summary>
+        /// Different view modes supported by this control.
+        /// </summary>
         public enum ViewMode
         {
+            /// <summary>View a single model.</summary>
             SingleModel,
+            /// <summary>View a flow layout of model thumbnails.</summary>
             ModelThumbs,
+            /// <summary>View a exterior or dungeon block.</summary>
             Block,
+            /// <summary>View an entire city or dungeon.</summary>
             Map,
         }
 
@@ -94,9 +103,12 @@ namespace DaggerfallModelling.ViewControls
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TEST: Create manager
-            TextureManager textureManager = new TextureManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
-            ModelManager modelManager = new ModelManager(textureManager);
+            // TEST: Create managers
+            textureManager = new TextureManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
+            modelManager = new ModelManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
+
+            // TEST: Load a model
+            modelManager.LoadModel(456);
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
@@ -126,12 +138,8 @@ namespace DaggerfallModelling.ViewControls
             GraphicsDevice.VertexDeclaration = vertexDeclaration;
 
             // Set view and projection matrices
-            //effect.View = viewMatrix;
-            //effect.Projection = projectionMatrix;
-
-            // Draw the block
-            //Matrix matrix = Matrix.Identity;
-            //blockManager.DrawBlock(blockIndex, ref effect, ref matrix);
+            effect.View = viewMatrix;
+            effect.Projection = projectionMatrix;
 
             //spriteBatch.Begin();
             //spriteBatch.Draw(GetThumbnailTexture(0), new Vector2(0, 0), XNAColor.White);

@@ -56,7 +56,7 @@
     <Compile Include="DFBlock.cs" />
     <Compile Include="DFImageFile.cs" />
     <Compile Include="DFLocation.cs" />
-    <Compile Include="DFManualImage.cs" />
+    <Compile Include="Utility\DFManualImage.cs" />
     <Compile Include="DFMesh.cs" />
     <Compile Include="DFPalette.cs" />
     <Compile Include="DFRegion.cs" />
@@ -68,9 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License\DaggerfallConnect.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
