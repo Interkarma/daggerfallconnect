@@ -69,14 +69,14 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DFResources\Texture.cs" />
+    <Compile Include="ModelManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DFResources\Model.cs" />
     <Compile Include="TextureManager.cs" />
   </ItemGroup>
   <ItemGroup>

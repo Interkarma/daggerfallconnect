@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Drawing;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
@@ -21,7 +22,7 @@ using DaggerfallConnect.Arena2;
 namespace XNALibrary
 {
 
-    // Use climate enums locally
+    // Use climate enums in this namespace
     using ClimateBases = DFLocation.ClimateBases;
     using ClimateSets = DFLocation.ClimateSets;
     using ClimateWeather = DFLocation.ClimateWeather;
@@ -39,6 +40,12 @@ namespace XNALibrary
 
         // Flag raised when thread loading climate textures completed
         bool threadLoadCompleted = false;
+
+        // Atlas dictionaries for each climate type
+        private Dictionary<int, RectangleF> desertDict;
+        private Dictionary<int, RectangleF> mountainDict;
+        private Dictionary<int, RectangleF> temperateDict;
+        private Dictionary<int, RectangleF> swampDict;
 
         // Atlas params for each climate type
         private AtlasParams desertParams;
@@ -65,6 +72,22 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets Arena2 path set at construction.
+        /// </summary>
+        public string Arena2Path
+        {
+            get { return imageFileReader.Arena2Path; }
+        }
+
+        /// <summary>
+        /// Gets the GraphicsDevice set at construction.
+        /// </summary>
+        public GraphicsDevice GraphicsDevice
+        {
+            get { return graphicsDevice; }
+        }
+
+        /// <summary>
         /// True if thread preloading textures has finished.
         /// </summary>
         public bool ThreadLoadCompleted
@@ -80,12 +103,19 @@ namespace XNALibrary
         /// Constructor.
         /// </summary>
         /// <param name="device">Graphics Device.</param>
-        /// <param name="arena2Folder">Path to Arena2 folder.</param>
-        public TextureManager(GraphicsDevice device, string arena2Folder)
+        /// <param name="arena2Path">Path to Arena2 folder.</param>
+        public TextureManager(GraphicsDevice device, string arena2Path)
         {
-            // Setup
+            // Setup            
             graphicsDevice = device;
-            imageFileReader = new ImageFileReader(arena2Folder);
+            imageFileReader = new ImageFileReader(arena2Path);
+            imageFileReader.AutoDiscard = true;
+
+            // Create dictionaries
+            desertDict = new Dictionary<int, RectangleF>();
+            mountainDict = new Dictionary<int, RectangleF>();
+            temperateDict = new Dictionary<int, RectangleF>();
+            swampDict = new Dictionary<int, RectangleF>();
 
             // Start reading climate textures in another thread
             Thread thread = new Thread(this.ThreadLoadTextures);
@@ -95,60 +125,6 @@ namespace XNALibrary
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Get unique key for specified texture.
-        /// </summary>
-        /// <param name="archive">Archive index.</param>
-        /// <param name="record">Record index.</param>
-        /// <param name="frame">Frame index.</param>
-        /// <returns>Texture key.</returns>
-        //public int GetTextureKey(int archive, int record, int frame)
-        //{
-        //    return (archive * 10000) + (record * 100) + frame;
-        //}
-
-        /// <summary>
-        /// Loads texture based on index.
-        /// </summary>
-        /// <param name="archive">Archive index.</param>
-        /// <param name="record">Record index.</param>
-        /// <param name="frame">Frame index.</param>
-        /// <returns>Texture key.</returns>
-        //public int LoadTexture(int archive, int record, int frame)
-        //{
-        //    // Just return key if already in dictionary
-        //    int textureKey = GetTextureKey(archive, record, frame);
-        //    if (textureDictionary.ContainsKey(textureKey))
-        //        return textureKey;
-
-        //    // Get DF texture in ARGB format so we can just SetData the byte array into XNA
-        //    DFImageFile textureFile = imageFileReader.LoadFile(TextureFile.IndexToFileName(archive));
-        //    DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
-
-        //    // Create XNA texture
-        //    Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-        //    texture.SetData<byte>(dfbitmap.Data);
-
-        //    // Store texture in dictionary
-        //    textureDictionary.Add(textureKey, texture);
-
-        //    return textureKey;
-        //}
-
-        /// <summary>
-        /// Get texture based on key. The manager will return NULL if texture does not exist.
-        /// </summary>
-        /// <param name="textureKey"></param>
-        /// <returns></returns>
-        //public Texture2D GetTexture(int textureKey)
-        //{
-        //    if (!textureDictionary.ContainsKey(textureKey))
-        //        return null;
-        //    else
-        //        return textureDictionary[textureKey];
-        //}
-
         #endregion
 
         #region Threading Methods
@@ -164,7 +140,7 @@ namespace XNALibrary
             long totalTime = DateTime.Now.Ticks - startTime;
             threadLoadCompleted = true;
 #if DEBUG
-            Console.WriteLine("Texture build thread completed in {0} milliseconds.", (float)totalTime / 10000.0f);
+            Console.WriteLine("Texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);
 #endif
         }
 
@@ -218,7 +194,7 @@ namespace XNALibrary
             DFManualImage mi = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
             mi.Clear(0xff, 0xff, 0, 0);
             DFBitmap dfBitmap = mi.DFBitmap;
-            AtlasDFBitmap(ref dfBitmap, ref ap);
+            AtlasDFBitmap(0, ref dfBitmap, ref ap);
 
 
             // Add terrain tiles (have normal, snow, and rain sets)
@@ -230,9 +206,6 @@ namespace XNALibrary
             // Add exterior textures (have normal and snow sets, but not rain)
             AtlasTextureFile(ClimateSets.Ruins, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.Ruins, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Snow, ref ap);
 
             AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Snow, ref ap);
@@ -288,7 +261,6 @@ namespace XNALibrary
             AtlasTextureFile(ClimateSets.ManorInt, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.MarbleFloors, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.MerchantHomesInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.PalaceInt, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.Mines, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.Caves, ClimateWeather.Normal, ref ap);
             AtlasTextureFile(ClimateSets.Paintings, ClimateWeather.Normal, ref ap);
@@ -316,11 +288,11 @@ namespace XNALibrary
         private void AtlasTextureFile(ClimateSets set, ClimateWeather weather, ref AtlasParams ap)
         {
             // Resolve climate set and weather to filename
-            string filename = imageFileReader.GetClimateTextureFileName(ap.climate, set, weather);
-            AtlasTextureFile(ref filename, ref ap);
+            string filename = ImageFileReader.GetClimateTextureFileName(ap.climate, set, weather);
+            AtlasTextureFile(set, weather, ref filename, ref ap);
         }
 
-        private void AtlasTextureFile(ref string filename, ref AtlasParams ap)
+        private void AtlasTextureFile(ClimateSets set, ClimateWeather weather, ref string filename, ref AtlasParams ap)
         {
             // Load texture file
             DFImageFile imageFile = imageFileReader.LoadFile(filename);
@@ -337,12 +309,17 @@ namespace XNALibrary
                 DFBitmap dfBitmap = imageFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
 
                 // Add bitmap
-                AtlasDFBitmap(ref dfBitmap, ref ap);
+                int key = TextureKey(set, weather, r);
+                AtlasDFBitmap(key, ref dfBitmap, ref ap);
             }
         }
 
-        private void AtlasDFBitmap(ref DFBitmap dfBitmap, ref AtlasParams ap)
+        private void AtlasDFBitmap(int key, ref DFBitmap dfBitmap, ref AtlasParams ap)
         {
+            // Check key is not already in dictionary
+            if (TextureExists(ap.climate, key))
+                throw new Exception("Texture key already exists.");
+
             // For now can only handle width <= 64 pixels
             int stepx = 64;
             if (dfBitmap.Width > 64)
@@ -389,6 +366,16 @@ namespace XNALibrary
 
             // Increment xpos
             ap.xpos += stepx * ap.format;
+
+            // Create texture layout
+            RectangleF textureRect = new RectangleF(
+                (float)(ap.xpos - dfBitmap.Width * ap.format) / (float)ap.stride,
+                (float)ap.ypos / (float)ap.height,
+                (float)(dfBitmap.Width) / (float)ap.stride,
+                (float)(dfBitmap.Height) / (float)ap.height);
+
+            // Add key to dictionary
+            AddTexture(ap.climate, key, ref textureRect);
         }
 
         private void AtlasNewRow(ref AtlasParams ap)
@@ -401,6 +388,53 @@ namespace XNALibrary
             // Reset column and max height
             ap.xpos = 0;
             ap.maxRowHeight = 0;
+        }
+
+        #endregion
+
+        #region Dictionary Management
+
+        private int TextureKey(ClimateSets set, ClimateWeather weather, int record)
+        {
+            return (int)set * 1000 + (int)weather * 100 + record;
+        }
+
+        private bool TextureExists(ClimateBases climate, int key)
+        {
+            switch (climate)
+            {
+                case ClimateBases.Desert:
+                    return desertDict.ContainsKey(key);
+                case ClimateBases.Mountain:
+                    return mountainDict.ContainsKey(key);
+                case ClimateBases.Temperate:
+                    return temperateDict.ContainsKey(key);
+                case ClimateBases.Swamp:
+                    return swampDict.ContainsKey(key);
+                default:
+                    throw new Exception("Invalid climate.");
+            }
+        }
+
+        private void AddTexture(ClimateBases climate, int key, ref RectangleF texture)
+        {
+            switch (climate)
+            {
+                case ClimateBases.Desert:
+                    desertDict.Add(key, texture);
+                    break;
+                case ClimateBases.Mountain:
+                    mountainDict.Add(key, texture);
+                    break;
+                case ClimateBases.Temperate:
+                    temperateDict.Add(key, texture);
+                    break;
+                case ClimateBases.Swamp:
+                    swampDict.Add(key, texture);
+                    break;
+                default:
+                    throw new Exception("Invalid climate.");
+            }
         }
 
         #endregion

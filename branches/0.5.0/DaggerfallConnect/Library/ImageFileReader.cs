@@ -443,6 +443,10 @@ namespace DaggerfallConnect
             return (IEnumerator)new LibraryEnumerator(this);
         }
 
+        #endregion
+
+        #region Static Methods
+
         /// <summary>
         /// Gets filename of texture archive for climate texture set.
         /// </summary>
@@ -450,7 +454,7 @@ namespace DaggerfallConnect
         /// <param name="Set">Texture set type.</param>
         /// <param name="Weather">Weather type.</param>
         /// <returns>Filename of texture archive.</returns>
-        public string GetClimateTextureFileName(DFLocation.ClimateBases Climate, DFLocation.ClimateSets Set, DFLocation.ClimateWeather Weather)
+        static public string GetClimateTextureFileName(DFLocation.ClimateBases Climate, DFLocation.ClimateSets Set, DFLocation.ClimateWeather Weather)
         {
             // Get base
             int index = (int)Climate;

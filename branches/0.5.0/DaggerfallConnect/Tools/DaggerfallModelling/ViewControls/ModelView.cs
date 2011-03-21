@@ -30,10 +30,7 @@ namespace DaggerfallModelling.ViewControls
 
         string arena2Folder = string.Empty;
 
-        int blockIndex = -1;
-
         SpriteBatch spriteBatch;
-        //BlockManager blockManager;
         VertexDeclaration vertexDeclaration;
         BasicEffect effect;
 
@@ -48,6 +45,18 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
         //private float cameraYaw = 0.0f;
         //private float cameraPitch = 0.0f;
+
+        #endregion
+
+        #region Class Structures
+
+        public enum ViewMode
+        {
+            SingleModel,
+            ModelThumbs,
+            Block,
+            Map,
+        }
 
         #endregion
 
@@ -85,8 +94,9 @@ namespace DaggerfallModelling.ViewControls
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TEST: Create texture manager
+            // TEST: Create manager
             TextureManager textureManager = new TextureManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
+            ModelManager modelManager = new ModelManager(textureManager);
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
@@ -112,18 +122,15 @@ namespace DaggerfallModelling.ViewControls
         {
             GraphicsDevice.Clear(Color.Gray);
 
-            if (blockIndex == -1)
-                return;
-
             // Set vertex declaration
             GraphicsDevice.VertexDeclaration = vertexDeclaration;
 
             // Set view and projection matrices
-            effect.View = viewMatrix;
-            effect.Projection = projectionMatrix;
+            //effect.View = viewMatrix;
+            //effect.Projection = projectionMatrix;
 
             // Draw the block
-            Matrix matrix = Matrix.Identity;
+            //Matrix matrix = Matrix.Identity;
             //blockManager.DrawBlock(blockIndex, ref effect, ref matrix);
 
             //spriteBatch.Begin();

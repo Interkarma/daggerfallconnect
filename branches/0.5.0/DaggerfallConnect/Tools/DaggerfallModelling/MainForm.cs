@@ -28,17 +28,23 @@ namespace DaggerfallModelling
     {
         #region Class Variables
 
+        // Constants
+        private const string ModelTag = "MDL";
+        private const string BlockTag = "BLK";
+        private const string LocationTag = "LCN";
+        private const string VirtText = "VIRT";
+
+        // DaggerfallConnect
         private string arena2Path = "C:\\dosgames\\DAGGER\\ARENA2";
         private Arch3dFile arch3dFile;
         private BlocksFile blocksFile;
         private MapsFile mapsFile;
 
+        // Searching
         private int minSearchLength = 2;
-
-        private bool searchModels = false;
+        private bool searchModels = true;
         private bool searchBlocks = false;
-        private bool searchLocations = true;
-
+        private bool searchLocations = false;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -56,15 +62,6 @@ namespace DaggerfallModelling
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
             mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
 
-            // TEST
-            ImageFileReader imageFileReader = new ImageFileReader(arena2Path);
-            DFImageFile dfImageFile = imageFileReader.LoadFile("TEXTURE.025");
-            //Bitmap bm = dfImageFile.GetManagedBitmap(0, 0, false, true);
-            DFBitmap dfBitmap = dfImageFile.GetBitmapFormat(0, 0, 0, DFBitmap.Formats.ARGB);
-            //DFManualImage mi = new DFManualImage(dfBitmap);
-            //Bitmap bm = mi.GetManagedBitmap(0, 0, false, true);
-            //bm.Save("C:\\test\\bla.png", System.Drawing.Imaging.ImageFormat.Png);
-
             // Initialise map browser
             autoMapView1.BlocksFile = blocksFile;
             autoMapView1.MapsFile = mapsFile;
@@ -73,6 +70,14 @@ namespace DaggerfallModelling
         #endregion
 
         #region Form Events
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            // Check search buttons at load
+            if (searchModels) SearchModelsToolStripButton.Checked = true;
+            if (searchBlocks) SearchBlocksToolStripButton.Checked = true;
+            if (searchLocations) SearchLocationsToolStripButton.Checked = true;
+        }
 
         private void SearchTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -93,18 +98,24 @@ namespace DaggerfallModelling
 
         private void SearchResultsTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            // Look for location select
+            // Look for node select
             if (e.Node.Tag is string)
             {
-                if ("LOC" == (string)e.Node.Tag)
+                switch ((string)e.Node.Tag)
                 {
-                    int key, region, location;
-                    if (int.TryParse(e.Node.Name, out key))
-                    {
-                        KeyToRegionLocation(key, out region, out location);
-                        autoMapView1.ShowLocation(region, location);
-                        return;
-                    }
+                    case ModelTag:
+                        break;
+                    case BlockTag:
+                        break;
+                    case LocationTag:
+                        int key, region, location;
+                        if (int.TryParse(e.Node.Name, out key))
+                        {
+                            KeyToRegionLocation(key, out region, out location);
+                            autoMapView1.ShowLocation(region, location);
+                            return;
+                        }
+                        break;
                 }
             }
 
@@ -214,6 +225,7 @@ namespace DaggerfallModelling
             autoMapView1.Clear();
 
             // Disable search controls
+            SearchPaneToolStrip.Enabled = false;
             SearchTextBox.Enabled = false;
             ClearSearchButton.Enabled = false;
             SearchResultsTreeView.Visible = false;
@@ -238,6 +250,7 @@ namespace DaggerfallModelling
             ShowSearchResults();
 
             // Enable search controls
+            SearchPaneToolStrip.Enabled = true;
             SearchTextBox.Enabled = true;
             ClearSearchButton.Enabled = true;
             SearchResultsTreeView.Visible = true;
@@ -357,8 +370,8 @@ namespace DaggerfallModelling
                 modelsNode = SearchResultsTreeView.Nodes.Add(
                     "modelsNode",
                     modelsTitle,
-                    SearchResultsImageList.Images.IndexOfKey("models"),
-                    SearchResultsImageList.Images.IndexOfKey("models"));
+                    SearchResultsImageList.Images.IndexOfKey("find"),
+                    SearchResultsImageList.Images.IndexOfKey("find"));
                 ShowModelsFound(ref modelsNode);
             }
             if (searchBlocks)
@@ -367,8 +380,8 @@ namespace DaggerfallModelling
                 blocksNode = SearchResultsTreeView.Nodes.Add(
                     "blocksNode",
                     blocksTitle,
-                    SearchResultsImageList.Images.IndexOfKey("blocks"),
-                    SearchResultsImageList.Images.IndexOfKey("blocks"));
+                    SearchResultsImageList.Images.IndexOfKey("find"),
+                    SearchResultsImageList.Images.IndexOfKey("find"));
                 ShowBlocksFound(ref blocksNode);
             }
             if (searchLocations)
@@ -377,8 +390,8 @@ namespace DaggerfallModelling
                 mapsNode = SearchResultsTreeView.Nodes.Add(
                     "locationsNode",
                     locationsTitle,
-                    SearchResultsImageList.Images.IndexOfKey("locations"),
-                    SearchResultsImageList.Images.IndexOfKey("locations"));
+                    SearchResultsImageList.Images.IndexOfKey("find"),
+                    SearchResultsImageList.Images.IndexOfKey("find"));
                 ShowMapsFound(ref mapsNode);
             }
 
@@ -390,11 +403,12 @@ namespace DaggerfallModelling
         {
             foreach (var model in modelsFound)
             {
-                node.Nodes.Add(
+                TreeNode modelNode = node.Nodes.Add(
                     model.Key.ToString(),
                     model.Value.ToString(),
                     SearchResultsImageList.Images.IndexOfKey("models"),
                     SearchResultsImageList.Images.IndexOfKey("models"));
+                modelNode.Tag = ModelTag;
             }
         }
 
@@ -402,11 +416,12 @@ namespace DaggerfallModelling
         {
             foreach (var block in blocksFound)
             {
-                node.Nodes.Add(
+                TreeNode blockNode = node.Nodes.Add(
                     block.Key.ToString(),
                     block.Value,
                     SearchResultsImageList.Images.IndexOfKey("blocks"),
                     SearchResultsImageList.Images.IndexOfKey("blocks"));
+                blockNode.Tag = BlockTag;
             }
         }
 
@@ -442,7 +457,7 @@ namespace DaggerfallModelling
                 regionNode.Tag = 1;
 
                 // Add single virtual location node to populate later
-                regionNode.Nodes.Add("VIRT");
+                regionNode.Nodes.Add(VirtText);
             }
             else
             {
@@ -461,8 +476,8 @@ namespace DaggerfallModelling
             if (node.Nodes.Count != 1)
                 return;
 
-            // Is the only node "VIRT"
-            if (node.Nodes[0].Text != "VIRT")
+            // Is the only node virtTag
+            if (node.Nodes[0].Text != VirtText)
                 return;
 
             // Remove virtual node
@@ -485,7 +500,7 @@ namespace DaggerfallModelling
                     }
                     catch
                     {
-                        // Duplicate name found, burn it with fire
+                        // Duplicate name found, discard
                     }
                 }
             }
@@ -545,8 +560,7 @@ namespace DaggerfallModelling
                 name,
                 SearchResultsImageList.Images.IndexOfKey(imageKey),
                 SearchResultsImageList.Images.IndexOfKey(imageKey));
-
-            locationNode.Tag = "LOC";
+            locationNode.Tag = LocationTag;
         }
 
         #endregion

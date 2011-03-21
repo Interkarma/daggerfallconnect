@@ -131,16 +131,17 @@
             // 
             this.SearchResultsImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("SearchResultsImageList.ImageStream")));
             this.SearchResultsImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this.SearchResultsImageList.Images.SetKeyName(0, "models");
-            this.SearchResultsImageList.Images.SetKeyName(1, "blocks");
-            this.SearchResultsImageList.Images.SetKeyName(2, "locations");
-            this.SearchResultsImageList.Images.SetKeyName(3, "region");
-            this.SearchResultsImageList.Images.SetKeyName(4, "cities");
-            this.SearchResultsImageList.Images.SetKeyName(5, "dungeons");
-            this.SearchResultsImageList.Images.SetKeyName(6, "graveyards");
-            this.SearchResultsImageList.Images.SetKeyName(7, "homes");
-            this.SearchResultsImageList.Images.SetKeyName(8, "religions");
-            this.SearchResultsImageList.Images.SetKeyName(9, "taverns");
+            this.SearchResultsImageList.Images.SetKeyName(0, "find");
+            this.SearchResultsImageList.Images.SetKeyName(1, "models");
+            this.SearchResultsImageList.Images.SetKeyName(2, "blocks");
+            this.SearchResultsImageList.Images.SetKeyName(3, "locations");
+            this.SearchResultsImageList.Images.SetKeyName(4, "region");
+            this.SearchResultsImageList.Images.SetKeyName(5, "cities");
+            this.SearchResultsImageList.Images.SetKeyName(6, "dungeons");
+            this.SearchResultsImageList.Images.SetKeyName(7, "graveyards");
+            this.SearchResultsImageList.Images.SetKeyName(8, "homes");
+            this.SearchResultsImageList.Images.SetKeyName(9, "religions");
+            this.SearchResultsImageList.Images.SetKeyName(10, "taverns");
             // 
             // panel2
             // 
@@ -309,10 +310,8 @@
             // 
             // SearchLocationsToolStripButton
             // 
-            this.SearchLocationsToolStripButton.Checked = true;
-            this.SearchLocationsToolStripButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.SearchLocationsToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SearchLocationsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.house;
+            this.SearchLocationsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
             this.SearchLocationsToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SearchLocationsToolStripButton.Name = "SearchLocationsToolStripButton";
             this.SearchLocationsToolStripButton.Size = new System.Drawing.Size(23, 22);
@@ -413,6 +412,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Daggerfall Modelling";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.MainSplitContainer.Panel1.ResumeLayout(false);
             this.MainSplitContainer.Panel1.PerformLayout();
             this.MainSplitContainer.Panel2.ResumeLayout(false);
