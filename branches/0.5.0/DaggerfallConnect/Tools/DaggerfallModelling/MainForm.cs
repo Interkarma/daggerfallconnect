@@ -35,16 +35,16 @@ namespace DaggerfallModelling
         private const string VirtText = "VIRT";
 
         // DaggerfallConnect
-        private string arena2Path = "C:\\dosgames\\DAGGER\\ARENA2";
-        private Arch3dFile arch3dFile;
-        private BlocksFile blocksFile;
-        private MapsFile mapsFile;
+        private Classes.AppSettings appSettings = new Classes.AppSettings();
+        private Arch3dFile arch3dFile = new Arch3dFile();
+        private BlocksFile blocksFile = new BlocksFile();
+        private MapsFile mapsFile = new MapsFile();
 
         // Searching
         private int minSearchLength = 2;
-        private bool searchModels = true;
+        private bool searchModels = false;
         private bool searchBlocks = false;
-        private bool searchLocations = false;
+        private bool searchLocations = true;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -56,15 +56,106 @@ namespace DaggerfallModelling
         public MainForm()
         {
             InitializeComponent();
+            ConnectArena2Path();
+        }
 
-            // Initialise connect objects
-            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
-            blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
-            mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
+        #endregion
+
+        #region Private Methods
+
+        private void ConnectArena2Path()
+        {
+            // Check Arena2 directory exists.
+            // On app load, user will be prompted in MainForm_Load to set path.
+            // While app is running, user will just return to whatever state the app was in.
+            if (!Directory.Exists(appSettings.Arena2Path))
+                return;
+
+            // TODO: Clear search, automap, and model views
+
+            try
+            {
+                // Initialise connect objects
+                if (!arch3dFile.Load(Path.Combine(appSettings.Arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true))
+                    throw new Exception("Loading ARCH3D.BSA failed.");
+                if (!blocksFile.Load(Path.Combine(appSettings.Arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true))
+                    throw new Exception("Loading BLOCKS.BSA failed.");
+                if (!mapsFile.Load(Path.Combine(appSettings.Arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true))
+                    throw new Exception("Loading MAPS.BSA failed.");
+            }
+            catch (Exception e)
+            {
+                string msg = string.Format("Could not connect to Arena2 folder. Files may be missing or damaged.\n{0}", e.Message);
+                MessageBox.Show(msg,
+                    "Connect Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+#if DEBUG
+                Console.WriteLine(msg);
+#endif
+                // Kill invalid path so user will be prompted to change
+                appSettings.Arena2Path = string.Empty;
+                return;
+            }
 
             // Initialise map browser
             autoMapView1.BlocksFile = blocksFile;
             autoMapView1.MapsFile = mapsFile;
+        }
+
+        private void BrowseArena2Path()
+        {
+            Dialogs.BrowseArena2Folder dlg = new DaggerfallModelling.Dialogs.BrowseArena2Folder();
+            dlg.Arena2Path = appSettings.Arena2Path;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                appSettings.Arena2Path = dlg.Arena2Path;
+                ShowArena2ConnectionState();
+                ConnectArena2Path();
+            }
+        }
+
+        private void ShowArena2ConnectionState()
+        {
+            // Show connected state
+            if (Directory.Exists(appSettings.Arena2Path))
+            {
+                SetArena2ToolStripButton.Image = Properties.Resources.lightbulb;
+                Arena2PathStatusLabel.Image = Properties.Resources.lightbulb;
+                SetArena2ToolStripButton.ToolTipText = appSettings.Arena2Path;
+                Arena2PathStatusLabel.Text = appSettings.Arena2Path;
+                EnableSearch(true);
+            }
+            else
+            {
+                SetArena2ToolStripButton.Image = Properties.Resources.lightbulb_off;
+                Arena2PathStatusLabel.Image = Properties.Resources.lightbulb_off;
+                SetArena2ToolStripButton.ToolTipText = "Set Arena2 Folder";
+                Arena2PathStatusLabel.Text = "Please set your Arena2 folder.";
+                EnableSearch(false);
+            }
+        }
+
+        private void EnableSearch(bool enable)
+        {
+            if (enable)
+            {
+                SearchModelsToolStripButton.Enabled = true;
+                SearchBlocksToolStripButton.Enabled = true;
+                SearchLocationsToolStripButton.Enabled = true;
+                SearchLabel.Enabled = true;
+                SearchTextBox.Enabled = true;
+                ClearSearchButton.Enabled = true;
+            }
+            else
+            {
+                SearchModelsToolStripButton.Enabled = false;
+                SearchBlocksToolStripButton.Enabled = false;
+                SearchLocationsToolStripButton.Enabled = false;
+                SearchLabel.Enabled = false;
+                SearchTextBox.Enabled = false;
+                ClearSearchButton.Enabled = false;
+            }
         }
 
         #endregion
@@ -73,10 +164,29 @@ namespace DaggerfallModelling
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            // Show arena2 connection state
+            ShowArena2ConnectionState();
+
             // Check search buttons at load
             if (searchModels) SearchModelsToolStripButton.Checked = true;
             if (searchBlocks) SearchBlocksToolStripButton.Checked = true;
             if (searchLocations) SearchLocationsToolStripButton.Checked = true;
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(appSettings.Arena2Path))
+                BrowseArena2Path();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            appSettings.SaveSettings();
+        }
+
+        private void SetArena2ToolStripButton_Click(object sender, EventArgs e)
+        {
+            BrowseArena2Path();
         }
 
         private void SearchTextBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -205,6 +315,12 @@ namespace DaggerfallModelling
         private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
         {
             modelView1.SetBlock(e.Name);
+        }
+
+        private void AboutToolStripButton_Click(object sender, EventArgs e)
+        {
+            Dialogs.AboutDialog dlg = new Dialogs.AboutDialog();
+            dlg.ShowDialog();
         }
 
         #endregion

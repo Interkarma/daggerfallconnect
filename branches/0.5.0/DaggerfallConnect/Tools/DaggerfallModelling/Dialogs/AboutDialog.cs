@@ -1,5 +1,5 @@
-﻿// Project:         DaggerfallImaging
-// Description:     Explore and export bitmaps from Daggerfall.
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
 // Copyright:       Copyright (C) 2011 Gavin Clayton
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Web Site:        http://www.dfworkshop.net
@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.IO;
 
-namespace DaggerfallImaging2.Dialogs
+namespace DaggerfallModelling.Dialogs
 {
     public partial class AboutDialog : Form
     {
@@ -28,7 +28,7 @@ namespace DaggerfallImaging2.Dialogs
             this.labelCopyright.Text = AssemblyCopyright;
             this.labelCompanyName.Text = AssemblyCompany;
 
-            string AboutUrl = Path.Combine(Application.StartupPath, "AboutDaggerfallImaging2.html");
+            string AboutUrl = Path.Combine(Application.StartupPath, "AboutDaggerfallModelling.html");
             AboutWebBrowser.Navigate(AboutUrl);
         }
 

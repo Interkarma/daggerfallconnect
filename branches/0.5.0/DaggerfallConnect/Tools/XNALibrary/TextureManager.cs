@@ -28,11 +28,9 @@ namespace XNALibrary
     using ClimateWeather = DFLocation.ClimateWeather;
 
     /// <summary>
-    /// Helper class to load and store Daggerfall textures for XNA. This class will pre-load
-    ///  textures for each climate set in a different thread at construct time. Each climate
-    ///  set is compiled into a texture atlas, reducing state changes for large scenes (whole
-    ///  dungeons and cities). It is also possible to load miscellaneous textures for very
-    ///  small scenes or when using a climate atlas is not desired.
+    /// Helper class to load and store Daggerfall textures for XNA. Textures can be stored in
+    ///  a texture atlas (one per climate type) for large scenes or as individual textures for
+    ///  small scenes.
     /// </summary>
     public class TextureManager
     {
@@ -42,7 +40,8 @@ namespace XNALibrary
         private GraphicsDevice graphicsDevice;
         private ImageFileReader imageFileReader;
 
-        // Flag raised when thread loading climate textures completed
+        // State of climate preload
+        bool climatePreLoadRunning = false;
         bool climatePreLoadCompleted = false;
 
         // Atlas layout dictionaries for each climate type
@@ -107,6 +106,14 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// True if thread preloading of climate textures is running.
+        /// </summary>
+        public bool ClimatePreLoadRunning
+        {
+            get { return climatePreLoadRunning; }
+        }
+
+        /// <summary>
         /// True if thread preloading climate textures has finished.
         /// </summary>
         public bool ClimatePreLoadCompleted
@@ -130,16 +137,12 @@ namespace XNALibrary
             imageFileReader = new ImageFileReader(arena2Path);
             imageFileReader.AutoDiscard = true;
 
-            // Create dictionaries
+            // Create empty climate dictionaries
             miscTexturesDict = new Dictionary<int, Texture2D>();
             desertDict = new Dictionary<int, RectangleF>();
             mountainDict = new Dictionary<int, RectangleF>();
             temperateDict = new Dictionary<int, RectangleF>();
             swampDict = new Dictionary<int, RectangleF>();
-
-            // Start reading climate textures in another thread
-            Thread thread = new Thread(this.ThreadLoadClimateTextures);
-            thread.Start();
         }
 
         #endregion
@@ -221,15 +224,28 @@ namespace XNALibrary
 
         #region Threading Methods
 
+        /// <summary>
+        /// Preloads textures for each climate type. Loading is performed in a separate thread.
+        ///  Check 
+        /// </summary>
+        public void PreLoadClimateTextures()
+        {
+            // Start reading climate textures in another thread
+            Thread thread = new Thread(this.ThreadLoadClimateTextures);
+            thread.Start();
+        }
+
         private void ThreadLoadClimateTextures()
         {
             // Build texture atlas for each climate type
+            climatePreLoadRunning = true;
             long startTime = DateTime.Now.Ticks;
             BuildClimateAtlas(ClimateBases.Desert, out desertParams, out desertAtlas);
             BuildClimateAtlas(ClimateBases.Mountain, out mountainParams, out mountainAtlas);
             BuildClimateAtlas(ClimateBases.Temperate, out temperateParams, out temperateAtlas);
             BuildClimateAtlas(ClimateBases.Swamp, out swampParams, out swampAtlas);
             long totalTime = DateTime.Now.Ticks - startTime;
+            climatePreLoadRunning = false;
             climatePreLoadCompleted = true;
 #if DEBUG
             Console.WriteLine("Climate texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);

@@ -57,14 +57,18 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public enum ViewMode
         {
-            /// <summary>View a single model.</summary>
-            SingleModel,
-            /// <summary>View a flow layout of model thumbnails.</summary>
+            /// <summary>Viewing a flow layout of model thumbnails.</summary>
             ModelThumbs,
-            /// <summary>View a exterior or dungeon block.</summary>
-            Block,
-            /// <summary>View an entire city or dungeon.</summary>
-            Map,
+            /// <summary>Viewing a single model.</summary>
+            SingleModel,
+            /// <summary>Viewing an exterior block.</summary>
+            ExteriorBlock,
+            /// <summary>Viewing a dungeon block.</summary>
+            DungeonBlock,
+            /// <summary>Viewing entire exterior map.</summary>
+            ExteriorFull,
+            /// <summary>Viewing entire dungeon map.</summary>
+            DungeonFull,
         }
 
         #endregion
@@ -107,9 +111,6 @@ namespace DaggerfallModelling.ViewControls
             textureManager = new TextureManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
             modelManager = new ModelManager(GraphicsDevice, "C:\\dosgames\\DAGGER\\ARENA2");
 
-            // TEST: Load a model
-            modelManager.LoadModel(456);
-
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
@@ -119,6 +120,7 @@ namespace DaggerfallModelling.ViewControls
             effect.TextureEnabled = true;
             effect.PreferPerPixelLighting = true;
             effect.EnableDefaultLighting();
+            effect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
             effect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
 
             // Setup camera

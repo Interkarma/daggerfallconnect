@@ -60,6 +60,13 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap AboutBanner {
+            get {
+                object obj = ResourceManager.GetObject("AboutBanner", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap accept {
             get {
                 object obj = ResourceManager.GetObject("accept", resourceCulture);
@@ -154,6 +161,13 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap find {
             get {
                 object obj = ResourceManager.GetObject("find", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap folder_explore {
+            get {
+                object obj = ResourceManager.GetObject("folder_explore", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

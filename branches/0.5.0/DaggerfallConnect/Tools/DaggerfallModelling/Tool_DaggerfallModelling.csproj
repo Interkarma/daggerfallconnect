@@ -12,6 +12,7 @@
     <AssemblyName>DaggerfallModelling</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>mainform.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +42,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\AppSettings.cs" />
+    <Compile Include="Classes\XmlHelper.cs" />
+    <Compile Include="Dialogs\AboutDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AboutDialog.designer.cs">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\BrowseArena2Folder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\BrowseArena2Folder.designer.cs">
+      <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
+    </Compile>
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -57,6 +72,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Dialogs\AboutDialog.resx">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\BrowseArena2Folder.resx">
+      <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -169,7 +190,13 @@
     <None Include="Resources\palette.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AboutDaggerfallModelling.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="License\DaggerfallModelling.txt" />
+    <Content Include="mainform.ico" />
+    <None Include="Resources\AboutBanner.png" />
+    <None Include="Resources\folder_explore.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
