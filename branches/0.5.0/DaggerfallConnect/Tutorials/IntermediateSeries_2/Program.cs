@@ -4,7 +4,7 @@
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Web Site:        http://www.dfworkshop.net
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
-// Project Page:    http://code.google.com/p/daggerfallconnect/using System;
+// Project Page:    http://code.google.com/p/daggerfallconnect/
 
 using System;
 using System.Windows.Forms;
