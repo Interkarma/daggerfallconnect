@@ -67,8 +67,8 @@ namespace DaggerfallConnect
         /// </summary>
         public enum ClimateBases
         {
-            /// <summary>Unknown climate.</summary>
-            Unknown = -1,
+            /// <summary>No climate base.</summary>
+            None = -1,
             /// <summary>Desert climate base.</summary>
             Desert = 0,
             /// <summary>Mountain climate base.</summary>

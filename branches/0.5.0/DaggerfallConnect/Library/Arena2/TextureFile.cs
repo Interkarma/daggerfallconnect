@@ -483,6 +483,48 @@ namespace DaggerfallConnect.Arena2
             return preview;
         }
 
+        /// <summary>
+        /// Gets size of an unloaded texture quickly with minimum overhead.
+        ///  This is useful for mesh loading where the texture dimensions need to be known,
+        ///  but you may not need to load the texture at that time.
+        /// </summary>
+        /// <param name="FilePath">Absolute path to TEXTURE.* file</param>
+        /// <param name="Record">Index of record.</param>
+        /// <returns>Size.</returns>
+        public static Size QuickSize(string FilePath, int Record)
+        {
+            FileStream fs;
+            try
+            {
+                fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new Size(0, 0);
+            }
+
+            // Read record count and check range
+            BinaryReader reader = new BinaryReader(fs);
+            int recordCount = reader.ReadInt16();
+            if (Record < 0 || Record >= recordCount)
+                return new Size(0, 0);
+
+            // Offset to width and height
+            reader.BaseStream.Position = 26 + 20 * Record + 2;
+            reader.BaseStream.Position = reader.ReadInt32() + 4;
+
+            // Read width and height
+            int width = reader.ReadInt16();
+            int height = reader.ReadInt16();
+
+            // Close reader and stream
+            reader.Close();
+
+            // Return size
+            return new Size(width, height);
+        }
+
         #endregion
 
         #region Readers

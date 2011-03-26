@@ -101,6 +101,10 @@ namespace DaggerfallModelling
             // Initialise map browser
             autoMapView1.BlocksFile = blocksFile;
             autoMapView1.MapsFile = mapsFile;
+
+            // Initialise model view. This may silently fail if called before form is shown.
+            // Form will retry in FormShown if model view still not ready.
+            modelView1.InitialiseView(appSettings.Arena2Path);
         }
 
         private void BrowseArena2Path()
@@ -175,13 +179,23 @@ namespace DaggerfallModelling
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
+            // Direct user to set Arena2 path if not a valid path
             if (!Directory.Exists(appSettings.Arena2Path))
                 BrowseArena2Path();
+
+            // Init model view if not ready
+            // If this fails, we try again when user fixes Arena2 path.
+            if (!modelView1.IsReady)
+                modelView1.InitialiseView(appSettings.Arena2Path);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Save settings
             appSettings.SaveSettings();
+
+            // Destroy model view
+            modelView1.DestroyView();
         }
 
         private void SetArena2ToolStripButton_Click(object sender, EventArgs e)
@@ -314,7 +328,6 @@ namespace DaggerfallModelling
 
         private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
         {
-            modelView1.SetBlock(e.Name);
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -603,6 +616,7 @@ namespace DaggerfallModelling
             int targetRegion = mapsFile.GetRegionIndex(node.Name);
 
             // Build sorted dictionary of locations belonging to this region
+            int duplicateCount = 2;
             SortedDictionary<string, int> sortedLocations = new SortedDictionary<string, int>();
             foreach (var map in mapsFound)
             {
@@ -616,7 +630,9 @@ namespace DaggerfallModelling
                     }
                     catch
                     {
-                        // Duplicate name found, discard
+                        // Duplicate name found, add counter and add it anyway
+                        string newName = string.Format("{0} [{1}]", map.Value, duplicateCount++);
+                        sortedLocations.Add(newName, map.Key);
                     }
                 }
             }
@@ -628,8 +644,9 @@ namespace DaggerfallModelling
 
         private void AddLocation(string locationName, int key, TreeNode parent)
         {
-            DFRegion dfRegion = mapsFile.GetRegion(parent.Name);
-            int locationIndex = dfRegion.MapNameLookup[locationName];
+            int regionIndex, locationIndex;
+            KeyToRegionLocation(key, out regionIndex, out locationIndex);
+            DFRegion dfRegion = mapsFile.GetRegion(regionIndex);
             DFRegion.LocationTypes locationType = dfRegion.MapTable[locationIndex].Type;
             switch (locationType)
             {

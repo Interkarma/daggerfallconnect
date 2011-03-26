@@ -94,20 +94,22 @@ namespace DaggerfallConnect.Arena2
             public UInt32[] Unknown1;
         }
 
+        /*
         /// <summary>
         /// NOT IMPLEMENTED.
         ///  Extended information per world cell.
         /// </summary>
-        //private struct CellData
-        //{
-        //    public UInt16 Unknown1;
-        //    public UInt32 NullValue1;
-        //    public UInt16 FileIndex;
-        //    public Byte Climate;
-        //    public Byte ClimateNoise;
-        //    public UInt32[] NullValue2;
-        //    public Byte[][] ElevationNoise;
-        //}
+        private struct CellData
+        {
+            public UInt16 Unknown1;
+            public UInt32 NullValue1;
+            public UInt16 FileIndex;
+            public Byte Climate;
+            public Byte ClimateNoise;
+            public UInt32[] NullValue2;
+            public Byte[][] ElevationNoise;
+        }
+         * */
 
         #endregion
 

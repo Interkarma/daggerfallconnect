@@ -300,6 +300,16 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Gets ID of record from index.
+        /// </summary>
+        /// <param name="Record">Index of record.</param>
+        /// <returns>ID of mesh.</returns>
+        public uint GetRecordId(int Record)
+        {
+            return BsaFile.GetRecordId(Record);
+        }
+
+        /// <summary>
         /// Load a mesh record into memory and decompose it for use.
         /// </summary>
         /// <param name="Record">Index of record to load.</param>

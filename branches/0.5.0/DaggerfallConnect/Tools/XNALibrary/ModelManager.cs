@@ -22,15 +22,15 @@ using DaggerfallConnect.Arena2;
 namespace XNALibrary
 {
     /// <summary>
-    /// Helper class to load and store Daggerfall models for XNA. Does not load textures or normalise UV coordinates.
-    ///  UV coordinates are left as per DFMesh. This is to allow users to apply their own texturing scheme
-    ///  independant of model loading. Mesh data is otherwise completely refactored for XNA.
+    /// Helper class to load and store Daggerfall models for XNA. Does not load textures, but does calc UV coordinates.
+    ///  This is to allow developers to apply their own texture loading scheme independant of model loading.
     /// </summary>
     public class ModelManager
     {
 
         #region Class Variables
 
+        string arena2Path = string.Empty;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
         private Dictionary<int, Model> modelDict;
@@ -65,12 +65,29 @@ namespace XNALibrary
             public int TextureKey;
 
             /// <summary>Index array desribing the triangles of this SubMesh.</summary>
-            public uint[] Indices;
+            public int[] Indices;
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets Arena2 path set at construction.
+        /// </summary>
+        public string Arena2Path
+        {
+            get { return arena2Path; }
+        }
+
+        /// <summary>
+        /// Gets underlying Arch3dFile.
+        /// </summary>
+        public Arch3dFile Arch3dFile
+        {
+            get { return arch3dFile; }
+        }
+
         #endregion
 
         #region Constructors
@@ -82,7 +99,8 @@ namespace XNALibrary
         {
             // Setup
             graphicsDevice = device;
-            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
+            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseMemory, true);
+            this.arena2Path = arena2Path;
             modelDict = new Dictionary<int, Model>();
         }
 
@@ -113,6 +131,12 @@ namespace XNALibrary
             return true;
         }
 
+        /// <summary>
+        /// Load and convert Daggerfall mesh data.
+        /// </summary>
+        /// <param name="key">ID of mesh.</param>
+        /// <param name="modelOut">Model out.</param>
+        /// <returns>True if successful.</returns>
         public bool LoadModel(int key, out Model modelOut)
         {
             // Return if already loaded
@@ -135,7 +159,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets a Daggerfall model. Loads mesh if not already loaded.
+        /// Gets a Daggerfall model. Will load model if not already loaded.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
@@ -150,6 +174,29 @@ namespace XNALibrary
                 return modelDict[key];
 
             return new Model();
+        }
+
+        /// <summary>
+        /// Gets a Daggerfall model. Will load model if not already loaded.
+        ///  In this overload storing in ModelManager dictionary is optional.
+        ///  Use this method to acquire models for an external caching scheme.
+        /// </summary>
+        /// <param name="key">ID of model.</param>
+        /// <param name="addDictionary">True to store in ModelManager's dictionary. False to just return model.</param>
+        /// <returns></returns>
+        public Model GetModel(int key, bool addDictionary)
+        {
+            // Work as normal
+            if (addDictionary)
+                return GetModel(key);
+
+            // Load mesh data
+            int index = arch3dFile.GetRecordIndex((uint)key);
+            if (index == -1)
+                return new Model(); ;
+
+            // Convert model and store in dictionary
+            return LoadMeshData(index);
         }
 
         /// <summary>
@@ -198,7 +245,7 @@ namespace XNALibrary
             foreach (var vertex in transformedModel.Vertices)
             {
                 transformedModel.Vertices[vertexPos].Position = Vector3.Transform(vertex.Position, matrix);
-                transformedModel.Vertices[vertexPos].Normal = Vector3.Transform(vertex.Normal, matrix);
+                transformedModel.Vertices[vertexPos].Normal = vertex.Normal;
                 transformedModel.Vertices[vertexPos].TextureCoordinate = vertex.TextureCoordinate;
                 vertexPos++;
             }
@@ -234,7 +281,7 @@ namespace XNALibrary
 
             // Create combined submesh index array
             int indexPos = 0;
-            flattenedModel.SubMeshes[0].Indices = new uint[indexCount];
+            flattenedModel.SubMeshes[0].Indices = new int[indexCount];
             foreach (var submesh in model.SubMeshes)
             {
                 for (int i = 0; i < submesh.Indices.Length; i++)
@@ -244,6 +291,7 @@ namespace XNALibrary
             return flattenedModel;
         }
 
+        /*
         /// <summary>
         /// Merges model1 and model2. Source models are unchanged.
         /// </summary>
@@ -290,7 +338,7 @@ namespace XNALibrary
             {
                 mergedModel.SubMeshes[subMeshPos] = submesh;
                 for (int i = 0; i < mergedModel.SubMeshes[subMeshPos].Indices.Length; i++ )
-                    mergedModel.SubMeshes[subMeshPos].Indices[i] += (uint)model1.Vertices.Length;
+                    mergedModel.SubMeshes[subMeshPos].Indices[i] += model1.Vertices.Length;
                 subMeshPos++;
             }
 
@@ -307,6 +355,7 @@ namespace XNALibrary
 
             return mergedModel;
         }
+        */
 
         #endregion
 
@@ -348,6 +397,10 @@ namespace XNALibrary
             int vertexCount = 0;
             foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
             {
+                // Get texture dimensions for this submesh
+                string archivePath = Path.Combine(arena2Path, TextureFile.IndexToFileName(dfSubMesh.TextureArchive));
+                System.Drawing.Size sz = TextureFile.QuickSize(archivePath, dfSubMesh.TextureRecord);
+
                 // Loop through all planes in this submesh
                 foreach (DFMesh.DFPlane dfPlane in dfSubMesh.Planes)
                 {
@@ -363,7 +416,7 @@ namespace XNALibrary
                         // Store vertex data
                         model.Vertices[vertexCount].Position = position;
                         model.Vertices[vertexCount].Normal = normal;
-                        model.Vertices[vertexCount].TextureCoordinate = new Vector2(dfPoint.U, dfPoint.V);
+                        model.Vertices[vertexCount].TextureCoordinate = new Vector2(dfPoint.U / sz.Width, dfPoint.V / sz.Height);
                         vertexCount++;
 
                         // Compare min and max vectors
@@ -398,16 +451,17 @@ namespace XNALibrary
                 // Set texture indices
                 model.SubMeshes[subMeshCount].TextureArchive = dfSubMesh.TextureArchive;
                 model.SubMeshes[subMeshCount].TextureRecord = dfSubMesh.TextureRecord;
+                model.SubMeshes[subMeshCount].TextureKey = -1;
 
                 // Allocate index buffer
-                model.SubMeshes[subMeshCount].Indices = new uint[dfSubMesh.TotalTriangles * 3];
+                model.SubMeshes[subMeshCount].Indices = new int[dfSubMesh.TotalTriangles * 3];
 
                 // Loop through all planes in this submesh
                 int indexCount = 0;
                 foreach (DFMesh.DFPlane dfPlane in dfSubMesh.Planes)
                 {
                     // Every DFPlane is a triangle fan radiating from point 0
-                    short sharedPoint = (short)vertexCount++;
+                    int sharedPoint = vertexCount++;
 
                     // Index remaining points. There are (plane.Points.Length - 2) triangles in every plane
                     for (int tri = 0; tri < dfPlane.Points.Length - 2; tri++)
@@ -415,9 +469,9 @@ namespace XNALibrary
                         // Store 3 points of current triangle.
                         // The second two indices are swapped so the winding order is correct after
                         // inverting Y and Z axes in LoadVertices().
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = (uint)sharedPoint;
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = (uint)(vertexCount + 1);
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = (uint)(vertexCount);
+                        model.SubMeshes[subMeshCount].Indices[indexCount++] = sharedPoint;
+                        model.SubMeshes[subMeshCount].Indices[indexCount++] = vertexCount + 1;
+                        model.SubMeshes[subMeshCount].Indices[indexCount++] = vertexCount;
 
                         // Increment vertexCount to next point in fan
                         vertexCount++;
