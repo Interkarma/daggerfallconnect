@@ -195,10 +195,10 @@
     </Content>
     <Content Include="License\DaggerfallModelling.txt" />
     <Content Include="mainform.ico" />
-    <None Include="Resources\information.png" />
-    <Content Include="thumb_bg.png">
+    <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\information.png" />
     <None Include="Resources\AboutBanner.png" />
     <None Include="Resources\folder_explore.png" />
   </ItemGroup>

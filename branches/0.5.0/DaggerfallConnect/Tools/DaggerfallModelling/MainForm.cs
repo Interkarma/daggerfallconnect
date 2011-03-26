@@ -193,9 +193,6 @@ namespace DaggerfallModelling
         {
             // Save settings
             appSettings.SaveSettings();
-
-            // Destroy model view
-            modelView1.DestroyView();
         }
 
         private void SetArena2ToolStripButton_Click(object sender, EventArgs e)
