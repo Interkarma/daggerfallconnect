@@ -74,30 +74,9 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap arrow_down {
+        internal static System.Drawing.Bitmap application_view_tile {
             get {
-                object obj = ResourceManager.GetObject("arrow_down", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap arrow_left {
-            get {
-                object obj = ResourceManager.GetObject("arrow_left", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap arrow_right {
-            get {
-                object obj = ResourceManager.GetObject("arrow_right", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap arrow_up {
-            get {
-                object obj = ResourceManager.GetObject("arrow_up", resourceCulture);
+                object obj = ResourceManager.GetObject("application_view_tile", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -105,6 +84,13 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap arrows64 {
             get {
                 object obj = ResourceManager.GetObject("arrows64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap block_find {
+            get {
+                object obj = ResourceManager.GetObject("block_find", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -133,20 +119,6 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap CitiesFilter {
             get {
                 object obj = ResourceManager.GetObject("CitiesFilter", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap control_stop {
-            get {
-                object obj = ResourceManager.GetObject("control_stop", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap disk_multiple {
-            get {
-                object obj = ResourceManager.GetObject("disk_multiple", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -221,9 +193,16 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap palette {
+        internal static System.Drawing.Bitmap location_find {
             get {
-                object obj = ResourceManager.GetObject("palette", resourceCulture);
+                object obj = ResourceManager.GetObject("location_find", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap model_find {
+            get {
+                object obj = ResourceManager.GetObject("model_find", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

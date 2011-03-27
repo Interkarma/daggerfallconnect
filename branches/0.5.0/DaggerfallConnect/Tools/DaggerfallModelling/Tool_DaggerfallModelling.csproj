@@ -59,6 +59,9 @@
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ViewControls\ModelThumbView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ViewControls\ModelView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -151,16 +154,10 @@
     <None Include="Resources\lightbulb_off.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\disk_multiple.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\help.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\accept.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\control_stop.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\cancel.png" />
@@ -175,26 +172,15 @@
     <None Include="Resources\MapBackground.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\arrow_up.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\arrow_down.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\arrow_left.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\arrow_right.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\palette.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="AboutDaggerfallModelling.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="License\DaggerfallModelling.txt" />
     <Content Include="mainform.ico" />
+    <None Include="Resources\application_view_tile.png" />
+    <None Include="Resources\model_find.png" />
+    <None Include="Resources\block_find.png" />
+    <None Include="Resources\location_find.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

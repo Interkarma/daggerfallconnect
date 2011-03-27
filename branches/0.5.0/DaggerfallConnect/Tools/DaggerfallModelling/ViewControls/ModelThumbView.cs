@@ -24,7 +24,10 @@ using XNALibrary;
 namespace DaggerfallModelling.ViewControls
 {
 
-    class ModelView : WinFormsGraphicsDevice.GraphicsDeviceControl
+    /// <summary>
+    /// View model thumbnails.
+    /// </summary>
+    public class ModelThumbView : WinFormsGraphicsDevice.GraphicsDeviceControl
     {
 
         #region Class Variables
@@ -34,7 +37,6 @@ namespace DaggerfallModelling.ViewControls
         //
         private bool isReady = false;
         private string arena2Path = string.Empty;
-        private ViewModes viewMode = ViewModes.ModelThumbs;
 
         //
         // Managers
@@ -52,7 +54,7 @@ namespace DaggerfallModelling.ViewControls
         private VertexDeclaration vertexDeclaration;
         private BasicEffect effect;
         private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 50000.0f;
+        private float farPlaneDistance = 10000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
         private Vector3 cameraPosition = new Vector3(0, 0, 1000);
@@ -63,7 +65,7 @@ namespace DaggerfallModelling.ViewControls
         // Model thumbnails view
         //
         private int thumbsPerRow = 5;
-        private int thumbsFirstVisibleRow = 1110;
+        private int thumbsFirstVisibleRow = 0;
         private int thumbScrollAmount = 0;
         private int thumbSpacing = 16;
         private int thumbWidth;
@@ -81,7 +83,6 @@ namespace DaggerfallModelling.ViewControls
         private long mouseTime;
         private Point mousePosDelta;
         private long mouseTimeDelta;
-        private bool leftMouseDown = false;
         private bool rightMouseDown = false;
 
         //
@@ -93,25 +94,6 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Structures
 
-        /// <summary>
-        /// Different view modes supported by this control.
-        /// </summary>
-        public enum ViewModes
-        {
-            /// <summary>Viewing a flow layout of model thumbnails.</summary>
-            ModelThumbs,
-            /// <summary>Viewing a single model.</summary>
-            SingleModel,
-            /// <summary>Viewing an exterior block.</summary>
-            ExteriorBlock,
-            /// <summary>Viewing a dungeon block.</summary>
-            DungeonBlock,
-            /// <summary>Viewing entire exterior map.</summary>
-            ExteriorFull,
-            /// <summary>Viewing entire dungeon map.</summary>
-            DungeonFull,
-        }
-
         private struct Thumbnails
         {
             public int index;
@@ -119,8 +101,7 @@ namespace DaggerfallModelling.ViewControls
             public Rectangle rect;
             public ModelManager.Model model;
             public Texture2D texture;
-            public float angle;
-            public bool update;
+            public Matrix matrix;
         }
 
         #endregion
@@ -128,19 +109,21 @@ namespace DaggerfallModelling.ViewControls
         #region Properties
 
         /// <summary>
-        /// Gets ready state.
+        /// Gets or sets Arena2 path.
+        /// </summary>
+        public string Arena2Path
+        {
+            get { return arena2Path; }
+            set { SetArena2Path(value); }
+        }
+
+        /// <summary>
+        /// Gets ready flag indicating control is operating.
+        ///  Must set Arena2 path before control is ready.
         /// </summary>
         public bool IsReady
         {
             get { return isReady; }
-        }
-
-        /// <summary>
-        /// Gets current ViewMode.
-        /// </summary>
-        public ViewModes ViewMode
-        {
-            get { return viewMode; }
         }
 
         #endregion
@@ -150,10 +133,16 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public ModelView()
+        public ModelThumbView()
         {
             // Measure start time of control
             startTime = DateTime.Now.Ticks;
+        }
+
+        public ModelThumbView(string arena2Path)
+            : this()
+        {
+            SetArena2Path(arena2Path);
         }
 
         #endregion
@@ -187,6 +176,11 @@ namespace DaggerfallModelling.ViewControls
             float aspectRatio = (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+
+            // Start anim timer
+            animTimer.Interval = 8;
+            animTimer.Enabled = true;
+            animTimer.Tick += new EventHandler(AnimTimer_Tick);
         }
 
         /// <summary>
@@ -194,26 +188,23 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         protected override void Draw()
         {
+            // Do nothing if not visible
+            if (!this.Visible)
+                return;
+
+            // Clear display
+            GraphicsDevice.Clear(thumbViewBackgroundColor);
+
+            // Exit if not ready to draw
             if (!isReady)
             {
-                // Just clear the display until ready
-                GraphicsDevice.Clear(Color.Gray);
-                return;
+                // Keep trying to initialise view
+                if (!InitialiseView())
+                    return;
             }
 
-            // Draw based on view mode
-            switch (viewMode)
-            {
-                case ViewModes.ModelThumbs:
-                    GraphicsDevice.Clear(thumbViewBackgroundColor);
-                    DrawThumbnails();
-                    break;
-                case ViewModes.SingleModel:
-                    GraphicsDevice.Clear(thumbViewBackgroundColor);
-                    break;
-                default:
-                    break;
-            }
+            // Draw thumbnails
+            DrawThumbnails();
 
             // Increment frame counter
             frameCount++;
@@ -269,17 +260,8 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnResize(e);
 
-            // Change projection matrix for new size
-            if (IsReady)
-            {
-                float aspectRatio = (float)Size.Width / (float)Size.Height;
-                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
-            }
-
             // Update thumbnail layout
-            if (viewMode == ViewModes.ModelThumbs)
-                LayoutThumbnails();
-
+            LayoutThumbnails();
             this.Refresh();
         }
 
@@ -304,7 +286,7 @@ namespace DaggerfallModelling.ViewControls
             mouseTime = DateTime.Now.Ticks;
 
             // Handle thumbnail scrolling
-            if (rightMouseDown && viewMode == ViewModes.ModelThumbs)
+            if (rightMouseDown)
             {
                 ScrollThumbsView(mousePosDelta.Y);
                 LayoutThumbnails();
@@ -316,19 +298,15 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnMouseWheel(e);
 
-            if (viewMode == ViewModes.ModelThumbs)
-            {
-                // Clear velocity on wheel
-                if (viewMode == ViewModes.ModelThumbs)
-                    thumbScrollVelocity = 0.0f;
+            // Clear velocity on wheel
+            thumbScrollVelocity = 0.0f;
 
-                int amount = (e.Delta / 120) * 60;
-                if (amount < -128) amount = -128;
-                if (amount > 128) amount = 128;
-                ScrollThumbsView(amount);
-                LayoutThumbnails();
-                this.Refresh();
-            }
+            int amount = (e.Delta / 120) * 60;
+            if (amount < -128) amount = -128;
+            if (amount > 128) amount = 128;
+            ScrollThumbsView(amount);
+            LayoutThumbnails();
+            this.Refresh();
         }
 
         /// <summary>
@@ -343,15 +321,11 @@ namespace DaggerfallModelling.ViewControls
             this.Focus();
 
             // Clear velocity for any mouse down event
-            if (viewMode == ViewModes.ModelThumbs)
-                thumbScrollVelocity = 0.0f;
+            thumbScrollVelocity = 0.0f;
 
             // Store button state
             switch (e.Button)
             {
-                case MouseButtons.Left:
-                    leftMouseDown = true;
-                    break;
                 case MouseButtons.Right:
                     rightMouseDown = true;
                     break;
@@ -369,17 +343,17 @@ namespace DaggerfallModelling.ViewControls
             // Store button state
             switch (e.Button)
             {
-                case MouseButtons.Left:
-                    leftMouseDown = false;
-                    break;
                 case MouseButtons.Right:
                     rightMouseDown = false;
-                    if (viewMode == ViewModes.ModelThumbs)
-                        thumbScrollVelocity = CalcMouseVelocity();
+                    thumbScrollVelocity = CalcMouseVelocity();
                     break;
             }
         }
 
+        /// <summary>
+        /// Calculate mouse velocity from deltas.
+        /// </summary>
+        /// <returns></returns>
         private float CalcMouseVelocity()
         {
             // Calc and cap velocity
@@ -391,9 +365,24 @@ namespace DaggerfallModelling.ViewControls
             return velocity;
         }
 
+        /// <summary>
+        /// Visible state of control has changed.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+
+            // Start and stop anim timer based on visible flag
+            if (this.Visible)
+                animTimer.Enabled = true;
+            else
+                animTimer.Enabled = false;
+        }
+
         #endregion
 
-        #region Public Methods
+        #region Private Methods
 
         /// <summary>
         /// Allows view to set up managers for content loading. Must be called post control creation.
@@ -401,9 +390,31 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="arena2Path"></param>
         /// <returns></returns>
-        public bool InitialiseView(string arena2Path)
+        private void SetArena2Path(string arena2Path)
         {
-            // Exit if graphics device not set
+            if (!this.Created)
+            {
+                // Just save path and exit
+                this.arena2Path = arena2Path;
+                return;
+            }
+            else
+            {
+                // Save path and initialise view
+                this.arena2Path = arena2Path;
+                InitialiseView();
+            }
+
+            return;
+        }
+
+        /// <summary>
+        /// Attempts to initialise view based on Arena2Path
+        /// </summary>
+        /// <returns></returns>
+        private bool InitialiseView()
+        {
+            // Exit if not created
             if (!this.Created)
                 return false;
 
@@ -412,10 +423,10 @@ namespace DaggerfallModelling.ViewControls
             {
                 textureManager = new TextureManager(GraphicsDevice, arena2Path);
                 modelManager = new ModelManager(GraphicsDevice, arena2Path);
-                this.arena2Path = arena2Path;
             }
-            catch
+            catch(Exception e)
             {
+                Console.WriteLine(e.Message);
                 return false;
             }
 
@@ -426,13 +437,7 @@ namespace DaggerfallModelling.ViewControls
             isReady = true;
 
             // Perform initial thumbnail layout
-            if (viewMode == ViewModes.ModelThumbs)
-                LayoutThumbnails();
-
-            // Start anim timer
-            animTimer.Interval = 8;
-            animTimer.Enabled = true;
-            animTimer.Tick += new EventHandler(AnimTimer_Tick);
+            LayoutThumbnails();
 
             return true;
         }
@@ -478,47 +483,18 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Private Methods
-        #endregion
-
-        #region Thumbnail View
+        #region Thumbnail Management
 
         private void LoadThumbnailBackgroundTexture()
         {
             // Load thumbnail background texture
-            Texture2D sourceTexture = Texture2D.FromFile(
+            thumbBackgroundTexture = Texture2D.FromFile(
                 GraphicsDevice,
                 Path.Combine(Application.StartupPath, thumbBackgroundFile));
-            if (sourceTexture == null)
+
+            // Throw if load failed
+            if (thumbBackgroundTexture == null)
                 throw new Exception("Could not load thumbnail background image.");
-
-            // Create render target.
-            // We render loaded texture onto background color so it's blended properly,
-            // then store the blended texture to use as a background for every thumbnail.
-            RenderTarget2D renderTarget;
-            renderTarget = new RenderTarget2D(GraphicsDevice, sourceTexture.Width, sourceTexture.Height, 1, GraphicsDevice.DisplayMode.Format);
-            GraphicsDevice.SetRenderTarget(0, renderTarget);
-
-            // Render source texture over background colour
-            GraphicsDevice.Clear(thumbViewBackgroundColor);
-            spriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
-            spriteBatch.Draw(sourceTexture, new Vector2(0, 0), Color.White);
-            spriteBatch.End();
-
-            // Restore default render target
-            GraphicsDevice.SetRenderTarget(0, null);
-
-            // A texture created from a render target is coupled to that render target.
-            // It can be easily lost when device is reset (commonly on resize) and must be re-created.
-            // This is a Windows Forms application so resizing is going to be very common.
-            // Rather than recreate this texture on each resize event, just decouple from render target.
-            // This is done by GetData to color array, then SetData into a fresh new texture.
-            // The new texture will persist for life of GraphicsDevice and through device resets.
-            Texture2D renderTargetTexture = renderTarget.GetTexture();
-            Color[] colorArray = new Color[renderTargetTexture.Width * renderTargetTexture.Height];
-            renderTargetTexture.GetData<Color>(colorArray);
-            thumbBackgroundTexture = new Texture2D(GraphicsDevice, renderTargetTexture.Width, renderTargetTexture.Height);
-            thumbBackgroundTexture.SetData<Color>(colorArray);
         }
 
         /// <summary>
@@ -581,8 +557,6 @@ namespace DaggerfallModelling.ViewControls
                     thumb.key = key;
                     thumb.rect = new Rectangle(xpos, ypos, thumbWidth, thumbHeight);
                     UpdateThumbnailTexture(ref thumb);
-                    //thumb.texture = thumbBackgroundTexture;
-                    //thumb.update = false;
                     thumbDict.Add(thumb.key, thumb);
                 }
 
@@ -601,7 +575,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateThumbnailTexture(ref Thumbnails thumb)
         {
-            if (!isReady)
+            if (!isReady || !this.Visible)
                 return;
 
             // Get dimensions
@@ -643,13 +617,13 @@ namespace DaggerfallModelling.ViewControls
 
                 // Apply matrix to model
                 thumb.model = modelManager.TransformModel(ref thumb.model, matrix);
+
+                // Store matrix
+                thumb.matrix = matrix;
             }
 
-            // TODO: Store and set camera position to draw thumb
-            //Vector3 thumbCameraPosition = new Vector3(0, 0, 1000);
-            //Vector3 thumbCameraReference = new Vector3(0, 0, -1);
-
-            // TEST: Turn off backface culling
+            // Turn off backface culling
+            CullMode cullMode = GraphicsDevice.RenderState.CullMode;
             GraphicsDevice.RenderState.CullMode = CullMode.None;
 
             // Create projection matrix
@@ -668,12 +642,16 @@ namespace DaggerfallModelling.ViewControls
             spriteBatch.End();
             DrawSingleModel(ref thumb.model);
 
-            // Restore default render target
+            // Restore default render target and cull mode
             GraphicsDevice.SetRenderTarget(0, null);
+            GraphicsDevice.RenderState.CullMode = cullMode;
 
-            // TODO: Restore camera position
-
-            // Decouple from render target
+            // A texture created from a render target is coupled to that render target.
+            // It can be easily lost when device is reset (commonly on resize) and must be re-created.
+            // This is a Windows Forms application so resizing is going to be very common.
+            // Rather than rebuild this texture on each resize event, just decouple from render target.
+            // This is done by GetData to color array, then SetData into a fresh new texture.
+            // The new texture will persist for life of GraphicsDevice and through device resets.
             Texture2D renderTargetTexture = renderTarget.GetTexture();
             Color[] colorArray = new Color[renderTargetTexture.Width * renderTargetTexture.Height];
             renderTargetTexture.GetData<Color>(colorArray);
@@ -682,7 +660,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Store updated values
             thumb.texture = newTexture;
-            thumb.update = false;
         }
 
         /// <summary>

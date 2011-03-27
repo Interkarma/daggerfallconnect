@@ -39,7 +39,6 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
-            this.autoMapView1 = new DaggerfallModelling.ViewControls.AutoMapView();
             this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
             this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -54,13 +53,19 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.modelView1 = new DaggerfallModelling.ViewControls.ModelView();
+            this.ViewThumbsToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.ViewSingleModelToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.ContentPanel = new System.Windows.Forms.Panel();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ModelViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
+            this.ModelViewer = new DaggerfallModelling.ViewControls.ModelView();
+            this.ModelThumbViewer = new DaggerfallModelling.ViewControls.ModelThumbView();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -70,7 +75,7 @@
             this.AutoMapToolStrip.SuspendLayout();
             this.SearchPaneToolStrip.SuspendLayout();
             this.ViewPaneToolStrip.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.ContentPanel.SuspendLayout();
             this.MainStatusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -95,7 +100,7 @@
             // MainSplitContainer.Panel2
             // 
             this.MainSplitContainer.Panel2.Controls.Add(this.ViewPaneToolStrip);
-            this.MainSplitContainer.Panel2.Controls.Add(this.panel1);
+            this.MainSplitContainer.Panel2.Controls.Add(this.ContentPanel);
             this.MainSplitContainer.Size = new System.Drawing.Size(1184, 762);
             this.MainSplitContainer.SplitterDistance = 324;
             this.MainSplitContainer.TabIndex = 0;
@@ -190,26 +195,12 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.LayoutPanel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.LayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.LayoutPanel.Controls.Add(this.autoMapView1);
+            this.LayoutPanel.Controls.Add(this.AutoMapViewer);
             this.LayoutPanel.Controls.Add(this.AutoMapToolStrip);
             this.LayoutPanel.Location = new System.Drawing.Point(-2, 392);
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
-            // 
-            // autoMapView1
-            // 
-            this.autoMapView1.BlocksFile = null;
-            this.autoMapView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.autoMapView1.Location = new System.Drawing.Point(0, 25);
-            this.autoMapView1.MapsFile = null;
-            this.autoMapView1.Name = "autoMapView1";
-            this.autoMapView1.Size = new System.Drawing.Size(320, 320);
-            this.autoMapView1.TabIndex = 2;
-            this.autoMapView1.Text = "autoMapView1";
-            this.autoMapView1.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
-            this.autoMapView1.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
-            this.autoMapView1.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             // 
             // AutoMapToolStrip
             // 
@@ -292,7 +283,7 @@
             // SearchModelsToolStripButton
             // 
             this.SearchModelsToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SearchModelsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.brick;
+            this.SearchModelsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.model_find;
             this.SearchModelsToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SearchModelsToolStripButton.Name = "SearchModelsToolStripButton";
             this.SearchModelsToolStripButton.Size = new System.Drawing.Size(23, 22);
@@ -302,7 +293,7 @@
             // SearchBlocksToolStripButton
             // 
             this.SearchBlocksToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SearchBlocksToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.bricks;
+            this.SearchBlocksToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.block_find;
             this.SearchBlocksToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SearchBlocksToolStripButton.Name = "SearchBlocksToolStripButton";
             this.SearchBlocksToolStripButton.Size = new System.Drawing.Size(23, 22);
@@ -312,7 +303,7 @@
             // SearchLocationsToolStripButton
             // 
             this.SearchLocationsToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SearchLocationsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
+            this.SearchLocationsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.location_find;
             this.SearchLocationsToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SearchLocationsToolStripButton.Name = "SearchLocationsToolStripButton";
             this.SearchLocationsToolStripButton.Size = new System.Drawing.Size(23, 22);
@@ -327,7 +318,11 @@
             // ViewPaneToolStrip
             // 
             this.ViewPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AboutToolStripButton});
+            this.AboutToolStripButton,
+            this.ViewThumbsToolStripButton,
+            this.ViewSingleModelToolStripButton,
+            this.ViewBlockToolStripButton,
+            this.toolStripSeparator4});
             this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
             this.ViewPaneToolStrip.Name = "ViewPaneToolStrip";
             this.ViewPaneToolStrip.Size = new System.Drawing.Size(852, 25);
@@ -345,26 +340,50 @@
             this.AboutToolStripButton.Text = "About Daggerfall Modelling";
             this.AboutToolStripButton.Click += new System.EventHandler(this.AboutToolStripButton_Click);
             // 
-            // panel1
+            // ViewThumbsToolStripButton
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.ViewThumbsToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ViewThumbsToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.application_view_tile;
+            this.ViewThumbsToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ViewThumbsToolStripButton.Name = "ViewThumbsToolStripButton";
+            this.ViewThumbsToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ViewThumbsToolStripButton.Text = "View Thumbnails";
+            // 
+            // ViewSingleModelToolStripButton
+            // 
+            this.ViewSingleModelToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ViewSingleModelToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.brick;
+            this.ViewSingleModelToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ViewSingleModelToolStripButton.Name = "ViewSingleModelToolStripButton";
+            this.ViewSingleModelToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ViewSingleModelToolStripButton.Text = "View Single Model";
+            // 
+            // ViewBlockToolStripButton
+            // 
+            this.ViewBlockToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ViewBlockToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.bricks;
+            this.ViewBlockToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ViewBlockToolStripButton.Name = "ViewBlockToolStripButton";
+            this.ViewBlockToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ViewBlockToolStripButton.Text = "View Block";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ContentPanel
+            // 
+            this.ContentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.BackColor = System.Drawing.SystemColors.Control;
-            this.panel1.Controls.Add(this.modelView1);
-            this.panel1.Location = new System.Drawing.Point(0, 25);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(862, 715);
-            this.panel1.TabIndex = 2;
-            // 
-            // modelView1
-            // 
-            this.modelView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.modelView1.Location = new System.Drawing.Point(0, 0);
-            this.modelView1.Name = "modelView1";
-            this.modelView1.Size = new System.Drawing.Size(862, 715);
-            this.modelView1.TabIndex = 0;
-            this.modelView1.Text = "modelView1";
+            this.ContentPanel.BackColor = System.Drawing.Color.Gray;
+            this.ContentPanel.Controls.Add(this.ModelViewer);
+            this.ContentPanel.Controls.Add(this.ModelThumbViewer);
+            this.ContentPanel.Location = new System.Drawing.Point(0, 25);
+            this.ContentPanel.Name = "ContentPanel";
+            this.ContentPanel.Size = new System.Drawing.Size(862, 715);
+            this.ContentPanel.TabIndex = 2;
             // 
             // MainStatusStrip
             // 
@@ -409,6 +428,40 @@
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
             // 
+            // AutoMapViewer
+            // 
+            this.AutoMapViewer.BlocksFile = null;
+            this.AutoMapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.AutoMapViewer.Location = new System.Drawing.Point(0, 25);
+            this.AutoMapViewer.MapsFile = null;
+            this.AutoMapViewer.Name = "AutoMapViewer";
+            this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
+            this.AutoMapViewer.TabIndex = 2;
+            this.AutoMapViewer.Text = "AutoMapViewer";
+            this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
+            this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
+            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
+            // 
+            // ModelViewer
+            // 
+            this.ModelViewer.Arena2Path = "";
+            this.ModelViewer.Location = new System.Drawing.Point(134, 0);
+            this.ModelViewer.Name = "ModelViewer";
+            this.ModelViewer.Size = new System.Drawing.Size(128, 128);
+            this.ModelViewer.TabIndex = 1;
+            this.ModelViewer.Text = "ModelViewer";
+            this.ModelViewer.Visible = false;
+            // 
+            // ModelThumbViewer
+            // 
+            this.ModelThumbViewer.Arena2Path = "";
+            this.ModelThumbViewer.Location = new System.Drawing.Point(0, 0);
+            this.ModelThumbViewer.Name = "ModelThumbViewer";
+            this.ModelThumbViewer.Size = new System.Drawing.Size(128, 128);
+            this.ModelThumbViewer.TabIndex = 0;
+            this.ModelThumbViewer.Text = "ModelThumbViewer";
+            this.ModelThumbViewer.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -440,7 +493,7 @@
             this.SearchPaneToolStrip.PerformLayout();
             this.ViewPaneToolStrip.ResumeLayout(false);
             this.ViewPaneToolStrip.PerformLayout();
-            this.panel1.ResumeLayout(false);
+            this.ContentPanel.ResumeLayout(false);
             this.MainStatusStrip.ResumeLayout(false);
             this.MainStatusStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -461,8 +514,7 @@
         private System.Windows.Forms.ToolStrip ViewPaneToolStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripButton AboutToolStripButton;
-        private System.Windows.Forms.Panel panel1;
-        private DaggerfallModelling.ViewControls.ModelView modelView1;
+        private System.Windows.Forms.Panel ContentPanel;
         private System.Windows.Forms.Panel SearchPanel;
         private System.Windows.Forms.Label SearchLabel;
         private System.Windows.Forms.TextBox SearchTextBox;
@@ -479,8 +531,14 @@
         private System.Windows.Forms.ToolStripButton DungeonModeToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripLabel BlockNameToolStripLabel;
-        private DaggerfallModelling.ViewControls.AutoMapView autoMapView1;
+        private DaggerfallModelling.ViewControls.AutoMapView AutoMapViewer;
         private System.Windows.Forms.ToolStripStatusLabel ModelViewStatusLabel;
+        private System.Windows.Forms.ToolStripButton ViewThumbsToolStripButton;
+        private System.Windows.Forms.ToolStripButton ViewBlockToolStripButton;
+        private System.Windows.Forms.ToolStripButton ViewSingleModelToolStripButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private DaggerfallModelling.ViewControls.ModelThumbView ModelThumbViewer;
+        private DaggerfallModelling.ViewControls.ModelView ModelViewer;
     }
 }
 

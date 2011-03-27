@@ -40,6 +40,9 @@ namespace DaggerfallModelling
         private BlocksFile blocksFile = new BlocksFile();
         private MapsFile mapsFile = new MapsFile();
 
+        // Views
+        private ContentModes contentMode = ContentModes.ModelThumbs;
+
         // Searching
         private int minSearchLength = 2;
         private bool searchModels = false;
@@ -51,12 +54,34 @@ namespace DaggerfallModelling
 
         #endregion
 
+        #region Class Structures
+
+        /// <summary>
+        /// Content modes supported.
+        /// </summary>
+        public enum ContentModes
+        {
+            /// <summary>Viewing a flow layout of model thumbnails.</summary>
+            ModelThumbs,
+            /// <summary>Viewing a single model.</summary>
+            SingleModel,
+            /// <summary>Viewing an exterior block.</summary>
+            ExteriorBlock,
+            /// <summary>Viewing a dungeon block.</summary>
+            DungeonBlock,
+            /// <summary>Viewing entire exterior map.</summary>
+            ExteriorFull,
+            /// <summary>Viewing entire dungeon map.</summary>
+            DungeonFull,
+        }
+
+        #endregion
+
         #region Constructors
 
         public MainForm()
         {
             InitializeComponent();
-            ConnectArena2Path();
         }
 
         #endregion
@@ -71,7 +96,7 @@ namespace DaggerfallModelling
             if (!Directory.Exists(appSettings.Arena2Path))
                 return;
 
-            // TODO: Clear search, automap, and model views
+            // TODO: Clear search, automap, and model view states
 
             try
             {
@@ -98,13 +123,20 @@ namespace DaggerfallModelling
                 return;
             }
 
-            // Initialise map browser
-            autoMapView1.BlocksFile = blocksFile;
-            autoMapView1.MapsFile = mapsFile;
+            // Initialise automap viewer
+            AutoMapViewer.BlocksFile = blocksFile;
+            AutoMapViewer.MapsFile = mapsFile;
 
-            // Initialise model view. This may silently fail if called before form is shown.
-            // Form will retry in FormShown if model view still not ready.
-            modelView1.InitialiseView(appSettings.Arena2Path);
+            // Initialise model thumb viewer
+            ModelThumbViewer.Visible = false;
+            ModelThumbViewer.Dock = DockStyle.Fill;
+
+            // Initialise model viewer
+            ModelViewer.Visible = false;
+            ModelViewer.Dock = DockStyle.Fill;
+
+            // Set current content mode
+            SetContentMode(contentMode);
         }
 
         private void BrowseArena2Path()
@@ -162,6 +194,43 @@ namespace DaggerfallModelling
             }
         }
 
+        private void SetContentMode(ContentModes mode)
+        {
+            // Turn off all checks
+            ViewThumbsToolStripButton.Checked = false;
+            ViewSingleModelToolStripButton.Checked = false;
+            ViewBlockToolStripButton.Checked = false;
+
+            // Turn off both view controls
+            ModelThumbViewer.Visible = false;
+            ModelViewer.Visible = false;
+
+            // Turn on toolbar check based on view mode
+            switch (mode)
+            {
+                case ContentModes.ModelThumbs:
+                    ViewThumbsToolStripButton.Checked = true;
+                    ModelThumbViewer.Visible = true;
+                    break;
+                case ContentModes.SingleModel:
+                    ViewSingleModelToolStripButton.Checked = true;
+                    ModelViewer.Visible = true;
+                    break;
+                case ContentModes.ExteriorBlock:
+                case ContentModes.DungeonBlock:
+                    ViewBlockToolStripButton.Checked = true;
+                    ModelViewer.Visible = true;
+                    break;
+                default:
+                    break;
+            }
+
+            // TODO: Show appropriate control for mode
+
+            // Store new mode
+            contentMode = mode;
+        }
+
         #endregion
 
         #region Form Events
@@ -182,11 +251,19 @@ namespace DaggerfallModelling
             // Direct user to set Arena2 path if not a valid path
             if (!Directory.Exists(appSettings.Arena2Path))
                 BrowseArena2Path();
+            else
+                ConnectArena2Path();
 
-            // Init model view if not ready
-            // If this fails, we try again when user fixes Arena2 path.
-            if (!modelView1.IsReady)
-                modelView1.InitialiseView(appSettings.Arena2Path);
+            // Exit if path still not set
+            if (!Directory.Exists(appSettings.Arena2Path))
+                return;
+
+            // Feed path to viewers
+            ModelThumbViewer.Arena2Path = appSettings.Arena2Path;
+            ModelViewer.Arena2Path = appSettings.Arena2Path;
+
+            // Switch on current view mode
+            SetContentMode(contentMode);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -233,7 +310,7 @@ namespace DaggerfallModelling
                         if (int.TryParse(e.Node.Name, out key))
                         {
                             KeyToRegionLocation(key, out region, out location);
-                            autoMapView1.ShowLocation(region, location);
+                            AutoMapViewer.ShowLocation(region, location);
                             return;
                         }
                         break;
@@ -241,7 +318,7 @@ namespace DaggerfallModelling
             }
 
             // Clear map block browser
-            autoMapView1.Clear();
+            AutoMapViewer.Clear();
         }
 
         private void SearchModelsToolStripButton_Click(object sender, EventArgs e)
@@ -300,12 +377,12 @@ namespace DaggerfallModelling
 
         private void ExteriorModeToolStripButton_Click(object sender, EventArgs e)
         {
-            autoMapView1.SetViewMode(AutoMapView.ViewModes.Exterior);
+            AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Exterior);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
         {
-            autoMapView1.SetViewMode(AutoMapView.ViewModes.Dungeon);
+            AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Dungeon);
         }
 
         private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
@@ -348,7 +425,7 @@ namespace DaggerfallModelling
             }
 
             // Clear map block browser
-            autoMapView1.Clear();
+            AutoMapViewer.Clear();
 
             // Disable search controls
             SearchPaneToolStrip.Enabled = false;
