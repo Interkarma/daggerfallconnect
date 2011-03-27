@@ -433,6 +433,9 @@ namespace DaggerfallModelling
             ClearSearchButton.Enabled = false;
             SearchResultsTreeView.Visible = false;
 
+            // Halt content animation
+            ModelThumbViewer.EnableAnimTimer(false);
+
             // Drop in searching image
             PictureBox pb = new PictureBox();
             pb.Image = Properties.Resources.arrows64;
@@ -442,6 +445,7 @@ namespace DaggerfallModelling
             pb.BringToFront();
             Application.DoEvents();
 
+            // Perform search
             if (searchModels)
                 SearchModels(ref pattern, out modelsFound);
             if (searchBlocks)
@@ -461,6 +465,9 @@ namespace DaggerfallModelling
             // Clear searching image
             SearchResultsPanel.Controls.Remove(pb);
 
+            // Resume content animation
+            ModelThumbViewer.EnableAnimTimer(true);
+
             // Set focus to results tree
             SearchResultsTreeView.Focus();
         }
@@ -476,14 +483,22 @@ namespace DaggerfallModelling
                 return;
             }
 
+            // Check pattern is numeric
+            uint id;
+            if (!uint.TryParse(pattern, out id))
+            {
+                searchOut = modelsFound;
+                return;
+            }
+
             // Search all models for a match
             for (int model = 0; model < arch3dFile.Count; model++)
             {
                 Application.DoEvents();
-                DFMesh dfMesh = arch3dFile.GetMesh(model);
-                string objectId = dfMesh.ObjectId.ToString();
-                if (ContainsCaseInsensitive(ref objectId, ref pattern))
-                    modelsFound.Add(model, dfMesh.ObjectId);
+                uint objectId = arch3dFile.GetRecordId(model);
+                string objectIdString = objectId.ToString();
+                if (ContainsCaseInsensitive(ref objectIdString, ref pattern))
+                    modelsFound.Add(model, objectId);
             }
 
             searchOut = modelsFound;
@@ -504,9 +519,9 @@ namespace DaggerfallModelling
             for (int block = 0; block < blocksFile.Count; block++)
             {
                 Application.DoEvents();
-                DFBlock dfBlock = blocksFile.GetBlock(block);
-                if (ContainsCaseInsensitive(ref dfBlock.Name, ref pattern))
-                    blocksFound.Add(block, dfBlock.Name);
+                string name = blocksFile.GetBlockName(block);
+                if (ContainsCaseInsensitive(ref name, ref pattern))
+                    blocksFound.Add(block, name);
             }
 
             searchOut = blocksFound;

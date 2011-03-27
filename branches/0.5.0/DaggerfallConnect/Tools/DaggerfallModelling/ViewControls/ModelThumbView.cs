@@ -147,6 +147,26 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Enable or disable animation timer. The animation timer is used for operations
+        ///  like scrolling and rotating model thumbnail under mouse.
+        ///  Can only perform this operation when control is visible.
+        /// </summary>
+        /// <param name="suspend">True to suspend, false to resume.</param>
+        public void EnableAnimTimer(bool enable)
+        {
+            // Exit if control not visible
+            if (!this.Visible)
+                return;
+
+            // Suspend and resume timer
+            animTimer.Enabled = enable;
+        }
+
+        #endregion
+
         #region Abstract Implementations
 
         /// <summary>
@@ -302,8 +322,8 @@ namespace DaggerfallModelling.ViewControls
             thumbScrollVelocity = 0.0f;
 
             int amount = (e.Delta / 120) * 60;
-            if (amount < -128) amount = -128;
-            if (amount > 128) amount = 128;
+            if (amount < -thumbHeight/2) amount = -thumbHeight/2;
+            if (amount > thumbHeight/2) amount = thumbHeight/2;
             ScrollThumbsView(amount);
             LayoutThumbnails();
             this.Refresh();
@@ -632,7 +652,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Create texture to use as render target
             RenderTarget2D renderTarget;
-            renderTarget = new RenderTarget2D(GraphicsDevice, thumbWidth, thumbHeight, 1, GraphicsDevice.DisplayMode.Format);
+            renderTarget = new RenderTarget2D(GraphicsDevice, thumbWidth, thumbHeight, 1, GraphicsDevice.DisplayMode.Format, RenderTargetUsage.PreserveContents);
             GraphicsDevice.SetRenderTarget(0, renderTarget);
 
             // Render thumbnail components
@@ -668,21 +688,48 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="amount">Amount in pixels to scroll view.</param>
         private void ScrollThumbsView(int amount)
         {
+            // Get total rows
+            int totalRows = modelManager.Arch3dFile.Count / thumbsPerRow;
+
+            //// Prevent scrolling past first row
+            //if (thumbsFirstVisibleRow == 0 && amount > 0)
+            //{
+            //    thumbScrollAmount = 0;
+            //    thumbScrollVelocity = 0;
+            //    return;
+            //}
+
+            //// Stop scrolling past last row
+            //if (thumbsFirstVisibleRow == totalRows - 1 && amount < 0)
+            //{
+            //    thumbScrollAmount = 0;
+            //    thumbScrollVelocity = 0;
+            //    return;
+            //}
+
             // Apply scroll amount
             thumbScrollAmount += amount;
 
             // Handle scrolling models up with a new row appearing at the bottom
             if (thumbScrollAmount <= -(thumbHeight + thumbSpacing))
             {
-                thumbsFirstVisibleRow++;
-                thumbScrollAmount += (thumbHeight + thumbSpacing);
+                if (thumbsFirstVisibleRow < totalRows)
+                {
+                    thumbScrollAmount += amount;
+                    thumbsFirstVisibleRow++;
+                    thumbScrollAmount += (thumbHeight + thumbSpacing);
+                }
             }
 
             // Handle scrolling models down with a new row appearing at the top
             if (thumbScrollAmount >= (thumbHeight + thumbSpacing))
             {
-                thumbsFirstVisibleRow--;
-                thumbScrollAmount -= (thumbHeight + thumbSpacing);
+                if (thumbsFirstVisibleRow > 0)
+                {
+                    thumbScrollAmount += amount;
+                    thumbsFirstVisibleRow--;
+                    thumbScrollAmount -= (thumbHeight + thumbSpacing);
+                }
             }
         }
 
