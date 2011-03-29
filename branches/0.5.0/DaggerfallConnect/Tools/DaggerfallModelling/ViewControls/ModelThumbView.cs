@@ -83,6 +83,7 @@ namespace DaggerfallModelling.ViewControls
         private long mouseTime;
         private Point mousePosDelta;
         private long mouseTimeDelta;
+        private float mouseVelocityMultiplier = 2.0f;
         private bool rightMouseDown = false;
 
         //
@@ -378,8 +379,9 @@ namespace DaggerfallModelling.ViewControls
         {
             // Calc and cap velocity
             float velocity = ((float)mousePosDelta.Y / (float)mouseTimeDelta) * 100000.0f;
-            if (velocity <= -50.0f) velocity = -50.0f;
-            if (velocity >= 50.0f) velocity = 50.0f;
+            velocity *= mouseVelocityMultiplier;
+            if (velocity <= -thumbHeight / 2) velocity = -thumbHeight / 2;
+            if (velocity >= thumbHeight / 2) velocity = thumbHeight / 2;
             if (velocity >= -2.0f && velocity <= 2.0f) velocity = 0.0f;
 
             return velocity;
@@ -529,20 +531,35 @@ namespace DaggerfallModelling.ViewControls
             thumbWidth = ((this.Width - thumbSpacing * thumbsPerRow) / thumbsPerRow) - (thumbSpacing / thumbsPerRow + 1);
             thumbHeight = thumbWidth;
 
-            // Calc ranges
+            // Calc ranges.
+            // Top row is started one row up so no pop-in when scrolling up.
+            // Bottom row is also extended so no pop-in when scrolling down.
             int visibleRows = this.Height / (thumbHeight + thumbSpacing) + 3;
-            int firstIndex = thumbsFirstVisibleRow * thumbsPerRow;
+            int firstIndex = (thumbsFirstVisibleRow - 1) * thumbsPerRow;
             int lastIndex = firstIndex + visibleRows * thumbsPerRow - 1;
 
-            // Cap first and last indices
-            if (firstIndex < 0)
-                firstIndex = 0;
-            if (lastIndex >= modelManager.Arch3dFile.Count)
-                lastIndex = modelManager.Arch3dFile.Count - 1;
+            // Cap last index
+            int maxIndex = modelManager.Arch3dFile.Count - 1;
+            if (lastIndex > maxIndex)
+                lastIndex = maxIndex;
 
             // Calc screen position of first index
             int xpos = thumbSpacing;
             int ypos = -thumbHeight + thumbScrollAmount;
+
+            // Stop scrolling up when at the top row
+            if (firstIndex < 0 && thumbScrollAmount > 0)
+            {
+                ypos = -thumbHeight;
+                thumbScrollAmount = 0;
+            }
+
+            // Stop scrolling down when bottom row in view
+            if (thumbsFirstVisibleRow > (maxIndex / thumbsPerRow - visibleRows) + 3 && thumbScrollAmount < 0)
+            {
+                ypos = -thumbHeight;
+                thumbScrollAmount = 0;
+            }
 
             // Remove out of range thumbnails
             List<int> keysToRemove = new List<int>();
@@ -560,24 +577,29 @@ namespace DaggerfallModelling.ViewControls
             // Arrange thumbnails, updating existing and inserting new
             for (int index = firstIndex; index <= lastIndex; index++)
             {
-                // Update or create
-                int key = (int)modelManager.Arch3dFile.GetRecordId(index);
-                if (thumbDict.ContainsKey(key))
+                // Only render indices zero or higher. It's possible to have a negative index
+                // based on view starting one row higher for scrolling purposes.
+                if (index >= 0)
                 {
-                    // Update position and size
-                    Thumbnails thumb = thumbDict[key];
-                    thumb.rect = new Rectangle(xpos, ypos, thumbWidth, thumbHeight);
-                    thumbDict[key] = thumb;
-                }
-                else
-                {
-                    // Create thumbnail
-                    Thumbnails thumb = new Thumbnails();
-                    thumb.index = index;
-                    thumb.key = key;
-                    thumb.rect = new Rectangle(xpos, ypos, thumbWidth, thumbHeight);
-                    UpdateThumbnailTexture(ref thumb);
-                    thumbDict.Add(thumb.key, thumb);
+                    // Update or create
+                    int key = (int)modelManager.Arch3dFile.GetRecordId(index);
+                    if (thumbDict.ContainsKey(key))
+                    {
+                        // Update position and size
+                        Thumbnails thumb = thumbDict[key];
+                        thumb.rect = new Rectangle(xpos, ypos, thumbWidth, thumbHeight);
+                        thumbDict[key] = thumb;
+                    }
+                    else
+                    {
+                        // Create thumbnail
+                        Thumbnails thumb = new Thumbnails();
+                        thumb.index = index;
+                        thumb.key = key;
+                        thumb.rect = new Rectangle(xpos, ypos, thumbWidth, thumbHeight);
+                        UpdateThumbnailTexture(ref thumb);
+                        thumbDict.Add(thumb.key, thumb);
+                    }
                 }
 
                 // Update position
@@ -690,22 +712,6 @@ namespace DaggerfallModelling.ViewControls
         {
             // Get total rows
             int totalRows = modelManager.Arch3dFile.Count / thumbsPerRow;
-
-            //// Prevent scrolling past first row
-            //if (thumbsFirstVisibleRow == 0 && amount > 0)
-            //{
-            //    thumbScrollAmount = 0;
-            //    thumbScrollVelocity = 0;
-            //    return;
-            //}
-
-            //// Stop scrolling past last row
-            //if (thumbsFirstVisibleRow == totalRows - 1 && amount < 0)
-            //{
-            //    thumbScrollAmount = 0;
-            //    thumbScrollVelocity = 0;
-            //    return;
-            //}
 
             // Apply scroll amount
             thumbScrollAmount += amount;
