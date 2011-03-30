@@ -63,6 +63,7 @@
     <Compile Include="ViewControls\ContentViewHost.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ViewControls\SingleModelViewClient.cs" />
     <Compile Include="ViewControls\ThumbnailViewClient.cs" />
     <Compile Include="XNAClasses\GraphicsDeviceService.cs" />
     <Compile Include="XNAClasses\ServiceContainer.cs" />

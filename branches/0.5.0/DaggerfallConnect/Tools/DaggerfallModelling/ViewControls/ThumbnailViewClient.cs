@@ -1,4 +1,12 @@
-﻿#region Imports
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
+
+#region Imports
 
 using System;
 using System.Collections.Generic;
@@ -389,7 +397,7 @@ namespace DaggerfallModelling.ViewControls
                 // Load texture for each submesh.
                 for (int sm = 0; sm < thumb.model.SubMeshes.Length; sm++)
                 {
-                    // Load texture
+                    // Load textures
                     thumb.model.SubMeshes[sm].TextureKey =
                         host.TextureManager.LoadMiscTexture(
                         thumb.model.SubMeshes[sm].TextureArchive,
@@ -425,7 +433,7 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.RenderState.CullMode = CullMode.None;
 
             // Create projection matrix
-            float aspectRatio = thumb.rect.Width / thumb.rect.Height;
+            float aspectRatio = (float)thumb.rect.Width / (float)thumb.rect.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
 
             // Create texture to use as render target

@@ -1,4 +1,12 @@
-﻿#region Imports
+﻿// Project:         DaggerfallModelling
+// Description:     Explore and export 3D models from Daggerfall.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
+
+#region Imports
 
 using System;
 using System.Collections.Generic;
@@ -50,7 +58,7 @@ namespace DaggerfallModelling.ViewControls
         private float timeDelta;
 
         // Views
-        private ViewModes viewMode = ViewModes.ThumbnailView;
+        private ViewModes viewMode = ViewModes.SingleModelView;
         private Dictionary<ViewModes, ContentViewClient> viewClients;
 
         #endregion
@@ -439,6 +447,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Initialise client views
             AttachViewClient(ViewModes.ThumbnailView, new ThumbnailViewClient(this));
+            AttachViewClient(ViewModes.SingleModelView, new SingleModelViewClient(this));
 
             // Start anim timer
             animTimer.Interval = 8;
