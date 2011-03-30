@@ -59,12 +59,11 @@
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewControls\ModelThumbView.cs">
+    <Compile Include="ViewControls\ContentViewClient.cs" />
+    <Compile Include="ViewControls\ContentViewHost.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewControls\ModelView.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ViewControls\ThumbnailViewClient.cs" />
     <Compile Include="XNAClasses\GraphicsDeviceService.cs" />
     <Compile Include="XNAClasses\ServiceContainer.cs" />
     <Compile Include="MainForm.cs">

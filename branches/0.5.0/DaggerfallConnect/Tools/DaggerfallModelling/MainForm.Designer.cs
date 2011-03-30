@@ -64,8 +64,7 @@
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
             this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
-            this.ModelViewer = new DaggerfallModelling.ViewControls.ModelView();
-            this.ModelThumbViewer = new DaggerfallModelling.ViewControls.ModelThumbView();
+            this.ContentView = new DaggerfallModelling.ViewControls.ContentViewHost();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -188,6 +187,7 @@
             this.SearchLabel.Name = "SearchLabel";
             this.SearchLabel.Size = new System.Drawing.Size(18, 13);
             this.SearchLabel.TabIndex = 0;
+            this.MainTips.SetToolTip(this.SearchLabel, "Enter search string");
             // 
             // LayoutPanel
             // 
@@ -378,8 +378,7 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.ContentPanel.BackColor = System.Drawing.Color.Gray;
-            this.ContentPanel.Controls.Add(this.ModelViewer);
-            this.ContentPanel.Controls.Add(this.ModelThumbViewer);
+            this.ContentPanel.Controls.Add(this.ContentView);
             this.ContentPanel.Location = new System.Drawing.Point(0, 25);
             this.ContentPanel.Name = "ContentPanel";
             this.ContentPanel.Size = new System.Drawing.Size(862, 715);
@@ -442,25 +441,14 @@
             this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
             this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             // 
-            // ModelViewer
+            // ContentView
             // 
-            this.ModelViewer.Arena2Path = "";
-            this.ModelViewer.Location = new System.Drawing.Point(134, 0);
-            this.ModelViewer.Name = "ModelViewer";
-            this.ModelViewer.Size = new System.Drawing.Size(128, 128);
-            this.ModelViewer.TabIndex = 1;
-            this.ModelViewer.Text = "ModelViewer";
-            this.ModelViewer.Visible = false;
-            // 
-            // ModelThumbViewer
-            // 
-            this.ModelThumbViewer.Arena2Path = "";
-            this.ModelThumbViewer.Location = new System.Drawing.Point(0, 0);
-            this.ModelThumbViewer.Name = "ModelThumbViewer";
-            this.ModelThumbViewer.Size = new System.Drawing.Size(128, 128);
-            this.ModelThumbViewer.TabIndex = 0;
-            this.ModelThumbViewer.Text = "ModelThumbViewer";
-            this.ModelThumbViewer.Visible = false;
+            this.ContentView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ContentView.Location = new System.Drawing.Point(0, 0);
+            this.ContentView.Name = "ContentView";
+            this.ContentView.Size = new System.Drawing.Size(862, 715);
+            this.ContentView.TabIndex = 0;
+            this.ContentView.Text = "ContentView";
             // 
             // MainForm
             // 
@@ -537,8 +525,7 @@
         private System.Windows.Forms.ToolStripButton ViewBlockToolStripButton;
         private System.Windows.Forms.ToolStripButton ViewSingleModelToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private DaggerfallModelling.ViewControls.ModelThumbView ModelThumbViewer;
-        private DaggerfallModelling.ViewControls.ModelView ModelViewer;
+        private DaggerfallModelling.ViewControls.ContentViewHost ContentView;
     }
 }
 

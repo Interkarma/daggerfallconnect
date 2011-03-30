@@ -1,12 +1,4 @@
-﻿// Project:         DaggerfallModelling
-// Description:     Explore and export 3D models from Daggerfall.
-// Copyright:       Copyright (C) 2011 Gavin Clayton
-// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
-// Web Site:        http://www.dfworkshop.net
-// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
-// Project Page:    http://code.google.com/p/daggerfallconnect/
-
-#region Imports
+﻿#region Imports
 
 using System;
 using System.Collections.Generic;
@@ -25,31 +17,32 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// View model thumbnails.
+    /// Show a list of Daggerfall models as thumbnails.
     /// </summary>
-    public class ModelThumbView : WinFormsGraphicsDevice.GraphicsDeviceControl
+    public class ThumbnailViewClient : ContentViewClient
     {
-
         #region Class Variables
 
-        //
+        // Layout
+        private int thumbsPerRow = 5;
+        private int thumbsFirstVisibleRow = 0;
+        private int thumbSpacing = 16;
+        private int thumbWidth;
+        private int thumbHeight;
+        private Dictionary<int, Thumbnails> thumbDict = new Dictionary<int, Thumbnails>();
+
+        // Scrolling
+        private int thumbScrollAmount = 0;
+        private float thumbScrollVelocity = 0.0f;
+        
+        // Appearance
+        private Color thumbViewBackgroundColor = Color.White;
+
         // Resources
-        //
-        private bool isReady = false;
-        private string arena2Path = string.Empty;
+        private const string thumbBackgroundFile = "thumbnail_background.png";
+        private Texture2D thumbBackgroundTexture;
 
-        //
-        // Managers
-        //
-        private TextureManager textureManager;
-        private ModelManager modelManager;
-
-        //
         // XNA
-        //
-        private long startTime = 0;
-        private long timeInSeconds = 0;
-        private uint frameCount = 0;
         private SpriteBatch spriteBatch;
         private VertexDeclaration vertexDeclaration;
         private BasicEffect effect;
@@ -61,40 +54,13 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
-        //
-        // Model thumbnails view
-        //
-        private int thumbsPerRow = 5;
-        private int thumbsFirstVisibleRow = 0;
-        private int thumbScrollAmount = 0;
-        private int thumbSpacing = 16;
-        private int thumbWidth;
-        private int thumbHeight;
-        private Color thumbViewBackgroundColor = Color.White;
-        private const string thumbBackgroundFile = "thumbnail_background.png";
-        private Texture2D thumbBackgroundTexture;
-        private Dictionary<int, Thumbnails> thumbDict = new Dictionary<int, Thumbnails>();
-        private float thumbScrollVelocity = 0.0f;
-
-        //
-        // Mouse
-        //
-        private Point mousePos;
-        private long mouseTime;
-        private Point mousePosDelta;
-        private long mouseTimeDelta;
-        private float mouseVelocityMultiplier = 2.0f;
-        private bool rightMouseDown = false;
-
-        //
-        // Timer
-        ///
-        private Timer animTimer = new Timer();
-
         #endregion
 
         #region Class Structures
 
+        /// <summary>
+        /// Defines a single thumbnail item.
+        /// </summary>
         private struct Thumbnails
         {
             public int index;
@@ -107,85 +73,33 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets Arena2 path.
-        /// </summary>
-        public string Arena2Path
-        {
-            get { return arena2Path; }
-            set { SetArena2Path(value); }
-        }
-
-        /// <summary>
-        /// Gets ready flag indicating control is operating.
-        ///  Must set Arena2 path before control is ready.
-        /// </summary>
-        public bool IsReady
-        {
-            get { return isReady; }
-        }
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
-        /// Default constructor.
+        /// Constructor.
         /// </summary>
-        public ModelThumbView()
+        public ThumbnailViewClient(ContentViewHost host)
+            : base(host)
         {
-            // Measure start time of control
-            startTime = DateTime.Now.Ticks;
-        }
-
-        public ModelThumbView(string arena2Path)
-            : this()
-        {
-            SetArena2Path(arena2Path);
         }
 
         #endregion
 
-        #region Public Methods
+        #region Overrides
 
         /// <summary>
-        /// Enable or disable animation timer. The animation timer is used for operations
-        ///  like scrolling and rotating model thumbnail under mouse.
-        ///  Can only perform this operation when control is visible.
+        /// Called by host when view client should initialise.
         /// </summary>
-        /// <param name="suspend">True to suspend, false to resume.</param>
-        public void EnableAnimTimer(bool enable)
+        public override void Initialize()
         {
-            // Exit if control not visible
-            if (!this.Visible)
-                return;
-
-            // Suspend and resume timer
-            animTimer.Enabled = enable;
-        }
-
-        #endregion
-
-        #region Abstract Implementations
-
-        /// <summary>
-        /// Initialise the control.
-        /// </summary>
-        protected override void Initialize()
-        {
-            // Handle device reset event
-            GraphicsDevice.DeviceReset += new EventHandler(GraphicsDevice_DeviceReset);
-
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = new SpriteBatch(host.GraphicsDevice);
 
             // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            vertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
             // Setup basic effect
-            effect = new BasicEffect(GraphicsDevice, null);
+            effect = new BasicEffect(host.GraphicsDevice, null);
             effect.World = Matrix.Identity;
             effect.TextureEnabled = true;
             effect.PreferPerPixelLighting = true;
@@ -194,274 +108,114 @@ namespace DaggerfallModelling.ViewControls
             effect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
 
             // Setup camera
-            float aspectRatio = (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height;
+            float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
-
-            // Start anim timer
-            animTimer.Interval = 8;
-            animTimer.Enabled = true;
-            animTimer.Tick += new EventHandler(AnimTimer_Tick);
-        }
-
-        /// <summary>
-        /// Draw control.
-        /// </summary>
-        protected override void Draw()
-        {
-            // Do nothing if not visible
-            if (!this.Visible)
-                return;
-
-            // Clear display
-            GraphicsDevice.Clear(thumbViewBackgroundColor);
-
-            // Exit if not ready to draw
-            if (!isReady)
-            {
-                // Keep trying to initialise view
-                if (!InitialiseView())
-                    return;
-            }
-
-            // Draw thumbnails
-            DrawThumbnails();
-
-            // Increment frame counter
-            frameCount++;
-        }
-
-        #endregion
-
-        #region Form Events
-
-        /// <summary>
-        /// GraphicsDevice reset.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void GraphicsDevice_DeviceReset(object sender, EventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Handles animations.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        void AnimTimer_Tick(object sender, EventArgs e)
-        {
-            // Update time in seconds
-            timeInSeconds = (DateTime.Now.Ticks - startTime) / 10000000;
-
-            // Calculate time delta
-            float timeDelta = (float)timeInSeconds / (float)frameCount;
-
-            // Thumbnail scrolling
-            if (thumbScrollVelocity != 0)
-            {
-                float adjustedVelocity = (thumbScrollVelocity * timeDelta) * 20.0f;
-                ScrollThumbsView((int)adjustedVelocity);
-                LayoutThumbnails();
-            }
-
-            // Redraw
-            this.Refresh();
-        }
-
-        #endregion
-
-        #region Overrides
-
-        /// <summary>
-        /// Handles resize events.
-        /// </summary>
-        /// <param name="e">Event arguments.</param>
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-
-            // Update thumbnail layout
-            LayoutThumbnails();
-            this.Refresh();
-        }
-
-        /// <summary>
-        /// Tracks mouse movement, delta, and time.
-        /// </summary>
-        /// <param name="e">MouseEventArgs.</param>
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-
-            // Capture deltas from last position and time
-            mousePosDelta = new Point(e.Location.X - mousePos.X, e.Location.Y - mousePos.Y);
-            mouseTimeDelta = DateTime.Now.Ticks - mouseTime;
-
-            // Ensure mouse time delta is never 0 (possible, and screws with distance/time calcs obviously)
-            if (mouseTimeDelta == 0)
-                mouseTimeDelta = 1;
-
-            // Update position and time
-            mousePos = new Point(e.Location.X, e.Location.Y);
-            mouseTime = DateTime.Now.Ticks;
-
-            // Handle thumbnail scrolling
-            if (rightMouseDown)
-            {
-                ScrollThumbsView(mousePosDelta.Y);
-                LayoutThumbnails();
-                this.Refresh();
-            }
-        }
-
-        protected override void OnMouseWheel(MouseEventArgs e)
-        {
-            base.OnMouseWheel(e);
-
-            // Clear velocity on wheel
-            thumbScrollVelocity = 0.0f;
-
-            int amount = (e.Delta / 120) * 60;
-            if (amount < -thumbHeight/2) amount = -thumbHeight/2;
-            if (amount > thumbHeight/2) amount = thumbHeight/2;
-            ScrollThumbsView(amount);
-            LayoutThumbnails();
-            this.Refresh();
-        }
-
-        /// <summary>
-        /// Tracks mouse buttons down.
-        /// </summary>
-        /// <param name="e">MouseEventArgs.</param>
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            base.OnMouseDown(e);
-
-            // Set focus to this control
-            this.Focus();
-
-            // Clear velocity for any mouse down event
-            thumbScrollVelocity = 0.0f;
-
-            // Store button state
-            switch (e.Button)
-            {
-                case MouseButtons.Right:
-                    rightMouseDown = true;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Tracks mouse buttons up.
-        /// </summary>
-        /// <param name="e">MouseEventArgs.</param>
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            base.OnMouseUp(e);
-
-            // Store button state
-            switch (e.Button)
-            {
-                case MouseButtons.Right:
-                    rightMouseDown = false;
-                    thumbScrollVelocity = CalcMouseVelocity();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Calculate mouse velocity from deltas.
-        /// </summary>
-        /// <returns></returns>
-        private float CalcMouseVelocity()
-        {
-            // Calc and cap velocity
-            float velocity = ((float)mousePosDelta.Y / (float)mouseTimeDelta) * 100000.0f;
-            velocity *= mouseVelocityMultiplier;
-            if (velocity <= -thumbHeight / 2) velocity = -thumbHeight / 2;
-            if (velocity >= thumbHeight / 2) velocity = thumbHeight / 2;
-            if (velocity >= -2.0f && velocity <= 2.0f) velocity = 0.0f;
-
-            return velocity;
-        }
-
-        /// <summary>
-        /// Visible state of control has changed.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        protected override void OnVisibleChanged(EventArgs e)
-        {
-            base.OnVisibleChanged(e);
-
-            // Start and stop anim timer based on visible flag
-            if (this.Visible)
-                animTimer.Enabled = true;
-            else
-                animTimer.Enabled = false;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Allows view to set up managers for content loading. Must be called post control creation.
-        ///  of control.
-        /// </summary>
-        /// <param name="arena2Path"></param>
-        /// <returns></returns>
-        private void SetArena2Path(string arena2Path)
-        {
-            if (!this.Created)
-            {
-                // Just save path and exit
-                this.arena2Path = arena2Path;
-                return;
-            }
-            else
-            {
-                // Save path and initialise view
-                this.arena2Path = arena2Path;
-                InitialiseView();
-            }
-
-            return;
-        }
-
-        /// <summary>
-        /// Attempts to initialise view based on Arena2Path
-        /// </summary>
-        /// <returns></returns>
-        private bool InitialiseView()
-        {
-            // Exit if not created
-            if (!this.Created)
-                return false;
-
-            // Create managers
-            try
-            {
-                textureManager = new TextureManager(GraphicsDevice, arena2Path);
-                modelManager = new ModelManager(GraphicsDevice, arena2Path);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return false;
-            }
 
             // Load the thumbnail background texture
             LoadThumbnailBackgroundTexture();
 
-            // Set ready flag
-            isReady = true;
-
             // Perform initial thumbnail layout
             LayoutThumbnails();
+        }
 
-            return true;
+        /// <summary>
+        /// Called by host when view client should update animation.
+        /// </summary>
+        public override void Tick()
+        {
+            // Thumbnail scrolling
+            if (thumbScrollVelocity != 0)
+            {
+                float adjustedVelocity = (thumbScrollVelocity * host.TimeDelta) * 20.0f;
+                ScrollThumbsView((int)adjustedVelocity);
+                LayoutThumbnails();
+            }
+        }
+
+        /// <summary>
+        /// Called by host when view client should redraw.
+        /// </summary>
+        public override void Draw()
+        {
+            // Clear display
+            host.GraphicsDevice.Clear(thumbViewBackgroundColor);
+
+            // Draw thumbnails
+            DrawThumbnails();
+        }
+
+        /// <summary>
+        /// Called by host when view client should redraw.
+        /// </summary>
+        public override void Resize()
+        {
+            // Update thumbnail layout
+            LayoutThumbnails();
+        }
+
+        /// <summary>
+        /// Called when client should track mouse movement.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public override void OnMouseMove(MouseEventArgs e)
+        {
+            // Handle thumbnail scrolling
+            if (host.RightMouseDown)
+            {
+                // Update thumbs for scrolling
+                ScrollThumbsView(host.MousePosDelta.Y);
+                LayoutThumbnails();
+
+                // Request redraw now
+                host.Refresh();
+            }
+        }
+
+        /// <summary>
+        /// Called when the mouse wheel is scrolled.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public override void OnMouseWheel(MouseEventArgs e)
+        {
+            // Clear velocity on wheel
+            thumbScrollVelocity = 0.0f;
+
+            // Calculate scroll amount
+            int amount = (e.Delta / 120) * 60;
+            if (amount < -thumbHeight / 2) amount = -thumbHeight / 2;
+            if (amount > thumbHeight / 2) amount = thumbHeight / 2;
+            ScrollThumbsView(amount);
+            LayoutThumbnails();
+
+            // Request redraw now
+            host.Refresh();
+        }
+
+        /// <summary>
+        /// Called when a mouse button is pressed.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public override void OnMouseDown(MouseEventArgs e)
+        {
+            // Clear velocity for any mouse down event
+            thumbScrollVelocity = 0.0f;
+        }
+
+        /// <summary>
+        /// Called when a mouse button is released.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public override void OnMouseUp(MouseEventArgs e)
+        {
+            // Set scroll velocity on right mouse up
+            if (e.Button == MouseButtons.Right)
+            {
+                float mouseVelocity = host.MouseVelocity;
+                if (mouseVelocity <= -thumbHeight / 2) mouseVelocity = -thumbHeight / 2;
+                if (mouseVelocity >= thumbHeight / 2) mouseVelocity = thumbHeight / 2;
+                thumbScrollVelocity = mouseVelocity;
+            }
         }
 
         #endregion
@@ -472,6 +226,7 @@ namespace DaggerfallModelling.ViewControls
         {
             spriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Deferred, SaveStateMode.SaveState);
 
+            // Draw each thumbnail sprite
             foreach (var obj in thumbDict)
                 spriteBatch.Draw(obj.Value.texture, obj.Value.rect, Color.White);
 
@@ -481,7 +236,7 @@ namespace DaggerfallModelling.ViewControls
         private void DrawSingleModel(ref ModelManager.Model model)
         {
             // Set vertex declaration
-            GraphicsDevice.VertexDeclaration = vertexDeclaration;
+            host.GraphicsDevice.VertexDeclaration = vertexDeclaration;
 
             // Set view and projection matrices
             effect.View = viewMatrix;
@@ -489,12 +244,12 @@ namespace DaggerfallModelling.ViewControls
 
             foreach (var submesh in model.SubMeshes)
             {
-                effect.Texture = textureManager.GetMiscTexture(submesh.TextureKey);
+                effect.Texture = host.TextureManager.GetMiscTexture(submesh.TextureKey);
 
                 effect.Begin();
                 effect.CurrentTechnique.Passes[0].Begin();
 
-                GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
                     model.Vertices, 0, model.Vertices.Length,
                     submesh.Indices, 0, submesh.Indices.Length / 3);
 
@@ -511,7 +266,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Load thumbnail background texture
             thumbBackgroundTexture = Texture2D.FromFile(
-                GraphicsDevice,
+                host.GraphicsDevice,
                 Path.Combine(Application.StartupPath, thumbBackgroundFile));
 
             // Throw if load failed
@@ -524,22 +279,23 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void LayoutThumbnails()
         {
-            if (!isReady)
+            // Host must be ready as layout depends on host control dimensions
+            if (!host.IsReady)
                 return;
 
-            // Calc dimensions
-            thumbWidth = ((this.Width - thumbSpacing * thumbsPerRow) / thumbsPerRow) - (thumbSpacing / thumbsPerRow + 1);
+            // Calc dimensions. Leaving a little gap on the right for a scrollbar.
+            thumbWidth = ((host.Width - thumbSpacing * thumbsPerRow) / thumbsPerRow) - (thumbSpacing / thumbsPerRow + 1);
             thumbHeight = thumbWidth;
 
             // Calc ranges.
             // Top row is started one row up so no pop-in when scrolling up.
             // Bottom row is also extended so no pop-in when scrolling down.
-            int visibleRows = this.Height / (thumbHeight + thumbSpacing) + 3;
+            int visibleRows = host.Height / (thumbHeight + thumbSpacing) + 3;
             int firstIndex = (thumbsFirstVisibleRow - 1) * thumbsPerRow;
             int lastIndex = firstIndex + visibleRows * thumbsPerRow - 1;
 
             // Cap last index
-            int maxIndex = modelManager.Arch3dFile.Count - 1;
+            int maxIndex = host.ModelManager.Arch3dFile.Count - 1;
             if (lastIndex > maxIndex)
                 lastIndex = maxIndex;
 
@@ -575,6 +331,7 @@ namespace DaggerfallModelling.ViewControls
                 thumbDict.Remove(key);
 
             // Arrange thumbnails, updating existing and inserting new
+            int colCount = 0;
             for (int index = firstIndex; index <= lastIndex; index++)
             {
                 // Only render indices zero or higher. It's possible to have a negative index
@@ -582,7 +339,7 @@ namespace DaggerfallModelling.ViewControls
                 if (index >= 0)
                 {
                     // Update or create
-                    int key = (int)modelManager.Arch3dFile.GetRecordId(index);
+                    int key = (int)host.ModelManager.Arch3dFile.GetRecordId(index);
                     if (thumbDict.ContainsKey(key))
                     {
                         // Update position and size
@@ -602,10 +359,12 @@ namespace DaggerfallModelling.ViewControls
                     }
                 }
 
-                // Update position
+                // Update position for next thumbnail
+                colCount++;
                 xpos += thumbWidth + thumbSpacing;
-                if (xpos >= (this.Width - thumbSpacing))
+                if (colCount >= thumbsPerRow)
                 {
+                    colCount = 0;
                     ypos += thumbHeight + thumbSpacing;
                     xpos = thumbSpacing;
                 }
@@ -617,9 +376,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateThumbnailTexture(ref Thumbnails thumb)
         {
-            if (!isReady || !this.Visible)
-                return;
-
             // Get dimensions
             int thumbWidth = thumbBackgroundTexture.Width;
             int thumbHeight = thumbBackgroundTexture.Height;
@@ -628,14 +384,14 @@ namespace DaggerfallModelling.ViewControls
             if (thumb.model.Vertices == null)
             {
                 // Load model
-                thumb.model = modelManager.GetModel(thumb.key, false);
+                thumb.model = host.ModelManager.GetModel(thumb.key, false);
 
                 // Load texture for each submesh.
                 for (int sm = 0; sm < thumb.model.SubMeshes.Length; sm++)
                 {
                     // Load texture
                     thumb.model.SubMeshes[sm].TextureKey =
-                        textureManager.LoadMiscTexture(
+                        host.TextureManager.LoadMiscTexture(
                         thumb.model.SubMeshes[sm].TextureArchive,
                         thumb.model.SubMeshes[sm].TextureRecord, 0);
                 }
@@ -658,15 +414,15 @@ namespace DaggerfallModelling.ViewControls
                 matrix *= Matrix.CreateScale(scale);
 
                 // Apply matrix to model
-                thumb.model = modelManager.TransformModel(ref thumb.model, matrix);
+                thumb.model = host.ModelManager.TransformModel(ref thumb.model, matrix);
 
                 // Store matrix
                 thumb.matrix = matrix;
             }
 
             // Turn off backface culling
-            CullMode cullMode = GraphicsDevice.RenderState.CullMode;
-            GraphicsDevice.RenderState.CullMode = CullMode.None;
+            CullMode cullMode = host.GraphicsDevice.RenderState.CullMode;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
 
             // Create projection matrix
             float aspectRatio = thumb.rect.Width / thumb.rect.Height;
@@ -674,19 +430,25 @@ namespace DaggerfallModelling.ViewControls
 
             // Create texture to use as render target
             RenderTarget2D renderTarget;
-            renderTarget = new RenderTarget2D(GraphicsDevice, thumbWidth, thumbHeight, 1, GraphicsDevice.DisplayMode.Format, RenderTargetUsage.PreserveContents);
-            GraphicsDevice.SetRenderTarget(0, renderTarget);
+            renderTarget = new RenderTarget2D(
+                host.GraphicsDevice,
+                thumbWidth,
+                thumbHeight,
+                1,
+                host.GraphicsDevice.DisplayMode.Format,
+                RenderTargetUsage.PreserveContents);
+            host.GraphicsDevice.SetRenderTarget(0, renderTarget);
 
             // Render thumbnail components
-            GraphicsDevice.Clear(thumbViewBackgroundColor);
+            host.GraphicsDevice.Clear(thumbViewBackgroundColor);
             spriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
             spriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
             spriteBatch.End();
             DrawSingleModel(ref thumb.model);
 
             // Restore default render target and cull mode
-            GraphicsDevice.SetRenderTarget(0, null);
-            GraphicsDevice.RenderState.CullMode = cullMode;
+            host.GraphicsDevice.SetRenderTarget(0, null);
+            host.GraphicsDevice.RenderState.CullMode = cullMode;
 
             // A texture created from a render target is coupled to that render target.
             // It can be easily lost when device is reset (commonly on resize) and must be re-created.
@@ -697,7 +459,7 @@ namespace DaggerfallModelling.ViewControls
             Texture2D renderTargetTexture = renderTarget.GetTexture();
             Color[] colorArray = new Color[renderTargetTexture.Width * renderTargetTexture.Height];
             renderTargetTexture.GetData<Color>(colorArray);
-            Texture2D newTexture = new Texture2D(GraphicsDevice, renderTargetTexture.Width, renderTargetTexture.Height);
+            Texture2D newTexture = new Texture2D(host.GraphicsDevice, renderTargetTexture.Width, renderTargetTexture.Height);
             newTexture.SetData<Color>(colorArray);
 
             // Store updated values
@@ -711,7 +473,7 @@ namespace DaggerfallModelling.ViewControls
         private void ScrollThumbsView(int amount)
         {
             // Get total rows
-            int totalRows = modelManager.Arch3dFile.Count / thumbsPerRow;
+            int totalRows = host.ModelManager.Arch3dFile.Count / thumbsPerRow;
 
             // Apply scroll amount
             thumbScrollAmount += amount;

@@ -40,9 +40,6 @@ namespace DaggerfallModelling
         private BlocksFile blocksFile = new BlocksFile();
         private MapsFile mapsFile = new MapsFile();
 
-        // Views
-        private ContentModes contentMode = ContentModes.ModelThumbs;
-
         // Searching
         private int minSearchLength = 2;
         private bool searchModels = false;
@@ -51,29 +48,6 @@ namespace DaggerfallModelling
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
-
-        #endregion
-
-        #region Class Structures
-
-        /// <summary>
-        /// Content modes supported.
-        /// </summary>
-        public enum ContentModes
-        {
-            /// <summary>Viewing a flow layout of model thumbnails.</summary>
-            ModelThumbs,
-            /// <summary>Viewing a single model.</summary>
-            SingleModel,
-            /// <summary>Viewing an exterior block.</summary>
-            ExteriorBlock,
-            /// <summary>Viewing a dungeon block.</summary>
-            DungeonBlock,
-            /// <summary>Viewing entire exterior map.</summary>
-            ExteriorFull,
-            /// <summary>Viewing entire dungeon map.</summary>
-            DungeonFull,
-        }
 
         #endregion
 
@@ -127,16 +101,8 @@ namespace DaggerfallModelling
             AutoMapViewer.BlocksFile = blocksFile;
             AutoMapViewer.MapsFile = mapsFile;
 
-            // Initialise model thumb viewer
-            ModelThumbViewer.Visible = false;
-            ModelThumbViewer.Dock = DockStyle.Fill;
-
-            // Initialise model viewer
-            ModelViewer.Visible = false;
-            ModelViewer.Dock = DockStyle.Fill;
-
-            // Set current content mode
-            SetContentMode(contentMode);
+            // Initialise content host
+            ContentView.SetArena2Path(appSettings.Arena2Path);
         }
 
         private void BrowseArena2Path()
@@ -194,43 +160,6 @@ namespace DaggerfallModelling
             }
         }
 
-        private void SetContentMode(ContentModes mode)
-        {
-            // Turn off all checks
-            ViewThumbsToolStripButton.Checked = false;
-            ViewSingleModelToolStripButton.Checked = false;
-            ViewBlockToolStripButton.Checked = false;
-
-            // Turn off both view controls
-            ModelThumbViewer.Visible = false;
-            ModelViewer.Visible = false;
-
-            // Turn on toolbar check based on view mode
-            switch (mode)
-            {
-                case ContentModes.ModelThumbs:
-                    ViewThumbsToolStripButton.Checked = true;
-                    ModelThumbViewer.Visible = true;
-                    break;
-                case ContentModes.SingleModel:
-                    ViewSingleModelToolStripButton.Checked = true;
-                    ModelViewer.Visible = true;
-                    break;
-                case ContentModes.ExteriorBlock:
-                case ContentModes.DungeonBlock:
-                    ViewBlockToolStripButton.Checked = true;
-                    ModelViewer.Visible = true;
-                    break;
-                default:
-                    break;
-            }
-
-            // TODO: Show appropriate control for mode
-
-            // Store new mode
-            contentMode = mode;
-        }
-
         #endregion
 
         #region Form Events
@@ -257,13 +186,6 @@ namespace DaggerfallModelling
             // Exit if path still not set
             if (!Directory.Exists(appSettings.Arena2Path))
                 return;
-
-            // Feed path to viewers
-            ModelThumbViewer.Arena2Path = appSettings.Arena2Path;
-            ModelViewer.Arena2Path = appSettings.Arena2Path;
-
-            // Switch on current view mode
-            SetContentMode(contentMode);
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -434,7 +356,7 @@ namespace DaggerfallModelling
             SearchResultsTreeView.Visible = false;
 
             // Halt content animation
-            ModelThumbViewer.EnableAnimTimer(false);
+            ContentView.EnableAnimTimer(false);
 
             // Drop in searching image
             PictureBox pb = new PictureBox();
@@ -466,7 +388,7 @@ namespace DaggerfallModelling
             SearchResultsPanel.Controls.Remove(pb);
 
             // Resume content animation
-            ModelThumbViewer.EnableAnimTimer(true);
+            ContentView.EnableAnimTimer(true);
 
             // Set focus to results tree
             SearchResultsTreeView.Focus();
