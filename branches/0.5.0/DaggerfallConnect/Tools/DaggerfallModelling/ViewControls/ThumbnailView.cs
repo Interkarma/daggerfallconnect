@@ -25,9 +25,9 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// Show a list of Daggerfall models as thumbnails.
+    /// Explore a list of Daggerfall models as thumbnails.
     /// </summary>
-    public class ThumbnailViewClient : ContentViewClient
+    public class ThumbnailView : ContentViewBase
     {
         #region Class Variables
 
@@ -45,6 +45,7 @@ namespace DaggerfallModelling.ViewControls
         
         // Appearance
         private Color thumbViewBackgroundColor = Color.White;
+        private int mouseOverThumbGrow = 16;
 
         // Resources
         private const string thumbBackgroundFile = "thumbnail_background.png";
@@ -61,6 +62,9 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraPosition = new Vector3(0, 0, 1000);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
+
+        // Mouse
+        private int mouseOverThumb = -1;
 
         #endregion
 
@@ -86,7 +90,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ThumbnailViewClient(ContentViewHost host)
+        public ThumbnailView(ContentViewHost host)
             : base(host)
         {
         }
@@ -96,7 +100,7 @@ namespace DaggerfallModelling.ViewControls
         #region Overrides
 
         /// <summary>
-        /// Called by host when view client should initialise.
+        /// Called by host when view should initialise.
         /// </summary>
         public override void Initialize()
         {
@@ -128,7 +132,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view client should update animation.
+        /// Called by host when view should update animation.
         /// </summary>
         public override void Tick()
         {
@@ -137,12 +141,14 @@ namespace DaggerfallModelling.ViewControls
             {
                 float adjustedVelocity = (thumbScrollVelocity * host.TimeDelta) * 20.0f;
                 ScrollThumbsView((int)adjustedVelocity);
-                LayoutThumbnails();
             }
+
+            TrackMouseOver();
+            LayoutThumbnails();
         }
 
         /// <summary>
-        /// Called by host when view client should redraw.
+        /// Called by host when view should redraw.
         /// </summary>
         public override void Draw()
         {
@@ -154,7 +160,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view client should redraw.
+        /// Called by host when view should redraw.
         /// </summary>
         public override void Resize()
         {
@@ -163,7 +169,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called when client should track mouse movement.
+        /// Called when view should track mouse movement.
         /// </summary>
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
@@ -365,6 +371,10 @@ namespace DaggerfallModelling.ViewControls
                         UpdateThumbnailTexture(ref thumb);
                         thumbDict.Add(thumb.key, thumb);
                     }
+
+                    // Enlarge thumb under mouse
+                    if (key == mouseOverThumb)
+                        GrowThumb(key);
                 }
 
                 // Update position for next thumbnail
@@ -507,6 +517,45 @@ namespace DaggerfallModelling.ViewControls
                     thumbScrollAmount -= (thumbHeight + thumbSpacing);
                 }
             }
+        }
+
+        /// <summary>
+        /// Tracks mouse over thumbnails.
+        /// </summary>
+        /// <param name="x">Mouse X.</param>
+        /// <param name="y">Mouse Y.</param>
+        private void TrackMouseOver()
+        {
+            // Clear previous mouse over thumb
+            mouseOverThumb = -1;
+
+            // Scan for current mouse over thumb
+            foreach (var item in thumbDict)
+            {
+                if (item.Value.rect.Contains(host.MousePos.X, host.MousePos.Y))
+                {
+                    mouseOverThumb = item.Value.key;
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enlarge thumbnail for mouse-over state.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        private void GrowThumb(int key)
+        {
+            if (!thumbDict.ContainsKey(key))
+                return;
+
+            // Enlarge rect size
+            Thumbnails thumb = thumbDict[key];
+            thumb.rect.X -= mouseOverThumbGrow / 2;
+            thumb.rect.Y -= mouseOverThumbGrow / 2;
+            thumb.rect.Width += mouseOverThumbGrow;
+            thumb.rect.Height += mouseOverThumbGrow;
+            thumbDict[key] = thumb;
         }
 
         #endregion

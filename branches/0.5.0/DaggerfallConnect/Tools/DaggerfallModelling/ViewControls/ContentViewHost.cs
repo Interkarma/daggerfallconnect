@@ -25,7 +25,7 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// Serves different ModelViewClient implementations to the users.
+    /// Serves different views to the user.
     /// </summary>
     public class ContentViewHost : WinFormsGraphicsDevice.GraphicsDeviceControl
     {
@@ -58,8 +58,8 @@ namespace DaggerfallModelling.ViewControls
         private float timeDelta;
 
         // Views
-        private ViewModes viewMode = ViewModes.SingleModelView;
-        private Dictionary<ViewModes, ContentViewClient> viewClients;
+        private ViewModes viewMode = ViewModes.LocationView;
+        private Dictionary<ViewModes, ContentViewBase> viewClients;
 
         #endregion
 
@@ -73,7 +73,9 @@ namespace DaggerfallModelling.ViewControls
             /// <summary>Viewing model thumbnails.</summary>
             ThumbnailView,
             /// <summary>Viewing single model.</summary>
-            SingleModelView,
+            ModelView,
+            /// <summary>Viewing a location.</summary>
+            LocationView,
         }
 
         #endregion
@@ -162,8 +164,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public ContentViewHost()
         {
-            // Create view client dictionary
-            viewClients = new Dictionary<ViewModes, ContentViewClient>();
+            // Create view dictionary
+            viewClients = new Dictionary<ViewModes, ContentViewBase>();
 
             // Measure start time of control
             startTime = DateTime.Now.Ticks;
@@ -304,7 +306,7 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnMouseWheel(e);
 
-            // Send to client
+            // Send to view
             if (isReady)
                 viewClients[viewMode].OnMouseWheel(e);
         }
@@ -331,7 +333,7 @@ namespace DaggerfallModelling.ViewControls
                     break;
             }
 
-            // Send to client
+            // Send to view
             if (isReady)
                 viewClients[viewMode].OnMouseDown(e);
         }
@@ -355,7 +357,7 @@ namespace DaggerfallModelling.ViewControls
                     break;
             }
 
-            // Send to client
+            // Send to view
             if (isReady)
                 viewClients[viewMode].OnMouseUp(e);
         }
@@ -445,9 +447,10 @@ namespace DaggerfallModelling.ViewControls
             // Set ready flag
             isReady = true;
 
-            // Initialise client views
-            AttachViewClient(ViewModes.ThumbnailView, new ThumbnailViewClient(this));
-            AttachViewClient(ViewModes.SingleModelView, new SingleModelViewClient(this));
+            // Bind views
+            BindViewClient(ViewModes.ThumbnailView, new ThumbnailView(this));
+            BindViewClient(ViewModes.ModelView, new ModelView(this));
+            BindViewClient(ViewModes.LocationView, new LocationView(this));
 
             // Start anim timer
             animTimer.Interval = 8;
@@ -458,20 +461,20 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Attach a view client to the specified mode.
+        /// Bind a view to the specified view mode.
         /// </summary>
-        /// <param name="mode">Mode to attach client with.</param>
-        /// <param name="viewClient">ViewClient object.</param>
-        private void AttachViewClient(ViewModes viewMode, ContentViewClient viewClient)
+        /// <param name="mode">Mode to bind with view.</param>
+        /// <param name="viewClient">ContentViewBase implementation.</param>
+        private void BindViewClient(ViewModes viewMode, ContentViewBase viewClient)
         {
-            // Can only attach one view to a mode
+            // Can only bind one view client to a mode
             if (viewClients.ContainsKey(viewMode))
                 return;
 
-            // Add client to dictionary
+            // Add view to dictionary
             viewClients.Add(viewMode, viewClient);
 
-            // Initialise client
+            // Initialise view
             viewClient.Initialize();
         }
 

@@ -25,9 +25,9 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// Abstract base class for modelling views inserted into a ModelViewContainer.
+    /// Abstract base class for content views inserted into a ContentViewHost.
     /// </summary>
-    public abstract class ContentViewClient
+    public abstract class ContentViewBase
     {
 
         #region Class Variables
@@ -41,7 +41,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ContentViewClient(ContentViewHost host)
+        public ContentViewBase(ContentViewHost host)
         {
             this.host = host;
         }
@@ -51,27 +51,27 @@ namespace DaggerfallModelling.ViewControls
         #region Public Methods
 
         /// <summary>
-        /// Called when client must initialise itself.
+        /// Called when view must initialise itself.
         /// </summary>
         public abstract void Initialize();
 
         /// <summary>
-        /// Called when client should tick animation.
+        /// Called when view should tick animation.
         /// </summary>
         public abstract void Tick();
 
         /// <summary>
-        /// Called when client should redraw view.
+        /// Called when view should redraw view.
         /// </summary>
         public abstract void Draw();
 
         /// <summary>
-        /// Called when client should resize.
+        /// Called when view should resize.
         /// </summary>
         public abstract void Resize();
 
         /// <summary>
-        /// Called when client should track mouse movement.
+        /// Called when view should track mouse movement.
         /// </summary>
         /// <param name="e">MouseEventArgs</param>
         public abstract void OnMouseMove(MouseEventArgs e);

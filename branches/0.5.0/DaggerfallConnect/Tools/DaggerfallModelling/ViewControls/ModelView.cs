@@ -25,9 +25,9 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// Shows a single model.
+    /// Explore a single model.
     /// </summary>
-    public class SingleModelViewClient : ContentViewClient
+    public class ModelView : ContentViewBase
     {
 
         #region Class Variables
@@ -51,9 +51,9 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
-        // Timing
-        float rotationDivisor = 300.0f;
-        float translationMultiplier = 2500.0f;
+        // Movement
+        float rotationStep = 0.005f;
+        float translationStep = 2500.0f;
 
         #endregion
 
@@ -62,7 +62,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public SingleModelViewClient(ContentViewHost host)
+        public ModelView(ContentViewHost host)
             : base(host)
         {
         }
@@ -72,7 +72,7 @@ namespace DaggerfallModelling.ViewControls
         #region Overrides
 
         /// <summary>
-        /// Called by host when view client should initialise.
+        /// Called by host when view should initialise.
         /// </summary>
         public override void Initialize()
         {
@@ -102,14 +102,14 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view client should update animation.
+        /// Called by host when view should update animation.
         /// </summary>
         public override void Tick()
         {
         }
 
         /// <summary>
-        /// Called by host when view client should redraw.
+        /// Called by host when view should redraw.
         /// </summary>
         public override void Draw()
         {
@@ -124,7 +124,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view client should redraw.
+        /// Called by host when view should redraw.
         /// </summary>
         public override void Resize()
         {
@@ -141,15 +141,15 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called when client should track mouse movement.
+        /// Called when view should track mouse movement.
         /// </summary>
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
             if (host.LeftMouseDown)
             {
-                float amountX = (MathHelper.ToDegrees(host.MousePosDelta.X) / rotationDivisor) * host.TimeDelta;
-                float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) / rotationDivisor) * host.TimeDelta;
+                float amountX = (MathHelper.ToDegrees(host.MousePosDelta.X) * rotationStep) * host.TimeDelta;
+                float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) * rotationStep) * host.TimeDelta;
                 Matrix x = Matrix.CreateRotationX(amountY);
                 Matrix y = Matrix.CreateRotationY(amountX);
                 modelEffect.World *= (x * y);
@@ -162,7 +162,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
-            float amount = (((float)e.Delta / 120.0f) * translationMultiplier) * host.TimeDelta;
+            float amount = (((float)e.Delta / 120.0f) * translationStep) * host.TimeDelta;
             TranslateCamera(0, 0, -amount);
         }
 
@@ -227,7 +227,7 @@ namespace DaggerfallModelling.ViewControls
         private void LoadModel(int id)
         {
             // Load the model
-            host.ModelManager.LoadModel(id, out model);
+            model = host.ModelManager.GetModel(id, false);
 
             // Load texture for each submesh.
             for (int sm = 0; sm < model.SubMeshes.Length; sm++)

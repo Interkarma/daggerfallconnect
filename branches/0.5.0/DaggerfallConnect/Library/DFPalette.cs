@@ -70,7 +70,7 @@ namespace DaggerfallConnect
                 return false;
 
             // Open file
-            FileStream file = File.Open(FilePath, FileMode.Open, FileAccess.Read);
+            FileStream file = File.Open(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             switch (file.Length)
             {
                 case 768:
