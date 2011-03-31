@@ -128,7 +128,7 @@ namespace XNALibrary
             interiorAtlasDict = new Dictionary<int, RectangleF>();
 
             // Load default climate atlas
-            LoadClimate(ClimateBases.Swamp);
+            LoadClimate(ClimateBases.Temperate);
         }
 
         #endregion
@@ -242,6 +242,7 @@ namespace XNALibrary
             ap.buffer = new byte[(atlasWidth * atlasHeight) * 4];
 
             // Add terrain texture files for this climate
+            AddErrorTexture(ref ap);
             AddTextureFile(ClimateSets.Terrain, ClimateWeather.Normal, ref ap);
             AddTextureFile(ClimateSets.Terrain, ClimateWeather.Winter, ref ap);
             AddTextureFile(ClimateSets.Terrain, ClimateWeather.Rain, ref ap);
@@ -271,6 +272,7 @@ namespace XNALibrary
             ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
             // Add exterior textures (have normal and winter sets, but not rain)
+            AddErrorTexture(ref ap);
             AddTextureFile(ClimateSets.Ruins, ClimateWeather.Normal, ref ap);
             AddTextureFile(ClimateSets.Ruins, ClimateWeather.Winter, ref ap);
             AddTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
@@ -325,6 +327,7 @@ namespace XNALibrary
             ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
             // Add interior textures (do not have winter or rain sets)
+            AddErrorTexture(ref ap);
             AddTextureFile(ClimateSets.PalaceInt, ClimateWeather.Normal, ref ap);
             AddTextureFile(ClimateSets.CityInt, ClimateWeather.Normal, ref ap);
             AddTextureFile(ClimateSets.CryptA, ClimateWeather.Normal, ref ap);
@@ -355,6 +358,14 @@ namespace XNALibrary
             //interiorAtlas.Save("C:\\test\\Interior.png", ImageFileFormat.Png);
 
             return true;
+        }
+
+        private void AddErrorTexture(ref AtlasParams ap)
+        {
+            DFManualImage errorImage = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
+            errorImage.Clear(0xff, 0xff, 0, 0);
+            DFBitmap dfBitmap = errorImage.DFBitmap;
+            AddDFBitmap(0, ref dfBitmap, ref ap);
         }
 
         private void AddTextureFile(ClimateSets set, ClimateWeather weather, ref AtlasParams ap)
