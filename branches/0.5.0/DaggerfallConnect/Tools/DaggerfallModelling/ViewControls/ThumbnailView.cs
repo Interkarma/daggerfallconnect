@@ -52,7 +52,6 @@ namespace DaggerfallModelling.ViewControls
         private Texture2D thumbBackgroundTexture;
 
         // XNA
-        private SpriteBatch spriteBatch;
         private VertexDeclaration vertexDeclaration;
         private BasicEffect effect;
         private float nearPlaneDistance = 1.0f;
@@ -104,9 +103,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(host.GraphicsDevice);
-
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
@@ -126,9 +122,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Load the thumbnail background texture
             LoadThumbnailBackgroundTexture();
-
-            // Perform initial thumbnail layout
-            LayoutThumbnails();
         }
 
         /// <summary>
@@ -238,13 +231,13 @@ namespace DaggerfallModelling.ViewControls
 
         private void DrawThumbnails()
         {
-            spriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Deferred, SaveStateMode.SaveState);
+            host.SpriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Deferred, SaveStateMode.SaveState);
 
             // Draw each thumbnail sprite
             foreach (var obj in thumbDict)
-                spriteBatch.Draw(obj.Value.texture, obj.Value.rect, Color.White);
+                host.SpriteBatch.Draw(obj.Value.texture, obj.Value.rect, Color.White);
 
-            spriteBatch.End();
+            host.SpriteBatch.End();
         }
 
         private void DrawSingleModel(ref ModelManager.Model model)
@@ -459,9 +452,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Render thumbnail components
             host.GraphicsDevice.Clear(thumbViewBackgroundColor);
-            spriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
-            spriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
-            spriteBatch.End();
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
+            host.SpriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
+            host.SpriteBatch.End();
             DrawSingleModel(ref thumb.model);
 
             // Restore default render target and cull mode

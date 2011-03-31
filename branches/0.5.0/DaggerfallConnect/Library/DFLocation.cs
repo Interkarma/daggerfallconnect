@@ -169,8 +169,8 @@ namespace DaggerfallConnect
         {
             /// <summary>Dry summer weather. Use outdoors and indoors.</summary>
             Normal = 0,
-            /// <summary>Buildings and ground covered in snow (do not use indoors).</summary>
-            Snow = 1,
+            /// <summary>Buildings and ground in winter (do not use indoors).</summary>
+            Winter = 1,
             /// <summary>Ground wet from rain (do not apply to buildings or use indoors).</summary>
             Rain = 2,
         }

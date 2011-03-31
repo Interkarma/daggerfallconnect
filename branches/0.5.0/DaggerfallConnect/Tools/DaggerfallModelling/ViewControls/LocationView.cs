@@ -32,11 +32,13 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        // TEST: Block model
+        ModelManager.Model blockModel;
+
         // Appearance
-        private Color locationViewBackgroundColor = Color.LightGray;
+        private Color backgroundColor = Color.LightGray;
 
         // XNA
-        private SpriteBatch spriteBatch;
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
         private float nearPlaneDistance = 1.0f;
@@ -68,9 +70,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(host.GraphicsDevice);
-
             // Create vertex declaration
             modelVertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
@@ -87,6 +86,9 @@ namespace DaggerfallModelling.ViewControls
             float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+
+            // TEST: Load a block
+            LoadBlock("MAGEAA13.RMB");
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace DaggerfallModelling.ViewControls
         public override void Draw()
         {
             // Clear display
-            host.GraphicsDevice.Clear(locationViewBackgroundColor);
+            host.GraphicsDevice.Clear(backgroundColor);
         }
 
         /// <summary>
@@ -157,6 +159,38 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Drawing Methods
+        #endregion
+
+        #region Block Management
+
+        private void LoadBlock(string name)
+        {
+            // Load block
+            BlockManager.Block block = host.BlockManager.LoadBlock(name);
+            switch (block.dfBlock.Type)
+            {
+                case DFBlock.BlockTypes.Rmb:
+                    BuildRmbBlock(ref block);
+                    break;
+                case DFBlock.BlockTypes.Rdb:
+                    BuildRdbBlock(ref block);
+                    break;
+                default:
+                    return;
+            }
+        }
+
+        private void BuildRmbBlock(ref BlockManager.Block block)
+        {
+        }
+
+        private void BuildRdbBlock(ref BlockManager.Block block)
+        {
+        }
+
+        #endregion
+
+        #region Map Management
         #endregion
 
     }

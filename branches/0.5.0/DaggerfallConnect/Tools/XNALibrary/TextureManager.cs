@@ -11,8 +11,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using System.Drawing;
+using System.Threading;
+using System.IO;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
@@ -27,6 +28,10 @@ namespace XNALibrary
     using ClimateSets = DFLocation.ClimateSets;
     using ClimateWeather = DFLocation.ClimateWeather;
 
+    // Differentiate between Color types
+    using GDIColor = System.Drawing.Color;
+    using XNAColor = Microsoft.Xna.Framework.Graphics.Color;
+
     /// <summary>
     /// Helper class to load and store Daggerfall textures for XNA. Textures can be stored in
     ///  a texture atlas (one per climate type) for large scenes or as individual textures for
@@ -37,30 +42,24 @@ namespace XNALibrary
 
         #region Class Variables
 
+        // Class
+        private string arena2Path;
         private GraphicsDevice graphicsDevice;
-        private ImageFileReader imageFileReader;
+        private TextureFile textureFile;
 
-        // State of climate preload
-        bool climatePreLoadRunning = false;
-        bool climatePreLoadCompleted = false;
+        // Atlas setup
+        private const int atlasWidth = 1024;
+        private const int atlasHeight = 1024;
 
-        // Atlas layout dictionaries for each climate type
-        private Dictionary<int, RectangleF> desertDict;
-        private Dictionary<int, RectangleF> mountainDict;
-        private Dictionary<int, RectangleF> temperateDict;
-        private Dictionary<int, RectangleF> swampDict;
+        // Atlas for each texture group
+        private Texture2D terrainAtlas;
+        private Texture2D exteriorAtlas;
+        private Texture2D interiorAtlas;
 
-        // Atlas params for each climate type
-        private AtlasParams desertParams;
-        private AtlasParams mountainParams;
-        private AtlasParams temperateParams;
-        private AtlasParams swampParams;
-
-        // Texture atlas for each climate type
-        private Texture2D desertAtlas;
-        private Texture2D mountainAtlas;
-        private Texture2D temperateAtlas;
-        private Texture2D swampAtlas;
+        // Atlas layout dictionaries for each texture group
+        private Dictionary<int, RectangleF> terrainAtlasDict;
+        private Dictionary<int, RectangleF> interiorAtlasDict;
+        private Dictionary<int, RectangleF> exteriorAtlasDict;
 
         // Dictionary for misc textures
         private Dictionary<int, Texture2D> miscTexturesDict;
@@ -75,9 +74,9 @@ namespace XNALibrary
         private struct AtlasParams
         {
             public ClimateBases climate;
+            public int format;
             public int width;
             public int height;
-            public int format;
             public int stride;
             public int xpos;
             public int ypos;
@@ -94,7 +93,7 @@ namespace XNALibrary
         /// </summary>
         public string Arena2Path
         {
-            get { return imageFileReader.Arena2Path; }
+            get { return arena2Path; }
         }
 
         /// <summary>
@@ -103,22 +102,6 @@ namespace XNALibrary
         public GraphicsDevice GraphicsDevice
         {
             get { return graphicsDevice; }
-        }
-
-        /// <summary>
-        /// True if thread preloading of climate textures is running.
-        /// </summary>
-        public bool ClimatePreLoadRunning
-        {
-            get { return climatePreLoadRunning; }
-        }
-
-        /// <summary>
-        /// True if thread preloading climate textures has finished.
-        /// </summary>
-        public bool ClimatePreLoadCompleted
-        {
-            get { return climatePreLoadCompleted; }
         }
 
         #endregion
@@ -134,15 +117,18 @@ namespace XNALibrary
         {
             // Setup            
             graphicsDevice = device;
-            imageFileReader = new ImageFileReader(arena2Path);
-            imageFileReader.AutoDiscard = true;
+            this.arena2Path = arena2Path;
+            textureFile = new TextureFile();
+            textureFile.Palette.Load(Path.Combine(arena2Path, textureFile.PaletteName));
 
             // Create empty climate dictionaries
             miscTexturesDict = new Dictionary<int, Texture2D>();
-            desertDict = new Dictionary<int, RectangleF>();
-            mountainDict = new Dictionary<int, RectangleF>();
-            temperateDict = new Dictionary<int, RectangleF>();
-            swampDict = new Dictionary<int, RectangleF>();
+            terrainAtlasDict = new Dictionary<int, RectangleF>();
+            exteriorAtlasDict = new Dictionary<int, RectangleF>();
+            interiorAtlasDict = new Dictionary<int, RectangleF>();
+
+            // Load default climate atlas
+            LoadClimate(ClimateBases.Swamp);
         }
 
         #endregion
@@ -175,8 +161,10 @@ namespace XNALibrary
             if (miscTexturesDict.ContainsKey(key))
                 return key;
 
+            // Load texture file
+            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+
             // Get DF texture in ARGB format so we can just SetData the byte array into XNA
-            DFImageFile textureFile = imageFileReader.LoadFile(TextureFile.IndexToFileName(archive));
             DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
 
             // Create XNA texture
@@ -222,205 +210,180 @@ namespace XNALibrary
 
         #endregion
 
-        #region Threading Methods
+        #region Public Methods
 
-        /// <summary>
-        /// Preloads textures for each climate type. Loading is performed in a separate thread.
-        ///  Check 
-        /// </summary>
-        public void PreLoadClimateTextures()
-        {
-            // Start reading climate textures in another thread
-            Thread thread = new Thread(this.ThreadLoadClimateTextures);
-            thread.Start();
-        }
-
-        private void ThreadLoadClimateTextures()
+        public void LoadClimate(ClimateBases climate)
         {
             // Build texture atlas for each climate type
-            climatePreLoadRunning = true;
             long startTime = DateTime.Now.Ticks;
-            BuildClimateAtlas(ClimateBases.Desert, out desertParams, out desertAtlas);
-            BuildClimateAtlas(ClimateBases.Mountain, out mountainParams, out mountainAtlas);
-            BuildClimateAtlas(ClimateBases.Temperate, out temperateParams, out temperateAtlas);
-            BuildClimateAtlas(ClimateBases.Swamp, out swampParams, out swampAtlas);
+            BuildTerrainAtlas(climate);
+            BuildExteriorAtlas(climate);
+            BuildInteriorAtlas(climate);
             long totalTime = DateTime.Now.Ticks - startTime;
-            climatePreLoadRunning = false;
-            climatePreLoadCompleted = true;
-#if DEBUG
             Console.WriteLine("Climate texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);
-#endif
         }
 
         #endregion
 
         #region Atlas Building
 
-        /// <summary>
-        /// Builds atlas of all textures specific to a climate.
-        /// </summary>
-        /// <param name="climate">Climate type.</param>
-        /// <param name="atlasParams">Params to populated by this build.</param>
-        /// <param name="atlasTexture">Texture2D out.</param>
-        /// <returns>True if successful, otherwise false.</returns>
-        private bool BuildClimateAtlas(ClimateBases climate, out AtlasParams atlasParams, out Texture2D atlasTexture)
+        private bool BuildTerrainAtlas(ClimateBases climate)
         {
-            // Define size of buffer to hold image data (ARGB format)
-            int width = 2048, height = 2048, format = 4;
-            int stride = width * format;
-
-            // Init climate pack
+            // Init working parameters
             AtlasParams ap = new AtlasParams();
             ap.climate = climate;
-            ap.width = width;
-            ap.height = height;
             ap.format = 4;
-            ap.stride = stride;
+            ap.width = atlasWidth;
+            ap.height = atlasHeight;
+            ap.stride = atlasWidth * ap.format;
             ap.xpos = 0;
             ap.ypos = 0;
             ap.maxRowHeight = 0;
-            ap.buffer = new byte[stride * height];
+            ap.buffer = new byte[(atlasWidth * atlasHeight) * 4];
 
-
-            // Add custom red bitmap to use for lookup errors
-            DFManualImage mi = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
-            mi.Clear(0xff, 0xff, 0, 0);
-            DFBitmap dfBitmap = mi.DFBitmap;
-            AtlasDFBitmap(0, ref dfBitmap, ref ap);
-
-
-            // Add terrain tiles (have normal, snow, and rain sets)
-            AtlasTextureFile(ClimateSets.Terrain, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Terrain, ClimateWeather.Snow, ref ap);
-            AtlasTextureFile(ClimateSets.Terrain, ClimateWeather.Rain, ref ap);
-
-
-            // Add exterior textures (have normal and snow sets, but not rain)
-            AtlasTextureFile(ClimateSets.Ruins, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Ruins, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Castle, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.CityA, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CityA, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.CityB, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CityB, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.CityWalls, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CityWalls, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Farm, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Farm, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Fences, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Fences, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.MagesGuild, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.MagesGuild, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Manor, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Manor, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Village, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Village, ClimateWeather.Snow, ref ap);
-
-            AtlasTextureFile(ClimateSets.Roofs, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Roofs, ClimateWeather.Snow, ref ap);
-
-
-            // Add interior textures (do not have snow or rain sets)
-            AtlasTextureFile(ClimateSets.PalaceInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CityInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CryptA, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.CryptB, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.DungeonsA, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.DungeonsB, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.DungeonsC, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.DungeonsNEWCs, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.FarmInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.MagesGuildInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.ManorInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.MarbleFloors, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.MerchantHomesInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Mines, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Caves, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Paintings, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.TavernInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.TempleInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.VillageInt, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Sewer, ClimateWeather.Normal, ref ap);
-            AtlasTextureFile(ClimateSets.Doors, ClimateWeather.Normal, ref ap);
-
+            // Add terrain texture files for this climate
+            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Rain, ref ap);
 
             // Create texture from atlas buffer
-            atlasTexture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            atlasTexture.SetData<byte>(ap.buffer);
-
-            // Store params so we can keep adding textures to end of atlas later
-            atlasParams = ap;
+            terrainAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            terrainAtlas.SetData<byte>(ap.buffer);
 
             // TEST: Save texture for review
-            //string filename = string.Format("C:\\test\\{0}.png", climate.ToString());
-            //atlasTexture.Save(filename, ImageFileFormat.Png);
+            //terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
 
             return true;
         }
 
-        private void AtlasTextureFile(ClimateSets set, ClimateWeather weather, ref AtlasParams ap)
+        private bool BuildExteriorAtlas(ClimateBases climate)
+        {
+            // Init working parameters
+            AtlasParams ap = new AtlasParams();
+            ap.climate = climate;
+            ap.format = 4;
+            ap.width = atlasWidth;
+            ap.height = atlasHeight;
+            ap.stride = atlasWidth * ap.format;
+            ap.xpos = 0;
+            ap.ypos = 0;
+            ap.maxRowHeight = 0;
+            ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
+
+            // Add exterior textures (have normal and winter sets, but not rain)
+            AddTextureFile(ClimateSets.Ruins, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Ruins, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Castle, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.CityA, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CityA, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.CityB, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CityB, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.CityWalls, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CityWalls, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Farm, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Farm, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Fences, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Fences, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.MagesGuild, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.MagesGuild, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Manor, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Manor, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Village, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Village, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSets.Roofs, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Roofs, ClimateWeather.Winter, ref ap);
+
+            // Create texture from atlas buffer
+            exteriorAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            exteriorAtlas.SetData<byte>(ap.buffer);
+
+            // TEST: Save texture for review
+            //exteriorAtlas.Save("C:\\test\\Exterior.png", ImageFileFormat.Png);
+
+            return true;
+        }
+
+        private bool BuildInteriorAtlas(ClimateBases climate)
+        {
+            // Init working parameters
+            AtlasParams ap = new AtlasParams();
+            ap.climate = climate;
+            ap.format = 4;
+            ap.width = atlasWidth;
+            ap.height = atlasHeight;
+            ap.stride = atlasWidth * ap.format;
+            ap.xpos = 0;
+            ap.ypos = 0;
+            ap.maxRowHeight = 0;
+            ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
+
+            // Add interior textures (do not have winter or rain sets)
+            AddTextureFile(ClimateSets.PalaceInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CityInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CryptA, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.CryptB, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.DungeonsA, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.DungeonsB, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.DungeonsC, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.DungeonsNEWCs, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.FarmInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.MagesGuildInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.ManorInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.MarbleFloors, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.MerchantHomesInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Mines, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Caves, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Paintings, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.TavernInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.TempleInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.VillageInt, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Sewer, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSets.Doors, ClimateWeather.Normal, ref ap);
+
+            // Create texture from atlas buffer
+            interiorAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            interiorAtlas.SetData<byte>(ap.buffer);
+
+            // TEST: Save texture for review
+            //interiorAtlas.Save("C:\\test\\Interior.png", ImageFileFormat.Png);
+
+            return true;
+        }
+
+        private void AddTextureFile(ClimateSets set, ClimateWeather weather, ref AtlasParams ap)
         {
             // Resolve climate set and weather to filename
             string filename = ImageFileReader.GetClimateTextureFileName(ap.climate, set, weather);
-            AtlasTextureFile(set, weather, ref filename, ref ap);
-        }
 
-        private void AtlasTextureFile(ClimateSets set, ClimateWeather weather, ref string filename, ref AtlasParams ap)
-        {
-            // Load texture file
-            DFImageFile imageFile = imageFileReader.LoadFile(filename);
-            if (imageFile == null)
-            {
-#if DEBUG
-                Console.WriteLine("Image file `{0}` does not exist.", filename);
-#endif
-                return;
-            }
+            // Load Daggerfall texture file
+            textureFile.Load(Path.Combine(arena2Path, filename), FileUsage.UseDisk, true);
 
             // Add each record to atlas (not supporting animation yet)
-            for (int r = 0; r < imageFile.RecordCount; r++)
+            for (int r = 0; r < textureFile.RecordCount; r++)
             {
                 // Get record bitmap in ARGB format
-                DFBitmap dfBitmap = imageFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
+                DFBitmap dfBitmap = textureFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
 
                 // Add bitmap
                 int key = TextureKey(set, weather, r);
-                AtlasDFBitmap(key, ref dfBitmap, ref ap);
+                AddDFBitmap(key, ref dfBitmap, ref ap);
             }
         }
 
-        private void AtlasDFBitmap(int key, ref DFBitmap dfBitmap, ref AtlasParams ap)
+        private void AddDFBitmap(int key, ref DFBitmap dfBitmap, ref AtlasParams ap)
         {
-            // Check key is not already in dictionary
-            if (TextureExists(ap.climate, key))
-                throw new Exception("Texture key already exists.");
-
             // For now can only handle width <= 64 pixels
             int stepx = 64;
             if (dfBitmap.Width > 64)
             {
-#if DEBUG
                 Console.WriteLine("Width > 64.");
-#endif
                 return;
             }
 
@@ -432,9 +395,7 @@ namespace XNALibrary
                 stepy = 128;
             else
             {
-#if DEBUG
                 Console.WriteLine("Height > 128.");
-#endif
                 return;
             }
 
@@ -445,7 +406,7 @@ namespace XNALibrary
             // Handle row wrap
             if (ap.xpos + dfBitmap.Stride > ap.stride)
             {
-                AtlasNewRow(ref ap);
+                AddNewRow(ref ap);
                 ap.maxRowHeight = dfBitmap.Height;
             }
 
@@ -473,10 +434,10 @@ namespace XNALibrary
                 (float)(dfBitmap.Height) / (float)ap.height);
 
             // Add key to dictionary
-            AddTexture(ap.climate, key, ref textureRect);
+            //AddTexture(ap.climate, key, ref textureRect);
         }
 
-        private void AtlasNewRow(ref AtlasParams ap)
+        private void AddNewRow(ref AtlasParams ap)
         {
             // Step down to next row
             ap.ypos += ap.maxRowHeight * ap.stride;
@@ -497,6 +458,7 @@ namespace XNALibrary
             return (int)set * 1000 + (int)weather * 100 + record;
         }
 
+        /*
         private bool TextureExists(ClimateBases climate, int key)
         {
             switch (climate)
@@ -534,6 +496,7 @@ namespace XNALibrary
                     throw new Exception("Invalid climate.");
             }
         }
+        */
 
         #endregion
 

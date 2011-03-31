@@ -40,7 +40,6 @@ namespace DaggerfallModelling.ViewControls
         private Color modelViewBackgroundColor = Color.LightGray;
 
         // XNA
-        private SpriteBatch spriteBatch;
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
         private float nearPlaneDistance = 1.0f;
@@ -76,9 +75,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(host.GraphicsDevice);
-
             // Create vertex declaration
             modelVertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
 
@@ -97,7 +93,7 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
 
             // TEST: Load a model
-            LoadModel(456);
+            //LoadModel(456);
             //LoadModel(43111);
         }
 

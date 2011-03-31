@@ -39,6 +39,10 @@ namespace DaggerfallModelling.ViewControls
         // Managers
         private TextureManager textureManager;
         private ModelManager modelManager;
+        private BlockManager blockManager;
+
+        // Connect objects
+        MapsFile mapsFile;
 
         // Mouse
         private Point mousePos;
@@ -57,8 +61,14 @@ namespace DaggerfallModelling.ViewControls
         private uint frameCount = 0;
         private float timeDelta;
 
+        // XNA
+        private SpriteBatch spriteBatch;
+
+        // Appearance
+        Color backgroundColour = Color.Gray;
+
         // Views
-        private ViewModes viewMode = ViewModes.LocationView;
+        private ViewModes viewMode = ViewModes.ThumbnailView;
         private Dictionary<ViewModes, ContentViewBase> viewClients;
 
         #endregion
@@ -70,6 +80,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public enum ViewModes
         {
+            /// <summary>No view mode.</summary>
+            None,
             /// <summary>Viewing model thumbnails.</summary>
             ThumbnailView,
             /// <summary>Viewing single model.</summary>
@@ -105,6 +117,30 @@ namespace DaggerfallModelling.ViewControls
         public ModelManager ModelManager
         {
             get { return modelManager; }
+        }
+
+        /// <summary>
+        /// Gets host BlocksManager.
+        /// </summary>
+        public BlockManager BlockManager
+        {
+            get { return blockManager; }
+        }
+
+        /// <summary>
+        /// Gets host MapsFile.
+        /// </summary>
+        public MapsFile MapsFile
+        {
+            get { return mapsFile; }
+        }
+
+        /// <summary>
+        /// Gets host SpriteBatch.
+        /// </summary>
+        public SpriteBatch SpriteBatch
+        {
+            get { return spriteBatch; }
         }
 
         /// <summary>
@@ -188,6 +224,9 @@ namespace DaggerfallModelling.ViewControls
         {
             // Handle device reset event
             GraphicsDevice.DeviceReset += new EventHandler(GraphicsDevice_DeviceReset);
+
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         /// <summary>
@@ -199,6 +238,13 @@ namespace DaggerfallModelling.ViewControls
             if (!Visible)
                 return;
 
+            // Just clear display if no view mode set
+            if (viewMode == ViewModes.None)
+            {
+                GraphicsDevice.Clear(backgroundColour);
+                return;
+            }
+
             // Exit if not ready to draw
             if (!isReady)
             {
@@ -206,7 +252,7 @@ namespace DaggerfallModelling.ViewControls
                 if (!InitialiseView())
                 {
                     // Just clear the display until ready
-                    GraphicsDevice.Clear(Color.Gray);
+                    GraphicsDevice.Clear(backgroundColour);
                     return;
                 }
             }
@@ -245,7 +291,8 @@ namespace DaggerfallModelling.ViewControls
             timeDelta = (float)timeInSeconds / (float)frameCount;
 
             // Tick current view mode
-            viewClients[viewMode].Tick();
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].Tick();
 
             // Redraw
             this.Refresh();
@@ -264,7 +311,7 @@ namespace DaggerfallModelling.ViewControls
             base.OnResize(e);
 
             // Resize current view mode
-            if (isReady)
+            if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].Resize();
         }
 
@@ -294,7 +341,7 @@ namespace DaggerfallModelling.ViewControls
             if (mouseVelocity >= -2.5f && mouseVelocity <= 2.5f) mouseVelocity = 0.0f;
 
             // Move mouse in current view mode
-            if (isReady)
+            if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseMove(e);
         }
 
@@ -307,7 +354,7 @@ namespace DaggerfallModelling.ViewControls
             base.OnMouseWheel(e);
 
             // Send to view
-            if (isReady)
+            if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseWheel(e);
         }
 
@@ -334,7 +381,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Send to view
-            if (isReady)
+            if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseDown(e);
         }
 
@@ -358,7 +405,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Send to view
-            if (isReady)
+            if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseUp(e);
         }
 
@@ -437,6 +484,8 @@ namespace DaggerfallModelling.ViewControls
             {
                 textureManager = new TextureManager(GraphicsDevice, arena2Path);
                 modelManager = new ModelManager(GraphicsDevice, arena2Path);
+                blockManager = new BlockManager(arena2Path);
+                mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
             }
             catch (Exception e)
             {
