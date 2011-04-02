@@ -93,7 +93,7 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
 
             // TEST: Load a model
-            //LoadModel(456);
+            LoadModel(456);
             //LoadModel(43111);
         }
 

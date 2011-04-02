@@ -52,7 +52,7 @@ namespace DaggerfallModelling.ViewControls
         private bool leftMouseDown = false;
         private bool rightMouseDown = false;
         private float mouseVelocity;
-        private const float mouseVelocityMultiplier = 2.0f;
+        private const float mouseVelocityMultiplier = 1.5f;
 
         // Timer
         private Timer animTimer = new Timer();
@@ -68,7 +68,7 @@ namespace DaggerfallModelling.ViewControls
         Color backgroundColour = Color.Gray;
 
         // Views
-        private ViewModes viewMode = ViewModes.ThumbnailView;
+        private ViewModes viewMode = ViewModes.LocationView;
         private Dictionary<ViewModes, ContentViewBase> viewClients;
 
         #endregion

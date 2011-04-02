@@ -49,7 +49,6 @@
             this.InvertSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FileDescriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ChangeCategoryContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ShowExportPaneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LibraryToolStrip = new System.Windows.Forms.ToolStrip();
@@ -62,12 +61,6 @@
             this.RciFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SkyFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.FileGroupsToolStripDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
-            this.ManageCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
-            this.ShowAllCategoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewTilesToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewThumbnailsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -273,11 +266,10 @@
             this.InvertSelectedToolStripMenuItem,
             this.toolStripSeparator5,
             this.FileDescriptionToolStripMenuItem,
-            this.ChangeCategoryContextMenuItem,
             this.toolStripSeparator6,
             this.ShowExportPaneToolStripMenuItem});
             this.LibraryFilesContextMenu.Name = "LibraryFilesContextMenu";
-            this.LibraryFilesContextMenu.Size = new System.Drawing.Size(158, 176);
+            this.LibraryFilesContextMenu.Size = new System.Drawing.Size(158, 154);
             this.LibraryFilesContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.LibraryFilesContextMenu_Opening);
             // 
             // FileCheckedToolStripMenuItem
@@ -330,13 +322,6 @@
             this.FileDescriptionToolStripMenuItem.Text = "Description...";
             this.FileDescriptionToolStripMenuItem.Click += new System.EventHandler(this.FileDescriptionToolStripMenuItem_Click);
             // 
-            // ChangeCategoryContextMenuItem
-            // 
-            this.ChangeCategoryContextMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
-            this.ChangeCategoryContextMenuItem.Name = "ChangeCategoryContextMenuItem";
-            this.ChangeCategoryContextMenuItem.Size = new System.Drawing.Size(157, 22);
-            this.ChangeCategoryContextMenuItem.Text = "Category...";
-            // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
@@ -357,8 +342,6 @@
             this.toolStripSeparator2,
             this.SelectLibraryToolStripDropDownButton,
             this.toolStripSeparator1,
-            this.FileGroupsToolStripDropDownButton,
-            this.toolStripSeparator11,
             this.ViewTilesToolStripButton,
             this.ViewThumbnailsToolStripButton,
             this.toolStripSeparator3,
@@ -445,51 +428,6 @@
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // FileGroupsToolStripDropDownButton
-            // 
-            this.FileGroupsToolStripDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.FileGroupsToolStripDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ManageCategoriesToolStripMenuItem,
-            this.toolStripSeparator12,
-            this.ShowAllCategoriesToolStripMenuItem,
-            this.toolStripSeparator13});
-            this.FileGroupsToolStripDropDownButton.Image = global::DaggerfallImaging2.Properties.Resources.bricks;
-            this.FileGroupsToolStripDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.FileGroupsToolStripDropDownButton.Name = "FileGroupsToolStripDropDownButton";
-            this.FileGroupsToolStripDropDownButton.Size = new System.Drawing.Size(29, 22);
-            this.FileGroupsToolStripDropDownButton.Text = "Category";
-            // 
-            // ManageCategoriesToolStripMenuItem
-            // 
-            this.ManageCategoriesToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.pencil;
-            this.ManageCategoriesToolStripMenuItem.Name = "ManageCategoriesToolStripMenuItem";
-            this.ManageCategoriesToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.ManageCategoriesToolStripMenuItem.Text = "Manage";
-            // 
-            // toolStripSeparator12
-            // 
-            this.toolStripSeparator12.Name = "toolStripSeparator12";
-            this.toolStripSeparator12.Size = new System.Drawing.Size(117, 6);
-            // 
-            // ShowAllCategoriesToolStripMenuItem
-            // 
-            this.ShowAllCategoriesToolStripMenuItem.Checked = true;
-            this.ShowAllCategoriesToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ShowAllCategoriesToolStripMenuItem.Image = global::DaggerfallImaging2.Properties.Resources.application_view_list;
-            this.ShowAllCategoriesToolStripMenuItem.Name = "ShowAllCategoriesToolStripMenuItem";
-            this.ShowAllCategoriesToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.ShowAllCategoriesToolStripMenuItem.Text = "Show All";
-            // 
-            // toolStripSeparator13
-            // 
-            this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(117, 6);
-            // 
-            // toolStripSeparator11
-            // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(6, 25);
             // 
             // ViewTilesToolStripButton
             // 
@@ -1084,14 +1022,7 @@
         private System.Windows.Forms.CheckBox UseDescriptionsCheckBox;
         private System.ComponentModel.BackgroundWorker ExportBackgroundWorker;
         private Manina.Windows.Forms.ImageListView LibraryImageListView;
-        private System.Windows.Forms.ToolStripDropDownButton FileGroupsToolStripDropDownButton;
         private System.Windows.Forms.ToolStripButton AboutToolStripButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
-        private System.Windows.Forms.ToolStripMenuItem ShowAllCategoriesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
-        private System.Windows.Forms.ToolStripMenuItem ManageCategoriesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
-        private System.Windows.Forms.ToolStripMenuItem ChangeCategoryContextMenuItem;
 
 
     }

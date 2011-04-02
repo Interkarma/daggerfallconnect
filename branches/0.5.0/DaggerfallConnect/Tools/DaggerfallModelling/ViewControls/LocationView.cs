@@ -32,8 +32,9 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
-        // TEST: Block model
-        ModelManager.Model blockModel;
+        // TEST: Testing block drawing
+        BlockManager.Block testBlock;
+        RenderableBoundingBox testBlockBounds;
 
         // Appearance
         private Color backgroundColor = Color.LightGray;
@@ -45,9 +46,13 @@ namespace DaggerfallModelling.ViewControls
         private float farPlaneDistance = 50000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
-        private Vector3 cameraPosition = new Vector3(0, 0, 5000);
+        private Vector3 cameraPosition = new Vector3(2048, 1024, 5000);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
+
+        // Movement
+        float rotationStep = 0.005f;
+        float translationStep = 2500.0f;
 
         #endregion
 
@@ -88,7 +93,7 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
 
             // TEST: Load a block
-            LoadBlock("MAGEAA13.RMB");
+            LoadTestBlock("MAGEAA13.RMB");
         }
 
         /// <summary>
@@ -105,6 +110,9 @@ namespace DaggerfallModelling.ViewControls
         {
             // Clear display
             host.GraphicsDevice.Clear(backgroundColor);
+
+            // Render block bounding box
+            testBlockBounds.Draw(viewMatrix, projectionMatrix, modelEffect.World);
         }
 
         /// <summary>
@@ -130,6 +138,14 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
+            if (host.LeftMouseDown)
+            {
+                float amountX = (MathHelper.ToDegrees(host.MousePosDelta.X) * rotationStep) * host.TimeDelta;
+                float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) * rotationStep) * host.TimeDelta;
+                Matrix x = Matrix.CreateRotationX(amountY);
+                Matrix y = Matrix.CreateRotationY(amountX);
+                modelEffect.World *= (x * y);
+            }
         }
 
         /// <summary>
@@ -138,6 +154,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
+            float amount = (((float)e.Delta / 120.0f) * translationStep) * host.TimeDelta;
+            TranslateCamera(0, 0, -amount);
         }
 
         /// <summary>
@@ -163,29 +181,32 @@ namespace DaggerfallModelling.ViewControls
 
         #region Block Management
 
-        private void LoadBlock(string name)
+        private void LoadTestBlock(string name)
         {
             // Load block
-            BlockManager.Block block = host.BlockManager.LoadBlock(name);
-            switch (block.dfBlock.Type)
-            {
-                case DFBlock.BlockTypes.Rmb:
-                    BuildRmbBlock(ref block);
-                    break;
-                case DFBlock.BlockTypes.Rdb:
-                    BuildRdbBlock(ref block);
-                    break;
-                default:
-                    return;
-            }
+            testBlock = host.BlockManager.LoadBlock(name);
+            testBlockBounds = new RenderableBoundingBox(host.GraphicsDevice, testBlock.BoundingBox);
         }
 
-        private void BuildRmbBlock(ref BlockManager.Block block)
-        {
-        }
+        #endregion
 
-        private void BuildRdbBlock(ref BlockManager.Block block)
+        #region Camera Methods
+
+        private void TranslateCamera(float X, float Y, float Z)
         {
+            // Translate camera vector
+            cameraPosition.X += X;
+            cameraPosition.Y += Y;
+            cameraPosition.Z += Z;
+
+            // Cap Z
+            if (cameraPosition.Z < nearPlaneDistance)
+                cameraPosition.Z = nearPlaneDistance;
+            if (cameraPosition.Z > farPlaneDistance)
+                cameraPosition.Z = farPlaneDistance;
+
+            // Update view matrix
+            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace XNALibrary
 {
     /// <summary>
     /// Helper class to load and store Daggerfall models for XNA. Does not load textures, but does calc UV coordinates.
-    ///  This is to allow developers to apply their own texture loading scheme independant of model loading.
+    ///  This is to allow developers to apply their own texture logic independant of model loading.
     /// </summary>
     public class ModelManager
     {
@@ -39,7 +39,9 @@ namespace XNALibrary
 
         #region Class Structures
 
-        /// <summary>Defines mesh data and bounding box.</summary>
+        /// <summary>
+        /// Defines mesh data and bounding box.
+        /// </summary>
         public struct Model
         {
             /// <summary>Axis-aligned bounding box of mesh data.</summary>

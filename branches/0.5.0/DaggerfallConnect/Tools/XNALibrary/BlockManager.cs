@@ -23,7 +23,8 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class to load and store Daggerfall RMB and RDB blocks.
+    /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will create bounding volumes
+    ///  to contain models based on block layout, but does not load model data.
     /// </summary>
     public class BlockManager
     {
@@ -37,10 +38,38 @@ namespace XNALibrary
 
         #region Class Structures
 
+        /// <summary>
+        /// Describes a block in a way that can be drawn by XNA. Models are represented by bounding
+        ///  boxes and ID. Use this structure for frustum culling, initial collision test, ray intersects, etc.
+        /// </summary>
         public struct Block
         {
-            public DFBlock dfBlock;
-            public VertexPositionNormalTexture[] groundPlaneVertices;
+            /// <summary>Original DFBlock object from Daggerfall data.</summary>
+            public DFBlock DFBlock;
+
+            /// <summary>Bounding volume of this block.</summary>
+            public BoundingBox BoundingBox;
+
+            /// <summary>Vertices of ground plane.</summary>
+            public VertexPositionNormalTexture[] GroundPlaneVertices;
+
+            /// <summary>Array of model volumes used to build this block.</summary>
+            public List<ModelVolume> ModelVolumes;
+        }
+
+        /// <summary>
+        /// Describes the bounding volume and model ID within the containing block.
+        /// </summary>
+        public struct ModelVolume
+        {
+            /// <summary>Unique ID of model populating this volume.</summary>
+            public uint ModelId;
+
+            /// <summary>Transform to apply to model and bounding box.</summary>
+            public Matrix Matrix;
+
+            /// <summary>Bounding volume of this model inside parent block.</summary>
+            public BoundingBox BoundingBox;
         }
 
         #endregion
@@ -237,13 +266,78 @@ namespace XNALibrary
 
             // Create new local block instance
             Block block = new Block();
-            block.dfBlock = dfBlock;
+            block.DFBlock = dfBlock;
+
+            // Build a model from this block
+            switch (block.DFBlock.Type)
+            {
+                case DFBlock.BlockTypes.Rmb:
+                    StubRmbBlockLayout(ref block);
+                    break;
+                case DFBlock.BlockTypes.Rdb:
+                    //StubRdbBlockLayout(ref block);
+                    break;
+                default:
+                    break;
+            }
 
             // Store in dictionary
-            if (!string.IsNullOrEmpty(block.dfBlock.Name))
-                blockDictionary.Add(block.dfBlock.Name, block);
+            if (!string.IsNullOrEmpty(block.DFBlock.Name))
+                blockDictionary.Add(block.DFBlock.Name, block);
 
             return block;
+        }
+
+        private void StubRmbBlockLayout(ref Block block)
+        {
+            // Create bounding box for this block.
+            // All outdoor blocks are initialised to 4096x1024x4096.
+            // Blocks are actually laid out on a 2D grid in X-Z space of 4096x4096, so
+            // only height is arbitrary. You can adjust height later using actual model heights
+            // after loading resources.
+            Vector3 blockMin = new Vector3(0, 0, -4096);
+            Vector3 blockMax = new Vector3(4096, 1024, 0);
+            block.BoundingBox = new BoundingBox(blockMin, blockMax);
+
+            // Create model volume list with a starting capacity equal to subrecord count.
+            // Many subrecords have only 1 model per subrecord, but may have more.
+            // The List will grow if needed.
+            block.ModelVolumes = new List<ModelVolume>(block.DFBlock.RmbBlock.SubRecords.Length);
+
+            // Iterate through all subrecords
+            float degrees;
+            Matrix rotation, translation;
+            foreach (DFBlock.RmbSubRecord subRecord in block.DFBlock.RmbBlock.SubRecords)
+            {
+                // Get matrix for this subrecord
+                Matrix subRecordMatrix = Matrix.Identity;
+                degrees = subRecord.YRotation / rotationDivisor;
+                translation = Matrix.CreateTranslation(new Vector3(subRecord.XPos, 0, -4096 + subRecord.ZPos));
+                rotation = Matrix.CreateRotationY(MathHelper.ToRadians(degrees));
+                subRecordMatrix *= rotation;
+                subRecordMatrix *= translation;
+
+                // Iterate through models in this subrecord
+                foreach (DFBlock.RmbBlock3dObjectRecord obj in subRecord.Exterior.Block3dObjectRecords)
+                {
+                    // Get matrix for this model
+                    Matrix objMatrix = Matrix.Identity;
+                    degrees = obj.YRotation / rotationDivisor;
+                    translation = Matrix.CreateTranslation(new Vector3(obj.XPos, -obj.YPos, -obj.ZPos));
+                    rotation = Matrix.CreateRotationY(MathHelper.ToRadians(degrees));
+                    objMatrix *= rotation;
+                    objMatrix *= translation;
+
+                    // Create model volume. This is initialised to 10x10x10.
+                    // You will need to adjust dimensions later once resources are loaded.
+                    // The stored matrix can be used to transform model and bounding box.
+                    ModelVolume modelVolume = new ModelVolume();
+                    modelVolume.ModelId = obj.ModelIdNum;
+                    modelVolume.BoundingBox = new BoundingBox(new Vector3(0, -1024, 0), new Vector3(512, 0, 512));
+                    modelVolume.Matrix = objMatrix * subRecordMatrix;
+                    block.ModelVolumes.Add(modelVolume);
+                }
+            }
         }
 
         /*

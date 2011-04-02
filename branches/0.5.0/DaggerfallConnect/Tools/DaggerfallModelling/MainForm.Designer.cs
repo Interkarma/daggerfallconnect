@@ -65,6 +65,7 @@
             this.ModelViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -337,6 +338,7 @@
             this.ViewThumbsToolStripButton,
             this.ViewSingleModelToolStripButton,
             this.ViewBlockToolStripButton,
+            this.ViewLocationToolStripButton,
             this.toolStripSeparator4});
             this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
             this.ViewPaneToolStrip.Name = "ViewPaneToolStrip";
@@ -451,6 +453,15 @@
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
             // 
+            // ViewLocationToolStripButton
+            // 
+            this.ViewLocationToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ViewLocationToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
+            this.ViewLocationToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ViewLocationToolStripButton.Name = "ViewLocationToolStripButton";
+            this.ViewLocationToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ViewLocationToolStripButton.Text = "View Location";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -527,6 +538,7 @@
         private System.Windows.Forms.ToolStripButton ViewSingleModelToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private DaggerfallModelling.ViewControls.ContentViewHost ContentView;
+        private System.Windows.Forms.ToolStripButton ViewLocationToolStripButton;
     }
 }
 
