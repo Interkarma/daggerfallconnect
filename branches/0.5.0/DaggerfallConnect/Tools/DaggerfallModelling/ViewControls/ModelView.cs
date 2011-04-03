@@ -193,7 +193,7 @@ namespace DaggerfallModelling.ViewControls
 
             foreach (var submesh in model.SubMeshes)
             {
-                modelEffect.Texture = host.TextureManager.GetMiscTexture(submesh.TextureKey);
+                modelEffect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
 
                 modelEffect.Begin();
                 modelEffect.CurrentTechnique.Passes[0].Begin();
@@ -230,7 +230,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 // Load textures
                 model.SubMeshes[sm].TextureKey =
-                    host.TextureManager.LoadMiscTexture(
+                    host.TextureManager.LoadTexture(
                     model.SubMeshes[sm].TextureArchive,
                     model.SubMeshes[sm].TextureRecord, 0);
             }

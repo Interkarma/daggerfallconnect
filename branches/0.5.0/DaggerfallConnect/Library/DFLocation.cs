@@ -51,7 +51,7 @@ namespace DaggerfallConnect
         /// <summary>
         /// Climate of this location.
         /// </summary>
-        public ClimateBases Climate;
+        public ClimateType Climate;
 
         /// <summary>
         /// Political alignment of this location (equal to region index).
@@ -63,115 +63,124 @@ namespace DaggerfallConnect
         #region Climate Enumerations
 
         /// <summary>
-        /// Climate base enumeration for climate-swapping textures.
+        /// Climate type enumeration for climate-swapping textures.
         /// </summary>
-        public enum ClimateBases
+        public enum ClimateType
         {
-            /// <summary>No climate base.</summary>
+            /// <summary>No climate type.</summary>
             None = -1,
-            /// <summary>Desert climate base.</summary>
+            /// <summary>Desert climate type.</summary>
             Desert = 0,
-            /// <summary>Mountain climate base.</summary>
+            /// <summary>Mountain climate type.</summary>
             Mountain = 100,
-            /// <summary>Temperate/Woodland climate base.</summary>
+            /// <summary>Temperate/Woodland climate type.</summary>
             Temperate = 300,
-            /// <summary>Swamp climate base.</summary>
+            /// <summary>Swamp climate type.</summary>
             Swamp = 400,
         }
 
         /// <summary>
-        /// Offsets from ClimateBases to texture set for climate-swapping textures.
+        /// Climate texture sets for climate-swapping textures.
         /// </summary>
-        public enum ClimateSets
+        public enum ClimateSet
         {
-            /// <summary>Unknown</summary>
-            Unknown = -1,
-            /// <summary>Terrain</summary>
-            Terrain = 2,
-            /// <summary>Ruins</summary>
-            Ruins = 7,
-            /// <summary>Castle</summary>
-            Castle = 9,
-            /// <summary>PalaceInt</summary>
-            PalaceInt = 11,
-            /// <summary>CityA</summary>
-            CityA = 12,
-            /// <summary>CityB</summary>
-            CityB = 14,
-            /// <summary>CityInt</summary>
-            CityInt = 16,
-            /// <summary>CityWalls</summary>
-            CityWalls = 17,
-            /// <summary>CryptA</summary>
-            CryptA = 19,
-            /// <summary>CryptB</summary>
-            CryptB = 20,
-            /// <summary>DungeonsA</summary>
-            DungeonsA = 22,
-            /// <summary>DungeonsB</summary>
-            DungeonsB = 23,
-            /// <summary>DungeonsC</summary>
-            DungeonsC = 24,
-            /// <summary>DungeonsNEWCs</summary>
-            DungeonsNEWCs = 25,
-            /// <summary>Farm</summary>
-            Farm = 26,
-            /// <summary>FarmInt</summary>
-            FarmInt = 28,
-            /// <summary>Fences</summary>
-            Fences = 29,
-            /// <summary>MagesGuild</summary>
-            MagesGuild = 35,
-            /// <summary>MagesGuildInt</summary>
-            MagesGuildInt = 37,
-            /// <summary>Manor</summary>
-            Manor = 38,
-            /// <summary>ManorInt</summary>
-            ManorInt = 40,
-            /// <summary>MarbleFloors</summary>
-            MarbleFloors = 41,
-            /// <summary>MerchantHomes</summary>
-            MerchantHomes = 42,
-            /// <summary>MerchantHomesInt</summary>
-            MerchantHomesInt = 44,
-            /// <summary>Mines</summary>
-            Mines = 45,
-            /// <summary>Misc</summary>
+            //
+            // General sets
+            //
+            /// <summary>None.</summary>
+            None = -1,
+            /// <summary>Misc.</summary>
             Misc = 46,
-            /// <summary>Caves</summary>
-            Caves = 47,
-            /// <summary>Paintings</summary>
-            Paintings = 48,
-            /// <summary>TavernExteriors</summary>
-            TavernExteriors = 58,
-            /// <summary>TavernInt</summary>
-            TavernInt = 60,
-            /// <summary>TempleExteriors</summary>
-            TempleExteriors = 61,
-            /// <summary>TempleInt</summary>
-            TempleInt = 63,
-            /// <summary>Village</summary>
-            Village = 64,
-            /// <summary>VillageInt</summary>
-            VillageInt = 66,
-            /// <summary>Sewer</summary>
-            Sewer = 68,
-            /// <summary>Roofs</summary>
-            Roofs = 69,
-            /// <summary>Doors</summary>
-            Doors = 74,
+            //
+            // Exterior sets
+            //
+            /// <summary>Terrain.</summary>
+            Exterior_Terrain = 2,
+            /// <summary>Ruins.</summary>
+            Exterior_Ruins = 7,
+            /// <summary>Castle.</summary>
+            Exterior_Castle = 9,
+            /// <summary>CityA.</summary>
+            Exterior_CityA = 12,
+            /// <summary>CityB.</summary>
+            Exterior_CityB = 14,
+            /// <summary>CityWalls.</summary>
+            Exterior_CityWalls = 17,
+            /// <summary>Farm.</summary>
+            Exterior_Farm = 26,
+            /// <summary>Fences.</summary>
+            Exterior_Fences = 29,
+            /// <summary>MagesGuild.</summary>
+            Exterior_MagesGuild = 35,
+            /// <summary>Manor.</summary>
+            Exterior_Manor = 38,
+            /// <summary>MerchantHomes.</summary>
+            Exterior_MerchantHomes = 42,
+            /// <summary>TavernExteriors.</summary>
+            Exterior_TavernExteriors = 58,
+            /// <summary>TempleExteriors.</summary>
+            Exterior_TempleExteriors = 61,
+            /// <summary>Village.</summary>
+            Exterior_Village = 64,
+            /// <summary>Roofs.</summary>
+            Exterior_Roofs = 69,
+            //
+            // Interior sets
+            //
+            /// <summary>PalaceInt.</summary>
+            Interior_PalaceInt = 11,
+            /// <summary>CityInt.</summary>
+            Interior_CityInt = 16,
+            /// <summary>CryptA.</summary>
+            Interior_CryptA = 19,
+            /// <summary>CryptB.</summary>
+            Interior_CryptB = 20,
+            /// <summary>DungeonsA.</summary>
+            Interior_DungeonsA = 22,
+            /// <summary>DungeonsB.</summary>
+            Interior_DungeonsB = 23,
+            /// <summary>DungeonsC.</summary>
+            Interior_DungeonsC = 24,
+            /// <summary>DungeonsNEWCs.</summary>
+            Interior_DungeonsNEWCs = 25,
+            /// <summary>FarmInt.</summary>
+            Interior_FarmInt = 28,
+            /// <summary>MagesGuildInt.</summary>
+            Interior_MagesGuildInt = 37,
+            /// <summary>ManorInt.</summary>
+            Interior_ManorInt = 40,
+            /// <summary>MarbleFloors.</summary>
+            Interior_MarbleFloors = 41,
+            /// <summary>MerchantHomesInt.</summary>
+            Interior_MerchantHomesInt = 44,
+            /// <summary>Mines.</summary>
+            Interior_Mines = 45,
+            /// <summary>Caves.</summary>
+            Interior_Caves = 47,
+            /// <summary>Paintings.</summary>
+            Interior_Paintings = 48,
+            /// <summary>TavernInt.</summary>
+            Interior_TavernInt = 60,
+            /// <summary>TempleInt.</summary>
+            Interior_TempleInt = 63,
+            /// <summary>VillageInt.</summary>
+            Interior_VillageInt = 66,
+            /// <summary>Sewer.</summary>
+            Interior_Sewer = 68,
+            /// <summary>Doors.</summary>
+            Interior_Doors = 74,
         }
 
         /// <summary>
-        /// Offsets from ClimateSets for weather variations.
+        /// Weather variations of climate sets.
         /// </summary>
         public enum ClimateWeather
         {
-            /// <summary>Dry summer weather. Use outdoors and indoors.</summary>
+            /// <summary>Dry summer weather. Use with any climate set.</summary>
             Normal = 0,
-            /// <summary>Buildings and ground in winter (do not use indoors).</summary>
+            /// <summary>Buildings and ground in winter (only valid with exterior climate sets).</summary>
             Winter = 1,
-            /// <summary>Ground wet from rain (do not apply to buildings or use indoors).</summary>
+            /// <summary>Ground wet from rain (only valid with ClimateSet.Terrain).</summary>
             Rain = 2,
         }
 

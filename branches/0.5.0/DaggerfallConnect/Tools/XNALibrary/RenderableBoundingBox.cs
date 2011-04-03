@@ -109,8 +109,25 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Draw the BoundingBox.
+        /// Draw the current BoundingBox.
         /// </summary>
+        /// <param name="boundingBox">New bounding box to draw.</param>
+        /// <param name="viewMatrix">View matrix.</param>
+        /// <param name="projectionMatrix">Projections matrix.</param>
+        /// <param name="worldMatrix">World Matrix.</param>
+        public void Draw(BoundingBox boundingBox, Matrix viewMatrix, Matrix projectionMatrix, Matrix worldMatrix)
+        {
+            // Set new bounding box and draw as normal
+            SetBoundingBox(boundingBox);
+            Draw(viewMatrix, projectionMatrix, worldMatrix);
+        }
+
+        /// <summary>
+        /// Draw the current BoundingBox.
+        /// </summary>
+        /// <param name="viewMatrix">View matrix.</param>
+        /// <param name="projectionMatrix">Projections matrix.</param>
+        /// <param name="worldMatrix">World Matrix.</param>
         public void Draw(Matrix viewMatrix, Matrix projectionMatrix, Matrix worldMatrix)
         {
             // Set vertex declaration

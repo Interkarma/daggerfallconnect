@@ -454,7 +454,7 @@ namespace DaggerfallConnect
         /// <param name="Set">Texture set type.</param>
         /// <param name="Weather">Weather type.</param>
         /// <returns>Filename of texture archive.</returns>
-        static public string GetClimateTextureFileName(DFLocation.ClimateBases Climate, DFLocation.ClimateSets Set, DFLocation.ClimateWeather Weather)
+        static public string GetClimateTextureFileName(DFLocation.ClimateType Climate, DFLocation.ClimateSet Set, DFLocation.ClimateWeather Weather)
         {
             // Get base
             int index = (int)Climate;

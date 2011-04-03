@@ -24,8 +24,8 @@ namespace XNALibrary
 {
 
     // Use climate enums in this namespace
-    using ClimateBases = DFLocation.ClimateBases;
-    using ClimateSets = DFLocation.ClimateSets;
+    using ClimateType = DFLocation.ClimateType;
+    using ClimateSet = DFLocation.ClimateSet;
     using ClimateWeather = DFLocation.ClimateWeather;
 
     // Differentiate between Color types
@@ -33,9 +33,8 @@ namespace XNALibrary
     using XNAColor = Microsoft.Xna.Framework.Graphics.Color;
 
     /// <summary>
-    /// Helper class to load and store Daggerfall textures for XNA. Textures can be stored in
-    ///  a texture atlas (one per climate type) for large scenes or as individual textures for
-    ///  small scenes.
+    /// Helper class to load and store Daggerfall textures for XNA. Enables climate substitutions
+    ///  (Daggerfall swaps textures based on climate type) and texture atlasing for ground tiles.
     /// </summary>
     public class TextureManager
     {
@@ -47,22 +46,22 @@ namespace XNALibrary
         private GraphicsDevice graphicsDevice;
         private TextureFile textureFile;
 
-        // Atlas setup
-        private const int atlasWidth = 1024;
-        private const int atlasHeight = 1024;
+        // Atlas dimensions
+        private const int atlasWidth = 512;
+        private const int atlasHeight = 512;
 
-        // Atlas for each texture group
+        // Atlas texture
         private Texture2D terrainAtlas;
-        private Texture2D exteriorAtlas;
-        private Texture2D interiorAtlas;
 
-        // Atlas layout dictionaries for each texture group
+        // Atlas layout
         private Dictionary<int, RectangleF> terrainAtlasDict;
-        private Dictionary<int, RectangleF> interiorAtlasDict;
-        private Dictionary<int, RectangleF> exteriorAtlasDict;
 
-        // Dictionary for misc textures
-        private Dictionary<int, Texture2D> miscTexturesDict;
+        // Texture dictonary
+        private Dictionary<int, Texture2D> texturesDict;
+
+        // Climate and weather
+        ClimateType climateType = ClimateType.None;
+        ClimateWeather climateWeather = ClimateWeather.Normal;
 
         #endregion
 
@@ -73,7 +72,8 @@ namespace XNALibrary
         /// </summary>
         private struct AtlasParams
         {
-            public ClimateBases climate;
+            public ClimateType climate;
+            public Dictionary<int, RectangleF> dictionary;
             public int format;
             public int width;
             public int height;
@@ -104,6 +104,34 @@ namespace XNALibrary
             get { return graphicsDevice; }
         }
 
+        /// <summary>
+        /// Gets or sets current climate for swaps. Setting this to 
+        ///  None will use default textures assigned to models in ARCH3D.BSA.
+        ///  Temperate ground tiles will be used when Climate is None.
+        /// </summary>
+        public ClimateType Climate
+        {
+            get { return climateType; }
+            set { SetClimate(value, climateWeather); }
+        }
+
+        /// <summary>
+        /// Gets or sets current weather for swaps.
+        /// </summary>
+        public ClimateWeather Weather
+        {
+            get { return climateWeather; }
+            set { SetClimate(climateType, value); }
+        }
+
+        /// <summary>
+        /// Gets terrain atlas texture for current climate type.
+        /// </summary>
+        public Texture2D TerrainAtlas
+        {
+            get { return terrainAtlas; }
+        }
+
         #endregion
 
         #region Constructors
@@ -121,44 +149,46 @@ namespace XNALibrary
             textureFile = new TextureFile();
             textureFile.Palette.Load(Path.Combine(arena2Path, textureFile.PaletteName));
 
-            // Create empty climate dictionaries
-            miscTexturesDict = new Dictionary<int, Texture2D>();
+            // Create empty dictionaries
+            texturesDict = new Dictionary<int, Texture2D>();
             terrainAtlasDict = new Dictionary<int, RectangleF>();
-            exteriorAtlasDict = new Dictionary<int, RectangleF>();
-            interiorAtlasDict = new Dictionary<int, RectangleF>();
 
-            // Load default climate atlas
-            LoadClimate(ClimateBases.Temperate);
+            // Set default climate
+            SetClimate(ClimateType.None, ClimateWeather.Normal);
         }
 
         #endregion
 
-        #region Misc Textures
+        #region Public Methods
 
         /// <summary>
-        /// Get unique key for misc texture.
+        /// Gets rectangle of specific subtexture inside terrain atlas.
+        ///  Returns error subtexture on invalid key.
         /// </summary>
-        /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
-        /// <param name="frame">Frame index.</param>
-        /// <returns>Misc texture key.</returns>
-        public int GetMiscTextureKey(int archive, int record, int frame)
+        /// <returns>RectangleF of subtexture.</returns>
+        public RectangleF GetTerrainSubTextureRect(int record)
         {
-            return (archive * 10000) + (record * 100) + frame;
+            // Get the subtexture rectangle
+            int key = GetAtlasTextureKey(ClimateSet.Exterior_Terrain, climateWeather, record);
+            if (!terrainAtlasDict.ContainsKey(key))
+                return terrainAtlasDict[0];
+            else
+                return terrainAtlasDict[key];
         }
 
         /// <summary>
-        /// Loads a misc texture based on indices.
+        /// Loads a texture based on indices.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
-        /// <returns>Misc texture key.</returns>
-        public int LoadMiscTexture(int archive, int record, int frame)
+        /// <returns>Texture key.</returns>
+        public int LoadTexture(int archive, int record, int frame)
         {
             // Just return key if already in dictionary
-            int key = GetMiscTextureKey(archive, record, frame);
-            if (miscTexturesDict.ContainsKey(key))
+            int key = GetTextureKey(archive, record, frame);
+            if (texturesDict.ContainsKey(key))
                 return key;
 
             // Load texture file
@@ -172,65 +202,103 @@ namespace XNALibrary
             texture.SetData<byte>(dfbitmap.Data);
 
             // Store texture in dictionary
-            miscTexturesDict.Add(key, texture);
+            texturesDict.Add(key, texture);
 
             return key;
         }
 
         /// <summary>
-        /// Get misc texture based on key. The manager will return NULL if texture does not exist.
+        /// Get texture based on key. The manager will return NULL if texture does not exist.
         /// </summary>
-        /// <param name="key">Misc texture key.</param>
+        /// <param name="key">Texture key.</param>
         /// <returns>Texture2D.</returns>
-        public Texture2D GetMiscTexture(int key)
+        public Texture2D GetTexture(int key)
         {
-            if (!miscTexturesDict.ContainsKey(key))
+            if (!texturesDict.ContainsKey(key))
                 return null;
             else
-                return miscTexturesDict[key];
+                return texturesDict[key];
         }
 
         /// <summary>
-        /// Removes misc texture based on key.
+        /// Removes texture based on key.
         /// </summary>
-        /// <param name="key"></param>
-        public void RemoveMiscTexture(int key)
+        /// <param name="key">Texture key.</param>
+        public void RemoveTexture(int key)
         {
-            if (miscTexturesDict.ContainsKey(key))
-                miscTexturesDict.Remove(key);
+            if (texturesDict.ContainsKey(key))
+                texturesDict.Remove(key);
         }
 
         /// <summary>
-        /// Clear all misc textures.
+        /// Clear all textures.
         /// </summary>
-        public void ClearMiscTextures()
+        public void ClearTextures()
         {
-            miscTexturesDict.Clear();
+            texturesDict.Clear();
         }
 
         #endregion
 
-        #region Public Methods
+        #region Private Methods
 
-        public void LoadClimate(ClimateBases climate)
+        /// <summary>
+        /// Gets unique key for a texture.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
+        /// <returns>Texture key.</returns>
+        private int GetTextureKey(int archive, int record, int frame)
         {
-            // Build texture atlas for each climate type
-            long startTime = DateTime.Now.Ticks;
-            BuildTerrainAtlas(climate);
-            BuildExteriorAtlas(climate);
-            BuildInteriorAtlas(climate);
-            long totalTime = DateTime.Now.Ticks - startTime;
-            Console.WriteLine("Climate texture atlas build completed in {0} milliseconds.", (float)totalTime / 10000.0f);
+            return (archive * 10000) + (record * 100) + frame;
+        }
+
+        /// <summary>
+        /// Gets unique key for a atlas textures.
+        /// </summary>
+        /// <param name="set">Climate set.</param>
+        /// <param name="weather">Climate weather.</param>
+        /// <param name="record">Record index.</param>
+        /// <returns>Climate texture key.</returns>
+        private int GetAtlasTextureKey(ClimateSet set, ClimateWeather weather, int record)
+        {
+            return (int)set * 10000 + (int)weather * 100 + record;
+        }
+
+        /// <summary>
+        /// Sets climate type to use for texture swaps.
+        /// </summary>
+        /// <param name="climate">Climate type.</param>
+        private void SetClimate(ClimateType climate, ClimateWeather weather)
+        {
+            // Load terrain atlas, using temperate when none specified
+            if (climate == ClimateType.None)
+                BuildTerrainAtlas(ClimateType.Temperate, weather);
+            else
+                BuildTerrainAtlas(climate, weather);
+
+            // Store new climate settings
+            this.climateType = climate;
+            this.climateWeather = weather;
         }
 
         #endregion
 
         #region Atlas Building
 
-        private bool BuildTerrainAtlas(ClimateBases climate)
+        /// <summary>
+        /// Builds a texture atlas from terrain ground tiles. This allows the ground plane to be
+        ///  drawn in a single batch.
+        /// </summary>
+        /// <param name="climate">Climate type.</param>
+        /// <param name="weather">Weather type.</param>
+        /// <returns>True if successful.</returns>
+        private bool BuildTerrainAtlas(ClimateType climate, ClimateWeather weather)
         {
             // Init working parameters
             AtlasParams ap = new AtlasParams();
+            ap.dictionary = terrainAtlasDict;
             ap.climate = climate;
             ap.format = 4;
             ap.width = atlasWidth;
@@ -239,13 +307,11 @@ namespace XNALibrary
             ap.xpos = 0;
             ap.ypos = 0;
             ap.maxRowHeight = 0;
-            ap.buffer = new byte[(atlasWidth * atlasHeight) * 4];
+            ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
-            // Add terrain texture files for this climate
-            AddErrorTexture(ref ap);
-            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Terrain, ClimateWeather.Rain, ref ap);
+            // Add textures to atlas
+            AddErrorBitmap(ref ap);
+            AddTextureFile(ClimateSet.Exterior_Terrain, weather, ref ap);
 
             // Create texture from atlas buffer
             terrainAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
@@ -257,118 +323,13 @@ namespace XNALibrary
             return true;
         }
 
-        private bool BuildExteriorAtlas(ClimateBases climate)
-        {
-            // Init working parameters
-            AtlasParams ap = new AtlasParams();
-            ap.climate = climate;
-            ap.format = 4;
-            ap.width = atlasWidth;
-            ap.height = atlasHeight;
-            ap.stride = atlasWidth * ap.format;
-            ap.xpos = 0;
-            ap.ypos = 0;
-            ap.maxRowHeight = 0;
-            ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
-
-            // Add exterior textures (have normal and winter sets, but not rain)
-            AddErrorTexture(ref ap);
-            AddTextureFile(ClimateSets.Ruins, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Ruins, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Castle, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Castle, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.CityA, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CityA, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.CityB, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CityB, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.CityWalls, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CityWalls, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Farm, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Farm, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Fences, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Fences, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.MagesGuild, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.MagesGuild, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Manor, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Manor, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.MerchantHomes, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.TavernExteriors, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.TempleExteriors, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Village, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Village, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSets.Roofs, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Roofs, ClimateWeather.Winter, ref ap);
-
-            // Create texture from atlas buffer
-            exteriorAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            exteriorAtlas.SetData<byte>(ap.buffer);
-
-            // TEST: Save texture for review
-            //exteriorAtlas.Save("C:\\test\\Exterior.png", ImageFileFormat.Png);
-
-            return true;
-        }
-
-        private bool BuildInteriorAtlas(ClimateBases climate)
-        {
-            // Init working parameters
-            AtlasParams ap = new AtlasParams();
-            ap.climate = climate;
-            ap.format = 4;
-            ap.width = atlasWidth;
-            ap.height = atlasHeight;
-            ap.stride = atlasWidth * ap.format;
-            ap.xpos = 0;
-            ap.ypos = 0;
-            ap.maxRowHeight = 0;
-            ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
-
-            // Add interior textures (do not have winter or rain sets)
-            AddErrorTexture(ref ap);
-            AddTextureFile(ClimateSets.PalaceInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CityInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CryptA, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.CryptB, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.DungeonsA, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.DungeonsB, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.DungeonsC, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.DungeonsNEWCs, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.FarmInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.MagesGuildInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.ManorInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.MarbleFloors, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.MerchantHomesInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Mines, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Caves, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Paintings, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.TavernInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.TempleInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.VillageInt, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Sewer, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSets.Doors, ClimateWeather.Normal, ref ap);
-
-            // Create texture from atlas buffer
-            interiorAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            interiorAtlas.SetData<byte>(ap.buffer);
-
-            // TEST: Save texture for review
-            //interiorAtlas.Save("C:\\test\\Interior.png", ImageFileFormat.Png);
-
-            return true;
-        }
-
-        private void AddErrorTexture(ref AtlasParams ap)
-        {
-            DFManualImage errorImage = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
-            errorImage.Clear(0xff, 0xff, 0, 0);
-            DFBitmap dfBitmap = errorImage.DFBitmap;
-            AddDFBitmap(0, ref dfBitmap, ref ap);
-        }
-
-        private void AddTextureFile(ClimateSets set, ClimateWeather weather, ref AtlasParams ap)
+        /// <summary>
+        /// Adds all records from a texture file into the atlas.
+        /// </summary>
+        /// <param name="set">Climate set to add.</param>
+        /// <param name="weather">Weather set to add.</param>
+        /// <param name="ap">AtlasParams.</param>
+        private void AddTextureFile(ClimateSet set, ClimateWeather weather, ref AtlasParams ap)
         {
             // Resolve climate set and weather to filename
             string filename = ImageFileReader.GetClimateTextureFileName(ap.climate, set, weather);
@@ -379,23 +340,33 @@ namespace XNALibrary
             // Add each record to atlas (not supporting animation yet)
             for (int r = 0; r < textureFile.RecordCount; r++)
             {
-                // Get record bitmap in ARGB format
-                DFBitmap dfBitmap = textureFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
+                int key = GetAtlasTextureKey(set, weather, r);
+                if (!terrainAtlasDict.ContainsKey(key))
+                {
+                    // Get record bitmap in ARGB format
+                    DFBitmap dfBitmap = textureFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
 
-                // Add bitmap
-                int key = TextureKey(set, weather, r);
-                AddDFBitmap(key, ref dfBitmap, ref ap);
+                    // Add bitmap to atlas
+                    RectangleF rect = AddDFBitmap(key, ref dfBitmap, ref ap);
+                    terrainAtlasDict.Add(key, rect);
+                }
             }
         }
 
-        private void AddDFBitmap(int key, ref DFBitmap dfBitmap, ref AtlasParams ap)
+        /// <summary>
+        /// Adds an individual bitmap to atlas.
+        /// </summary>
+        /// <param name="key">Unique texture key.</param>
+        /// <param name="dfBitmap">DFBitmap to add.</param>
+        /// <param name="ap">AtlasParams.</param>
+        private RectangleF AddDFBitmap(int key, ref DFBitmap dfBitmap, ref AtlasParams ap)
         {
             // For now can only handle width <= 64 pixels
             int stepx = 64;
             if (dfBitmap.Width > 64)
             {
                 Console.WriteLine("Width > 64.");
-                return;
+                return new RectangleF(0, 0, 0, 0);
             }
 
             // For now can only handle height <= 128 pixels
@@ -407,7 +378,7 @@ namespace XNALibrary
             else
             {
                 Console.WriteLine("Height > 128.");
-                return;
+                return new RectangleF(0, 0, 0, 0);
             }
 
             // Track max height per row
@@ -434,20 +405,41 @@ namespace XNALibrary
                     dfBitmap.Stride);
             }
 
+            // Create texture layout
+            RectangleF rect = new RectangleF(
+                (float)(ap.xpos / ap.format) / (float)ap.width,
+                (float)(ap.ypos / ap.stride) / (float)ap.height,
+                (float)dfBitmap.Width / (float)ap.width,
+                (float)dfBitmap.Height / (float)ap.height);
+
             // Increment xpos
             ap.xpos += stepx * ap.format;
 
-            // Create texture layout
-            RectangleF textureRect = new RectangleF(
-                (float)(ap.xpos - dfBitmap.Width * ap.format) / (float)ap.stride,
-                (float)ap.ypos / (float)ap.height,
-                (float)(dfBitmap.Width) / (float)ap.stride,
-                (float)(dfBitmap.Height) / (float)ap.height);
-
-            // Add key to dictionary
-            //AddTexture(ap.climate, key, ref textureRect);
+            return rect;
         }
 
+        /// <summary>
+        /// Adds a red texture to atlas which will be used if an unknown texture is referenced.
+        /// </summary>
+        /// <param name="ap">AtlasParams.</param>
+        private void AddErrorBitmap(ref AtlasParams ap)
+        {
+            // Create red error image. Can only have one error per
+            // atlas and it will always be key 0.
+            if (!terrainAtlasDict.ContainsKey(0))
+            {
+                DFManualImage errorImage = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
+                errorImage.Clear(0xff, 0xff, 0, 0);
+                DFBitmap dfBitmap = errorImage.DFBitmap;
+                RectangleF rect = AddDFBitmap(0, ref dfBitmap, ref ap);
+                terrainAtlasDict.Add(0, rect);
+            }
+        }
+
+        /// <summary>
+        /// Starts new row in atlas. Will throw on overflow.
+        /// </summary>
+        /// <param name="ap">AtlasParams.</param>
         private void AddNewRow(ref AtlasParams ap)
         {
             // Step down to next row
@@ -459,55 +451,6 @@ namespace XNALibrary
             ap.xpos = 0;
             ap.maxRowHeight = 0;
         }
-
-        #endregion
-
-        #region Atlas Dictionary Management
-
-        private int TextureKey(ClimateSets set, ClimateWeather weather, int record)
-        {
-            return (int)set * 1000 + (int)weather * 100 + record;
-        }
-
-        /*
-        private bool TextureExists(ClimateBases climate, int key)
-        {
-            switch (climate)
-            {
-                case ClimateBases.Desert:
-                    return desertDict.ContainsKey(key);
-                case ClimateBases.Mountain:
-                    return mountainDict.ContainsKey(key);
-                case ClimateBases.Temperate:
-                    return temperateDict.ContainsKey(key);
-                case ClimateBases.Swamp:
-                    return swampDict.ContainsKey(key);
-                default:
-                    throw new Exception("Invalid climate.");
-            }
-        }
-
-        private void AddTexture(ClimateBases climate, int key, ref RectangleF texture)
-        {
-            switch (climate)
-            {
-                case ClimateBases.Desert:
-                    desertDict.Add(key, texture);
-                    break;
-                case ClimateBases.Mountain:
-                    mountainDict.Add(key, texture);
-                    break;
-                case ClimateBases.Temperate:
-                    temperateDict.Add(key, texture);
-                    break;
-                case ClimateBases.Swamp:
-                    swampDict.Add(key, texture);
-                    break;
-                default:
-                    throw new Exception("Invalid climate.");
-            }
-        }
-        */
 
         #endregion
 

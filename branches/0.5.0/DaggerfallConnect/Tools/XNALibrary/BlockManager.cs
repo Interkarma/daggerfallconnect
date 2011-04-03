@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,8 +24,8 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will create bounding volumes
-    ///  to contain models based on block layout, but does not load model data.
+    /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will stub model id
+    ///  and bounding boxes, but does not load model data. 
     /// </summary>
     public class BlockManager
     {
@@ -39,8 +40,9 @@ namespace XNALibrary
         #region Class Structures
 
         /// <summary>
-        /// Describes a block in a way that can be drawn by XNA. Models are represented by bounding
-        ///  boxes and ID. Use this structure for frustum culling, initial collision test, ray intersects, etc.
+        /// Describes a block layout as ground plane and list of models. Models are represented by bounding
+        ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
+        ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
         public struct Block
         {
@@ -101,6 +103,11 @@ namespace XNALibrary
 
         #region Public Methods
 
+        /// <summary>
+        /// Load a block by name.
+        /// </summary>
+        /// <param name="name">Name of block.</param>
+        /// <returns>Block.</returns>
         public Block LoadBlock(string name)
         {
             if (!blockDictionary.ContainsKey(name))
@@ -115,6 +122,11 @@ namespace XNALibrary
             }
         }
 
+        /// <summary>
+        /// Load a block by index.
+        /// </summary>
+        /// <param name="index">Index of block.</param>
+        /// <returns>Block.</returns>
         public Block LoadBlock(int index)
         {
             string name = blocksFile.GetBlockName(index);
@@ -126,6 +138,35 @@ namespace XNALibrary
             else
             {
                 return blockDictionary[name];
+            }
+        }
+
+        /// <summary>
+        /// Builds an RMB ground plane. References terrain atlas from the
+        ///  specified texture manager. You can swap climate and weather in the
+        ///  texture manager without needing to rebuild the ground plane.
+        /// </summary>
+        /// <param name="textureManager">TextureManager.</param>
+        /// <param name="block">Block.</param>
+        public void BuildRmbGroundPlane(TextureManager textureManager, ref Block block)
+        {
+            // Create vertex list for ground plane.
+            // A ground plane consists of 16x16 tiled squares.
+            // There are a full 6 vertices per square (3 per triangle).
+            // We're doing this so we can send the whole ground plane to renderer in one call.
+            block.GroundPlaneVertices = new VertexPositionNormalTexture[(16 * 16) * 6];
+
+            // Add tiles to the ground plane. Source tiles are stored from bottom to top, then right to left.
+            // This must be accounted for when laying out tiles.
+            const int tileCount = 16;
+            DFBlock.RmbGroundTiles tile;
+            for (int x = 0; x < tileCount; x++)
+            {
+                for (int y = tileCount - 1; y >= 0; y--)
+                {
+                    tile = block.DFBlock.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
+                    AddGroundTile(ref textureManager, ref block.GroundPlaneVertices, x, y, tile.TextureRecord, tile.IsRotated, tile.IsFlipped);
+                }
             }
         }
 
@@ -292,11 +333,11 @@ namespace XNALibrary
         {
             // Create bounding box for this block.
             // All outdoor blocks are initialised to 4096x1024x4096.
-            // Blocks are actually laid out on a 2D grid in X-Z space of 4096x4096, so
-            // only height is arbitrary. You can adjust height later using actual model heights
-            // after loading resources.
+            // Blocks are laid out on a 2D grid in X-Z dimensions of 4096x4096 per block,
+            // so only height is arbitrary. You can adjust height later using actual model
+            // heights after loading resources.
             Vector3 blockMin = new Vector3(0, 0, -4096);
-            Vector3 blockMax = new Vector3(4096, 1024, 0);
+            Vector3 blockMax = new Vector3(4096, 512, 0);
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
             // Create model volume list with a starting capacity equal to subrecord count.
@@ -328,12 +369,12 @@ namespace XNALibrary
                     objMatrix *= rotation;
                     objMatrix *= translation;
 
-                    // Create model volume. This is initialised to 10x10x10.
+                    // Create stub of model volume. This is initialised to an arbitrary size.
                     // You will need to adjust dimensions later once resources are loaded.
                     // The stored matrix can be used to transform model and bounding box.
                     ModelVolume modelVolume = new ModelVolume();
                     modelVolume.ModelId = obj.ModelIdNum;
-                    modelVolume.BoundingBox = new BoundingBox(new Vector3(0, -1024, 0), new Vector3(512, 0, 512));
+                    modelVolume.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
                     modelVolume.Matrix = objMatrix * subRecordMatrix;
                     block.ModelVolumes.Add(modelVolume);
                 }
@@ -381,76 +422,10 @@ namespace XNALibrary
 
         #region Ground Plane Methods
 
-        /*
-        /// <summary>
-        /// Build a texture atlas for each ground texture of the current terrain type.
-        /// </summary>
-        private void BuildGroundTextureAtlas()
+        private void AddGroundTile(ref TextureManager textureManager, ref VertexPositionNormalTexture[] vertices, int x, int y, int record, bool isRotated, bool isFlipped)
         {
-            // Create byte array for texture atlas.
-            // The size is 512x512 with 4 bytes per pixel (thus 1048576 bytes total, or exactly 1MB).
-            int width = 512, height = 512;
-            byte[] atlas = new byte[(width * height) * 4];
-
-            // Load all ground tile textures into atlas array
-            int xpos = 0, ypos = 0;
-            string filename = mapReader.GetTerrainFileName(terrainBase);
-            DFImageFile imageFile = meshManager.TextureManager.ImageFileReader.LoadFile(filename);
-            for (int r = 0; r < imageFile.RecordCount; r++)
-            {
-                DFBitmap dfBitmap = imageFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
-                int pos = (ypos * (width * dfBitmap.Stride)) + (xpos * dfBitmap.Stride);
-                for (int y = 0; y < dfBitmap.Height; y++)
-                {
-                    Buffer.BlockCopy(dfBitmap.Data,
-                        y * dfBitmap.Stride,
-                        atlas,
-                        pos + (y * (width * 4)),
-                        dfBitmap.Stride);
-                }
-
-                // Increment position for next texture
-                xpos++;
-                if (xpos == 8)
-                {
-                    xpos = 0;
-                    ypos++;
-                }
-            }
-
-            // Create XNA texture from atlas array
-            groundTextureAtlas = new Texture2D(graphicsDevice, 512, 512, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            groundTextureAtlas.SetData<byte>(atlas);
-        }
-        */
-
-        /*
-        private void BuildRmbGroundPlane(ref Block block)
-        {
-            // Create vertex list for ground plane.
-            // A ground plane consists of 16x16 tiled squares.
-            // There are a full 6 vertices per square (3 per triangle).
-            // We're doing this so we can just send the whole ground plane to renderer in one call.
-            block.groundPlaneVertices = new VertexPositionNormalTexture[(16 * 16) * 6];
-
-            // Add tiles to the ground plane. Source tiles are stored from bottom to top, then right to left.
-            // This must be accounted for when laying out tiles.
-            const int tileCount = 16;
-            DFBlock.RmbGroundTiles tile;
-            for (int x = 0; x < tileCount; x++)
-            {
-                for (int y = tileCount - 1; y >= 0; y--)
-                {
-                    tile = block.dfBlock.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
-                    AddGroundTile(ref block.groundPlaneVertices, x, y, tile.TextureRecord, tile.IsRotated, tile.IsFlipped);
-                }
-            }
-        }
-        */
-
-        /*
-        private void AddGroundTile(ref VertexPositionNormalTexture[] vertices, int x, int y, int record, bool isRotated, bool isFlipped)
-        {
+            // Each block ground plane is made of 16x16 tiles.
+            // Each tile is 256x256 world units.
             const float side = 256.0f;
 
             // Handle record > 55. This indicates that random terrain should be used outside
@@ -458,15 +433,12 @@ namespace XNALibrary
             if (record > 55)
                 record = 1;
 
-            // Calculate atlas texture position from 0.0 to 1.0.
-            // Atlas texture is 512x512 pixels with 8x7 rows of tiles.
-            // Each tile is 64x64 pixels.
-            int row = record / 8;
-            int col = record - (row * 8);
-            float top = (row * 64) / 512.0f;
-            float left = (col * 64) / 512.0f;
-            float bottom = top + 0.125f;
-            float right = left + 0.125f;
+            // Get subtexture
+            RectangleF rect = textureManager.GetTerrainSubTextureRect(record);
+            float top = rect.Top;
+            float left = rect.Left;
+            float bottom = rect.Bottom;
+            float right = rect.Right;
 
             // Slightly shrink texture area to avoid filter overlap with adjacent textures in atlas
             top += 0.01f;
@@ -562,7 +534,6 @@ namespace XNALibrary
             vertices[index + 4] = point3;
             vertices[index + 5] = point2;
         }
-        */
 
         #endregion
     }
