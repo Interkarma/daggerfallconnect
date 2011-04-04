@@ -25,7 +25,8 @@ namespace XNALibrary
 
     /// <summary>
     /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will stub model id
-    ///  and bounding boxes, but does not load model data or textures.
+    ///  and bounding boxes, but does not load model data or textures. All blocks are cached to
+    ///  minimise reloading data.
     /// </summary>
     public class BlockManager
     {
@@ -40,7 +41,7 @@ namespace XNALibrary
         #region Class Structures
 
         /// <summary>
-        /// Describes a block layout as ground plane and list of models. Models are represented by bounding
+        /// Describes block layout as a ground plane and list of models. Models are represented by bounding
         ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
         ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
@@ -49,7 +50,7 @@ namespace XNALibrary
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
 
-            /// <summary>Bounding volume of this block.</summary>
+            /// <summary>Bounding volume of this block in local space.</summary>
             public BoundingBox BoundingBox;
 
             /// <summary>Vertices of ground plane.</summary>
@@ -67,10 +68,10 @@ namespace XNALibrary
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
 
-            /// <summary>Transform to apply to model and bounding box.</summary>
+            /// <summary>Local transform to model and bounding box.</summary>
             public Matrix Matrix;
 
-            /// <summary>Bounding volume of this model.</summary>
+            /// <summary>Bounding volume of this model in local space.</summary>
             public BoundingBox BoundingBox;
         }
 
@@ -117,8 +118,7 @@ namespace XNALibrary
             if (!blockDictionary.ContainsKey(name))
             {
                 // Load block if not already loaded
-                int index = blocksFile.GetBlockIndex(name);
-                return LoadBlockData(index);
+                return LoadBlockData(name);
             }
             else
             {
@@ -137,7 +137,7 @@ namespace XNALibrary
             if (!blockDictionary.ContainsKey(name))
             {
                 // Load block if not already loaded
-                return LoadBlockData(index);
+                return LoadBlockData(name);
             }
             else
             {
@@ -304,10 +304,10 @@ namespace XNALibrary
 
         #region Content Loading Methods
 
-        private Block LoadBlockData(int index)
+        private Block LoadBlockData(string name)
         {
             // Get block data
-            DFBlock dfBlock = blocksFile.GetBlock(index);
+            DFBlock dfBlock = blocksFile.GetBlock(name);
 
             // Create new local block instance
             Block block = new Block();

@@ -467,6 +467,72 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region View Methods
+
+        /// <summary>
+        /// Browse all Daggerfall's models as thumbnails.
+        /// </summary>
+        public void ShowAllThumbnails()
+        {
+            // Not implemented
+        }
+
+        /// <summary>
+        /// Shows a list of thumbnails.
+        /// </summary>
+        public void ShowThumbnailsList()
+        {
+            // Not implemented
+        }
+
+        /// <summary>
+        /// Shows a single model.
+        /// </summary>
+        /// <param name="modelId">Model ID.</param>
+        public void ShowModel(int modelId)
+        {
+            // Not implemented
+        }
+
+        /// <summary>
+        /// Shows a single block.
+        /// </summary>
+        /// <param name="name">Block name.</param>
+        public void ShowBlock(string name)
+        {
+            // Not implemented
+        }
+
+        /// <summary>
+        /// Shows location exterior blocks.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        public void ShowLocationExterior(DFLocation dfLocation)
+        {
+            // Set location in view
+            LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
+            locationView.SetLocation(ref dfLocation);
+        }
+
+        /// <summary>
+        /// Shows location dungeon blocks.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        public void ShowLocationDungeon(DFLocation dfLocation)
+        {
+            // Not implemented
+        }
+
+        /// <summary>
+        /// Centres location view on a specific block.
+        /// </summary>
+        public void CentreOnBlock()
+        {
+            // Not implemented
+        }
+
+        #endregion
+
         #region Private Methods
 
         /// <summary>

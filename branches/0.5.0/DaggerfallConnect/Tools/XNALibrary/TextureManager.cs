@@ -445,7 +445,7 @@ namespace XNALibrary
             terrainAtlas.SetData<byte>(ap.buffer);
 
             // TEST: Save texture for review
-            //terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
+            terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
 
             return true;
         }

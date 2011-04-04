@@ -109,6 +109,7 @@ namespace DaggerfallModelling
             DFRegion region = mapsFile.GetRegion(regionIndex);
             int locationIndex = region.MapNameLookup["Wayrest"];
             AutoMapViewer.ShowLocation(regionIndex, locationIndex);
+            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
         }
 
         private void BrowseArena2Path()
@@ -239,6 +240,7 @@ namespace DaggerfallModelling
                         {
                             KeyToRegionLocation(key, out region, out location);
                             AutoMapViewer.ShowLocation(region, location);
+                            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
                             return;
                         }
                         break;

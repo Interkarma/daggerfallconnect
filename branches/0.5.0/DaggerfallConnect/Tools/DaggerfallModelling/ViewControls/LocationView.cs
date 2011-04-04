@@ -32,6 +32,10 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        // Block layout
+        Dictionary<int, BlockPosition> exteriorLayout = new Dictionary<int,BlockPosition>();
+        Dictionary<int, BlockPosition> dungeonLayout = new Dictionary<int, BlockPosition>();
+
         // Appearance
         private Color backgroundColor = Color.LightGray;
 
@@ -43,7 +47,7 @@ namespace DaggerfallModelling.ViewControls
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
         private Matrix worldMatrix;
-        private Vector3 cameraPosition = new Vector3(2048, 1024, 6000);
+        private Vector3 cameraPosition = new Vector3(16384, 1024, -16384);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
@@ -64,6 +68,20 @@ namespace DaggerfallModelling.ViewControls
         public LocationView(ContentViewHost host)
             : base(host)
         {
+        }
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Describes how a block is positioned in world space.
+        /// </summary>
+        private struct BlockPosition
+        {
+            public string name;
+            public Vector3 position;
+            public BlockManager.Block block;
         }
 
         #endregion
@@ -112,21 +130,55 @@ namespace DaggerfallModelling.ViewControls
             // Clear display
             host.GraphicsDevice.Clear(backgroundColor);
 
-            /*
-            // Draw ground plane
-            DrawRmbGroundPlane(ref testBlock, ref modelEffect);
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
-            // Render block bounding box
-            renderableBounds.Draw(testBlock.BoundingBox, viewMatrix, projectionMatrix, worldMatrix);
+            // Set view and projection matrices
+            modelEffect.View = viewMatrix;
+            modelEffect.Projection = projectionMatrix;
 
-            // Render models and bounding boxes
-            foreach (var item in testBlock.Models)
+            // Create bounding frustum
+            BoundingFrustum frustum = new BoundingFrustum(viewMatrix * projectionMatrix);
+
+            // TEST: Draw all block models
+            foreach (var layoutItem in exteriorLayout)
             {
-                ModelManager.Model model = host.ModelManager.GetModel((int)item.ModelId);
-                DrawModel(ref model, item.Matrix);
-                renderableBounds.Draw(model.BoundingBox, viewMatrix, projectionMatrix, item.Matrix * worldMatrix);
+                // Translate block to position
+                Matrix world = Matrix.CreateTranslation(exteriorLayout[layoutItem.Key].position) * worldMatrix;
+
+                // Test block bounding box against frustum
+                BoundingBox testBox = layoutItem.Value.block.BoundingBox;
+                testBox.Min = Vector3.Transform(testBox.Min, world);
+                testBox.Max = Vector3.Transform(testBox.Max, world);
+                if (!testBox.Intersects(frustum))
+                    continue;
+
+                foreach (var modelItem in layoutItem.Value.block.Models)
+                {
+                    modelEffect.World = modelItem.Matrix * world;
+                    ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
+                    DrawModel(ref model);
+                }
             }
-            */
+
+            // Set terrain texture atlas
+            modelEffect.Texture = host.TextureManager.TerrainAtlas;
+           
+            // TEST: Draw all ground planes
+            foreach (var item in exteriorLayout)
+            {
+                // Translate block to position
+                modelEffect.World = Matrix.CreateTranslation(exteriorLayout[item.Key].position) * worldMatrix;
+
+                modelEffect.Begin();
+                modelEffect.CurrentTechnique.Passes[0].Begin();
+
+                // Draw ground plane
+                host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, item.Value.block.GroundPlaneVertices, 0, 512);
+
+                modelEffect.CurrentTechnique.Passes[0].End();
+                modelEffect.End();
+            }
         }
 
         /// <summary>
@@ -192,19 +244,11 @@ namespace DaggerfallModelling.ViewControls
 
         #region Drawing Methods
 
-        private void DrawModel(ref ModelManager.Model model, Matrix matrix)
+        private void DrawModel(ref ModelManager.Model model)
         {
             // Exit if no model loaded
             if (model.Vertices == null)
                 return;
-
-            // Set vertex declaration
-            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
-
-            // Set view and projection matrices
-            modelEffect.View = viewMatrix;
-            modelEffect.Projection = projectionMatrix;
-            modelEffect.World = matrix * worldMatrix;
 
             foreach (var submesh in model.SubMeshes)
             {
@@ -222,48 +266,91 @@ namespace DaggerfallModelling.ViewControls
             }
         }
 
-        private void DrawRmbGroundPlane(ref BlockManager.Block block, ref BasicEffect effect)
+        #endregion
+
+        #region Content Loading
+
+        /// <summary>
+        /// Sets location currently in view.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        public void SetLocation(ref DFLocation dfLocation)
         {
-            // Build ground plane if not already built
-            if (block.GroundPlaneVertices == null)
-                host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref block);
+            // Build exterior layout
+            BuildExteriorLayout(ref dfLocation);
 
-            // Set vertex declaration
-            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+            // Optionally build dungeon layout
+            if (dfLocation.HasDungeon)
+                BuildDungeonLayout(ref dfLocation);
 
-            // Set view and projection matrices
-            modelEffect.View = viewMatrix;
-            modelEffect.Projection = projectionMatrix;
-            modelEffect.World = worldMatrix;
+            // Set climate for texture swaps
+            //host.TextureManager.Climate = dfLocation.Climate;
+        }
 
-            // Set test texture
-            effect.Texture = host.TextureManager.TerrainAtlas;
+        #endregion
 
-            effect.Begin();
-            effect.CurrentTechnique.Passes[0].Begin();
+        #region Private Methods
 
-            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, block.GroundPlaneVertices, 0, 512);
+        private void BuildExteriorLayout(ref DFLocation dfLocation)
+        {
+            // All exterior blocks are 4096x4096 in X-Z space.
+            const float blockSide = 4096.0f;
 
-            effect.CurrentTechnique.Passes[0].End();
-            effect.End();
+            // Get dimensions of exterior location array
+            int width = dfLocation.Exterior.ExteriorData.Width;
+            int height = dfLocation.Exterior.ExteriorData.Height;
+
+            // Create exterior layout
+            exteriorLayout = new Dictionary<int, BlockPosition>(width * height);
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Get block key and name
+                    int key = GetBlockKey(x, y);
+                    string name = host.BlockManager.BlocksFile.CheckName(host.MapsFile.GetRmbBlockName(ref dfLocation, x, y));
+
+                    // Create block position data
+                    BlockPosition blockPosition = new BlockPosition();
+                    blockPosition.name = name;
+                    blockPosition.block = host.BlockManager.LoadBlock(name);
+                    
+                    // Set block position
+                    blockPosition.position = new Vector3(x * blockSide, 0, -(y * blockSide));
+
+                    // Build ground plane
+                    host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
+
+                    // Load block models and textures
+                    LoadBlockResources(ref blockPosition.block);
+
+                    // Add to layout dictionary
+                    exteriorLayout.Add(key, blockPosition);
+                }
+            }
+        }
+
+        private void BuildDungeonLayout(ref DFLocation dfLocation)
+        {
+        }
+
+        private int GetBlockKey(int x, int y)
+        {
+            return y * 100 + x;
         }
 
         #endregion
 
         #region Block Management
 
-        /*
-        private void LoadTestBlock(string name)
+        private void LoadBlockResources(ref BlockManager.Block block)
         {
-            // Load block
-            testBlock = host.BlockManager.LoadBlock(name);
-
             // Load block models
             float maxHeight = 0;
-            for (int i = 0; i < testBlock.Models.Count; i++)
+            for (int i = 0; i < block.Models.Count; i++)
             {
                 // Get model info
-                BlockManager.ModelInfo info = testBlock.Models[i];
+                BlockManager.ModelInfo info = block.Models[i];
 
                 // Load model resource
                 ModelManager.Model model;
@@ -286,17 +373,16 @@ namespace DaggerfallModelling.ViewControls
                     maxHeight = height;
 
                 // Set model info
-                testBlock.Models[i] = info;
+                block.Models[i] = info;
             }
 
             // Save correct max height in block
             Vector3 max = new Vector3(
-                testBlock.BoundingBox.Max.X,
+                block.BoundingBox.Max.X,
                 maxHeight,
-                testBlock.BoundingBox.Max.Z);
-            testBlock.BoundingBox.Max = max;
+                block.BoundingBox.Max.Z);
+            block.BoundingBox.Max = max;
         }
-        */
 
         #endregion
 
@@ -319,9 +405,6 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
         }
 
-        #endregion
-
-        #region Map Management
         #endregion
 
     }

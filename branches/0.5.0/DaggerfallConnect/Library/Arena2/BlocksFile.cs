@@ -367,6 +367,25 @@ namespace DaggerfallConnect.Arena2
             return dfBitmap;
         }
 
+        /// <summary>
+        /// Checks block name and substitutes fixed name if possible.
+        /// </summary>
+        /// <param name="Name">Block name.</param>
+        /// <returns>Block name or String.Empty if no fix possible.</returns>
+        public string CheckName(string Name)
+        {
+            // Check name resolves to valid index
+            int index = GetBlockIndex(Name);
+            if (index == -1)
+            {
+                // Name not found, search for alternate name
+                string alternateName = SearchAlternateRMBName(ref Name);
+                return alternateName;
+            }
+
+            return Name;
+        }
+
         #endregion
 
         #region Private Methods

@@ -741,7 +741,7 @@ namespace DaggerfallModelling.ViewControls
                     exteriorLayout[index].x = x;
                     exteriorLayout[index].y = y;
                     exteriorLayout[index].rect = new Rectangle(xpos, ypos, blockSize.Width, blockSize.Height);
-                    exteriorLayout[index].name = mapsFile.GetRmbBlockName(ref dfLocation, x, y);
+                    exteriorLayout[index].name = blocksFile.CheckName(mapsFile.GetRmbBlockName(ref dfLocation, x, y));
                     exteriorLayout[index].blocktype = DFBlock.BlockTypes.Rmb;
                     exteriorLayout[index].rdbType = DFBlock.RdbTypes.Unknown;
                     xpos += blockSize.Width;
@@ -761,6 +761,7 @@ namespace DaggerfallModelling.ViewControls
             dfManualImage.Palette.MakeAutomap();
             foreach (var layout in exteriorLayout)
             {
+                // Get block automap image
                 dfManualImage.DFBitmap = blocksFile.GetBlockAutoMap(layout.name, true);
                 Bitmap bm = dfManualImage.GetManagedBitmap(0, 0, false, true);
 
