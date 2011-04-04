@@ -43,20 +43,24 @@ namespace DaggerfallModelling.ViewControls
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
         private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 50000.0f;
+        private float farPlaneDistance = 40000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
         private Matrix worldMatrix;
-        private Vector3 cameraPosition = new Vector3(16384, 1024, -16384);
+        private BoundingFrustum viewFrustum;
+        private Vector3 cameraPosition = new Vector3(0, 1000, 0);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
+        private float cameraYaw = 0.0f;
+        private float cameraPitch = 0.0f;
+        private Vector3 movement;
 
         // Drawing
         RenderableBoundingBox renderableBounds;
 
         // Movement
-        float rotationStep = 0.005f;
-        float translationStep = 2500.0f;
+        float rotationStep = 10.0f;
+        float translationStep = 200.0f;
 
         #endregion
 
@@ -111,6 +115,9 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
             worldMatrix = Matrix.Identity;
 
+            // Create initial view frustum
+            viewFrustum = new BoundingFrustum(viewMatrix * projectionMatrix);
+
             // Setup bounding box renderer
             renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
         }
@@ -137,47 +144,34 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.View = viewMatrix;
             modelEffect.Projection = projectionMatrix;
 
-            // Create bounding frustum
-            BoundingFrustum frustum = new BoundingFrustum(viewMatrix * projectionMatrix);
+            // Update frustum matrix
+            viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
-            // TEST: Draw all block models
+            // Draw visible blocks
             foreach (var layoutItem in exteriorLayout)
             {
-                // Translate block to position
-                Matrix world = Matrix.CreateTranslation(exteriorLayout[layoutItem.Key].position) * worldMatrix;
+                // Create translation matrix for this block
+                Matrix world = Matrix.CreateTranslation(exteriorLayout[layoutItem.Key].position);
+
+                // Create transformed block bounding box
+                BoundingBox blockBox = new BoundingBox(
+                    Vector3.Transform(layoutItem.Value.block.BoundingBox.Min, world),
+                    Vector3.Transform(layoutItem.Value.block.BoundingBox.Max, world));
 
                 // Test block bounding box against frustum
-                BoundingBox testBox = layoutItem.Value.block.BoundingBox;
-                testBox.Min = Vector3.Transform(testBox.Min, world);
-                testBox.Max = Vector3.Transform(testBox.Max, world);
-                if (!testBox.Intersects(frustum))
+                if (!viewFrustum.Intersects(blockBox))
                     continue;
 
+                // Draw each model in this block
                 foreach (var modelItem in layoutItem.Value.block.Models)
                 {
                     modelEffect.World = modelItem.Matrix * world;
-                    ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
-                    DrawModel(ref model);
+                    DrawModel((int)modelItem.ModelId);
                 }
-            }
 
-            // Set terrain texture atlas
-            modelEffect.Texture = host.TextureManager.TerrainAtlas;
-           
-            // TEST: Draw all ground planes
-            foreach (var item in exteriorLayout)
-            {
-                // Translate block to position
-                modelEffect.World = Matrix.CreateTranslation(exteriorLayout[item.Key].position) * worldMatrix;
-
-                modelEffect.Begin();
-                modelEffect.CurrentTechnique.Passes[0].Begin();
-
-                // Draw ground plane
-                host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, item.Value.block.GroundPlaneVertices, 0, 512);
-
-                modelEffect.CurrentTechnique.Passes[0].End();
-                modelEffect.End();
+                // Draw gound plane in this block
+                modelEffect.World = world;
+                DrawGroundPlane(layoutItem.Key);
             }
         }
 
@@ -204,14 +198,39 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
+            movement = Vector3.Zero;
+
+            // Change camera facing or position based on mouse button down
             if (host.LeftMouseDown)
             {
-                float amountX = (MathHelper.ToDegrees(host.MousePosDelta.X) * rotationStep) * host.TimeDelta;
-                float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) * rotationStep) * host.TimeDelta;
-                Matrix x = Matrix.CreateRotationX(amountY);
-                Matrix y = Matrix.CreateRotationY(amountX);
-                worldMatrix *= (x * y);
+                // Update yaw and pitch
+                cameraYaw += (-host.MousePosDelta.X * rotationStep) * host.TimeDelta;
+                cameraPitch += (-host.MousePosDelta.Y * rotationStep) * host.TimeDelta;
             }
+            else if (host.RightMouseDown)
+            {
+                // Update movement
+                movement.Z += (-host.MousePosDelta.Y * translationStep) * host.TimeDelta;
+            }
+
+            // Create rotation matrix from yaw and pitch
+            Matrix rotation;
+            Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
+            rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
+
+            // Adjust position
+            if (movement != Vector3.Zero)
+            {
+                Vector3.Transform(ref movement, ref rotation, out movement);
+                cameraPosition -= (movement * translationStep) * host.TimeDelta;
+            }
+
+            // Transform camera
+            Vector3 transformedReference;
+            Vector3.Transform(ref cameraReference, ref rotation, out transformedReference);
+            Vector3 cameraTarget;
+            Vector3.Add(ref cameraPosition, ref transformedReference, out cameraTarget);
+            Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
         }
 
         /// <summary>
@@ -220,8 +239,6 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
-            float amount = (((float)e.Delta / 120.0f) * translationStep) * host.TimeDelta;
-            TranslateCamera(0, 0, -amount);
         }
 
         /// <summary>
@@ -244,8 +261,11 @@ namespace DaggerfallModelling.ViewControls
 
         #region Drawing Methods
 
-        private void DrawModel(ref ModelManager.Model model)
+        private void DrawModel(int key)
         {
+            // Get model
+            ModelManager.Model model = host.ModelManager.GetModel(key);
+
             // Exit if no model loaded
             if (model.Vertices == null)
                 return;
@@ -264,6 +284,21 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
             }
+        }
+
+        private void DrawGroundPlane(int key)
+        {
+            // Set terrain texture atlas
+            modelEffect.Texture = host.TextureManager.TerrainAtlas;
+
+            modelEffect.Begin();
+            modelEffect.CurrentTechnique.Passes[0].Begin();
+
+            // Draw ground plane
+            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, exteriorLayout[key].block.GroundPlaneVertices, 0, 512);
+
+            modelEffect.CurrentTechnique.Passes[0].End();
+            modelEffect.End();
         }
 
         #endregion
