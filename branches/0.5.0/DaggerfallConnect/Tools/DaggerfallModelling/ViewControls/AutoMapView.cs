@@ -31,22 +31,25 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        // Connect objects
         private BlocksFile blocksFile;
         private MapsFile mapsFile;
         private DFLocation dfLocation;
 
+        // Layouts
         private BlockLayout[] exteriorLayout;
         private BlockLayout[] dungeonLayout;
         private Bitmap exteriorLayoutBitmap;
         private Bitmap dungeonLayoutBitmap;
-
         private Point mapOffset;
 
+        // Modes
         private bool exteriorModeAllowed = false;
         private bool dungeonModeAllowed = false;
         private ViewModes viewMode = ViewModes.None;
         private ViewModes userPreferredViewMode = ViewModes.None;
 
+        // Mouse
         Point mousePos;
         int mouseOverBlock = -1;
         int selectedExteriorBlock = -1;
@@ -67,13 +70,22 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Structures
 
+        /// <summary>
+        /// View modes supported by control.
+        /// </summary>
         public enum ViewModes
         {
+            /// <summary>No view mode set.</summary>
             None,
+            /// <summary>Viewing exterior layout.</summary>
             Exterior,
+            /// <summary>Viewing dungeon layout.</summary>
             Dungeon,
         }
 
+        /// <summary>
+        /// Block layout of location.
+        /// </summary>
         private struct BlockLayout
         {
             public int x;
@@ -88,21 +100,38 @@ namespace DaggerfallModelling.ViewControls
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets or sets the MapsFile object for map operations.
+        /// </summary>
         public MapsFile MapsFile
         {
             get { return mapsFile; }
             set { mapsFile = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the BlocksFile object for block operations.
+        /// </summary>
         public BlocksFile BlocksFile
         {
             get { return blocksFile; }
             set { blocksFile = value; }
         }
 
+        /// <summary>
+        /// Gets the current view mode.
+        /// </summary>
         public ViewModes ViewMode
         {
             get { return viewMode; }
+        }
+
+        /// <summary>
+        /// Gets the current DFLocation loaded in the view.
+        /// </summary>
+        public DFLocation DFLocation
+        {
+            get { return dfLocation; }
         }
 
         #endregion

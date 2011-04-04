@@ -93,7 +93,7 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
 
             // TEST: Load a model
-            LoadModel(456);
+            //LoadModel(456);
             //LoadModel(43111);
         }
 
@@ -184,6 +184,10 @@ namespace DaggerfallModelling.ViewControls
 
         private void DrawSingleModel()
         {
+            // Exit if no model loaded
+            if (model.Vertices == null)
+                return;
+
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
@@ -232,7 +236,7 @@ namespace DaggerfallModelling.ViewControls
                 model.SubMeshes[sm].TextureKey =
                     host.TextureManager.LoadTexture(
                     model.SubMeshes[sm].TextureArchive,
-                    model.SubMeshes[sm].TextureRecord, 0);
+                    model.SubMeshes[sm].TextureRecord);
             }
 
             // Centre model

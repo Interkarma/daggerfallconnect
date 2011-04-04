@@ -404,7 +404,7 @@ namespace DaggerfallModelling.ViewControls
                     thumb.model.SubMeshes[sm].TextureKey =
                         host.TextureManager.LoadTexture(
                         thumb.model.SubMeshes[sm].TextureArchive,
-                        thumb.model.SubMeshes[sm].TextureRecord, 0);
+                        thumb.model.SubMeshes[sm].TextureRecord);
                 }
 
                 // Centre model

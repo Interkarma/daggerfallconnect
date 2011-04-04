@@ -291,18 +291,6 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
-        /// Returns a TEXTURE.nnn filename based on index.
-        ///  This is needed when loading textures for 3D objects that reference textures by index rather than filename.
-        ///  If the index is not valid, the returned filename will also be invalid.
-        /// </summary>
-        /// <param name="ArchiveIndex">Index of texture archive.</param>
-        /// <returns>Texture filename in the format TEXTURE.nnn.</returns>
-        static public string IndexToFileName(int ArchiveIndex)
-        {
-            return string.Format("TEXTURE.{0:000}", ArchiveIndex);
-        }
-
-        /// <summary>
         /// Gets number of frames in specified record.
         /// </summary>
         /// <param name="Record">Index of record.</param>
@@ -483,6 +471,22 @@ namespace DaggerfallConnect.Arena2
             return preview;
         }
 
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Returns a TEXTURE.nnn filename based on index.
+        ///  This is needed when loading textures for 3D objects that reference textures by index rather than filename.
+        ///  If the index is not valid, the returned filename will also be invalid.
+        /// </summary>
+        /// <param name="ArchiveIndex">Index of texture archive.</param>
+        /// <returns>Texture filename in the format TEXTURE.nnn.</returns>
+        public static string IndexToFileName(int ArchiveIndex)
+        {
+            return string.Format("TEXTURE.{0:000}", ArchiveIndex);
+        }
+
         /// <summary>
         /// Gets size of an unloaded texture quickly with minimum overhead.
         ///  This is useful for mesh loading where the texture dimensions need to be known,
@@ -498,7 +502,7 @@ namespace DaggerfallConnect.Arena2
             {
                 fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 return new Size(0, 0);

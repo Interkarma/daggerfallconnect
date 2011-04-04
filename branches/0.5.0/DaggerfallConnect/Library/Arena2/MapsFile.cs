@@ -89,6 +89,16 @@ namespace DaggerfallConnect.Arena2
         private RegionRecord[] Regions;
 
         /// <summary>
+        /// Climate PAK file.
+        /// </summary>
+        private PakFile ClimatePak;
+
+        /// <summary>
+        /// Politic PAK file.
+        /// </summary>
+        private PakFile PoliticPak;
+
+        /// <summary>
         /// Flag set when class is loaded and ready.
         /// </summary>
         private bool IsReady = false;
@@ -197,6 +207,11 @@ namespace DaggerfallConnect.Arena2
             FilePath = FilePath.ToUpper();
             if (!FilePath.EndsWith("MAPS.BSA"))
                 return false;
+
+            // Load PAK files
+            string arena2Path = Path.GetDirectoryName(FilePath);
+            ClimatePak = new PakFile(Path.Combine(arena2Path, "CLIMATE.PAK"));
+            PoliticPak = new PakFile(Path.Combine(arena2Path, "POLITIC.PAK"));
 
             // Load file
             IsReady = false;
@@ -517,6 +532,9 @@ namespace DaggerfallConnect.Arena2
 
                 // Copy RegionMapTable data to this location
                 dfLocation.MapTableData = Regions[Region].DFRegion.MapTable[Location];
+
+                // Read climate and politic data
+                ReadClimatePoliticData(ref dfLocation);
             }
             catch (Exception e)
             {
@@ -525,6 +543,71 @@ namespace DaggerfallConnect.Arena2
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Reads climate information from ClimatePak.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        private void ReadClimatePoliticData(ref DFLocation dfLocation)
+        {
+            // Get world map coordinates. As usual Daggerfall's vertical origin
+            // is at the bottom. We need to invert Y as our origin is at the top.
+            // Coordinates also appear to be -1 of actual location on world map.
+            // Adjusting to correct location by adding +1 to X and Y.
+            int x = (int)dfLocation.MapTableData.Longitude / 128 + 1;
+            int y = 499 - (int)dfLocation.MapTableData.Latitude / 128 + 1;
+
+            // Read politic data. This should always equal region index + 128.
+            dfLocation.Politic = PoliticPak.GetValue(x, y);
+
+            // Read climate data
+            int climate = ClimatePak.GetValue(x, y);
+            switch (climate)
+            {
+                case 223:
+                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
+                    dfLocation.GroundFlatsArchive = 502;
+                    break;
+                case 224:
+                    dfLocation.Climate = DFLocation.ClimateType.Desert;
+                    dfLocation.GroundFlatsArchive = 503;
+                    break;
+                case 225:
+                    dfLocation.Climate = DFLocation.ClimateType.Desert;
+                    dfLocation.GroundFlatsArchive = 503;
+                    break;
+                case 226:
+                    dfLocation.Climate = DFLocation.ClimateType.Mountain;
+                    dfLocation.GroundFlatsArchive = 510;
+                    break;
+                case 227:
+                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
+                    dfLocation.GroundFlatsArchive = 500;
+                    break;
+                case 228:
+                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
+                    dfLocation.GroundFlatsArchive = 502;
+                    break;
+                case 229:
+                    dfLocation.Climate = DFLocation.ClimateType.Desert;
+                    dfLocation.GroundFlatsArchive = 503;
+                    break;
+                case 230:
+                    dfLocation.Climate = DFLocation.ClimateType.Mountain;
+                    dfLocation.GroundFlatsArchive = 504;
+                    break;
+                case 231:
+                    dfLocation.Climate = DFLocation.ClimateType.Temperate;
+                    dfLocation.GroundFlatsArchive = 508;
+                    break;
+                case 232:
+                    dfLocation.Climate = DFLocation.ClimateType.Temperate;
+                    dfLocation.GroundFlatsArchive = 508;
+                    break;
+                default:
+                    throw new Exception("Unknown climate type encountered.");
+            }
         }
 
         /// <summary>

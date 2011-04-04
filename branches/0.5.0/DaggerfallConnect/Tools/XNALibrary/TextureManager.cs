@@ -68,6 +68,18 @@ namespace XNALibrary
         #region Class Structures
 
         /// <summary>
+        /// Stores a Texture2D resource along with information
+        /// need for texture swaps.
+        /// </summary>
+        private struct DFTexture
+        {
+            public Texture2D texture;
+            public ClimateSet set;
+            public bool winterValid;
+            public bool rainValid;
+        }
+
+        /// <summary>
         /// Parameters of climate atlas during build.
         /// </summary>
         private struct AtlasParams
@@ -154,7 +166,7 @@ namespace XNALibrary
             terrainAtlasDict = new Dictionary<int, RectangleF>();
 
             // Set default climate
-            SetClimate(ClimateType.None, ClimateWeather.Normal);
+            SetClimate(climateType, climateWeather);
         }
 
         #endregion
@@ -178,24 +190,37 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Loads a texture based on indices.
+        /// Loads a texture based on indices. Only first frame of animated textures
+        ///  will be loaded, as animated textures are not supported at this time.
+        ///  If a ClimateType is set, and the specified texture archive is climate-
+        ///  specific, the appropriate climate and weather texture will be loaded instead.
+        ///  The key will be the same no matter the climate or weather, allowing you to
+        ///  perform swaps without needing to rebuild texture keys on model submeshes.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        public int LoadTexture(int archive, int record, int frame)
+        public int LoadTexture(int archive, int record)
         {
             // Just return key if already in dictionary
-            int key = GetTextureKey(archive, record, frame);
+            int key = GetTextureKey(archive, record, 0);
             if (texturesDict.ContainsKey(key))
                 return key;
 
             // Load texture file
-            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+            if (climateType == ClimateType.None)
+            {
+                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+            }
+            else
+            {
+                int climateArchive = GetClimateArchive(archive);
+                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(climateArchive)), FileUsage.UseDisk, true);
+            }
 
             // Get DF texture in ARGB format so we can just SetData the byte array into XNA
-            DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.ARGB);
+            DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
 
             // Create XNA texture
             Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
@@ -266,21 +291,123 @@ namespace XNALibrary
             return (int)set * 10000 + (int)weather * 100 + record;
         }
 
+        #endregion
+
+        #region Climate Swaps
+
         /// <summary>
-        /// Sets climate type to use for texture swaps.
+        /// Sets climate and weather type to use for texture swaps.
         /// </summary>
         /// <param name="climate">Climate type.</param>
+        /// <param name="weather">Weather type.</param>
         private void SetClimate(ClimateType climate, ClimateWeather weather)
         {
-            // Load terrain atlas, using temperate when none specified
+            // Load new terrain atlas, using temperate when none specified
             if (climate == ClimateType.None)
                 BuildTerrainAtlas(ClimateType.Temperate, weather);
             else
                 BuildTerrainAtlas(climate, weather);
 
+            // TODO: Modify loaded textures to new archive
+
             // Store new climate settings
             this.climateType = climate;
             this.climateWeather = weather;
+        }
+
+        /// <summary>
+        /// Modifies archive index to suit current climate and weather settings.
+        ///  Only valid archive swaps are performed.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <returns>Modified archive index.</returns>
+        private int GetClimateArchive(int archive)
+        {
+            // Get climate set
+            int newArchive = archive;
+            bool winterValid = false;
+            bool rainValid = false;
+            ClimateSet set = (ClimateSet)(archive - (archive / 100) * 100);
+            switch (set)
+            {
+                //
+                // Terrain sets
+                //
+                case ClimateSet.Exterior_Terrain:
+                    winterValid = true;
+                    rainValid = true;
+                    break;
+
+                //
+                // Exterior sets
+                //
+                case ClimateSet.Exterior_Castle:
+                case ClimateSet.Exterior_CityA:
+                case ClimateSet.Exterior_CityB:
+                case ClimateSet.Exterior_CityWalls:
+                case ClimateSet.Exterior_Farm:
+                case ClimateSet.Exterior_Fences:
+                case ClimateSet.Exterior_MagesGuild:
+                case ClimateSet.Exterior_Manor:
+                case ClimateSet.Exterior_MerchantHomes:
+                case ClimateSet.Exterior_Roofs:
+                case ClimateSet.Exterior_Ruins:
+                case ClimateSet.Exterior_TavernExteriors:
+                case ClimateSet.Exterior_TempleExteriors:
+                case ClimateSet.Exterior_Village:
+                    winterValid = true;
+                    break;
+
+                //
+                // Interior sets
+                //
+                case ClimateSet.Interior_Caves:
+                case ClimateSet.Interior_CityInt:
+                case ClimateSet.Interior_CryptA:
+                case ClimateSet.Interior_CryptB:
+                case ClimateSet.Interior_Doors:
+                case ClimateSet.Interior_DungeonsA:
+                case ClimateSet.Interior_DungeonsB:
+                case ClimateSet.Interior_DungeonsC:
+                case ClimateSet.Interior_DungeonsNEWCs:
+                case ClimateSet.Interior_FarmInt:
+                case ClimateSet.Interior_MagesGuildInt:
+                case ClimateSet.Interior_ManorInt:
+                case ClimateSet.Interior_MarbleFloors:
+                case ClimateSet.Interior_MerchantHomesInt:
+                case ClimateSet.Interior_Mines:
+                case ClimateSet.Interior_Paintings:
+                case ClimateSet.Interior_PalaceInt:
+                case ClimateSet.Interior_Sewer:
+                case ClimateSet.Interior_TavernInt:
+                case ClimateSet.Interior_TempleInt:
+                case ClimateSet.Interior_VillageInt:
+                    break;
+
+                default:
+                    return archive;     // Not a valid set, just return unmodified.
+            }
+
+            // We now know the set is a valid type and which weather combinations are valid.
+            // Start by getting the base archive + set.
+            newArchive = (int)climateType + (int)set;
+
+            // Adjust for weather. Nothing to do for normal weather.
+            switch (climateWeather)
+            {
+                case ClimateWeather.Winter:
+                    if (winterValid)
+                        newArchive += 1;        // Winter archive is base + set + 1
+                    break;
+                case ClimateWeather.Rain:
+                    if (rainValid)
+                        newArchive += 2;        // Rain archive is base + set + 2
+                    break;
+                default:
+                    break;
+            }
+
+            return newArchive;
         }
 
         #endregion
@@ -288,7 +415,7 @@ namespace XNALibrary
         #region Atlas Building
 
         /// <summary>
-        /// Builds a texture atlas from terrain ground tiles. This allows the ground plane to be
+        /// Builds a texture atlas from terrain ground tiles. This allows ground planes to be
         ///  drawn in a single batch.
         /// </summary>
         /// <param name="climate">Climate type.</param>

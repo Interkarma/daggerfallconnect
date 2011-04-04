@@ -32,10 +32,6 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
-        // TEST: Testing block drawing
-        BlockManager.Block testBlock;
-        RenderableBoundingBox renderableBounds;
-
         // Appearance
         private Color backgroundColor = Color.LightGray;
 
@@ -46,9 +42,13 @@ namespace DaggerfallModelling.ViewControls
         private float farPlaneDistance = 50000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
+        private Matrix worldMatrix;
         private Vector3 cameraPosition = new Vector3(2048, 1024, 6000);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
+
+        // Drawing
+        RenderableBoundingBox renderableBounds;
 
         // Movement
         float rotationStep = 0.005f;
@@ -91,12 +91,10 @@ namespace DaggerfallModelling.ViewControls
             float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+            worldMatrix = Matrix.Identity;
 
             // Setup bounding box renderer
             renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
-
-            // TEST: Load a block
-            LoadTestBlock("MAGEAA13.RMB");
         }
 
         /// <summary>
@@ -114,14 +112,21 @@ namespace DaggerfallModelling.ViewControls
             // Clear display
             host.GraphicsDevice.Clear(backgroundColor);
 
+            /*
             // Draw ground plane
             DrawRmbGroundPlane(ref testBlock, ref modelEffect);
 
             // Render block bounding box
-            renderableBounds.Draw(testBlock.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
+            renderableBounds.Draw(testBlock.BoundingBox, viewMatrix, projectionMatrix, worldMatrix);
 
-            foreach (var item in testBlock.ModelVolumes)
-                renderableBounds.Draw(item.BoundingBox, viewMatrix, projectionMatrix, item.Matrix * modelEffect.World);
+            // Render models and bounding boxes
+            foreach (var item in testBlock.Models)
+            {
+                ModelManager.Model model = host.ModelManager.GetModel((int)item.ModelId);
+                DrawModel(ref model, item.Matrix);
+                renderableBounds.Draw(model.BoundingBox, viewMatrix, projectionMatrix, item.Matrix * worldMatrix);
+            }
+            */
         }
 
         /// <summary>
@@ -153,7 +158,7 @@ namespace DaggerfallModelling.ViewControls
                 float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) * rotationStep) * host.TimeDelta;
                 Matrix x = Matrix.CreateRotationX(amountY);
                 Matrix y = Matrix.CreateRotationY(amountX);
-                modelEffect.World *= (x * y);
+                worldMatrix *= (x * y);
             }
         }
 
@@ -187,6 +192,36 @@ namespace DaggerfallModelling.ViewControls
 
         #region Drawing Methods
 
+        private void DrawModel(ref ModelManager.Model model, Matrix matrix)
+        {
+            // Exit if no model loaded
+            if (model.Vertices == null)
+                return;
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+
+            // Set view and projection matrices
+            modelEffect.View = viewMatrix;
+            modelEffect.Projection = projectionMatrix;
+            modelEffect.World = matrix * worldMatrix;
+
+            foreach (var submesh in model.SubMeshes)
+            {
+                modelEffect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
+
+                modelEffect.Begin();
+                modelEffect.CurrentTechnique.Passes[0].Begin();
+
+                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+                    model.Vertices, 0, model.Vertices.Length,
+                    submesh.Indices, 0, submesh.Indices.Length / 3);
+
+                modelEffect.CurrentTechnique.Passes[0].End();
+                modelEffect.End();
+            }
+        }
+
         private void DrawRmbGroundPlane(ref BlockManager.Block block, ref BasicEffect effect)
         {
             // Build ground plane if not already built
@@ -199,6 +234,7 @@ namespace DaggerfallModelling.ViewControls
             // Set view and projection matrices
             modelEffect.View = viewMatrix;
             modelEffect.Projection = projectionMatrix;
+            modelEffect.World = worldMatrix;
 
             // Set test texture
             effect.Texture = host.TextureManager.TerrainAtlas;
@@ -216,6 +252,7 @@ namespace DaggerfallModelling.ViewControls
 
         #region Block Management
 
+        /*
         private void LoadTestBlock(string name)
         {
             // Load block
@@ -223,27 +260,33 @@ namespace DaggerfallModelling.ViewControls
 
             // Load block models
             float maxHeight = 0;
-            for (int i = 0; i < testBlock.ModelVolumes.Count; i++)
+            for (int i = 0; i < testBlock.Models.Count; i++)
             {
-                // Get model volume
-                BlockManager.ModelVolume item = testBlock.ModelVolumes[i];
+                // Get model info
+                BlockManager.ModelInfo info = testBlock.Models[i];
 
                 // Load model resource
                 ModelManager.Model model;
-                host.ModelManager.LoadModel((int)item.ModelId, out model);
+                host.ModelManager.LoadModel((int)info.ModelId, out model);
 
-                // TODO: Load texture resources
+                // Load texture resources for this model
+                for (int sm = 0; sm < model.SubMeshes.Length; sm++)
+                {
+                    model.SubMeshes[sm].TextureKey = host.TextureManager.LoadTexture(
+                        model.SubMeshes[sm].TextureArchive,
+                        model.SubMeshes[sm].TextureRecord);
+                }
 
                 // Set model bounding box
-                item.BoundingBox = model.BoundingBox;
+                info.BoundingBox = model.BoundingBox;
 
                 // Track max height
                 float height = model.BoundingBox.Max.Y - model.BoundingBox.Min.Y;
                 if (height > maxHeight)
                     maxHeight = height;
 
-                // Set model volume
-                testBlock.ModelVolumes[i] = item;
+                // Set model info
+                testBlock.Models[i] = info;
             }
 
             // Save correct max height in block
@@ -253,6 +296,7 @@ namespace DaggerfallModelling.ViewControls
                 testBlock.BoundingBox.Max.Z);
             testBlock.BoundingBox.Max = max;
         }
+        */
 
         #endregion
 

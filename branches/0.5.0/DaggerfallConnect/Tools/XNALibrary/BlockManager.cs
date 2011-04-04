@@ -25,7 +25,7 @@ namespace XNALibrary
 
     /// <summary>
     /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will stub model id
-    ///  and bounding boxes, but does not load model data. 
+    ///  and bounding boxes, but does not load model data or textures.
     /// </summary>
     public class BlockManager
     {
@@ -55,22 +55,22 @@ namespace XNALibrary
             /// <summary>Vertices of ground plane.</summary>
             public VertexPositionNormalTexture[] GroundPlaneVertices;
 
-            /// <summary>Array of model volumes used to build this block.</summary>
-            public List<ModelVolume> ModelVolumes;
+            /// <summary>Array of models used to build this block.</summary>
+            public List<ModelInfo> Models;
         }
 
         /// <summary>
-        /// Describes the bounding volume and model ID within the containing block.
+        /// Describes a bounding volume and model ID within the block.
         /// </summary>
-        public struct ModelVolume
+        public struct ModelInfo
         {
-            /// <summary>Unique ID of model populating this volume.</summary>
+            /// <summary>Unique ID of model.</summary>
             public uint ModelId;
 
             /// <summary>Transform to apply to model and bounding box.</summary>
             public Matrix Matrix;
 
-            /// <summary>Bounding volume of this model inside parent block.</summary>
+            /// <summary>Bounding volume of this model.</summary>
             public BoundingBox BoundingBox;
         }
 
@@ -90,6 +90,10 @@ namespace XNALibrary
 
         #region Constructors
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="arena2Path">Arena2 path.</param>
         public BlockManager(string arena2Path)
         {
             // Load BLOCKS.BSA
@@ -332,18 +336,18 @@ namespace XNALibrary
         private void StubRmbBlockLayout(ref Block block)
         {
             // Create bounding box for this block.
-            // All outdoor blocks are initialised to 4096x1024x4096.
-            // Blocks are laid out on a 2D grid in X-Z dimensions of 4096x4096 per block,
-            // so only height is arbitrary. You can adjust height later using actual model
-            // heights after loading resources.
+            // All outdoor blocks are initialised to 4096x512x4096.
+            // Blocks are laid out on a 2D grid in X-Z space of 4096x4096 per block,
+            // so only height is arbitrary. You should adjust block height later using
+            // max model height while loading resources.
             Vector3 blockMin = new Vector3(0, 0, -4096);
             Vector3 blockMax = new Vector3(4096, 512, 0);
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
-            // Create model volume list with a starting capacity equal to subrecord count.
+            // Create model info list with a starting capacity equal to subrecord count.
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
-            block.ModelVolumes = new List<ModelVolume>(block.DFBlock.RmbBlock.SubRecords.Length);
+            block.Models = new List<ModelInfo>(block.DFBlock.RmbBlock.SubRecords.Length);
 
             // Iterate through all subrecords
             float degrees;
@@ -369,59 +373,32 @@ namespace XNALibrary
                     objMatrix *= rotation;
                     objMatrix *= translation;
 
-                    // Create stub of model volume. This is initialised to an arbitrary size.
+                    // Create stub of model info. This is initialised to an arbitrary size.
                     // You will need to adjust dimensions later once resources are loaded.
                     // The stored matrix can be used to transform model and bounding box.
-                    ModelVolume modelVolume = new ModelVolume();
-                    modelVolume.ModelId = obj.ModelIdNum;
-                    modelVolume.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
-                    modelVolume.Matrix = objMatrix * subRecordMatrix;
-                    block.ModelVolumes.Add(modelVolume);
+                    ModelInfo modelInfo = new ModelInfo();
+                    modelInfo.ModelId = obj.ModelIdNum;
+                    modelInfo.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
+                    modelInfo.Matrix = objMatrix * subRecordMatrix;
+                    block.Models.Add(modelInfo);
                 }
             }
         }
-
-        /*
-        /// <summary>
-        /// Preloads mesh and texture data needed to draw this block.
-        /// </summary>
-        /// <param name="block">The block object to preload.</param>
-        private void PreloadBlockContent(ref Block block)
-        {
-            if (block.dfBlock.Type == DFBlock.BlockTypes.Rmb)
-            {
-                // Loop through all subrecords
-                foreach (DFBlock.RmbSubRecord record in block.dfBlock.RmbBlock.SubRecords)
-                {
-                    // Load primary exterior meshes for this record
-                    foreach (DFBlock.RmbBlock3dObjectRecord obj in record.Exterior.Block3dObjectRecords)
-                    {
-                        // Load mesh
-                        int index = MeshManager.Arch3dFile.GetRecordIndex(obj.ModelIdNum);
-                        MeshManager.LoadMesh(index);
-                    }
-                }
-
-                // Build ground plane for this RMB block
-                BuildRmbGroundPlane(ref block);
-            }
-            else if (block.dfBlock.Type == DFBlock.BlockTypes.Rdb)
-            {
-                // Loop through all model references
-                foreach (DFBlock.RdbModelReference obj in block.dfBlock.RdbBlock.ModelReferenceList)
-                {
-                    // Load mesh
-                    int index = MeshManager.Arch3dFile.GetRecordIndex(obj.ModelIdNum);
-                    MeshManager.LoadMesh(index);
-                }
-            }
-        }
-        */
 
         #endregion
 
         #region Ground Plane Methods
 
+        /// <summary>
+        /// Adds a single tile to the ground plane in.
+        /// </summary>
+        /// <param name="textureManager">Texture manager for texture lookups.</param>
+        /// <param name="vertices">Vertex array to be populated with data.</param>
+        /// <param name="x">X position in grid from 0-15.</param>
+        /// <param name="y">Y position in grid from 0-15.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="isRotated">True if rotated 90 degrees right.</param>
+        /// <param name="isFlipped">True if flipped horizontally and vertically.</param>
         private void AddGroundTile(ref TextureManager textureManager, ref VertexPositionNormalTexture[] vertices, int x, int y, int record, bool isRotated, bool isFlipped)
         {
             // Each block ground plane is made of 16x16 tiles.
@@ -433,7 +410,7 @@ namespace XNALibrary
             if (record > 55)
                 record = 1;
 
-            // Get subtexture
+            // Get subtexture rect
             RectangleF rect = textureManager.GetTerrainSubTextureRect(record);
             float top = rect.Top;
             float left = rect.Left;
