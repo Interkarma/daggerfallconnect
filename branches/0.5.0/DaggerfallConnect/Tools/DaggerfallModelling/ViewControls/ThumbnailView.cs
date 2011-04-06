@@ -41,7 +41,7 @@ namespace DaggerfallModelling.ViewControls
 
         // Scrolling
         private int thumbScrollAmount = 0;
-        private float thumbScrollVelocity = 0.0f;
+        private int thumbScrollVelocity = 0;
         
         // Appearance
         private Color thumbViewBackgroundColor = Color.White;
@@ -129,13 +129,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Tick()
         {
-            // Thumbnail scrolling
-            if (thumbScrollVelocity != 0)
-            {
-                float adjustedVelocity = (thumbScrollVelocity * host.TimeDelta) * 20.0f;
-                ScrollThumbsView((int)adjustedVelocity);
-            }
-
+            // Update
+            ScrollThumbsView(thumbScrollVelocity);
             TrackMouseOver();
             LayoutThumbnails();
         }
@@ -174,7 +169,7 @@ namespace DaggerfallModelling.ViewControls
                 ScrollThumbsView(host.MousePosDelta.Y);
                 LayoutThumbnails();
 
-                // Request redraw now
+                // Request redraw now for smoother mouse scrolling
                 host.Refresh();
             }
         }
@@ -186,7 +181,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseWheel(MouseEventArgs e)
         {
             // Clear velocity on wheel
-            thumbScrollVelocity = 0.0f;
+            thumbScrollVelocity = 0;
 
             // Calculate scroll amount
             int amount = (e.Delta / 120) * 60;
@@ -206,7 +201,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseDown(MouseEventArgs e)
         {
             // Clear velocity for any mouse down event
-            thumbScrollVelocity = 0.0f;
+            thumbScrollVelocity = 0;
         }
 
         /// <summary>
@@ -221,7 +216,7 @@ namespace DaggerfallModelling.ViewControls
                 float mouseVelocity = host.MouseVelocity;
                 if (mouseVelocity <= -thumbHeight / 2) mouseVelocity = -thumbHeight / 2;
                 if (mouseVelocity >= thumbHeight / 2) mouseVelocity = thumbHeight / 2;
-                thumbScrollVelocity = mouseVelocity;
+                thumbScrollVelocity = (int)((mouseVelocity * host.TimeDelta) * 60.0f);
             }
         }
 
@@ -494,7 +489,6 @@ namespace DaggerfallModelling.ViewControls
             {
                 if (thumbsFirstVisibleRow < totalRows)
                 {
-                    thumbScrollAmount += amount;
                     thumbsFirstVisibleRow++;
                     thumbScrollAmount += (thumbHeight + thumbSpacing);
                 }
@@ -505,7 +499,6 @@ namespace DaggerfallModelling.ViewControls
             {
                 if (thumbsFirstVisibleRow > 0)
                 {
-                    thumbScrollAmount += amount;
                     thumbsFirstVisibleRow--;
                     thumbScrollAmount -= (thumbHeight + thumbSpacing);
                 }

@@ -103,13 +103,6 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentView.SetArena2Path(appSettings.Arena2Path);
-
-            // TEST: Set a default location while building location view
-            int regionIndex = mapsFile.GetRegionIndex("Wayrest");
-            DFRegion region = mapsFile.GetRegion(regionIndex);
-            int locationIndex = region.MapNameLookup["Wayrest"];
-            AutoMapViewer.ShowLocation(regionIndex, locationIndex);
-            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
         }
 
         private void BrowseArena2Path()

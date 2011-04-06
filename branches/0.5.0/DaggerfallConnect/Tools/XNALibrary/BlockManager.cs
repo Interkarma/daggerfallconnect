@@ -320,7 +320,7 @@ namespace XNALibrary
                     StubRmbBlockLayout(ref block);
                     break;
                 case DFBlock.BlockTypes.Rdb:
-                    //StubRdbBlockLayout(ref block);
+                    StubRdbBlockLayout(ref block);
                     break;
                 default:
                     break;
@@ -385,6 +385,77 @@ namespace XNALibrary
             }
         }
 
+        private void StubRdbBlockLayout(ref Block block)
+        {
+            float degreesX, degreesY, degreesZ;
+            Matrix rotationX, rotationY, rotationZ;
+            Matrix rotation, translation;
+
+            // Create bounding box for this block.
+            // All dungeon blocks are initialised to 2048x2048x2048.
+            // Blocks are laid out on a 2D grid in X-Z space of 2048x2048 per block,
+            // so only height is arbitrary. You should adjust block height later using
+            // max model height while loading resources.
+            Vector3 blockMin = new Vector3(0, 0, -2048);
+            Vector3 blockMax = new Vector3(2048, 2048, 0);
+            block.BoundingBox = new BoundingBox(blockMin, blockMax);
+
+            // Create empty model info list. This will grow as needed
+            block.Models = new List<ModelInfo>();
+
+            // Iterate through object groups
+            foreach (DFBlock.RdbObjectRoot group in block.DFBlock.RdbBlock.ObjectRootList)
+            {
+                // Skip empty object groups
+                if (null == group.RdbObjects)
+                    continue;
+
+                // Iterate through objects in this group
+                foreach (DFBlock.RdbObject obj in group.RdbObjects)
+                {
+                    // Create translation matrix
+                    translation = Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
+
+                    // Filter by type
+                    switch (obj.Type)
+                    {
+                        case DFBlock.RdbResourceTypes.Model:
+                            // Get model reference index, then id, and finally index
+                            int modelReference = obj.Resources.ModelResource.ModelIndex;
+                            uint modelId = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
+
+                            // Get rotation matrix for each axis
+                            degreesX = obj.Resources.ModelResource.XRotation / rotationDivisor;
+                            degreesY = obj.Resources.ModelResource.YRotation / rotationDivisor;
+                            degreesZ = obj.Resources.ModelResource.ZRotation / rotationDivisor;
+                            rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
+                            rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
+                            rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
+
+                            // Create final rotation matrix
+                            rotation = Matrix.Identity;
+                            rotation *= rotationX;
+                            rotation *= rotationY;
+                            rotation *= rotationZ;
+
+                            // Create stub of model info. This is initialised to an arbitrary size.
+                            // You will need to adjust dimensions later once resources are loaded.
+                            // The stored matrix can be used to transform model and bounding box.
+                            ModelInfo modelInfo = new ModelInfo();
+                            modelInfo.ModelId = modelId;
+                            modelInfo.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
+                            modelInfo.Matrix = rotation * translation;
+                            block.Models.Add(modelInfo);
+                            break;
+
+                        default:
+                            // Only drawing models for now
+                            break;
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Ground Plane Methods
@@ -406,9 +477,9 @@ namespace XNALibrary
             const float side = 256.0f;
 
             // Handle record > 55. This indicates that random terrain should be used outside
-            //  of city walls. Here, we just set this back to 1 (good old dirt).
+            //  of city walls. Here, we just set this back to 2 (grass/earth).
             if (record > 55)
-                record = 1;
+                record = 2;
 
             // Get subtexture rect
             RectangleF rect = textureManager.GetTerrainSubTextureRect(record);
@@ -418,10 +489,10 @@ namespace XNALibrary
             float right = rect.Right;
 
             // Slightly shrink texture area to avoid filter overlap with adjacent textures in atlas
-            top += 0.01f;
-            left += 0.01f;
-            bottom -= 0.01f;
-            right -= 0.01f;
+            top += 0.009f;
+            left += 0.009f;
+            bottom -= 0.009f;
+            right -= 0.009f;
 
             // Set initial UV coordinates to atlas texture
             float tempu, tempv;

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -52,14 +53,14 @@ namespace DaggerfallModelling.ViewControls
         private bool leftMouseDown = false;
         private bool rightMouseDown = false;
         private float mouseVelocity;
-        private const float mouseVelocityMultiplier = 1.5f;
 
-        // Timer
-        private Timer animTimer = new Timer();
-        private long startTime = 0;
-        private long timeInSeconds;
-        private uint frameCount = 0;
-        private float timeDelta;
+        // Timing
+        private Stopwatch stopwatch = Stopwatch.StartNew();
+        private Timer updateTimer = new Timer();
+        readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
+        readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
+        private TimeSpan accumulatedTime;
+        private TimeSpan lastTime;
 
         // XNA
         private SpriteBatch spriteBatch;
@@ -68,7 +69,7 @@ namespace DaggerfallModelling.ViewControls
         Color backgroundColour = Color.Gray;
 
         // Views
-        private ViewModes viewMode = ViewModes.LocationView;
+        private ViewModes viewMode = ViewModes.ThumbnailView;
         private Dictionary<ViewModes, ContentViewBase> viewClients;
 
         #endregion
@@ -144,11 +145,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets average time between frames.
+        /// Gets accumulated engine time (not clock time) in seconds.
         /// </summary>
         public float TimeDelta
         {
-            get { return timeDelta; }
+            get { return (float)accumulatedTime.TotalSeconds; }
         }
 
         /// <summary>
@@ -202,9 +203,6 @@ namespace DaggerfallModelling.ViewControls
         {
             // Create view dictionary
             viewClients = new Dictionary<ViewModes, ContentViewBase>();
-
-            // Measure start time of control
-            startTime = DateTime.Now.Ticks;
         }
 
         public ContentViewHost(string arena2Path)
@@ -234,8 +232,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         protected override void Draw()
         {
-            // Do nothing if not visible
-            if (!Visible)
+            // Do nothing if not visible or status other than normal
+            if (!Visible ||
+                GraphicsDevice.GraphicsDeviceStatus != GraphicsDeviceStatus.Normal)
                 return;
 
             // Just clear display if no view mode set
@@ -245,7 +244,7 @@ namespace DaggerfallModelling.ViewControls
                 return;
             }
 
-            // Exit if not ready to draw
+            // Handle control not ready
             if (!isReady)
             {
                 // Keep trying to initialise view
@@ -259,9 +258,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Draw current view mode
             viewClients[viewMode].Draw();
-
-            // Increment frame count
-            frameCount++;
         }
 
         #endregion
@@ -278,29 +274,55 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Handles animations.
+        /// Ticks to update views.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">Event arguments.</param>
-        void AnimTimer_Tick(object sender, EventArgs e)
+        private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            // Update time in seconds
-            timeInSeconds = (DateTime.Now.Ticks - startTime) / 10000000;
+            // Measure time
+            TimeSpan currentTime = stopwatch.Elapsed;
+            TimeSpan elapsedTime = currentTime - lastTime;
+            lastTime = currentTime;
+            if (elapsedTime > MaxElapsedTime)
+                elapsedTime = MaxElapsedTime;
 
-            // Calculate time delta
-            timeDelta = (float)timeInSeconds / (float)frameCount;
+            // Check to see if update needed
+            bool updated = false;
+            accumulatedTime += elapsedTime;
+            while (accumulatedTime >= TargetElapsedTime)
+            {
+                // Tick current view
+                if (isReady && viewMode != ViewModes.None)
+                    viewClients[viewMode].Tick();
 
-            // Tick current view mode
-            if (isReady && viewMode != ViewModes.None)
-                viewClients[viewMode].Tick();
+                // Update control
+                Update();
+                accumulatedTime -= TargetElapsedTime;
+                updated = true;
+            }
 
-            // Redraw
-            this.Refresh();
+            // Redraw when updated
+            if (updated)
+            {
+                this.Refresh();
+            }
         }
 
         #endregion
 
         #region Overrides
+
+        public override void Refresh()
+        {
+            // Draw form directly rather than hand to event queue
+            string beginDrawError = BeginDraw();
+            if (string.IsNullOrEmpty(beginDrawError))
+            {
+                Draw();
+                EndDraw();
+            }
+        }
 
         /// <summary>
         /// Resize event.
@@ -313,6 +335,9 @@ namespace DaggerfallModelling.ViewControls
             // Resize current view mode
             if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].Resize();
+
+            // Invalidate control
+            this.Invalidate();
         }
 
         /// <summary>
@@ -337,7 +362,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Calc and cap velocity
             mouseVelocity = ((float)mousePosDelta.Y / (float)mouseTimeDelta) * 100000.0f;
-            mouseVelocity *= mouseVelocityMultiplier;
             if (mouseVelocity >= -2.5f && mouseVelocity <= 2.5f) mouseVelocity = 0.0f;
 
             // Move mouse in current view mode
@@ -419,9 +443,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Start and stop anim timer based on visible flag
             if (this.Visible)
-                animTimer.Enabled = true;
+                updateTimer.Enabled = true;
             else
-                animTimer.Enabled = false;
+                updateTimer.Enabled = false;
         }
 
         #endregion
@@ -452,17 +476,16 @@ namespace DaggerfallModelling.ViewControls
 
         /// <summary>
         /// Enable or disable animation timer.
-        ///  Can only perform this operation when control is visible.
         /// </summary>
         /// <param name="suspend">True to suspend, false to resume.</param>
         public void EnableAnimTimer(bool enable)
         {
-            // Exit if control not visible
-            if (!this.Visible)
+            // Exit if control not ready
+            if (!isReady)
                 return;
 
             // Suspend and resume timer
-            animTimer.Enabled = enable;
+            updateTimer.Enabled = enable;
         }
 
         #endregion
@@ -520,7 +543,9 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void ShowLocationDungeon(DFLocation dfLocation)
         {
-            // Not implemented
+            // Set location in view
+            LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
+            locationView.SetLocation(ref dfLocation);
         }
 
         /// <summary>
@@ -559,18 +584,19 @@ namespace DaggerfallModelling.ViewControls
                 return false;
             }
 
-            // Set ready flag
-            isReady = true;
+            // Start update timer with short interval so we update frequently
+            updateTimer.Interval = (int)TargetElapsedTime.TotalMilliseconds;
+            updateTimer.Enabled = true;
+            updateTimer.Tick += new EventHandler(UpdateTimer_Tick);
+            updateTimer.Start();
 
             // Bind views
             BindViewClient(ViewModes.ThumbnailView, new ThumbnailView(this));
             BindViewClient(ViewModes.ModelView, new ModelView(this));
             BindViewClient(ViewModes.LocationView, new LocationView(this));
 
-            // Start anim timer
-            animTimer.Interval = 8;
-            animTimer.Enabled = true;
-            animTimer.Tick += new EventHandler(AnimTimer_Tick);
+            // Set ready flag
+            isReady = true;
 
             return true;
         }

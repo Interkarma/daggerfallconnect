@@ -138,7 +138,7 @@ namespace WinFormsGraphicsDevice
         /// if this was not possible, which can happen if the graphics device is
         /// lost, or if we are running inside the Form designer.
         /// </summary>
-        string BeginDraw()
+        protected string BeginDraw()
         {
             // If we have no graphics device, we must be running in the designer.
             if (graphicsDeviceService == null)
@@ -182,7 +182,7 @@ namespace WinFormsGraphicsDevice
         /// the finished image onto the screen, using the appropriate WinForms
         /// control handle to make sure it shows up in the right place.
         /// </summary>
-        void EndDraw()
+        protected void EndDraw()
         {
             try
             {

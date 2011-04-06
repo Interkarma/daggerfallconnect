@@ -211,10 +211,12 @@ namespace XNALibrary
             // Load texture file
             if (climateType == ClimateType.None)
             {
+                // Load without modifying to climate
                 textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
             }
             else
             {
+                // Modify archive to climate
                 int climateArchive = GetClimateArchive(archive);
                 textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(climateArchive)), FileUsage.UseDisk, true);
             }
@@ -302,6 +304,10 @@ namespace XNALibrary
         /// <param name="weather">Weather type.</param>
         private void SetClimate(ClimateType climate, ClimateWeather weather)
         {
+            // Do nothing if new climate is equal to old climate
+            if (climate != ClimateType.None && climate == climateType)
+                return;
+
             // Load new terrain atlas, using temperate when none specified
             if (climate == ClimateType.None)
                 BuildTerrainAtlas(ClimateType.Temperate, weather);
@@ -436,6 +442,9 @@ namespace XNALibrary
             ap.maxRowHeight = 0;
             ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
+            // Clear existing dictionary
+            terrainAtlasDict.Clear();
+
             // Add textures to atlas
             AddErrorBitmap(ref ap);
             AddTextureFile(ClimateSet.Exterior_Terrain, weather, ref ap);
@@ -445,7 +454,7 @@ namespace XNALibrary
             terrainAtlas.SetData<byte>(ap.buffer);
 
             // TEST: Save texture for review
-            terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
+            //terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
 
             return true;
         }
@@ -467,16 +476,15 @@ namespace XNALibrary
             // Add each record to atlas (not supporting animation yet)
             for (int r = 0; r < textureFile.RecordCount; r++)
             {
-                int key = GetAtlasTextureKey(set, weather, r);
-                if (!terrainAtlasDict.ContainsKey(key))
-                {
-                    // Get record bitmap in ARGB format
-                    DFBitmap dfBitmap = textureFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
+                // Get record bitmap in ARGB format
+                DFBitmap dfBitmap = textureFile.GetBitmapFormat(r, 0, 0, DFBitmap.Formats.ARGB);
 
-                    // Add bitmap to atlas
-                    RectangleF rect = AddDFBitmap(key, ref dfBitmap, ref ap);
-                    terrainAtlasDict.Add(key, rect);
-                }
+                // Add bitmap to atlas
+                int key = GetAtlasTextureKey(set, weather, r);
+                RectangleF rect = AddDFBitmap(key, ref dfBitmap, ref ap);
+
+                // Add key to dictionary
+                terrainAtlasDict.Add(key, rect);
             }
         }
 

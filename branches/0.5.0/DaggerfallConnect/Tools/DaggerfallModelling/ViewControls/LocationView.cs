@@ -42,6 +42,7 @@ namespace DaggerfallModelling.ViewControls
         // XNA
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
+        private int maxAnisotropy = 16;
         private float nearPlaneDistance = 1.0f;
         private float farPlaneDistance = 40000.0f;
         private Matrix projectionMatrix;
@@ -53,6 +54,7 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
         private float cameraYaw = 0.0f;
         private float cameraPitch = 0.0f;
+        private float cameraHeight = 70.0f;
         private Vector3 movement;
 
         // Drawing
@@ -148,10 +150,10 @@ namespace DaggerfallModelling.ViewControls
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
             // Draw visible blocks
-            foreach (var layoutItem in exteriorLayout)
+            foreach (var layoutItem in dungeonLayout)
             {
                 // Create translation matrix for this block
-                Matrix world = Matrix.CreateTranslation(exteriorLayout[layoutItem.Key].position);
+                Matrix world = Matrix.CreateTranslation(dungeonLayout[layoutItem.Key].position);
 
                 // Create transformed block bounding box
                 BoundingBox blockBox = new BoundingBox(
@@ -170,8 +172,11 @@ namespace DaggerfallModelling.ViewControls
                 }
 
                 // Draw gound plane in this block
-                modelEffect.World = world;
-                DrawGroundPlane(layoutItem.Key);
+                //modelEffect.World = world;
+                //DrawGroundPlane(layoutItem.Key);
+
+                // Draw bounding box of this block
+                //renderableBounds.Draw(blockBox, viewMatrix, projectionMatrix, world);
             }
         }
 
@@ -223,6 +228,10 @@ namespace DaggerfallModelling.ViewControls
             {
                 Vector3.Transform(ref movement, ref rotation, out movement);
                 cameraPosition -= (movement * translationStep) * host.TimeDelta;
+
+                // Cap Y
+                if (cameraPosition.Y < cameraHeight)
+                    cameraPosition.Y = cameraHeight;
             }
 
             // Transform camera
@@ -277,6 +286,13 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.Begin();
                 modelEffect.CurrentTechnique.Passes[0].Begin();
 
+                // Set anisotropic filtering
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = maxAnisotropy;
+                modelEffect.CommitChanges();
+
                 host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
                     model.Vertices, 0, model.Vertices.Length,
                     submesh.Indices, 0, submesh.Indices.Length / 3);
@@ -293,6 +309,13 @@ namespace DaggerfallModelling.ViewControls
 
             modelEffect.Begin();
             modelEffect.CurrentTechnique.Passes[0].Begin();
+
+            // Set anisotropic filtering
+            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = maxAnisotropy;
+            modelEffect.CommitChanges();
 
             // Draw ground plane
             host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, exteriorLayout[key].block.GroundPlaneVertices, 0, 512);
@@ -311,15 +334,15 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void SetLocation(ref DFLocation dfLocation)
         {
+            // Set climate for texture swaps
+            host.TextureManager.Climate = dfLocation.Climate;
+
             // Build exterior layout
             BuildExteriorLayout(ref dfLocation);
 
             // Optionally build dungeon layout
             if (dfLocation.HasDungeon)
                 BuildDungeonLayout(ref dfLocation);
-
-            // Set climate for texture swaps
-            //host.TextureManager.Climate = dfLocation.Climate;
         }
 
         #endregion
@@ -367,6 +390,29 @@ namespace DaggerfallModelling.ViewControls
 
         private void BuildDungeonLayout(ref DFLocation dfLocation)
         {
+            // All dungeon blocks are 2048x2048 in X-Z space.
+            const float blockSide = 2048.0f;
+
+            // Create dungeon layout
+            foreach (var block in dfLocation.Dungeon.Blocks)
+            {
+                // Get block key
+                int key = GetBlockKey(block.X, block.Z);
+
+                // Create block position data
+                BlockPosition blockPosition = new BlockPosition();
+                blockPosition.name = block.BlockName;
+                blockPosition.block = host.BlockManager.LoadBlock(block.BlockName);
+
+                // Set block position
+                blockPosition.position = new Vector3(block.X * blockSide, 0, -(block.Z * blockSide));
+
+                // Load block models and textures
+                LoadBlockResources(ref blockPosition.block);
+
+                // Add to layout dictionary
+                dungeonLayout.Add(key, blockPosition);
+            }
         }
 
         private int GetBlockKey(int x, int y)
