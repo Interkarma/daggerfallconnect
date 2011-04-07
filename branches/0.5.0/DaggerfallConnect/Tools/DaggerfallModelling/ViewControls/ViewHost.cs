@@ -74,7 +74,7 @@ namespace DaggerfallModelling.ViewControls
 
         // Content
         ContentHelper contentHelper;
-        SpriteFont arial9Font;
+        SpriteFont arialSmallFont;
 
         #endregion
 
@@ -202,6 +202,11 @@ namespace DaggerfallModelling.ViewControls
         public bool RightMouseDown
         {
             get { return rightMouseDown; }
+        }
+
+        public SpriteFont SmallFont
+        {
+            get { return arialSmallFont; }
         }
 
         #endregion
@@ -639,7 +644,7 @@ namespace DaggerfallModelling.ViewControls
             BindViewClient(ViewModes.LocationView, new LocationView(this));
 
             // Load fonts
-            arial9Font = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\Arial9");
+            arialSmallFont = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\ArialSmall");
 
 
             // Set ready flag

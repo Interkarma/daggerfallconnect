@@ -15,7 +15,7 @@ namespace XNALibrary
     /// <summary>
     /// Provides basic content loading for external WinForms projects.
     ///  Content must be added to the XNALibrary Content project and ContentHelper
-    ///  instantiated using the IServiceProvider and content path.
+    ///  instantiated using the IServiceProvider and content path at runtime.
     ///  ContentHelper.ContentManager.RootDirectory is normally set to Application.StartupPath\Content.
     ///  As long as the application is part of the same solution as XNALibrary,
     ///  the Content directory and compiled XNB files will be copied into the application

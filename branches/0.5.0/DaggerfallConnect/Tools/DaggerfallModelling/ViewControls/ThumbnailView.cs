@@ -45,6 +45,7 @@ namespace DaggerfallModelling.ViewControls
         
         // Appearance
         private Color thumbViewBackgroundColor = Color.White;
+        private Color thumbTextColor = Color.White;
         private int mouseOverThumbGrow = 16;
 
         // Resources
@@ -246,11 +247,26 @@ namespace DaggerfallModelling.ViewControls
 
         private void DrawThumbnails()
         {
-            host.SpriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Deferred, SaveStateMode.SaveState);
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
 
             // Draw each thumbnail sprite
-            foreach (var obj in thumbDict)
-                host.SpriteBatch.Draw(obj.Value.texture, obj.Value.rect, Color.White);
+            foreach (var item in thumbDict)
+            {
+                // Draw the thumbnail
+                host.SpriteBatch.Draw(item.Value.texture, item.Value.rect, Color.White);
+
+                // Draw text over thumbnail under mouse
+                if (item.Key == mouseOverThumb)
+                {
+                    string text = item.Key.ToString();
+                    Vector2 textSize = host.SmallFont.MeasureString(text);
+                    int xpos = (int)item.Value.rect.X + (int)(item.Value.rect.Width - textSize.X) / 2;
+                    Vector2 keyPos = new Vector2(xpos, (float)item.Value.rect.Bottom - textSize.Y - 4);
+                    Vector2 shadowPos = new Vector2(keyPos.X + 1, keyPos.Y + 1);
+                    host.SpriteBatch.DrawString(host.SmallFont, text, shadowPos, Color.Black);
+                    host.SpriteBatch.DrawString(host.SmallFont, text, keyPos, thumbTextColor);
+                }
+            }
 
             host.SpriteBatch.End();
         }

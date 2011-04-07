@@ -38,8 +38,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fonts\Arial9.spritefont">
-      <Name>Arial9</Name>
+    <Compile Include="Fonts\ArialSmall.spritefont">
+      <Name>ArialSmall</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
