@@ -270,32 +270,39 @@ namespace DaggerfallModelling.ViewControls
 
         private void DrawThumbnails()
         {
-            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
-
-            // Draw each thumbnail sprite
+            // Draw thumbnail sprites
+            host.SpriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Immediate, SaveStateMode.None);
             foreach (var item in thumbDict)
             {
-                // Draw the thumbnail
                 host.SpriteBatch.Draw(item.Value.texture, item.Value.rect, Color.White);
-
-                // Draw text over thumbnail under mouse
-                if (item.Key == mouseOverThumb)
-                {
-                    // Draw thumbnail text as ID / Index
-                    //string thumbText = string.Format("{0} / {1}", item.Value.key.ToString(), item.Value.index.ToString());
-                    string thumbText = string.Format("{0}", item.Value.key.ToString());
-                    Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
-                    int textX = (int)item.Value.rect.X + (int)(item.Value.rect.Width - thumbTextSize.X) / 2;
-                    Vector2 textPos = new Vector2(textX, (float)item.Value.rect.Bottom - thumbTextSize.Y - 4);
-                    host.SpriteBatch.DrawString(host.SmallFont, thumbText, textPos, thumbTextColor);
-                }
             }
+            host.SpriteBatch.End();
 
+            // Draw thumbnail id text. This is done in a second batch to avoid alpha problems
+            // with sprite render on some cards.
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+            if (mouseOverThumb != -1)
+            {
+                Thumbnails thumb = thumbDict[mouseOverThumb];
+                string thumbText = string.Format("{0}", thumb.key.ToString());
+                Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
+                int textX = (int)thumb.rect.X + (int)(thumb.rect.Width - thumbTextSize.X) / 2;
+                Vector2 textPos = new Vector2(textX, (float)thumb.rect.Bottom - thumbTextSize.Y - 4);
+                host.SpriteBatch.DrawString(host.SmallFont, thumbText, textPos, thumbTextColor);
+            }
             host.SpriteBatch.End();
         }
 
         private void DrawSingleModel(ref ModelManager.Model model)
         {
+            // Set render states
+            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
+            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
+            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
+
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = vertexDeclaration;
 
@@ -303,6 +310,7 @@ namespace DaggerfallModelling.ViewControls
             effect.View = viewMatrix;
             effect.Projection = projectionMatrix;
 
+            // Draw submeshes
             foreach (var submesh in model.SubMeshes)
             {
                 effect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
@@ -509,10 +517,6 @@ namespace DaggerfallModelling.ViewControls
                 thumb.matrix = matrix;
             }
 
-            // Turn off backface culling
-            CullMode cullMode = host.GraphicsDevice.RenderState.CullMode;
-            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
-
             // Create projection matrix
             float aspectRatio = (float)thumb.rect.Width / (float)thumb.rect.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
@@ -533,14 +537,13 @@ namespace DaggerfallModelling.ViewControls
 
             // Render thumbnail components
             host.GraphicsDevice.Clear(thumbViewBackgroundColor);
-            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
             host.SpriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
             host.SpriteBatch.End();
             DrawSingleModel(ref thumb.model);
 
-            // Restore default render target and cull mode
+            // Restore default render target
             host.GraphicsDevice.SetRenderTarget(0, null);
-            host.GraphicsDevice.RenderState.CullMode = cullMode;
 
             // A texture created from a render target is coupled to that render target.
             // It can be easily lost when device is reset (commonly on resize) and must be re-created.
