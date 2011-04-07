@@ -57,6 +57,7 @@
             this.ViewThumbsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewSingleModelToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.ContentPanel = new System.Windows.Forms.Panel();
             this.ContentView = new DaggerfallModelling.ViewControls.ViewHost();
@@ -65,7 +66,6 @@
             this.ModelViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
-            this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -384,6 +384,16 @@
             this.ViewBlockToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.ViewBlockToolStripButton.Text = "View Block";
             // 
+            // ViewLocationToolStripButton
+            // 
+            this.ViewLocationToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ViewLocationToolStripButton.Enabled = false;
+            this.ViewLocationToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
+            this.ViewLocationToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ViewLocationToolStripButton.Name = "ViewLocationToolStripButton";
+            this.ViewLocationToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ViewLocationToolStripButton.Text = "View Location";
+            // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
@@ -452,15 +462,6 @@
             this.MainTips.InitialDelay = 500;
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
-            // 
-            // ViewLocationToolStripButton
-            // 
-            this.ViewLocationToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ViewLocationToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
-            this.ViewLocationToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ViewLocationToolStripButton.Name = "ViewLocationToolStripButton";
-            this.ViewLocationToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.ViewLocationToolStripButton.Text = "View Location";
             // 
             // MainForm
             // 

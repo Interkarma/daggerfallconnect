@@ -76,6 +76,9 @@ namespace DaggerfallModelling.ViewControls
         ContentHelper contentHelper;
         SpriteFont arialSmallFont;
 
+        // Filtered model array consumed by thumbnail and single model views
+        int[] filteredModelsArray;
+
         #endregion
 
         #region Class Structures
@@ -202,6 +205,16 @@ namespace DaggerfallModelling.ViewControls
         public bool RightMouseDown
         {
             get { return rightMouseDown; }
+        }
+
+        /// <summary>
+        /// Gets or sets filtered model ID list for views.
+        ///  Set to null to use full model database.
+        /// </summary>
+        public int[] FilteredModelsArray
+        {
+            get { return filteredModelsArray; }
+            set { AssignFilteredModels(value); }
         }
 
         public SpriteFont SmallFont
@@ -669,6 +682,21 @@ namespace DaggerfallModelling.ViewControls
 
             // Initialise view
             viewClient.Initialize();
+        }
+
+        /// <summary>
+        /// Set filtered model array and notify views to update.
+        /// </summary>
+        /// <param name="array"></param>
+        private void AssignFilteredModels(int[] array)
+        {
+            filteredModelsArray = array;
+            if (isReady)
+            {
+                viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
+                viewClients[ViewModes.ModelView].FilteredModelsChanged();
+                viewClients[ViewModes.LocationView].FilteredModelsChanged();
+            }
         }
 
         #endregion

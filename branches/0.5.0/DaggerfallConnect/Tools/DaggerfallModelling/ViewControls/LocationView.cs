@@ -282,6 +282,13 @@ namespace DaggerfallModelling.ViewControls
         {
         }
 
+        /// <summary>
+        /// Called when filtered models array has been changed.
+        /// </summary>
+        public override void FilteredModelsChanged()
+        {
+        }
+
         #endregion
 
         #region Drawing Methods

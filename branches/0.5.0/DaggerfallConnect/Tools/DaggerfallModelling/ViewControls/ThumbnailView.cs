@@ -45,7 +45,7 @@ namespace DaggerfallModelling.ViewControls
         
         // Appearance
         private Color thumbViewBackgroundColor = Color.White;
-        private Color thumbTextColor = Color.White;
+        private Color thumbTextColor = Color.BlanchedAlmond;
         private int mouseOverThumbGrow = 16;
 
         // Resources
@@ -66,6 +66,9 @@ namespace DaggerfallModelling.ViewControls
         // Mouse
         private bool mouseInClientArea = false;
         private int mouseOverThumb = -1;
+
+        // Models list
+        private bool useFilteredModels = false;
 
         #endregion
 
@@ -241,6 +244,26 @@ namespace DaggerfallModelling.ViewControls
             mouseInClientArea = false;
         }
 
+        /// <summary>
+        /// Called when filtered models array has been changed.
+        /// </summary>
+        public override void FilteredModelsChanged()
+        {
+            if (host.FilteredModelsArray == null)
+            {
+                useFilteredModels = false;
+            }
+            else
+            {
+                useFilteredModels = true;
+                thumbsFirstVisibleRow = 0;
+                thumbScrollAmount = 0;
+                thumbScrollVelocity = 0;
+                thumbDict.Clear();
+                host.Refresh();
+            }
+        }
+
         #endregion
 
         #region Drawing Methods
@@ -258,13 +281,13 @@ namespace DaggerfallModelling.ViewControls
                 // Draw text over thumbnail under mouse
                 if (item.Key == mouseOverThumb)
                 {
-                    string text = item.Key.ToString();
-                    Vector2 textSize = host.SmallFont.MeasureString(text);
-                    int xpos = (int)item.Value.rect.X + (int)(item.Value.rect.Width - textSize.X) / 2;
-                    Vector2 keyPos = new Vector2(xpos, (float)item.Value.rect.Bottom - textSize.Y - 4);
-                    Vector2 shadowPos = new Vector2(keyPos.X + 1, keyPos.Y + 1);
-                    host.SpriteBatch.DrawString(host.SmallFont, text, shadowPos, Color.Black);
-                    host.SpriteBatch.DrawString(host.SmallFont, text, keyPos, thumbTextColor);
+                    // Draw thumbnail text as ID / Index
+                    //string thumbText = string.Format("{0} / {1}", item.Value.key.ToString(), item.Value.index.ToString());
+                    string thumbText = string.Format("{0}", item.Value.key.ToString());
+                    Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
+                    int textX = (int)item.Value.rect.X + (int)(item.Value.rect.Width - thumbTextSize.X) / 2;
+                    Vector2 textPos = new Vector2(textX, (float)item.Value.rect.Bottom - thumbTextSize.Y - 4);
+                    host.SpriteBatch.DrawString(host.SmallFont, thumbText, textPos, thumbTextColor);
                 }
             }
 
@@ -333,9 +356,21 @@ namespace DaggerfallModelling.ViewControls
             int lastIndex = firstIndex + visibleRows * thumbsPerRow - 1;
 
             // Cap last index
-            int maxIndex = host.ModelManager.Arch3dFile.Count - 1;
-            if (lastIndex > maxIndex)
-                lastIndex = maxIndex;
+            int maxIndex;
+            if (!useFilteredModels)
+            {
+                // Use full model database
+                maxIndex = host.ModelManager.Arch3dFile.Count - 1;
+                if (lastIndex > maxIndex)
+                    lastIndex = maxIndex;
+            }
+            else
+            {
+                // Use filtered model array
+                maxIndex = host.FilteredModelsArray.Length - 1;
+                if (lastIndex > maxIndex)
+                    lastIndex = maxIndex;
+            }
 
             // Calc screen position of first index
             int xpos = thumbSpacing;
@@ -376,8 +411,20 @@ namespace DaggerfallModelling.ViewControls
                 // based on view starting one row higher for scrolling purposes.
                 if (index >= 0)
                 {
+                    // Get key based on model source
+                    int key;
+                    if (!useFilteredModels)
+                    {
+                        // Use full model database
+                        key = (int)host.ModelManager.Arch3dFile.GetRecordId(index);
+                    }
+                    else
+                    {
+                        // Use filtered model array
+                        key = host.FilteredModelsArray[index];
+                    }
+
                     // Update or create
-                    int key = (int)host.ModelManager.Arch3dFile.GetRecordId(index);
                     if (thumbDict.ContainsKey(key))
                     {
                         // Update position and size

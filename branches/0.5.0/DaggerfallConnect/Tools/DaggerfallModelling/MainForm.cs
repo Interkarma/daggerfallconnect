@@ -42,9 +42,9 @@ namespace DaggerfallModelling
 
         // Searching
         private int minSearchLength = 2;
-        private bool searchModels = false;
+        private bool searchModels = true;
         private bool searchBlocks = false;
-        private bool searchLocations = true;
+        private bool searchLocations = false;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -551,15 +551,26 @@ namespace DaggerfallModelling
 
         private void ShowModelsFound(ref TreeNode node)
         {
+            // Create new filtered model array
+            int[] modelsArray = new int[modelsFound.Count];
+
+            int index = 0;
             foreach (var model in modelsFound)
             {
+                // Populate tree view
                 TreeNode modelNode = node.Nodes.Add(
                     model.Key.ToString(),
                     model.Value.ToString(),
                     SearchResultsImageList.Images.IndexOfKey("models"),
                     SearchResultsImageList.Images.IndexOfKey("models"));
                 modelNode.Tag = ModelTag;
+
+                // Populate filtered models
+                modelsArray[index++] = (int)model.Value;
             }
+
+            // Assign filtered array to content view
+            ContentView.FilteredModelsArray = modelsArray;
         }
 
         private void ShowBlocksFound(ref TreeNode node)

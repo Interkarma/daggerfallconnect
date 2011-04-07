@@ -106,6 +106,11 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e"></param>
         public abstract void OnMouseLeave(EventArgs e);
 
+        /// <summary>
+        /// The filtered list of models in the host has been modified.
+        /// </summary>
+        public abstract void FilteredModelsChanged();
+
         #endregion
 
     }
