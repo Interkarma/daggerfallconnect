@@ -105,6 +105,14 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Gets current view mode
+        /// </summary>
+        public ViewModes ViewMode
+        {
+            get { return viewMode; }
+        }
+
+        /// <summary>
         /// Gets host TextureManager.
         /// </summary>
         public TextureManager TextureManager
@@ -360,9 +368,9 @@ namespace DaggerfallModelling.ViewControls
             mousePos = new Point(e.Location.X, e.Location.Y);
             mouseTime = DateTime.Now.Ticks;
 
-            // Calc and cap velocity
+            // Set mouse velocity Lock down velocity at small values
             mouseVelocity = ((float)mousePosDelta.Y / (float)mouseTimeDelta) * 100000.0f;
-            if (mouseVelocity >= -2.5f && mouseVelocity <= 2.5f) mouseVelocity = 0.0f;
+            if (mouseVelocity >= -1.5f && mouseVelocity <= 1.5f) mouseVelocity = 0.0f;
 
             // Move mouse in current view mode
             if (isReady && viewMode != ViewModes.None)
@@ -431,6 +439,32 @@ namespace DaggerfallModelling.ViewControls
             // Send to view
             if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseUp(e);
+        }
+
+        /// <summary>
+        /// Mouse enters client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            base.OnMouseEnter(e);
+
+            // Send to view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].OnMouseEnter(e);
+        }
+
+        /// <summary>
+        /// Mouse leaves client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+
+            // Send to view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].OnMouseLeave(e);
         }
 
         /// <summary>

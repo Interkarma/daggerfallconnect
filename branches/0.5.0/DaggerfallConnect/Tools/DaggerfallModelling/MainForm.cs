@@ -170,9 +170,18 @@ namespace DaggerfallModelling
             ShowArena2ConnectionState();
 
             // Check search buttons at load
-            if (searchModels) SearchModelsToolStripButton.Checked = true;
-            if (searchBlocks) SearchBlocksToolStripButton.Checked = true;
-            if (searchLocations) SearchLocationsToolStripButton.Checked = true;
+            if (searchModels)
+                SearchModelsToolStripButton.Checked = true;
+            if (searchBlocks)
+                SearchBlocksToolStripButton.Checked = true;
+            if (searchLocations)
+                SearchLocationsToolStripButton.Checked = true;
+
+            // Check view mode
+            if (ContentView.ViewMode == ContentViewHost.ViewModes.ThumbnailView)
+                ViewThumbsToolStripButton.Checked = true;
+            if (ContentView.ViewMode == ContentViewHost.ViewModes.ModelView)
+                ViewSingleModelToolStripButton.Checked = true;
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

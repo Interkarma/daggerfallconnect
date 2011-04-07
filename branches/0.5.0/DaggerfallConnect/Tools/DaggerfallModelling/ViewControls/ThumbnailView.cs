@@ -63,6 +63,7 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
         // Mouse
+        private bool mouseInClientArea = false;
         private int mouseOverThumb = -1;
 
         #endregion
@@ -80,6 +81,7 @@ namespace DaggerfallModelling.ViewControls
             public ModelManager.Model model;
             public Texture2D texture;
             public Matrix matrix;
+            public float rotation;
         }
 
         #endregion
@@ -218,6 +220,24 @@ namespace DaggerfallModelling.ViewControls
                 if (mouseVelocity >= thumbHeight / 2) mouseVelocity = thumbHeight / 2;
                 thumbScrollVelocity = (int)((mouseVelocity * host.TimeDelta) * 60.0f);
             }
+        }
+
+        /// <summary>
+        /// Called when mouse enters client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        public override void OnMouseEnter(EventArgs e)
+        {
+            mouseInClientArea = true;
+        }
+
+        /// <summary>
+        /// Called when mouse leaves client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        public override void OnMouseLeave(EventArgs e)
+        {
+            mouseInClientArea = false;
         }
 
         #endregion
@@ -360,9 +380,9 @@ namespace DaggerfallModelling.ViewControls
                         thumbDict.Add(thumb.key, thumb);
                     }
 
-                    // Enlarge thumb under mouse
+                    // Animate thumb under mouse
                     if (key == mouseOverThumb)
-                        GrowThumb(key);
+                        AnimateThumb(key);
                 }
 
                 // Update position for next thumbnail
@@ -433,6 +453,9 @@ namespace DaggerfallModelling.ViewControls
             // Create projection matrix
             float aspectRatio = (float)thumb.rect.Width / (float)thumb.rect.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
+
+            // Set world matrix
+            effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(thumb.rotation));
 
             // Create texture to use as render target
             RenderTarget2D renderTarget;
@@ -515,11 +538,16 @@ namespace DaggerfallModelling.ViewControls
             // Clear previous mouse over thumb
             mouseOverThumb = -1;
 
+            // Do nothing further when mouse not in client area
+            if (!mouseInClientArea)
+                return;
+
             // Scan for current mouse over thumb
             foreach (var item in thumbDict)
             {
                 if (item.Value.rect.Contains(host.MousePos.X, host.MousePos.Y))
                 {
+                    // Set mouse over thumb
                     mouseOverThumb = item.Value.key;
                     break;
                 }
@@ -527,20 +555,27 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Enlarge thumbnail for mouse-over state.
+        /// Animate thumbnail during mouse-over state.
         /// </summary>
-        /// <param name="key">Key.</param>
-        private void GrowThumb(int key)
+        /// <param name="key"></param>
+        private void AnimateThumb(int key)
         {
             if (!thumbDict.ContainsKey(key))
                 return;
 
-            // Enlarge rect size
             Thumbnails thumb = thumbDict[key];
+
+            // Step rotation in degrees
+            thumb.rotation += 1;
+            if (thumb.rotation > 360.0f) thumb.rotation -= 360.0f;
+            UpdateThumbnailTexture(ref thumb);
+
+            // Enlarge rect size
             thumb.rect.X -= mouseOverThumbGrow / 2;
             thumb.rect.Y -= mouseOverThumbGrow / 2;
             thumb.rect.Width += mouseOverThumbGrow;
             thumb.rect.Height += mouseOverThumbGrow;
+
             thumbDict[key] = thumb;
         }
 

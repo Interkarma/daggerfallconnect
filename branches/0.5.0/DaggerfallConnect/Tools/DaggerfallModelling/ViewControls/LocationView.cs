@@ -266,6 +266,22 @@ namespace DaggerfallModelling.ViewControls
         {
         }
 
+        /// <summary>
+        /// Called when mouse enters client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        public override void OnMouseEnter(EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when mouse leaves client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        public override void OnMouseLeave(EventArgs e)
+        {
+        }
+
         #endregion
 
         #region Drawing Methods

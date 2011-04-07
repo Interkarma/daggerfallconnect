@@ -94,6 +94,18 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public abstract void OnMouseUp(MouseEventArgs e);
 
+        /// <summary>
+        /// Called when mouse enters client area.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        public abstract void OnMouseEnter(EventArgs e);
+
+        /// <summary>
+        /// Called when mouse leaves client area.
+        /// </summary>
+        /// <param name="e"></param>
+        public abstract void OnMouseLeave(EventArgs e);
+
         #endregion
 
     }
