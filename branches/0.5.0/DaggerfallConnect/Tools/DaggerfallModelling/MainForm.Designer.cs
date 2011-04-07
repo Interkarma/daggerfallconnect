@@ -59,7 +59,7 @@
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.ContentPanel = new System.Windows.Forms.Panel();
-            this.ContentView = new DaggerfallModelling.ViewControls.ContentViewHost();
+            this.ContentView = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ModelViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -537,7 +537,7 @@
         private System.Windows.Forms.ToolStripButton ViewBlockToolStripButton;
         private System.Windows.Forms.ToolStripButton ViewSingleModelToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private DaggerfallModelling.ViewControls.ContentViewHost ContentView;
+        private DaggerfallModelling.ViewControls.ViewHost ContentView;
         private System.Windows.Forms.ToolStripButton ViewLocationToolStripButton;
     }
 }

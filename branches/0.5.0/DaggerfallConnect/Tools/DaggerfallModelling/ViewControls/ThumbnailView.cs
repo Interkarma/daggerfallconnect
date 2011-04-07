@@ -27,7 +27,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Explore a list of Daggerfall models as thumbnails.
     /// </summary>
-    public class ThumbnailView : ContentViewBase
+    public class ThumbnailView : ViewBase
     {
         #region Class Variables
 
@@ -91,7 +91,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ThumbnailView(ContentViewHost host)
+        public ThumbnailView(ViewHost host)
             : base(host)
         {
         }

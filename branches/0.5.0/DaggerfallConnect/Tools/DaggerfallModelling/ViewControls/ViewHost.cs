@@ -28,7 +28,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Serves different views to the user.
     /// </summary>
-    public class ContentViewHost : WinFormsGraphicsDevice.GraphicsDeviceControl
+    public class ViewHost : WinFormsGraphicsDevice.GraphicsDeviceControl
     {
 
         #region Class Variables
@@ -70,7 +70,11 @@ namespace DaggerfallModelling.ViewControls
 
         // Views
         private ViewModes viewMode = ViewModes.ThumbnailView;
-        private Dictionary<ViewModes, ContentViewBase> viewClients;
+        private Dictionary<ViewModes, ViewBase> viewClients;
+
+        // Content
+        ContentHelper contentHelper;
+        SpriteFont arial9Font;
 
         #endregion
 
@@ -207,13 +211,18 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public ContentViewHost()
+        public ViewHost()
         {
             // Create view dictionary
-            viewClients = new Dictionary<ViewModes, ContentViewBase>();
+            viewClients = new Dictionary<ViewModes, ViewBase>();
+
+            // Create content helper
+            contentHelper = new ContentHelper(
+                Services,
+                Path.Combine(Application.StartupPath, "Content"));
         }
 
-        public ContentViewHost(string arena2Path)
+        public ViewHost(string arena2Path)
             : this()
         {
             SetArena2Path(arena2Path);
@@ -629,6 +638,10 @@ namespace DaggerfallModelling.ViewControls
             BindViewClient(ViewModes.ModelView, new ModelView(this));
             BindViewClient(ViewModes.LocationView, new LocationView(this));
 
+            // Load fonts
+            arial9Font = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\Arial9");
+
+
             // Set ready flag
             isReady = true;
 
@@ -640,7 +653,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="mode">Mode to bind with view.</param>
         /// <param name="viewClient">ContentViewBase implementation.</param>
-        private void BindViewClient(ViewModes viewMode, ContentViewBase viewClient)
+        private void BindViewClient(ViewModes viewMode, ViewBase viewClient)
         {
             // Can only bind one view client to a mode
             if (viewClients.ContainsKey(viewMode))

@@ -27,7 +27,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Explore a location from a single block to full cities and dungeons.
     /// </summary>
-    public class LocationView : ContentViewBase
+    public class LocationView : ViewBase
     {
 
         #region Class Variables
@@ -71,7 +71,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public LocationView(ContentViewHost host)
+        public LocationView(ViewHost host)
             : base(host)
         {
         }

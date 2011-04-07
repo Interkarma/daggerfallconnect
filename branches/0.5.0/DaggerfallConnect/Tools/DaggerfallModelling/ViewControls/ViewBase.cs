@@ -27,12 +27,12 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Abstract base class for content views inserted into a ContentViewHost.
     /// </summary>
-    public abstract class ContentViewBase
+    public abstract class ViewBase
     {
 
         #region Class Variables
 
-        protected ContentViewHost host = null;
+        protected ViewHost host = null;
 
         #endregion
 
@@ -41,7 +41,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ContentViewBase(ContentViewHost host)
+        public ViewBase(ViewHost host)
         {
             this.host = host;
         }

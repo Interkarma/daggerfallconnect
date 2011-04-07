@@ -27,7 +27,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Explore a single model.
     /// </summary>
-    public class ModelView : ContentViewBase
+    public class ModelView : ViewBase
     {
 
         #region Class Variables
@@ -61,7 +61,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ModelView(ContentViewHost host)
+        public ModelView(ViewHost host)
             : base(host)
         {
         }

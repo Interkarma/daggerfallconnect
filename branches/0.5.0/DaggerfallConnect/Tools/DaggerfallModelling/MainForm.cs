@@ -178,9 +178,9 @@ namespace DaggerfallModelling
                 SearchLocationsToolStripButton.Checked = true;
 
             // Check view mode
-            if (ContentView.ViewMode == ContentViewHost.ViewModes.ThumbnailView)
+            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView)
                 ViewThumbsToolStripButton.Checked = true;
-            if (ContentView.ViewMode == ContentViewHost.ViewModes.ModelView)
+            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView)
                 ViewSingleModelToolStripButton.Checked = true;
         }
 

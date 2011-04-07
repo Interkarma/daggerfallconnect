@@ -59,8 +59,8 @@
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ViewControls\ContentViewBase.cs" />
-    <Compile Include="ViewControls\ContentViewHost.cs">
+    <Compile Include="ViewControls\ViewBase.cs" />
+    <Compile Include="ViewControls\ViewHost.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ViewControls\LocationView.cs" />
