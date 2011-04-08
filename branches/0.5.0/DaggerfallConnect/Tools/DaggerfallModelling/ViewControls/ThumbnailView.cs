@@ -219,10 +219,9 @@ namespace DaggerfallModelling.ViewControls
             // Set scroll velocity on right mouse up
             if (e.Button == MouseButtons.Right)
             {
-                float mouseVelocity = host.MouseVelocity;
-                if (mouseVelocity <= -thumbHeight / 2) mouseVelocity = -thumbHeight / 2;
-                if (mouseVelocity >= thumbHeight / 2) mouseVelocity = thumbHeight / 2;
-                thumbScrollVelocity = (int)((mouseVelocity * host.TimeDelta) * 60.0f);
+                thumbScrollVelocity = (int)(host.MouseVelocity.Y * 0.01f);
+                if (thumbScrollVelocity <= -thumbHeight / 2) thumbScrollVelocity = -thumbHeight / 2;
+                if (thumbScrollVelocity >= thumbHeight / 2) thumbScrollVelocity = thumbHeight / 2;
             }
         }
 
@@ -271,19 +270,25 @@ namespace DaggerfallModelling.ViewControls
         private void DrawThumbnails()
         {
             // Draw thumbnail sprites
+            int drawTextKey = -1;
             host.SpriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Immediate, SaveStateMode.None);
             foreach (var item in thumbDict)
             {
+                // Draw thumbnail
                 host.SpriteBatch.Draw(item.Value.texture, item.Value.rect, Color.White);
+
+                // Set key to draw text over thumb
+                if (mouseOverThumb == item.Key)
+                    drawTextKey = item.Key;
             }
             host.SpriteBatch.End();
 
             // Draw thumbnail id text. This is done in a second batch to avoid alpha problems
             // with sprite render on some cards.
             host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
-            if (mouseOverThumb != -1)
+            if (drawTextKey != -1)
             {
-                Thumbnails thumb = thumbDict[mouseOverThumb];
+                Thumbnails thumb = thumbDict[drawTextKey];
                 string thumbText = string.Format("{0}", thumb.key.ToString());
                 Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
                 int textX = (int)thumb.rect.X + (int)(thumb.rect.Width - thumbTextSize.X) / 2;

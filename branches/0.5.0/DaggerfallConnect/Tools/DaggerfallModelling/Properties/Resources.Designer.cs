@@ -123,6 +123,13 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap controller {
+            get {
+                object obj = ResourceManager.GetObject("controller", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap DungeonsFilter {
             get {
                 object obj = ResourceManager.GetObject("DungeonsFilter", resourceCulture);
@@ -140,6 +147,13 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap folder_explore {
             get {
                 object obj = ResourceManager.GetObject("folder_explore", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap FreeCamera {
+            get {
+                object obj = ResourceManager.GetObject("FreeCamera", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -203,6 +217,13 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap model_find {
             get {
                 object obj = ResourceManager.GetObject("model_find", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap NormalCamera {
+            get {
+                object obj = ResourceManager.GetObject("NormalCamera", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

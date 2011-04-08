@@ -182,6 +182,9 @@
     <None Include="Resources\model_find.png" />
     <None Include="Resources\block_find.png" />
     <None Include="Resources\location_find.png" />
+    <None Include="Resources\NormalCamera.png" />
+    <None Include="Resources\FreeCamera.png" />
+    <None Include="Resources\controller.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

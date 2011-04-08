@@ -242,7 +242,6 @@ namespace DaggerfallModelling
                         {
                             KeyToRegionLocation(key, out region, out location);
                             AutoMapViewer.ShowLocation(region, location);
-                            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
                             return;
                         }
                         break;

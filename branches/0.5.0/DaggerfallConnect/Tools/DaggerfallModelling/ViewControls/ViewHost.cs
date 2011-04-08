@@ -52,7 +52,7 @@ namespace DaggerfallModelling.ViewControls
         private long mouseTimeDelta;
         private bool leftMouseDown = false;
         private bool rightMouseDown = false;
-        private float mouseVelocity;
+        private Vector2 mouseVelocity;
 
         // Timing
         private Stopwatch stopwatch = Stopwatch.StartNew();
@@ -160,6 +160,14 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Gets total elapsed time in milliseconds.
+        /// </summary>
+        public long Timer
+        {
+            get { return stopwatch.ElapsedTicks; }
+        }
+
+        /// <summary>
         /// Gets accumulated engine time (not clock time) in seconds.
         /// </summary>
         public float TimeDelta
@@ -186,7 +194,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets mouse velocity.
         /// </summary>
-        public float MouseVelocity
+        public Vector2 MouseVelocity
         {
             get { return mouseVelocity; }
         }
@@ -385,7 +393,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Capture deltas from last position and time
             mousePosDelta = new Point(e.Location.X - mousePos.X, e.Location.Y - mousePos.Y);
-            mouseTimeDelta = DateTime.Now.Ticks - mouseTime;
+            mouseTimeDelta = stopwatch.ElapsedTicks - mouseTime;
 
             // Ensure mouse time delta is never 0 (possible, and screws with distance/time calcs obviously)
             if (mouseTimeDelta == 0)
@@ -393,11 +401,11 @@ namespace DaggerfallModelling.ViewControls
 
             // Update position and time
             mousePos = new Point(e.Location.X, e.Location.Y);
-            mouseTime = DateTime.Now.Ticks;
+            mouseTime = stopwatch.ElapsedTicks;
 
-            // Set mouse velocity Lock down velocity at small values
-            mouseVelocity = ((float)mousePosDelta.Y / (float)mouseTimeDelta) * 100000.0f;
-            if (mouseVelocity >= -1.5f && mouseVelocity <= 1.5f) mouseVelocity = 0.0f;
+            // Set mouse velocity
+            mouseVelocity.X = (float)mousePosDelta.X / (float)mouseTimeDelta * 1000000.0f;
+            mouseVelocity.Y = (float)mousePosDelta.Y / (float)mouseTimeDelta * 1000000.0f;
 
             // Move mouse in current view mode
             if (isReady && viewMode != ViewModes.None)
