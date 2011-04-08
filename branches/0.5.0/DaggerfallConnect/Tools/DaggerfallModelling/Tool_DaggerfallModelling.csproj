@@ -185,6 +185,8 @@
     <None Include="Resources\NormalCamera.png" />
     <None Include="Resources\FreeCamera.png" />
     <None Include="Resources\controller.png" />
+    <None Include="Resources\arrow_left.png" />
+    <None Include="Resources\arrow_right.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

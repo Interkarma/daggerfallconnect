@@ -289,6 +289,14 @@ namespace DaggerfallModelling.ViewControls
         {
         }
 
+        /// <summary>
+        /// Called when the view is resumed after being inactive.
+        ///  Allows view to perform any layout or other requirements before redraw.
+        /// </summary>
+        public override void ResumeView()
+        {
+        }
+
         #endregion
 
         #region Drawing Methods

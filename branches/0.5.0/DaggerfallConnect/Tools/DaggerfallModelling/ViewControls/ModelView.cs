@@ -33,8 +33,9 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         // Model
-        ModelManager.Model model;
-        RenderableBoundingBox renderableBoundingBox;
+        private ModelManager.Model currentModel;
+        private int currentModelIndex = 0;
+        private int currentModelId = -1;
 
         // Appearance
         private Color modelViewBackgroundColor = Color.LightGray;
@@ -46,13 +47,17 @@ namespace DaggerfallModelling.ViewControls
         private float farPlaneDistance = 10000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
-        private Vector3 cameraPosition = new Vector3(0, 0, 2000);
+        private Vector3 cameraPosition = new Vector3(0, 0, 1000);
         private Vector3 cameraReference = new Vector3(0, 0, -1);
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
         // Movement
-        float rotationStep = 0.005f;
-        float translationStep = 2500.0f;
+        private Matrix modelRotation = Matrix.Identity;
+        private Matrix modelTranslation = Matrix.Identity;
+        private float translationStep = 100.0f;
+
+        // Models list
+        private bool useFilteredModels = false;
 
         #endregion
 
@@ -91,10 +96,6 @@ namespace DaggerfallModelling.ViewControls
             float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
-
-            // TEST: Load a model
-            //LoadModel(455);
-            LoadModel(58051);
         }
 
         /// <summary>
@@ -114,9 +115,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Draw model
             DrawSingleModel();
-
-            // Draw bounding box
-            DrawBoundingBox();
         }
 
         /// <summary>
@@ -124,16 +122,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Resize()
         {
-            // Host must be ready as matrix depends on host control dimensions
-            if (!host.IsReady)
-                return;
-
-            // Create projection matrix
-            float aspectRatio = (float)host.Width / (float)host.Height;
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
-
-            // Request redraw now
-            host.Refresh();
+            // Update projection matrix
+            UpdateProjectionMatrix();
         }
 
         /// <summary>
@@ -144,11 +134,13 @@ namespace DaggerfallModelling.ViewControls
         {
             if (host.LeftMouseDown)
             {
-                float amountX = (MathHelper.ToDegrees(host.MousePosDelta.X) * rotationStep) * host.TimeDelta;
-                float amountY = (MathHelper.ToDegrees(host.MousePosDelta.Y) * rotationStep) * host.TimeDelta;
-                Matrix x = Matrix.CreateRotationX(amountY);
-                Matrix y = Matrix.CreateRotationY(amountX);
-                modelEffect.World *= (x * y);
+                // TODO: Support multiple camera modes
+
+                // Adjust model rotation for normal camera
+                float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * 0.5f);
+                float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * 0.5f);
+                Matrix rotation = Matrix.CreateRotationY(modelYaw) * Matrix.CreateRotationX(modelPitch);
+                modelRotation *= rotation;
             }
         }
 
@@ -158,7 +150,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
-            float amount = (((float)e.Delta / 120.0f) * translationStep) * host.TimeDelta;
+            float amount = ((float)e.Delta / 120.0f) * translationStep;
             TranslateCamera(0, 0, -amount);
         }
 
@@ -199,6 +191,30 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void FilteredModelsChanged()
         {
+            if (host.FilteredModelsArray == null)
+            {
+                useFilteredModels = false;
+                currentModelIndex = 0;
+                UpdateStatusMessage();
+            }
+            else
+            {
+                useFilteredModels = true;
+                currentModelIndex = 0;
+                UpdateStatusMessage();
+            }
+        }
+
+        /// <summary>
+        /// Called when the view is resumed after being inactive.
+        ///  Allows view to perform any layout or other requirements before redraw.
+        /// </summary>
+        public override void ResumeView()
+        {
+            UpdateProjectionMatrix();
+            UpdateStatusMessage();
+            LayoutModel();
+            host.Invalidate();
         }
 
         #endregion
@@ -208,8 +224,16 @@ namespace DaggerfallModelling.ViewControls
         private void DrawSingleModel()
         {
             // Exit if no model loaded
-            if (model.Vertices == null)
+            if (currentModel.Vertices == null)
                 return;
+
+            // Set render states
+            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
+            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
+            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
@@ -218,7 +242,11 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.View = viewMatrix;
             modelEffect.Projection = projectionMatrix;
 
-            foreach (var submesh in model.SubMeshes)
+            // Transform world in normal camera mode
+            modelEffect.World = modelRotation * modelTranslation;
+
+            // Draw submeshes
+            foreach (var submesh in currentModel.SubMeshes)
             {
                 modelEffect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
 
@@ -226,7 +254,7 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].Begin();
 
                 host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                    model.Vertices, 0, model.Vertices.Length,
+                    currentModel.Vertices, 0, currentModel.Vertices.Length,
                     submesh.Indices, 0, submesh.Indices.Length / 3);
 
                 modelEffect.CurrentTechnique.Passes[0].End();
@@ -234,47 +262,62 @@ namespace DaggerfallModelling.ViewControls
             }
         }
 
-        private void DrawBoundingBox()
-        {
-            renderableBoundingBox.Draw(viewMatrix, projectionMatrix, modelEffect.World);
-        }
-
         #endregion
 
         #region Model Management
 
         /// <summary>
-        /// Loads a model to view.
+        /// Loads and positions current model.
+        /// </summary>
+        private void LayoutModel()
+        {
+            // Load model based on source
+            if (useFilteredModels)
+                LoadModel(host.FilteredModelsArray[currentModelIndex]);
+            else
+                LoadModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
+
+            // TODO: Reset camera position and rotation
+        }
+
+        /// <summary>
+        /// Loads a model for view. Should only be called from LayoutModel.
         /// </summary>
         /// <param name="id">ID of model.</param>
         private void LoadModel(int id)
         {
+            // Do nothing if model already loaded
+            if (currentModelId == id)
+                return;
+
             // Load the model
-            model = host.ModelManager.GetModel(id, false);
+            currentModel = host.ModelManager.GetModel(id, false);
 
             // Load texture for each submesh.
-            for (int sm = 0; sm < model.SubMeshes.Length; sm++)
+            for (int sm = 0; sm < currentModel.SubMeshes.Length; sm++)
             {
                 // Load textures
-                model.SubMeshes[sm].TextureKey =
+                currentModel.SubMeshes[sm].TextureKey =
                     host.TextureManager.LoadTexture(
-                    model.SubMeshes[sm].TextureArchive,
-                    model.SubMeshes[sm].TextureRecord);
+                    currentModel.SubMeshes[sm].TextureArchive,
+                    currentModel.SubMeshes[sm].TextureRecord);
             }
 
             // Centre model
-            Vector3 Min = model.BoundingBox.Min;
-            Vector3 Max = model.BoundingBox.Max;
+            Vector3 Min = currentModel.BoundingBox.Min;
+            Vector3 Max = currentModel.BoundingBox.Max;
             float transX = (float)(Min.X + ((Max.X - Min.X) / 2));
             float transY = (float)(Min.Y + ((Max.Y - Min.Y) / 2));
             float transZ = (float)(Min.Z + ((Max.Z - Min.Z) / 2));
             Matrix matrix = Matrix.CreateTranslation(-transX, -transY, -transZ);
 
-            // Apply matrix to model
-            model = host.ModelManager.TransformModel(ref model, matrix);
+            // TODO: Position camera so model is at a nice distance at load
 
-            // Create renderable bounding box
-            renderableBoundingBox = new RenderableBoundingBox(host.GraphicsDevice, model.BoundingBox);
+            // Apply matrix to model
+            currentModel = host.ModelManager.TransformModel(ref currentModel, matrix);
+
+            // Store current model id
+            currentModelId = id;
         }
 
         #endregion
@@ -296,6 +339,32 @@ namespace DaggerfallModelling.ViewControls
 
             // Update view matrix
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Updates projection matrix to current view size.
+        /// </summary>
+        private void UpdateProjectionMatrix()
+        {
+            // Create projection matrix
+            if (host.IsReady)
+            {
+                float aspectRatio = (float)host.Width / (float)host.Height;
+                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
+            }
+        }
+
+        /// <summary>
+        /// Updates status message.
+        /// </summary>
+        private void UpdateStatusMessage()
+        {
+            // Set the message
+            host.StatusMessage = string.Empty;
         }
 
         #endregion

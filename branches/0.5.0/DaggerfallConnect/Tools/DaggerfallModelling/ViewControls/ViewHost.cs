@@ -82,6 +82,9 @@ namespace DaggerfallModelling.ViewControls
         // Status message
         private string statusMessage;
 
+        // Camera mode
+        private CameraModes cameraMode = CameraModes.Normal;
+
         #endregion
 
         #region Class Structures
@@ -99,6 +102,18 @@ namespace DaggerfallModelling.ViewControls
             ModelView,
             /// <summary>Viewing a location.</summary>
             LocationView,
+        }
+
+        /// <summary>
+        /// Camera modes supported.
+        /// </summary>
+        public enum CameraModes
+        {
+            /// <summary>The normal camera is for object rotation in model/block
+            ///  views and top-down in location view.</summary>
+            Normal,
+            /// <summary>The free camera is a first-person mode.</summary>
+            Free,
         }
 
         #endregion
@@ -129,6 +144,15 @@ namespace DaggerfallModelling.ViewControls
         public ViewModes ViewMode
         {
             get { return viewMode; }
+        }
+
+        /// <summary>
+        /// Gets or sets camera mode.
+        /// </summary>
+        public CameraModes CameraMode
+        {
+            get { return cameraMode; }
+            set { cameraMode = value; }
         }
 
         /// <summary>
@@ -559,6 +583,15 @@ namespace DaggerfallModelling.ViewControls
                 updateTimer.Enabled = false;
         }
 
+        /// <summary>
+        /// Key down.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+        }
+
         #endregion
 
         #region Public Methods
@@ -604,28 +637,24 @@ namespace DaggerfallModelling.ViewControls
         #region View Methods
 
         /// <summary>
-        /// Browse all Daggerfall's models as thumbnails.
+        /// Shows thumbnails.
         /// </summary>
-        public void ShowAllThumbnails()
+        public void ShowThumbnailsView()
         {
-            // Not implemented
-        }
-
-        /// <summary>
-        /// Shows a list of thumbnails.
-        /// </summary>
-        public void ShowThumbnailsList()
-        {
-            // Not implemented
+            // Set view mode
+            viewMode = ViewModes.ThumbnailView;
+            viewClients[viewMode].ResumeView();
         }
 
         /// <summary>
         /// Shows a single model.
         /// </summary>
-        /// <param name="modelId">Model ID.</param>
-        public void ShowModel(int modelId)
+        /// <param name="modelId">Index of model to show.</param>
+        public void ShowModelView(int index)
         {
-            // Not implemented
+            // Set view mode
+            viewMode = ViewModes.ModelView;
+            viewClients[viewMode].ResumeView();
         }
 
         /// <summary>
@@ -644,8 +673,8 @@ namespace DaggerfallModelling.ViewControls
         public void ShowLocationExterior(DFLocation dfLocation)
         {
             // Set location in view
-            LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
-            locationView.SetLocation(ref dfLocation);
+            //LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
+            //locationView.SetLocation(ref dfLocation);
         }
 
         /// <summary>
@@ -655,8 +684,8 @@ namespace DaggerfallModelling.ViewControls
         public void ShowLocationDungeon(DFLocation dfLocation)
         {
             // Set location in view
-            LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
-            locationView.SetLocation(ref dfLocation);
+            //LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
+            //locationView.SetLocation(ref dfLocation);
         }
 
         /// <summary>
@@ -742,11 +771,7 @@ namespace DaggerfallModelling.ViewControls
         {
             filteredModelsArray = array;
             if (isReady)
-            {
-                viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
-                viewClients[ViewModes.ModelView].FilteredModelsChanged();
-                viewClients[ViewModes.LocationView].FilteredModelsChanged();
-            }
+                viewClients[viewMode].FilteredModelsChanged();
         }
 
         /// <summary>

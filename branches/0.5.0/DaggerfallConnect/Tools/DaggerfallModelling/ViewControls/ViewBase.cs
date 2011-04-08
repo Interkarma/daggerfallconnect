@@ -111,6 +111,12 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public abstract void FilteredModelsChanged();
 
+        /// <summary>
+        /// Called when the view is resumed after being inactive.
+        ///  Allows view to perform any layout or other requirements before redraw.
+        /// </summary>
+        public abstract void ResumeView();
+
         #endregion
 
     }

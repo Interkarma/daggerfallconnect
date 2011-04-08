@@ -34,7 +34,6 @@ namespace DaggerfallModelling.ViewControls
         // Layout
         private int thumbsPerRow = 5;
         private int thumbsFirstVisibleRow = 0;
-        private int thumbsLastVisibleIndex = 0;
         private int thumbSpacing = 16;
         private int thumbWidth;
         private int thumbHeight;
@@ -91,6 +90,19 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets model key of thumbnail under the mouse.
+        ///  Returns -1 if no thumbnail under mouse.
+        /// </summary>
+        public int MouseOverThumbnail
+        {
+            get { return mouseOverThumb; } 
+        }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -130,8 +142,8 @@ namespace DaggerfallModelling.ViewControls
             // Load the thumbnail background texture
             LoadThumbnailBackgroundTexture();
 
-            // Set initial status message
-            SetStatusMessage();
+            // Show initial status
+            UpdateStatusMessage();
         }
 
         /// <summary>
@@ -164,6 +176,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Update thumbnail layout
             LayoutThumbnails();
+            UpdateStatusMessage();
         }
 
         /// <summary>
@@ -255,7 +268,12 @@ namespace DaggerfallModelling.ViewControls
             if (host.FilteredModelsArray == null)
             {
                 useFilteredModels = false;
-                SetStatusMessage();
+                thumbsFirstVisibleRow = 0;
+                thumbScrollAmount = 0;
+                thumbScrollVelocity = 0;
+                thumbDict.Clear();
+                LayoutThumbnails();
+                UpdateStatusMessage();
             }
             else
             {
@@ -264,9 +282,49 @@ namespace DaggerfallModelling.ViewControls
                 thumbScrollAmount = 0;
                 thumbScrollVelocity = 0;
                 thumbDict.Clear();
-                host.Refresh();
-                SetStatusMessage();
+                LayoutThumbnails();
+                UpdateStatusMessage();
             }
+        }
+
+        /// <summary>
+        /// Called when the view is resumed after being inactive.
+        ///  Allows view to perform any layout or other requirements before redraw.
+        /// </summary>
+        public override void ResumeView()
+        {
+            // Check filtered models list is active.
+            // A little bit of handling here to keep list at same position
+            // unless a reset is specfically needed due to array gone, overflow, etc.
+            // This will resume the same view whenever possible.
+            if (useFilteredModels)
+            {
+                if (host.FilteredModelsArray == null)
+                {
+                    // Filter array no longer active.
+                    // Reset view.
+                    FilteredModelsChanged();
+                }
+                else
+                {
+                    // Check still within bounds of array.
+                    // Reset view if overflow.
+                    if (thumbsFirstVisibleRow * thumbsPerRow > host.FilteredModelsArray.Length)
+                        FilteredModelsChanged();
+                }
+            }
+            else
+            {
+                // If a filter array is now active, switch to it
+                if (host.FilteredModelsArray != null)
+                    FilteredModelsChanged();
+            }
+
+            // Reset layout, status message, and refresh
+            thumbScrollVelocity = 0;
+            LayoutThumbnails();
+            UpdateStatusMessage();
+            host.Refresh();
         }
 
         #endregion
@@ -477,9 +535,6 @@ namespace DaggerfallModelling.ViewControls
                     xpos = thumbSpacing;
                 }
             }
-
-            // Store last index for status message
-            thumbsLastVisibleIndex = lastIndex;
         }
 
         /// <summary>
@@ -594,6 +649,7 @@ namespace DaggerfallModelling.ViewControls
                 {
                     thumbsFirstVisibleRow++;
                     thumbScrollAmount += (thumbHeight + thumbSpacing);
+                    UpdateStatusMessage();
                 }
             }
 
@@ -604,10 +660,9 @@ namespace DaggerfallModelling.ViewControls
                 {
                     thumbsFirstVisibleRow--;
                     thumbScrollAmount -= (thumbHeight + thumbSpacing);
+                    UpdateStatusMessage();
                 }
             }
-
-            SetStatusMessage();
         }
 
         /// <summary>
@@ -665,7 +720,7 @@ namespace DaggerfallModelling.ViewControls
 
         #region Private Methods
 
-        private void SetStatusMessage()
+        private void UpdateStatusMessage()
         {
             int count;
             string message;
@@ -683,7 +738,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Add position in list
-            message += string.Format(" You are at model {0} of {1}.", thumbsLastVisibleIndex + 1, count);
+            message += string.Format(" You are at model {0} of {1}.", thumbsFirstVisibleRow * thumbsPerRow, count);
 
             // Set the message
             host.StatusMessage = message;

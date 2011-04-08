@@ -178,10 +178,19 @@ namespace DaggerfallModelling
                 SearchLocationsToolStripButton.Checked = true;
 
             // Check view mode
-            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView)
-                ViewThumbsToolStripButton.Checked = true;
-            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView)
-                ViewSingleModelToolStripButton.Checked = true;
+            UpdateCheckedView();
+
+            // Check camera mode
+            if (ContentView.CameraMode == ViewHost.CameraModes.Normal)
+            {
+                NormalCameraToolStripButton.Checked = true;
+                FreeCameraToolStripButton.Checked = false;
+            }
+            else if (ContentView.CameraMode == ViewHost.CameraModes.Free)
+            {
+                NormalCameraToolStripButton.Checked = false;
+                FreeCameraToolStripButton.Checked = true;
+            }   
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -735,6 +744,87 @@ namespace DaggerfallModelling
                 SearchResultsImageList.Images.IndexOfKey(imageKey),
                 SearchResultsImageList.Images.IndexOfKey(imageKey));
             locationNode.Tag = LocationTag;
+        }
+
+        #endregion
+
+        #region View Change Events
+
+        /// <summary>
+        /// Updates the checked toolbar button to active view.
+        /// </summary>
+        private void UpdateCheckedView()
+        {
+            // Uncheck items
+            ViewThumbsToolStripButton.Checked = false;
+            ViewSingleModelToolStripButton.Checked = false;
+            ViewBlockToolStripButton.Checked = false;
+            ViewLocationToolStripButton.Checked = false;
+
+            // Check current item
+            switch (ContentView.ViewMode)
+            {
+                case ViewHost.ViewModes.ThumbnailView:
+                    ViewThumbsToolStripButton.Checked = true;
+                    break;
+                case ViewHost.ViewModes.ModelView:
+                    ViewSingleModelToolStripButton.Checked = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// User selected thumbnails view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewThumbsToolStripButton_Click(object sender, EventArgs e)
+        {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowThumbnailsView();
+            UpdateCheckedView();
+        }
+
+        /// <summary>
+        /// User selected model view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewSingleModelToolStripButton_Click(object sender, EventArgs e)
+        {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowModelView(0);
+            UpdateCheckedView();
+        }
+
+        /// <summary>
+        /// User selected block view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// User selected location view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewLocationToolStripButton_Click(object sender, EventArgs e)
+        {
         }
 
         #endregion
