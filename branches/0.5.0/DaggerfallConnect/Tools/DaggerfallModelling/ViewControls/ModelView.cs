@@ -233,7 +233,7 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.RenderState.AlphaTestEnable = false;
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
