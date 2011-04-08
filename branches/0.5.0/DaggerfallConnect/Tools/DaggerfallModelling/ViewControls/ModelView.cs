@@ -44,17 +44,17 @@ namespace DaggerfallModelling.ViewControls
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
         private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 10000.0f;
+        private float farPlaneDistance = 5000.0f;
         private Matrix projectionMatrix;
         private Matrix viewMatrix;
-        private Vector3 cameraPosition = new Vector3(0, 0, 1000);
+        private Vector3 cameraPosition;
         private Vector3 cameraReference = new Vector3(0, 0, -1);
-        private Vector3 cameraUpVector = new Vector3(0, 1, 0);
+        private Vector3 cameraUpVector = Vector3.Up;
 
         // Movement
         private Matrix modelRotation = Matrix.Identity;
         private Matrix modelTranslation = Matrix.Identity;
-        private float translationStep = 100.0f;
+        private float translationStep = 10.0f;
 
         // Models list
         private bool useFilteredModels = false;
@@ -195,12 +195,14 @@ namespace DaggerfallModelling.ViewControls
             {
                 useFilteredModels = false;
                 currentModelIndex = 0;
+                LayoutModel();
                 UpdateStatusMessage();
             }
             else
             {
                 useFilteredModels = true;
                 currentModelIndex = 0;
+                LayoutModel();
                 UpdateStatusMessage();
             }
         }
@@ -212,9 +214,8 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             UpdateProjectionMatrix();
-            UpdateStatusMessage();
-            LayoutModel();
-            host.Invalidate();
+            FilteredModelsChanged();
+            host.Refresh();
         }
 
         #endregion
@@ -234,6 +235,10 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
             host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
@@ -277,7 +282,16 @@ namespace DaggerfallModelling.ViewControls
             else
                 LoadModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
 
-            // TODO: Reset camera position and rotation
+            // Reset camera position and model rotation
+            Vector3 Min = currentModel.BoundingBox.Min;
+            Vector3 Max = currentModel.BoundingBox.Max;
+            cameraPosition.X = 0.0f;
+            cameraPosition.Y = 0.0f;
+            cameraPosition.Z = 600.0f + (Max.Z - Min.Z);
+            modelRotation = Matrix.Identity;
+
+            // Update view matrix
+            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
         }
 
         /// <summary>
@@ -311,8 +325,6 @@ namespace DaggerfallModelling.ViewControls
             float transZ = (float)(Min.Z + ((Max.Z - Min.Z) / 2));
             Matrix matrix = Matrix.CreateTranslation(-transX, -transY, -transZ);
 
-            // TODO: Position camera so model is at a nice distance at load
-
             // Apply matrix to model
             currentModel = host.ModelManager.TransformModel(ref currentModel, matrix);
 
@@ -332,10 +344,12 @@ namespace DaggerfallModelling.ViewControls
             cameraPosition.Z += Z;
 
             // Cap Z
+            Vector3 Min = currentModel.BoundingBox.Min;
+            Vector3 Max = currentModel.BoundingBox.Max;
             if (cameraPosition.Z < nearPlaneDistance)
                 cameraPosition.Z = nearPlaneDistance;
-            if (cameraPosition.Z > farPlaneDistance)
-                cameraPosition.Z = farPlaneDistance;
+            if (cameraPosition.Z > farPlaneDistance - (Max.Z - Min.Z))
+                cameraPosition.Z = farPlaneDistance - (Max.Z - Min.Z);
 
             // Update view matrix
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);

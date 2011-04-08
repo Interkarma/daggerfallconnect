@@ -265,26 +265,22 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void FilteredModelsChanged()
         {
+            // Reset view
             if (host.FilteredModelsArray == null)
             {
                 useFilteredModels = false;
                 thumbsFirstVisibleRow = 0;
                 thumbScrollAmount = 0;
-                thumbScrollVelocity = 0;
-                thumbDict.Clear();
-                LayoutThumbnails();
-                UpdateStatusMessage();
             }
             else
             {
                 useFilteredModels = true;
                 thumbsFirstVisibleRow = 0;
                 thumbScrollAmount = 0;
-                thumbScrollVelocity = 0;
-                thumbDict.Clear();
-                LayoutThumbnails();
-                UpdateStatusMessage();
             }
+
+            // Clear thumbnails
+            thumbDict.Clear();
         }
 
         /// <summary>
@@ -301,23 +297,25 @@ namespace DaggerfallModelling.ViewControls
             {
                 if (host.FilteredModelsArray == null)
                 {
-                    // Filter array no longer active.
-                    // Reset view.
+                    // Filter array no longer active. Reset view.
                     FilteredModelsChanged();
                 }
                 else
                 {
-                    // Check still within bounds of array.
-                    // Reset view if overflow.
+                    // Check still within bounds of array. Reset view if overflow.
                     if (thumbsFirstVisibleRow * thumbsPerRow > host.FilteredModelsArray.Length)
+                    {
                         FilteredModelsChanged();
+                    }
                 }
             }
             else
             {
                 // If a filter array is now active, switch to it
                 if (host.FilteredModelsArray != null)
+                {
                     FilteredModelsChanged();
+                }
             }
 
             // Reset layout, status message, and refresh
@@ -420,6 +418,11 @@ namespace DaggerfallModelling.ViewControls
             // Host must be ready as layout depends on host control dimensions
             if (!host.IsReady)
                 return;
+
+            // If this is a full layout, set flag to update status at end
+            bool updateStatus = false;
+            if (thumbDict.Count == 0)
+                updateStatus = true;
 
             // Calc dimensions. Leaving a little gap on the right for a scrollbar.
             thumbWidth = ((host.Width - thumbSpacing * thumbsPerRow) / thumbsPerRow) - (thumbSpacing / thumbsPerRow + 1);
@@ -535,6 +538,10 @@ namespace DaggerfallModelling.ViewControls
                     xpos = thumbSpacing;
                 }
             }
+
+            // Update status
+            if (updateStatus)
+                UpdateStatusMessage();
         }
 
         /// <summary>

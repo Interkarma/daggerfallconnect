@@ -769,9 +769,14 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="array"></param>
         private void AssignFilteredModels(int[] array)
         {
+            // Assign new array to views
             filteredModelsArray = array;
             if (isReady)
-                viewClients[viewMode].FilteredModelsChanged();
+            {
+                viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
+                viewClients[ViewModes.ModelView].FilteredModelsChanged();
+                viewClients[ViewModes.LocationView].FilteredModelsChanged();
+            }
         }
 
         /// <summary>
