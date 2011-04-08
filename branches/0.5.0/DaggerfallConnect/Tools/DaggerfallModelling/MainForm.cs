@@ -341,6 +341,16 @@ namespace DaggerfallModelling
             dlg.ShowDialog();
         }
 
+        /// <summary>
+        /// Called when content view status message changed
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">StatusMessageEventArgs.</param>
+        private void ContentView_StatusMessageChanged(object sender, ViewHost.StatusMessageEventArgs e)
+        {
+            ContentViewStatusLabel.Text = e.Message;
+        }
+
         #endregion
 
         #region Search Methods

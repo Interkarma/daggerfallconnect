@@ -43,7 +43,7 @@ namespace DaggerfallModelling.ViewControls
         private BlockManager blockManager;
 
         // Connect objects
-        MapsFile mapsFile;
+        private MapsFile mapsFile;
 
         // Mouse
         private Point mousePos;
@@ -66,18 +66,21 @@ namespace DaggerfallModelling.ViewControls
         private SpriteBatch spriteBatch;
 
         // Appearance
-        Color backgroundColour = Color.Gray;
+        private Color backgroundColour = Color.Gray;
 
         // Views
         private ViewModes viewMode = ViewModes.ThumbnailView;
         private Dictionary<ViewModes, ViewBase> viewClients;
 
         // Content
-        ContentHelper contentHelper;
-        SpriteFont arialSmallFont;
+        private ContentHelper contentHelper;
+        private SpriteFont arialSmallFont;
 
         // Filtered model array consumed by thumbnail and single model views
-        int[] filteredModelsArray;
+        private int[] filteredModelsArray;
+
+        // Status message
+        private string statusMessage;
 
         #endregion
 
@@ -101,6 +104,15 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets status message.
+        /// </summary>
+        public string StatusMessage
+        {
+            get { return statusMessage; }
+            set { SetStatusMessage(value); }
+        }
 
         /// <summary>
         /// Gets ready flag indicating host is operating.
@@ -256,6 +268,36 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region Event Arguments
+
+        public class StatusMessageEventArgs
+        {
+            public string Message;
+        }
+
+        #endregion
+
+        #region StatusMessageChanged Event
+
+        public delegate void StatusMessageChangedEventHandler(object sender, StatusMessageEventArgs e);
+        public event StatusMessageChangedEventHandler StatusMessageChanged;
+
+        protected virtual void RaiseStatusMessageChangedEvent()
+        {
+            // Do nothing when not created
+            if (StatusMessageChanged == null)
+                return;
+
+            // Assign arguments
+            StatusMessageEventArgs e = new StatusMessageEventArgs();
+            e.Message = statusMessage;
+
+            // Raise event
+            StatusMessageChanged(this, e);
+        }
+
+        #endregion
+
         #region Abstract Implementations
 
         /// <summary>
@@ -404,8 +446,8 @@ namespace DaggerfallModelling.ViewControls
             mouseTime = stopwatch.ElapsedTicks;
 
             // Set mouse velocity
-            mouseVelocity.X = (float)mousePosDelta.X / (float)mouseTimeDelta * 1000000.0f;
-            mouseVelocity.Y = (float)mousePosDelta.Y / (float)mouseTimeDelta * 1000000.0f;
+            mouseVelocity.X = (float)mousePosDelta.X / (float)mouseTimeDelta * 10000.0f;
+            mouseVelocity.Y = (float)mousePosDelta.Y / (float)mouseTimeDelta * 10000.0f;
 
             // Move mouse in current view mode
             if (isReady && viewMode != ViewModes.None)
@@ -705,6 +747,16 @@ namespace DaggerfallModelling.ViewControls
                 viewClients[ViewModes.ModelView].FilteredModelsChanged();
                 viewClients[ViewModes.LocationView].FilteredModelsChanged();
             }
+        }
+
+        /// <summary>
+        /// Set status message.
+        /// </summary>
+        /// <param name="statusMessage"></param>
+        private void SetStatusMessage(string statusMessage)
+        {
+            this.statusMessage = statusMessage;
+            RaiseStatusMessageChangedEvent();
         }
 
         #endregion

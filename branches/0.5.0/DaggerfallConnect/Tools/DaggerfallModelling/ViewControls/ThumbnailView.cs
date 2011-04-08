@@ -34,6 +34,7 @@ namespace DaggerfallModelling.ViewControls
         // Layout
         private int thumbsPerRow = 5;
         private int thumbsFirstVisibleRow = 0;
+        private int thumbsLastVisibleIndex = 0;
         private int thumbSpacing = 16;
         private int thumbWidth;
         private int thumbHeight;
@@ -128,6 +129,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Load the thumbnail background texture
             LoadThumbnailBackgroundTexture();
+
+            // Set initial status message
+            SetStatusMessage();
         }
 
         /// <summary>
@@ -219,7 +223,7 @@ namespace DaggerfallModelling.ViewControls
             // Set scroll velocity on right mouse up
             if (e.Button == MouseButtons.Right)
             {
-                thumbScrollVelocity = (int)(host.MouseVelocity.Y * 0.01f);
+                thumbScrollVelocity = (int)host.MouseVelocity.Y;
                 if (thumbScrollVelocity <= -thumbHeight / 2) thumbScrollVelocity = -thumbHeight / 2;
                 if (thumbScrollVelocity >= thumbHeight / 2) thumbScrollVelocity = thumbHeight / 2;
             }
@@ -251,6 +255,7 @@ namespace DaggerfallModelling.ViewControls
             if (host.FilteredModelsArray == null)
             {
                 useFilteredModels = false;
+                SetStatusMessage();
             }
             else
             {
@@ -260,6 +265,7 @@ namespace DaggerfallModelling.ViewControls
                 thumbScrollVelocity = 0;
                 thumbDict.Clear();
                 host.Refresh();
+                SetStatusMessage();
             }
         }
 
@@ -471,6 +477,9 @@ namespace DaggerfallModelling.ViewControls
                     xpos = thumbSpacing;
                 }
             }
+
+            // Store last index for status message
+            thumbsLastVisibleIndex = lastIndex;
         }
 
         /// <summary>
@@ -597,6 +606,8 @@ namespace DaggerfallModelling.ViewControls
                     thumbScrollAmount -= (thumbHeight + thumbSpacing);
                 }
             }
+
+            SetStatusMessage();
         }
 
         /// <summary>
@@ -648,6 +659,34 @@ namespace DaggerfallModelling.ViewControls
             thumb.rect.Height += mouseOverThumbGrow;
 
             thumbDict[key] = thumb;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void SetStatusMessage()
+        {
+            int count;
+            string message;
+
+            // State how many models we are viewing
+            if (!useFilteredModels)
+            {
+                count = host.ModelManager.Arch3dFile.Count;
+                message = "Viewing all models in ARCH3D.BSA.";
+            }
+            else
+            {
+                count = host.FilteredModelsArray.Length;
+                message = "Viewing filtered list of models.";
+            }
+
+            // Add position in list
+            message += string.Format(" You are at model {0} of {1}.", thumbsLastVisibleIndex + 1, count);
+
+            // Set the message
+            host.StatusMessage = message;
         }
 
         #endregion
