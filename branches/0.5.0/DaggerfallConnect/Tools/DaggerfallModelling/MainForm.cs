@@ -107,6 +107,7 @@ namespace DaggerfallModelling
             // TEST: Set block view
             ContentView.ShowBlockView("MAGEAA13.RMB");
             UpdateCheckedView();
+            UpdateCheckedCameraMode();
         }
 
         private void BrowseArena2Path()
@@ -178,20 +179,9 @@ namespace DaggerfallModelling
             SearchBlocksToolStripButton.Checked = searchBlocks;
             SearchLocationsToolStripButton.Checked = searchLocations;
 
-            // Check view mode
+            // Update toolbar items
             UpdateCheckedView();
-
-            // Check camera mode
-            if (ContentView.CameraMode == ViewHost.CameraModes.Normal)
-            {
-                NormalCameraToolStripButton.Checked = true;
-                FreeCameraToolStripButton.Checked = false;
-            }
-            else if (ContentView.CameraMode == ViewHost.CameraModes.Free)
-            {
-                NormalCameraToolStripButton.Checked = false;
-                FreeCameraToolStripButton.Checked = true;
-            }
+            UpdateCheckedCameraMode();
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -295,8 +285,8 @@ namespace DaggerfallModelling
         private void AutoMapView_ModeChanged(object sender, DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventArgs e)
         {
             // Enable mode changes based on allowed modes
-            if (e.ExteriorModeAllowed) ExteriorModeToolStripButton.Enabled = true; else ExteriorModeToolStripButton.Enabled = false;
-            if (e.DungeonModeAllowed) DungeonModeToolStripButton.Enabled = true; else DungeonModeToolStripButton.Enabled = false;
+            ExteriorModeToolStripButton.Enabled = (e.ExteriorModeAllowed) ? true : false;
+            DungeonModeToolStripButton.Enabled = (e.DungeonModeAllowed) ? true : false;
 
             // Uncheck all modes
             switch (e.ViewMode)
@@ -780,6 +770,31 @@ namespace DaggerfallModelling
         }
 
         /// <summary>
+        /// Updates the camera mode based on active view.
+        /// </summary>
+        private void UpdateCheckedCameraMode()
+        {
+            // Check camera mode
+            NormalCameraToolStripButton.Checked = false;
+            FreeCameraToolStripButton.Checked = false;
+            NormalCameraToolStripButton.Enabled = true;
+            FreeCameraToolStripButton.Enabled = true;
+            switch (ContentView.CameraMode)
+            {
+                case ViewBase.CameraModes.Normal:
+                    NormalCameraToolStripButton.Checked = true;
+                    break;
+                case ViewBase.CameraModes.Free:
+                    FreeCameraToolStripButton.Checked = true;
+                    break;
+                default:
+                    NormalCameraToolStripButton.Enabled = false;
+                    FreeCameraToolStripButton.Enabled = false;
+                    break;
+            }
+        }
+
+        /// <summary>
         /// User selected thumbnails view.
         /// </summary>
         /// <param name="sender">Sender.</param>
@@ -794,6 +809,7 @@ namespace DaggerfallModelling
             // Set view
             ContentView.ShowThumbnailsView();
             UpdateCheckedView();
+            UpdateCheckedCameraMode();
         }
 
         /// <summary>
@@ -811,6 +827,7 @@ namespace DaggerfallModelling
             // Set view
             ContentView.ShowModelView(0);
             UpdateCheckedView();
+            UpdateCheckedCameraMode();
         }
 
         /// <summary>
@@ -828,6 +845,7 @@ namespace DaggerfallModelling
             // Set view
             ContentView.ShowBlockView(string.Empty);
             UpdateCheckedView();
+            UpdateCheckedCameraMode();
         }
 
         /// <summary>

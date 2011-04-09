@@ -53,13 +53,19 @@ namespace DaggerfallModelling.ViewControls
         private Matrix viewMatrix;
         private Matrix worldMatrix;
         private BoundingFrustum viewFrustum;
-        private Vector3 cameraPosition = new Vector3(2048, 64, 2048);
-        private Vector3 cameraReference = Vector3.Forward;
+
+        // Camera
+        private BoundingBox exteriorBounds;
+        private BoundingBox dungeonBounds;
+        private Vector3 cameraPosition = new Vector3(2048, 4096, -2048);
+        private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
         private Vector3 cameraUpVector = Vector3.Up;
 
+        // Movement
+        private Vector3 cameraVelocity;
+        private float cameraStepMuliplier = 4.0f;
+
         // Batching options
-        int visibleExteriorBlock = -1;
-        int visibleDungeonBlock = -1;
         BatchModes batchMode = BatchModes.SingleExteriorBlock;
         BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
 
@@ -168,6 +174,11 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Tick()
         {
+            // Apply camera velocity in normal mode
+            if (CameraMode == CameraModes.Normal)
+            {
+                TranslateCameraXZ(cameraVelocity.X, cameraVelocity.Z);
+            }
         }
 
         /// <summary>
@@ -274,45 +285,17 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
-            /*
-            movement = Vector3.Zero;
-
-            // Change camera facing or position based on mouse button down
-            if (host.LeftMouseDown)
+            // Normal camera movement
+            if (CameraMode == CameraModes.Normal)
             {
-                // Update yaw and pitch
-                cameraYaw += (-host.MousePosDelta.X * rotationStep) * host.TimeDelta;
-                cameraPitch += (-host.MousePosDelta.Y * rotationStep) * host.TimeDelta;
+                // Scene dragging
+                if (host.RightMouseDown)
+                {
+                    TranslateCameraXZ(
+                        (float)-host.MousePosDelta.X * cameraStepMuliplier,
+                        (float)-host.MousePosDelta.Y * cameraStepMuliplier);
+                }
             }
-            else if (host.RightMouseDown)
-            {
-                // Update movement
-                movement.Z += (-host.MousePosDelta.Y * translationStep) * host.TimeDelta;
-            }
-
-            // Create rotation matrix from yaw and pitch
-            Matrix rotation;
-            Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
-            rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
-
-            // Adjust position
-            if (movement != Vector3.Zero)
-            {
-                Vector3.Transform(ref movement, ref rotation, out movement);
-                cameraPosition -= (movement * translationStep) * host.TimeDelta;
-
-                // Cap Y
-                if (cameraPosition.Y < cameraHeight)
-                    cameraPosition.Y = cameraHeight;
-            }
-
-            // Transform camera
-            Vector3 transformedReference;
-            Vector3.Transform(ref cameraReference, ref rotation, out transformedReference);
-            Vector3 cameraTarget;
-            Vector3.Add(ref cameraPosition, ref transformedReference, out cameraTarget);
-            Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
-            */
         }
 
         /// <summary>
@@ -329,6 +312,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseDown(MouseEventArgs e)
         {
+            // Clear camera velocity for any mouse down event
+            cameraVelocity = Vector3.Zero;
         }
 
         /// <summary>
@@ -337,6 +322,23 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseUp(MouseEventArgs e)
         {
+            // Normal camera movement
+            if (CameraMode == CameraModes.Normal)
+            {
+                // Scene dragging
+                if (e.Button == MouseButtons.Right)
+                {
+                    // Set scroll velocity on right mouse up
+                    cameraVelocity = new Vector3(
+                        -host.MouseVelocity.X * cameraStepMuliplier,
+                        0.0f,
+                        -host.MouseVelocity.Y * cameraStepMuliplier);
+
+                    // Cap velocity at very small amounts to prevent sliding
+                    if (cameraVelocity.X > -cameraStepMuliplier && cameraVelocity.X < cameraStepMuliplier) cameraVelocity.X = 0.0f;
+                    if (cameraVelocity.Z > -cameraStepMuliplier && cameraVelocity.Z < cameraStepMuliplier) cameraVelocity.Z = 0.0f;
+                }
+            }
         }
 
         /// <summary>
@@ -512,6 +514,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Add to layout dictionary
             exteriorLayout.Add(key, blockPosition);
+
+            // Bounds are equivalent to block
+            exteriorBounds = blockPosition.block.BoundingBox;
         }
 
         /// <summary>
@@ -539,6 +544,8 @@ namespace DaggerfallModelling.ViewControls
 
             // Add to layout dictionary
             dungeonLayout.Add(key, blockPosition);
+
+            // TODO: Set bounds
         }
 
         /// <summary>
@@ -579,6 +586,8 @@ namespace DaggerfallModelling.ViewControls
                     exteriorLayout.Add(key, blockPosition);
                 }
             }
+
+            // TODO: Set bounds
         }
 
         /// <summary>
@@ -608,6 +617,8 @@ namespace DaggerfallModelling.ViewControls
                 // Add to layout dictionary
                 dungeonLayout.Add(key, blockPosition);
             }
+
+            // TODO: Set bounds
         }
 
         /// <summary>
@@ -675,23 +686,24 @@ namespace DaggerfallModelling.ViewControls
 
         #region Camera Methods
 
-        private void TranslateCamera(float X, float Y, float Z)
+        private void TranslateCameraXZ(float x, float z)
         {
-            /*
             // Translate camera vector
-            cameraPosition.X += X;
-            cameraPosition.Y += Y;
-            cameraPosition.Z += Z;
+            cameraPosition.X += x;
+            cameraPosition.Z += z;
 
-            // Cap Z
-            if (cameraPosition.Z < nearPlaneDistance)
-                cameraPosition.Z = nearPlaneDistance;
-            if (cameraPosition.Z > farPlaneDistance)
-                cameraPosition.Z = farPlaneDistance;
+            // Keep camera within bounds
+            if (batchMode == BatchModes.SingleExteriorBlock ||
+                batchMode == BatchModes.FullExterior)
+            {
+                if (cameraPosition.X < exteriorBounds.Min.X) cameraPosition.X = exteriorBounds.Min.X;
+                if (cameraPosition.Z < exteriorBounds.Min.Z) cameraPosition.Z = exteriorBounds.Min.Z;
+                if (cameraPosition.X > exteriorBounds.Max.X) cameraPosition.X = exteriorBounds.Max.X;
+                if (cameraPosition.Z > exteriorBounds.Max.Z) cameraPosition.Z = exteriorBounds.Max.Z;
+            }
 
             // Update view matrix
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
-            */
         }
 
         #endregion

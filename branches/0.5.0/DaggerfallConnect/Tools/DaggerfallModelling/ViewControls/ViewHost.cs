@@ -82,9 +82,6 @@ namespace DaggerfallModelling.ViewControls
         // Status message
         private string statusMessage;
 
-        // Camera mode
-        private CameraModes cameraMode = CameraModes.Normal;
-
         #endregion
 
         #region Class Structures
@@ -104,18 +101,6 @@ namespace DaggerfallModelling.ViewControls
             BlockView,
             /// <summary>Viewing a location.</summary>
             LocationView,
-        }
-
-        /// <summary>
-        /// Camera modes supported.
-        /// </summary>
-        public enum CameraModes
-        {
-            /// <summary>The normal camera is for object rotation in model/block
-            ///  views and top-down in location view.</summary>
-            Normal,
-            /// <summary>The free camera is a first-person mode.</summary>
-            Free,
         }
 
         #endregion
@@ -151,10 +136,20 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets or sets camera mode.
         /// </summary>
-        public CameraModes CameraMode
+        public ViewBase.CameraModes CameraMode
         {
-            get { return cameraMode; }
-            set { cameraMode = value; }
+            get
+            {
+                if (isReady)
+                    return viewClients[viewMode].CameraMode;
+                else
+                    return ViewBase.CameraModes.None;
+            }
+            set
+            {
+                if (isReady)
+                    viewClients[viewMode].CameraMode = value;
+            }
         }
 
         /// <summary>

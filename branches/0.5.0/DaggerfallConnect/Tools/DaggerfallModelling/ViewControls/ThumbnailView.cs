@@ -70,10 +70,6 @@ namespace DaggerfallModelling.ViewControls
         // Models list
         private bool useFilteredModels = false;
 
-        // Status
-        private int firstVisibleModel = 0;
-        private int lastVisibleModel = 0;
-
         #endregion
 
         #region Class Structures
@@ -458,10 +454,6 @@ namespace DaggerfallModelling.ViewControls
                     lastIndex = maxIndex;
             }
 
-            // Set the first and last indices for the status view
-            firstVisibleModel = (firstIndex >= 0) ? firstIndex : 0;
-            lastVisibleModel = lastIndex;
-
             // Calc screen position of first index
             int xpos = thumbSpacing;
             int ypos = -thumbHeight + thumbScrollAmount;
@@ -754,8 +746,28 @@ namespace DaggerfallModelling.ViewControls
                 message = string.Format("Exploring filtered list of {0} models.", count);
             }
 
+            // Determine which thumbnails are actually visible in the client area.
+            // Discounts non-visible thumbnails above and below client used for scrolling.
+            int first = 99999, last = -99999;
+            foreach (var item in thumbDict)
+            {
+                // Get System.Drawing.Rectangle for thumbnail
+                Thumbnails thumb = thumbDict[item.Key];
+                System.Drawing.Rectangle rect = new System.Drawing.Rectangle(
+                    thumb.rect.Left, thumb.rect.Top, thumb.rect.Width, thumb.rect.Height);
+
+                // Only consider if completely or partially inside client rectangle
+                if (host.ClientRectangle.Contains(rect))
+                {
+                    if (thumb.index < first)
+                        first = thumb.index;
+                    if (thumb.index > last)
+                        last = thumb.index;
+                }
+            }
+
             // Add position in list
-            message += string.Format(" You are viewing models {0}-{1}.", firstVisibleModel, lastVisibleModel);
+            message += string.Format(" You are viewing models {0}-{1}.", first, last);
 
             // Set the message
             host.StatusMessage = message;

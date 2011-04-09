@@ -33,6 +33,35 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         protected ViewHost host = null;
+        protected CameraModes cameraMode = CameraModes.Normal;
+
+        #endregion
+
+        #region Class Structures
+
+        public enum CameraModes
+        {
+            /// <summary>No camera mode possible (e.g. content not available).</summary>
+            None,
+            /// <summary>Normal camera.</summary>
+            Normal,
+            /// <summary>Free camera.</summary>
+            Free,
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets camera mode. Each view will manage the camera
+        ///  in a way suited to the content it displays.
+        /// </summary>
+        public CameraModes CameraMode
+        {
+            get { return cameraMode; }
+            set { cameraMode = value; }
+        }
 
         #endregion
 
