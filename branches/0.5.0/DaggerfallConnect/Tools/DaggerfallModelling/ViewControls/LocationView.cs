@@ -57,13 +57,13 @@ namespace DaggerfallModelling.ViewControls
         // Camera
         private BoundingBox exteriorBounds;
         private BoundingBox dungeonBounds;
-        private Vector3 cameraPosition = new Vector3(2048, 6000, -2048);
+        private Vector3 cameraPosition = new Vector3(1024, 8192, -1024);
         private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
         private Vector3 cameraUpVector = Vector3.Up;
 
         // Movement
         private Vector3 cameraVelocity;
-        private float cameraStepMuliplier = 4.0f;
+        private float cameraStepMuliplier = 5.0f;
 
         // Batching options
         BatchModes batchMode = BatchModes.SingleExteriorBlock;
@@ -237,6 +237,10 @@ namespace DaggerfallModelling.ViewControls
             // Update frustum matrix
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
+            // Used to translate ground down a few units to reduce
+            // z-fighting with other ground-aligned planes
+            Matrix ground = Matrix.CreateTranslation(0, -10, 0);
+
             // Draw visible blocks
             Matrix world;
             foreach (var layoutItem in layout)
@@ -265,7 +269,7 @@ namespace DaggerfallModelling.ViewControls
                     batchMode == BatchModes.FullExterior &&
                     BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
                 {
-                    modelEffect.World = world;
+                    modelEffect.World = world * ground;
                     DrawGroundPlane(layoutItem.Key);
                 }
             }
@@ -376,6 +380,10 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Resume view
             UpdateProjectionMatrix();
             UpdateStatusMessage();
             host.Refresh();
@@ -523,6 +531,13 @@ namespace DaggerfallModelling.ViewControls
 
             // Bounds are equivalent to block
             exteriorBounds = blockPosition.block.BoundingBox;
+
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Centre camera in layout
+            cameraPosition.X = (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2;
+            cameraPosition.Z = -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2;
         }
 
         /// <summary>
@@ -551,7 +566,15 @@ namespace DaggerfallModelling.ViewControls
             // Add to layout dictionary
             dungeonLayout.Add(key, blockPosition);
 
-            // TODO: Set bounds
+            // Bounds are equivalent to block
+            dungeonBounds = blockPosition.block.BoundingBox;
+
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Centre camera in layout
+            cameraPosition.X = (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2;
+            cameraPosition.Z = -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2;
         }
 
         /// <summary>
@@ -563,6 +586,9 @@ namespace DaggerfallModelling.ViewControls
             // Get dimensions of exterior location array
             int width = dfLocation.Exterior.ExteriorData.Width;
             int height = dfLocation.Exterior.ExteriorData.Height;
+
+            // Bounding box for layout
+            BoundingBox bounds = new BoundingBox();
 
             // Create exterior layout
             exteriorLayout = new Dictionary<int, BlockPosition>(width * height);
@@ -590,10 +616,23 @@ namespace DaggerfallModelling.ViewControls
 
                     // Add to layout dictionary
                     exteriorLayout.Add(key, blockPosition);
+
+                    // Merge bounding boxes
+                    Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
+                    Vector3 max = blockPosition.block.BoundingBox.Max + blockPosition.position;
+                    bounds = BoundingBox.CreateMerged(bounds, new BoundingBox(min, max));
                 }
             }
 
-            // TODO: Set bounds
+            // Set bounds
+            exteriorBounds = bounds;
+
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Centre camera in layout
+            cameraPosition.X = (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2;
+            cameraPosition.Z = -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2;
         }
 
         /// <summary>
@@ -602,6 +641,9 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         private void BuildDungeonLayout(ref DFLocation dfLocation)
         {
+            // Bounding box for layout
+            BoundingBox bounds = new BoundingBox();
+
             // Create dungeon layout
             dungeonLayout = new Dictionary<int, BlockPosition>();
             foreach (var block in dfLocation.Dungeon.Blocks)
@@ -622,9 +664,22 @@ namespace DaggerfallModelling.ViewControls
 
                 // Add to layout dictionary
                 dungeonLayout.Add(key, blockPosition);
+
+                // Merge bounding boxes
+                Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
+                Vector3 max = blockPosition.block.BoundingBox.Max + blockPosition.position;
+                bounds = BoundingBox.CreateMerged(bounds, new BoundingBox(min, max));
             }
 
-            // TODO: Set bounds
+            // Set bounds
+            dungeonBounds = bounds;
+
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Centre camera in layout
+            cameraPosition.X = (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2;
+            cameraPosition.Z = -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2;
         }
 
         /// <summary>
@@ -698,7 +753,7 @@ namespace DaggerfallModelling.ViewControls
             cameraPosition.X += x;
             cameraPosition.Z += z;
 
-            // Keep camera within bounds
+            // Keep camera within exterior bounds
             if (batchMode == BatchModes.SingleExteriorBlock ||
                 batchMode == BatchModes.FullExterior)
             {
@@ -706,6 +761,16 @@ namespace DaggerfallModelling.ViewControls
                 if (cameraPosition.Z < exteriorBounds.Min.Z) cameraPosition.Z = exteriorBounds.Min.Z;
                 if (cameraPosition.X > exteriorBounds.Max.X) cameraPosition.X = exteriorBounds.Max.X;
                 if (cameraPosition.Z > exteriorBounds.Max.Z) cameraPosition.Z = exteriorBounds.Max.Z;
+            }
+
+            // Keep camera within dungeon bounds
+            if (batchMode == BatchModes.SingleDungeonBlock ||
+                batchMode == BatchModes.FullDungeon)
+            {
+                if (cameraPosition.X < dungeonBounds.Min.X) cameraPosition.X = dungeonBounds.Min.X;
+                if (cameraPosition.Z < dungeonBounds.Min.Z) cameraPosition.Z = dungeonBounds.Min.Z;
+                if (cameraPosition.X > dungeonBounds.Max.X) cameraPosition.X = dungeonBounds.Max.X;
+                if (cameraPosition.Z > dungeonBounds.Max.Z) cameraPosition.Z = dungeonBounds.Max.Z;
             }
 
             // Update view matrix

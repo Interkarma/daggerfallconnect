@@ -281,9 +281,17 @@ namespace DaggerfallModelling.ViewControls
         {
             // Load model based on source
             if (useFilteredModels)
-                LoadModel(host.FilteredModelsArray[currentModelIndex]);
+            {
+                if (host.FilteredModelsArray != null)
+                {
+                    if (host.FilteredModelsArray.Length > 0)
+                        LoadModel(host.FilteredModelsArray[currentModelIndex]);
+                }
+            }
             else
+            {
                 LoadModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
+            }
 
             // Reset camera position and model rotation
             Vector3 Min = currentModel.BoundingBox.Min;

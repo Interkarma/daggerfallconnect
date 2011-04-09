@@ -711,6 +711,14 @@ namespace DaggerfallModelling.ViewControls
             // Exit if not ready
             if (!isReady)
                 return;
+
+            // Load exterior
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.LoadExterior(ref dfLocation);
+
+            // Set view mode
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
         }
 
         /// <summary>

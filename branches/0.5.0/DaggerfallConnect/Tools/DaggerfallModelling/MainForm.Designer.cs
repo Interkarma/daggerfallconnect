@@ -427,7 +427,7 @@
             this.FreeCameraToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.FreeCameraToolStripButton.Name = "FreeCameraToolStripButton";
             this.FreeCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.FreeCameraToolStripButton.Text = "Free Camera";
+            this.FreeCameraToolStripButton.Text = "Free Camera [Not Implemented]";
             // 
             // toolStripSeparator5
             // 

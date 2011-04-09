@@ -43,8 +43,8 @@ namespace DaggerfallModelling
         // Searching
         private int minSearchLength = 2;
         private bool searchModels = false;
-        private bool searchBlocks = true;
-        private bool searchLocations = false;
+        private bool searchBlocks = false;
+        private bool searchLocations = true;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -243,8 +243,13 @@ namespace DaggerfallModelling
                         int key, region, location;
                         if (int.TryParse(e.Node.Name, out key))
                         {
+                            // Show in automap
                             KeyToRegionLocation(key, out region, out location);
                             AutoMapViewer.ShowLocation(region, location);
+
+                            // Show view
+                            locationViewAvailable = true;
+                            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
                             return;
                         }
                         break;
@@ -336,6 +341,13 @@ namespace DaggerfallModelling
 
         private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
         {
+            // TODO: Centre on block if viewing location, rather than display a single block
+
+            // Load block into view
+            blockViewAvailable = true;
+            ContentView.ShowBlockView(e.Name);
+            UpdateActiveView();
+            UpdateActiveCameraMode();
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -788,7 +800,7 @@ namespace DaggerfallModelling
         private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
         {
             // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
+            if (ContentView.ViewMode == ViewHost.ViewModes.BlockView ||
                 !ContentView.IsReady)
                 return;
 
@@ -805,6 +817,10 @@ namespace DaggerfallModelling
         /// <param name="e">EventArgs</param>
         private void ViewLocationToolStripButton_Click(object sender, EventArgs e)
         {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
+                !ContentView.IsReady)
+                return;
         }
 
         #endregion
@@ -863,7 +879,7 @@ namespace DaggerfallModelling
             NormalCameraToolStripButton.Checked = false;
             FreeCameraToolStripButton.Checked = false;
             NormalCameraToolStripButton.Enabled = true;
-            FreeCameraToolStripButton.Enabled = true;
+            FreeCameraToolStripButton.Enabled = false;
             switch (ContentView.CameraMode)
             {
                 case ViewBase.CameraModes.Normal:
