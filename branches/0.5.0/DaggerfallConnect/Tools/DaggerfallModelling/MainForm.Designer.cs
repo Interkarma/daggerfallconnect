@@ -59,9 +59,6 @@
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.PreviousItemToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.NextItemToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.NormalCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.FreeCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -347,9 +344,6 @@
             this.ViewBlockToolStripButton,
             this.ViewLocationToolStripButton,
             this.toolStripSeparator4,
-            this.PreviousItemToolStripButton,
-            this.NextItemToolStripButton,
-            this.toolStripSeparator7,
             this.NormalCameraToolStripButton,
             this.FreeCameraToolStripButton,
             this.toolStripSeparator5,
@@ -405,7 +399,6 @@
             // ViewLocationToolStripButton
             // 
             this.ViewLocationToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ViewLocationToolStripButton.Enabled = false;
             this.ViewLocationToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.world;
             this.ViewLocationToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ViewLocationToolStripButton.Name = "ViewLocationToolStripButton";
@@ -417,29 +410,6 @@
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // PreviousItemToolStripButton
-            // 
-            this.PreviousItemToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.PreviousItemToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.arrow_left;
-            this.PreviousItemToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.PreviousItemToolStripButton.Name = "PreviousItemToolStripButton";
-            this.PreviousItemToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.PreviousItemToolStripButton.Text = "Previous Item";
-            // 
-            // NextItemToolStripButton
-            // 
-            this.NextItemToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.NextItemToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.arrow_right;
-            this.NextItemToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.NextItemToolStripButton.Name = "NextItemToolStripButton";
-            this.NextItemToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.NextItemToolStripButton.Text = "Next Item";
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
             // 
             // NormalCameraToolStripButton
             // 
@@ -493,6 +463,7 @@
             // 
             // ContentView
             // 
+            this.ContentView.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
             this.ContentView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ContentView.FilteredModelsArray = null;
             this.ContentView.Location = new System.Drawing.Point(0, 0);
@@ -628,9 +599,6 @@
         private System.Windows.Forms.ToolStripButton ToggleControllerToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripButton PreviousItemToolStripButton;
-        private System.Windows.Forms.ToolStripButton NextItemToolStripButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
 

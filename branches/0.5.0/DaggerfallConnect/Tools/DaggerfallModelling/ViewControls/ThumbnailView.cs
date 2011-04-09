@@ -111,6 +111,8 @@ namespace DaggerfallModelling.ViewControls
         public ThumbnailView(ViewHost host)
             : base(host)
         {
+            // Camera modes not used in this view
+            CameraMode = CameraModes.None;
         }
 
         #endregion

@@ -258,6 +258,9 @@ namespace DaggerfallModelling.ViewControls
             set { AssignFilteredModels(value); }
         }
 
+        /// <summary>
+        /// Gets small sprite font.
+        /// </summary>
         public SpriteFont SmallFont
         {
             get { return arialSmallFont; }
@@ -673,22 +676,25 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Load based on block type
-            name = name.ToUpper();
-            if (name.EndsWith(".RMB"))
+            if (!string.IsNullOrEmpty(name))
             {
-                LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.LoadExterior(name);
-                view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
-            }
-            else if (name.EndsWith(".RDB"))
-            {
-                LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.LoadDungeon(name);
-                view.BatchMode = LocationView.BatchModes.SingleDungeonBlock;
-            }
-            else
-            {
-                throw new Exception("Not a valid block name");
+                name = name.ToUpper();
+                if (name.EndsWith(".RMB"))
+                {
+                    LocationView view = (LocationView)viewClients[ViewModes.BlockView];
+                    view.LoadExterior(name);
+                    view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
+                }
+                else if (name.EndsWith(".RDB"))
+                {
+                    LocationView view = (LocationView)viewClients[ViewModes.BlockView];
+                    view.LoadDungeon(name);
+                    view.BatchMode = LocationView.BatchModes.SingleDungeonBlock;
+                }
+                else
+                {
+                    throw new Exception("Not a valid block name");
+                }
             }
 
             // Set view mode

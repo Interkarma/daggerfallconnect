@@ -49,6 +49,10 @@ namespace DaggerfallModelling
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
 
+        // Views
+        private bool blockViewAvailable = false;
+        private bool locationViewAvailable = false;
+
         #endregion
 
         #region Constructors
@@ -103,11 +107,6 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentView.SetArena2Path(appSettings.Arena2Path);
-
-            // TEST: Set block view
-            ContentView.ShowBlockView("MAGEAA13.RMB");
-            UpdateCheckedView();
-            UpdateCheckedCameraMode();
         }
 
         private void BrowseArena2Path()
@@ -180,8 +179,8 @@ namespace DaggerfallModelling
             SearchLocationsToolStripButton.Checked = searchLocations;
 
             // Update toolbar items
-            UpdateCheckedView();
-            UpdateCheckedCameraMode();
+            UpdateActiveView();
+            UpdateActiveCameraMode();
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -235,6 +234,10 @@ namespace DaggerfallModelling
                     case ModelTag:
                         break;
                     case BlockTag:
+                        blockViewAvailable = true;
+                        ContentView.ShowBlockView(e.Node.Text);
+                        UpdateActiveView();
+                        UpdateActiveCameraMode();
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -288,7 +291,7 @@ namespace DaggerfallModelling
             ExteriorModeToolStripButton.Enabled = (e.ExteriorModeAllowed) ? true : false;
             DungeonModeToolStripButton.Enabled = (e.DungeonModeAllowed) ? true : false;
 
-            // Uncheck all modes
+            // Check modes
             switch (e.ViewMode)
             {
                 case AutoMapView.ViewModes.Exterior:
@@ -742,10 +745,92 @@ namespace DaggerfallModelling
         #region View Change Events
 
         /// <summary>
-        /// Updates the checked toolbar button to active view.
+        /// User selected thumbnails view.
         /// </summary>
-        private void UpdateCheckedView()
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewThumbsToolStripButton_Click(object sender, EventArgs e)
         {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowThumbnailsView();
+            UpdateActiveView();
+            UpdateActiveCameraMode();
+        }
+
+        /// <summary>
+        /// User selected model view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewSingleModelToolStripButton_Click(object sender, EventArgs e)
+        {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowModelView(0);
+            UpdateActiveView();
+            UpdateActiveCameraMode();
+        }
+
+        /// <summary>
+        /// User selected block view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
+        {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowBlockView(string.Empty);
+            UpdateActiveView();
+            UpdateActiveCameraMode();
+        }
+
+        /// <summary>
+        /// User selected location view.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs</param>
+        private void ViewLocationToolStripButton_Click(object sender, EventArgs e)
+        {
+        }
+
+        #endregion
+
+        #region Toolbar Update Methods
+
+        /// <summary>
+        /// Enables or disables view modes based on context.
+        ///  Thumbnail and single model views are always available, even when empty.
+        ///  Block view is only available when a block has been loaded.
+        ///  Location view is only available when a location has been loaded.
+        /// </summary>
+        private void UpdateAvailableViews()
+        {
+            ViewBlockToolStripButton.Enabled = blockViewAvailable;
+            ViewLocationToolStripButton.Enabled = locationViewAvailable;
+        }
+
+        /// <summary>
+        /// Shows active view as selected in toolbar.
+        /// </summary>
+        private void UpdateActiveView()
+        {
+            // Update available views
+            UpdateAvailableViews();
+
             // Uncheck items
             ViewThumbsToolStripButton.Checked = false;
             ViewSingleModelToolStripButton.Checked = false;
@@ -770,9 +855,9 @@ namespace DaggerfallModelling
         }
 
         /// <summary>
-        /// Updates the camera mode based on active view.
+        /// Displays the camera mode based on active view.
         /// </summary>
-        private void UpdateCheckedCameraMode()
+        private void UpdateActiveCameraMode()
         {
             // Check camera mode
             NormalCameraToolStripButton.Checked = false;
@@ -792,69 +877,6 @@ namespace DaggerfallModelling
                     FreeCameraToolStripButton.Enabled = false;
                     break;
             }
-        }
-
-        /// <summary>
-        /// User selected thumbnails view.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">EventArgs</param>
-        private void ViewThumbsToolStripButton_Click(object sender, EventArgs e)
-        {
-            // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView ||
-                !ContentView.IsReady)
-                return;
-
-            // Set view
-            ContentView.ShowThumbnailsView();
-            UpdateCheckedView();
-            UpdateCheckedCameraMode();
-        }
-
-        /// <summary>
-        /// User selected model view.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">EventArgs</param>
-        private void ViewSingleModelToolStripButton_Click(object sender, EventArgs e)
-        {
-            // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView ||
-                !ContentView.IsReady)
-                return;
-
-            // Set view
-            ContentView.ShowModelView(0);
-            UpdateCheckedView();
-            UpdateCheckedCameraMode();
-        }
-
-        /// <summary>
-        /// User selected block view.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">EventArgs</param>
-        private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
-        {
-            // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
-                !ContentView.IsReady)
-                return;
-
-            // Set view
-            ContentView.ShowBlockView(string.Empty);
-            UpdateCheckedView();
-            UpdateCheckedCameraMode();
-        }
-
-        /// <summary>
-        /// User selected location view.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">EventArgs</param>
-        private void ViewLocationToolStripButton_Click(object sender, EventArgs e)
-        {
         }
 
         #endregion

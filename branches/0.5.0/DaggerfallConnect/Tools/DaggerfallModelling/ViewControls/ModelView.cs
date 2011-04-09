@@ -69,6 +69,8 @@ namespace DaggerfallModelling.ViewControls
         public ModelView(ViewHost host)
             : base(host)
         {
+            // Start in normal camera mode
+            CameraMode = CameraModes.Normal;
         }
 
         #endregion

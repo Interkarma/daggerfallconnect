@@ -57,7 +57,7 @@ namespace DaggerfallModelling.ViewControls
         // Camera
         private BoundingBox exteriorBounds;
         private BoundingBox dungeonBounds;
-        private Vector3 cameraPosition = new Vector3(2048, 4096, -2048);
+        private Vector3 cameraPosition = new Vector3(2048, 6000, -2048);
         private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
         private Vector3 cameraUpVector = Vector3.Up;
 
@@ -86,6 +86,8 @@ namespace DaggerfallModelling.ViewControls
             FullExterior,
             /// <summary>Render full dungeon location.</summary>
             FullDungeon,
+            /// <summary>Render interior of specified location.</summary>
+            Interior,
         }
 
         /// <summary>
@@ -97,10 +99,12 @@ namespace DaggerfallModelling.ViewControls
             None = 0,
             /// <summary>Render ground plane below exterior blocks.</summary>
             RmbGroundPlane = 1,
+            /// <summary>Render miscellaneous ground objects (e.g. signs and gravestones).</summary>
+            RmbGroundObjects = 2,
             /// <summary>Render ground scenery (e.g. rocks and trees) in exterior blocks.</summary>
-            RmbGroundFlats = 2,
-            /// <summary>Render flats (e.g. NPCs) in dungeon blocks. </summary>
-            RdbFlats = 4,
+            RmbGroundFlats = 4,
+            /// <summary>Render flats (e.g. NPCs and lights) in dungeon blocks. </summary>
+            RdbFlats = 8,
         }
 
         /// <summary>
@@ -136,6 +140,8 @@ namespace DaggerfallModelling.ViewControls
         public LocationView(ViewHost host)
             : base(host)
         {
+            // Start in normal camera mode
+            CameraMode = CameraModes.Normal;
         }
 
         #endregion
