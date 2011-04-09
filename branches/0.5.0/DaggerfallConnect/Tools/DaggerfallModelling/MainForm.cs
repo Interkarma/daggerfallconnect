@@ -42,8 +42,8 @@ namespace DaggerfallModelling
 
         // Searching
         private int minSearchLength = 2;
-        private bool searchModels = true;
-        private bool searchBlocks = false;
+        private bool searchModels = false;
+        private bool searchBlocks = true;
         private bool searchLocations = false;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
@@ -103,6 +103,10 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentView.SetArena2Path(appSettings.Arena2Path);
+
+            // TEST: Set block view
+            ContentView.ShowBlockView("MAGEAA13.RMB");
+            UpdateCheckedView();
         }
 
         private void BrowseArena2Path()
@@ -170,12 +174,9 @@ namespace DaggerfallModelling
             ShowArena2ConnectionState();
 
             // Check search buttons at load
-            if (searchModels)
-                SearchModelsToolStripButton.Checked = true;
-            if (searchBlocks)
-                SearchBlocksToolStripButton.Checked = true;
-            if (searchLocations)
-                SearchLocationsToolStripButton.Checked = true;
+            SearchModelsToolStripButton.Checked = searchModels;
+            SearchBlocksToolStripButton.Checked = searchBlocks;
+            SearchLocationsToolStripButton.Checked = searchLocations;
 
             // Check view mode
             UpdateCheckedView();
@@ -190,7 +191,7 @@ namespace DaggerfallModelling
             {
                 NormalCameraToolStripButton.Checked = false;
                 FreeCameraToolStripButton.Checked = true;
-            }   
+            }
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -770,6 +771,9 @@ namespace DaggerfallModelling
                 case ViewHost.ViewModes.ModelView:
                     ViewSingleModelToolStripButton.Checked = true;
                     break;
+                case ViewHost.ViewModes.BlockView:
+                    ViewBlockToolStripButton.Checked = true;
+                    break;
                 default:
                     break;
             }
@@ -816,6 +820,14 @@ namespace DaggerfallModelling
         /// <param name="e">EventArgs</param>
         private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
         {
+            // Do nothing if this is already current view
+            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
+                !ContentView.IsReady)
+                return;
+
+            // Set view
+            ContentView.ShowBlockView(string.Empty);
+            UpdateCheckedView();
         }
 
         /// <summary>

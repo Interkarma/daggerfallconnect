@@ -57,8 +57,8 @@ namespace DaggerfallModelling.ViewControls
         // Timing
         private Stopwatch stopwatch = Stopwatch.StartNew();
         private Timer updateTimer = new Timer();
-        readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
-        readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
+        private readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
+        private readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
         private TimeSpan accumulatedTime;
         private TimeSpan lastTime;
 
@@ -100,6 +100,8 @@ namespace DaggerfallModelling.ViewControls
             ThumbnailView,
             /// <summary>Viewing single model.</summary>
             ModelView,
+            /// <summary>Viewing single block.</summary>
+            BlockView,
             /// <summary>Viewing a location.</summary>
             LocationView,
         }
@@ -641,6 +643,10 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public void ShowThumbnailsView()
         {
+            // Exit if not ready
+            if (!isReady)
+                return;
+
             // Set view mode
             viewMode = ViewModes.ThumbnailView;
             viewClients[viewMode].ResumeView();
@@ -652,6 +658,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="modelId">Index of model to show.</param>
         public void ShowModelView(int index)
         {
+            // Exit if not ready
+            if (!isReady)
+                return;
+
             // Set view mode
             viewMode = ViewModes.ModelView;
             viewClients[viewMode].ResumeView();
@@ -661,9 +671,34 @@ namespace DaggerfallModelling.ViewControls
         /// Shows a single block.
         /// </summary>
         /// <param name="name">Block name.</param>
-        public void ShowBlock(string name)
+        public void ShowBlockView(string name)
         {
-            // Not implemented
+            // Exit if not ready
+            if (!isReady)
+                return;
+
+            // Load based on block type
+            name = name.ToUpper();
+            if (name.EndsWith(".RMB"))
+            {
+                LocationView view = (LocationView)viewClients[ViewModes.BlockView];
+                view.LoadExterior(name);
+                view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
+            }
+            else if (name.EndsWith(".RDB"))
+            {
+                LocationView view = (LocationView)viewClients[ViewModes.BlockView];
+                view.LoadDungeon(name);
+                view.BatchMode = LocationView.BatchModes.SingleDungeonBlock;
+            }
+            else
+            {
+                throw new Exception("Not a valid block name");
+            }
+
+            // Set view mode
+            viewMode = ViewModes.BlockView;
+            viewClients[viewMode].ResumeView();
         }
 
         /// <summary>
@@ -672,9 +707,9 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void ShowLocationExterior(DFLocation dfLocation)
         {
-            // Set location in view
-            //LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
-            //locationView.SetLocation(ref dfLocation);
+            // Exit if not ready
+            if (!isReady)
+                return;
         }
 
         /// <summary>
@@ -683,9 +718,9 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void ShowLocationDungeon(DFLocation dfLocation)
         {
-            // Set location in view
-            //LocationView locationView = (LocationView)viewClients[ViewModes.LocationView];
-            //locationView.SetLocation(ref dfLocation);
+            // Exit if not ready
+            if (!isReady)
+                return;
         }
 
         /// <summary>
@@ -733,6 +768,7 @@ namespace DaggerfallModelling.ViewControls
             // Bind views
             BindViewClient(ViewModes.ThumbnailView, new ThumbnailView(this));
             BindViewClient(ViewModes.ModelView, new ModelView(this));
+            BindViewClient(ViewModes.BlockView, new LocationView(this));
             BindViewClient(ViewModes.LocationView, new LocationView(this));
 
             // Load fonts
@@ -769,12 +805,15 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="array"></param>
         private void AssignFilteredModels(int[] array)
         {
-            // Assign new array to views
+            // Assign new filter array to views.
+            // Views have been designed not to perform any visible operation
+            // when updating this list so they can all be notified at the same time.
             filteredModelsArray = array;
             if (isReady)
             {
                 viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
                 viewClients[ViewModes.ModelView].FilteredModelsChanged();
+                viewClients[ViewModes.BlockView].FilteredModelsChanged();
                 viewClients[ViewModes.LocationView].FilteredModelsChanged();
             }
         }

@@ -122,8 +122,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Resize()
         {
-            // Update projection matrix
+            // Update projection matrix and refresh
             UpdateProjectionMatrix();
+            host.Refresh();
         }
 
         /// <summary>

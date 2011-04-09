@@ -70,6 +70,10 @@ namespace DaggerfallModelling.ViewControls
         // Models list
         private bool useFilteredModels = false;
 
+        // Status
+        private int firstVisibleModel = 0;
+        private int lastVisibleModel = 0;
+
         #endregion
 
         #region Class Structures
@@ -177,6 +181,7 @@ namespace DaggerfallModelling.ViewControls
             // Update thumbnail layout
             LayoutThumbnails();
             UpdateStatusMessage();
+            host.Refresh();
         }
 
         /// <summary>
@@ -279,7 +284,8 @@ namespace DaggerfallModelling.ViewControls
                 thumbScrollAmount = 0;
             }
 
-            // Clear thumbnails
+            // Clear thumbnails.
+            // This forces a full rebuild on next redraw.
             thumbDict.Clear();
         }
 
@@ -451,6 +457,10 @@ namespace DaggerfallModelling.ViewControls
                 if (lastIndex > maxIndex)
                     lastIndex = maxIndex;
             }
+
+            // Set the first and last indices for the status view
+            firstVisibleModel = (firstIndex >= 0) ? firstIndex : 0;
+            lastVisibleModel = lastIndex;
 
             // Calc screen position of first index
             int xpos = thumbSpacing;
@@ -736,16 +746,16 @@ namespace DaggerfallModelling.ViewControls
             if (!useFilteredModels)
             {
                 count = host.ModelManager.Arch3dFile.Count;
-                message = "Viewing all models in ARCH3D.BSA.";
+                message = string.Format("Exploring all {0} models in ARCH3D.BSA.", count);
             }
             else
             {
                 count = host.FilteredModelsArray.Length;
-                message = "Viewing filtered list of models.";
+                message = string.Format("Exploring filtered list of {0} models.", count);
             }
 
             // Add position in list
-            message += string.Format(" You are at model {0} of {1}.", thumbsFirstVisibleRow * thumbsPerRow, count);
+            message += string.Format(" You are viewing models {0}-{1}.", firstVisibleModel, lastVisibleModel);
 
             // Set the message
             host.StatusMessage = message;
