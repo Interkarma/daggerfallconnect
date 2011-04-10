@@ -703,7 +703,35 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Shows location exterior blocks.
+        /// Shows whatever exterior layout is currently loaded.
+        /// </summary>
+        public void ShowLocationExterior()
+        {
+            // Setup view
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.BatchMode = LocationView.BatchModes.FullExterior;
+
+            // Set view mode
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
+        }
+
+        /// <summary>
+        /// Shows whatever dungeon layout is currently loaded.
+        /// </summary>
+        public void ShowLocationDungeon()
+        {
+            // Setup view
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.BatchMode = LocationView.BatchModes.FullDungeon;
+
+            // Set view mode
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
+        }
+
+        /// <summary>
+        /// Shows location exterior for specified location.
         /// </summary>
         /// <param name="dfLocation">DFLocation.</param>
         public void ShowLocationExterior(DFLocation dfLocation)

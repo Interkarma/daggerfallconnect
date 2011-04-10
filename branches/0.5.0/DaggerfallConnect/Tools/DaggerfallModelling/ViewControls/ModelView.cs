@@ -293,14 +293,6 @@ namespace DaggerfallModelling.ViewControls
                 LoadModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
             }
 
-            // Reset camera position and model rotation
-            Vector3 Min = currentModel.BoundingBox.Min;
-            Vector3 Max = currentModel.BoundingBox.Max;
-            cameraPosition.X = 0.0f;
-            cameraPosition.Y = 0.0f;
-            cameraPosition.Z = 600.0f + (Max.Z - Min.Z);
-            modelRotation = Matrix.Identity;
-
             // Update view matrix
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
         }
@@ -341,6 +333,12 @@ namespace DaggerfallModelling.ViewControls
 
             // Store current model id
             currentModelId = id;
+
+            // Reset camera position and model rotation
+            cameraPosition.X = 0.0f;
+            cameraPosition.Y = 0.0f;
+            cameraPosition.Z = 600.0f + (Max.Z - Min.Z);
+            modelRotation = Matrix.Identity;
         }
 
         #endregion

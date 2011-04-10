@@ -55,9 +55,11 @@ namespace DaggerfallModelling.ViewControls
         private BoundingFrustum viewFrustum;
 
         // Camera
+        private static float cameraFloor = 100.0f;
+        private static float cameraCeiling = 8192.0f;
         private BoundingBox exteriorBounds;
         private BoundingBox dungeonBounds;
-        private Vector3 cameraPosition = new Vector3(1024, 8192, -1024);
+        private Vector3 cameraPosition = new Vector3(0, cameraCeiling, 0);
         private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
         private Vector3 cameraUpVector = Vector3.Up;
 

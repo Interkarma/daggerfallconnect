@@ -248,8 +248,11 @@ namespace DaggerfallModelling
                             AutoMapViewer.ShowLocation(region, location);
 
                             // Show view
+                            blockViewAvailable = true;
                             locationViewAvailable = true;
                             ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
+                            UpdateActiveView();
+                            UpdateActiveCameraMode();
                             return;
                         }
                         break;
@@ -821,6 +824,21 @@ namespace DaggerfallModelling
             if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
                 !ContentView.IsReady)
                 return;
+
+            // Switch host into appropriate content mode
+            switch (AutoMapViewer.ViewMode)
+            {
+                case AutoMapView.ViewModes.Exterior:
+                    ContentView.ShowLocationExterior();
+                    break;
+                case AutoMapView.ViewModes.Dungeon:
+                    ContentView.ShowLocationDungeon();
+                    break;
+            }
+
+            // Set view
+            UpdateActiveView();
+            UpdateActiveCameraMode();
         }
 
         #endregion
@@ -864,6 +882,9 @@ namespace DaggerfallModelling
                     break;
                 case ViewHost.ViewModes.BlockView:
                     ViewBlockToolStripButton.Checked = true;
+                    break;
+                case ViewHost.ViewModes.LocationView:
+                    ViewLocationToolStripButton.Checked = true;
                     break;
                 default:
                     break;
