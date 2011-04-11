@@ -47,17 +47,21 @@ namespace XNALibrary
         private TextureFile textureFile;
 
         // Atlas dimensions
-        private const int atlasWidth = 512;
-        private const int atlasHeight = 512;
-
-        // Atlas texture
-        private Texture2D terrainAtlas;
+        private const int atlasWidth = 1024;
+        private const int atlasHeight = 1024;
 
         // Atlas layout
         private Dictionary<int, RectangleF> terrainAtlasDict;
 
-        // Texture dictonary
-        private Dictionary<int, Texture2D> texturesDict;
+        // Atlas textures
+        private Texture2D desertAtlas;
+        private Texture2D mountainAtlas;
+        private Texture2D temperateAtlas;
+        private Texture2D swampAtlas;
+
+        // Texture dictonaries
+        private Dictionary<int, Texture2D> generalTextureDict;
+        private Dictionary<int, Texture2D> winterTextureDict;
 
         // Climate and weather
         ClimateType climateType = ClimateType.None;
@@ -66,18 +70,6 @@ namespace XNALibrary
         #endregion
 
         #region Class Structures
-
-        /// <summary>
-        /// Stores a Texture2D resource along with information
-        /// need for texture swaps.
-        /// </summary>
-        private struct DFTexture
-        {
-            public Texture2D texture;
-            public ClimateSet set;
-            public bool winterValid;
-            public bool rainValid;
-        }
 
         /// <summary>
         /// Parameters of climate atlas during build.
@@ -141,7 +133,7 @@ namespace XNALibrary
         /// </summary>
         public Texture2D TerrainAtlas
         {
-            get { return terrainAtlas; }
+            get { return GetTerrainAtlas(); }
         }
 
         #endregion
@@ -155,15 +147,16 @@ namespace XNALibrary
         /// <param name="arena2Path">Path to Arena2 folder.</param>
         public TextureManager(GraphicsDevice device, string arena2Path)
         {
-            // Setup            
+            // Setup
             graphicsDevice = device;
             this.arena2Path = arena2Path;
             textureFile = new TextureFile();
             textureFile.Palette.Load(Path.Combine(arena2Path, textureFile.PaletteName));
 
-            // Create empty dictionaries
-            texturesDict = new Dictionary<int, Texture2D>();
+            // Create dictionaries
             terrainAtlasDict = new Dictionary<int, RectangleF>();
+            generalTextureDict = new Dictionary<int, Texture2D>();
+            winterTextureDict = new Dictionary<int, Texture2D>();
 
             // Set default climate
             SetClimate(climateType, climateWeather);
@@ -203,66 +196,79 @@ namespace XNALibrary
         /// <returns>Texture key.</returns>
         public int LoadTexture(int archive, int record)
         {
-            // Just return key if already in dictionary
-            int key = GetTextureKey(archive, record, 0);
-            if (texturesDict.ContainsKey(key))
+            // Get the base set this archive belongs to regardless of climate
+            bool supportsWinter, supportsRain;
+            ClimateSet climateSet = GetClimateSet(archive, out supportsWinter, out supportsRain);
+
+            // Load non climate aware textures, or no climate type specified
+            int key;
+            if (this.climateType == ClimateType.None || climateSet == ClimateSet.None)
+            {
+                key = GetTextureKey(archive, record);
+                if (generalTextureDict.ContainsKey(key))
+                {
+                    return key;
+                }
+                else
+                {
+                    LoadTexture(key, archive, record, false);
+                    return key;
+                }
+            }
+
+            // Check if key already exists
+            key = GetTextureKey(climateType, climateSet, record);
+            if (generalTextureDict.ContainsKey(key))
                 return key;
 
-            // Load texture file
-            if (climateType == ClimateType.None)
+            // Swap sets are missing a winter file in certain climates.
+            if (climateType == ClimateType.Desert || climateType == ClimateType.Swamp)
             {
-                // Load without modifying to climate
-                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+                switch ((int)climateSet)
+                {
+                    case 9:
+                    case 35:
+                        supportsWinter = false;
+                        break;
+                }
             }
-            else
-            {
-                // Modify archive to climate
-                int climateArchive = GetClimateArchive(archive);
-                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(climateArchive)), FileUsage.UseDisk, true);
-            }
 
-            // Get DF texture in ARGB format so we can just SetData the byte array into XNA
-            DFBitmap dfbitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
-
-            // Create XNA texture
-            Texture2D texture = new Texture2D(graphicsDevice, dfbitmap.Width, dfbitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            texture.SetData<byte>(dfbitmap.Data);
-
-            // Store texture in dictionary
-            texturesDict.Add(key, texture);
-
+            // Load climate aware texture
+            int newArchive = (int)climateType + (int)climateSet;
+            LoadTexture(key, newArchive, record, supportsWinter);
             return key;
         }
 
         /// <summary>
-        /// Get texture based on key. The manager will return NULL if texture does not exist.
+        /// Get texture for current climate, based on key.
+        /// Manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>Texture2D.</returns>
         public Texture2D GetTexture(int key)
         {
-            if (!texturesDict.ContainsKey(key))
+            if (!generalTextureDict.ContainsKey(key))
                 return null;
             else
-                return texturesDict[key];
+                return generalTextureDict[key];
         }
 
         /// <summary>
-        /// Removes texture based on key.
+        /// Removes texture for current climate, based on key.
         /// </summary>
         /// <param name="key">Texture key.</param>
         public void RemoveTexture(int key)
         {
-            if (texturesDict.ContainsKey(key))
-                texturesDict.Remove(key);
+            if (generalTextureDict.ContainsKey(key))
+                generalTextureDict.Remove(key);
         }
 
         /// <summary>
-        /// Clear all textures.
+        /// Clear all textures for current climate.
         /// </summary>
         public void ClearTextures()
         {
-            texturesDict.Clear();
+            generalTextureDict.Clear();
         }
 
         #endregion
@@ -270,15 +276,26 @@ namespace XNALibrary
         #region Private Methods
 
         /// <summary>
-        /// Gets unique key for a texture.
+        /// Gets unique key for a non climate aware texture.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
-        /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        private int GetTextureKey(int archive, int record, int frame)
+        private int GetTextureKey(int archive, int record)
         {
-            return (archive * 10000) + (record * 100) + frame;
+            return (archive * 1000) + record;
+        }
+
+        /// <summary>
+        /// Gets unique key for a climate aware texture.
+        /// </summary>
+        /// <param name="climateType">Climate type.</param>
+        /// <param name="climateSet">Climate set.</param>
+        /// <param name="record">Record index.</param>
+        /// <returns>Texture key.</returns>
+        private int GetTextureKey(ClimateType climateType, ClimateSet climateSet, int record)
+        {
+            return (((int)climateType + 1) * 1000000) + ((int)climateSet * 1000) + record;
         }
 
         /// <summary>
@@ -293,6 +310,58 @@ namespace XNALibrary
             return (int)set * 10000 + (int)weather * 100 + record;
         }
 
+        /// <summary>
+        /// Loads both normal and winter textures for the specified archive.
+        ///  Must always specify base archive index, never winter or rain indices.
+        /// </summary>
+        /// <param name="key">Key to associate with texture.</param>
+        /// <param name="archive">Archive index to load.</param>
+        /// <param name="record">Record index to load.</param>
+        private void LoadTexture(int key, int archive, int record, bool supportsWinter)
+        {
+            // Get normal texture in ARGB format
+            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+            DFBitmap normalBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
+
+            // Get winter texture in ARGB format
+            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
+            DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
+
+            // Create normal XNA texture
+            Texture2D normalTexture = new Texture2D(graphicsDevice, normalBitmap.Width, normalBitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            normalTexture.SetData<byte>(normalBitmap.Data);
+            generalTextureDict.Add(key, normalTexture);
+
+            // Create winter XNA texture
+            if (supportsWinter)
+            {
+                Texture2D winterTexture = new Texture2D(graphicsDevice, winterBitmap.Width, winterBitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+                winterTexture.SetData<byte>(normalBitmap.Data);
+                winterTextureDict.Add(key, winterTexture);
+            }
+        }
+
+        /// <summary>
+        /// Gets current terrain atlas based on climate.
+        /// </summary>
+        /// <returns></returns>
+        private Texture2D GetTerrainAtlas()
+        {
+            switch (this.climateType)
+            {
+                case ClimateType.Desert:
+                    return desertAtlas;
+                case ClimateType.Mountain:
+                    return mountainAtlas;
+                case ClimateType.Temperate:
+                    return temperateAtlas;
+                case ClimateType.Swamp:
+                    return swampAtlas;
+                default:
+                    return temperateAtlas;
+            }
+        }
+
         #endregion
 
         #region Climate Swaps
@@ -304,17 +373,11 @@ namespace XNALibrary
         /// <param name="weather">Weather type.</param>
         private void SetClimate(ClimateType climate, ClimateWeather weather)
         {
-            // Do nothing if new climate is equal to old climate
-            if (climate != ClimateType.None && climate == climateType)
-                return;
-
             // Load new terrain atlas, using temperate when none specified
             if (climate == ClimateType.None)
-                BuildTerrainAtlas(ClimateType.Temperate, weather);
+                BuildTerrainAtlas(ClimateType.Temperate);
             else
-                BuildTerrainAtlas(climate, weather);
-
-            // TODO: Modify loaded textures to new archive
+                BuildTerrainAtlas(climate);
 
             // Store new climate settings
             this.climateType = climate;
@@ -322,17 +385,17 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Modifies archive index to suit current climate and weather settings.
-        ///  Only valid archive swaps are performed.
+        /// Gets the base climate set the specified archive belongs to.
         /// </summary>
-        /// <param name="archive">Archive index.</param>
-        /// <returns>Modified archive index.</returns>
-        private int GetClimateArchive(int archive)
+        /// <param name="archive">Archive from which to derive set.</param>
+        /// <param name="supportsWinter">True if there is a winter version of this set.</param>
+        /// <param name="supportsRain">True if there is a rain version of this set.</param>
+        /// <returns>Derived ClimateSet.</returns>
+        private ClimateSet GetClimateSet(int archive, out bool supportsWinter, out bool supportsRain)
         {
             // Get climate set
-            int newArchive = archive;
-            bool winterValid = false;
-            bool rainValid = false;
+            supportsWinter = false;
+            supportsRain = false;
             ClimateSet set = (ClimateSet)(archive - (archive / 100) * 100);
             switch (set)
             {
@@ -340,10 +403,9 @@ namespace XNALibrary
                 // Terrain sets
                 //
                 case ClimateSet.Exterior_Terrain:
-                    winterValid = true;
-                    rainValid = true;
+                    supportsWinter = true;
+                    supportsRain = true;
                     break;
-
                 //
                 // Exterior sets
                 //
@@ -361,9 +423,8 @@ namespace XNALibrary
                 case ClimateSet.Exterior_TavernExteriors:
                 case ClimateSet.Exterior_TempleExteriors:
                 case ClimateSet.Exterior_Village:
-                    winterValid = true;
+                    supportsWinter = true;
                     break;
-
                 //
                 // Interior sets
                 //
@@ -389,31 +450,15 @@ namespace XNALibrary
                 case ClimateSet.Interior_TempleInt:
                 case ClimateSet.Interior_VillageInt:
                     break;
-
+                //
+                // All other results
+                //
                 default:
-                    return archive;     // Not a valid set, just return unmodified.
+                    return ClimateSet.None;
             }
 
-            // We now know the set is a valid type and which weather combinations are valid.
-            // Start by getting the base archive + set.
-            newArchive = (int)climateType + (int)set;
-
-            // Adjust for weather. Nothing to do for normal weather.
-            switch (climateWeather)
-            {
-                case ClimateWeather.Winter:
-                    if (winterValid)
-                        newArchive += 1;        // Winter archive is base + set + 1
-                    break;
-                case ClimateWeather.Rain:
-                    if (rainValid)
-                        newArchive += 2;        // Rain archive is base + set + 2
-                    break;
-                default:
-                    break;
-            }
-
-            return newArchive;
+            // Confirmed valid set
+            return set;
         }
 
         #endregion
@@ -425,13 +470,29 @@ namespace XNALibrary
         ///  drawn in a single batch.
         /// </summary>
         /// <param name="climate">Climate type.</param>
-        /// <param name="weather">Weather type.</param>
         /// <returns>True if successful.</returns>
-        private bool BuildTerrainAtlas(ClimateType climate, ClimateWeather weather)
+        private bool BuildTerrainAtlas(ClimateType climate)
         {
+            // Return true if atlas already built
+            switch (climate)
+            {
+                case ClimateType.Desert:
+                    if (desertAtlas != null) return true;
+                    break;
+                case ClimateType.Mountain:
+                    if (mountainAtlas != null) return true;
+                    break;
+                case ClimateType.Temperate:
+                    if (temperateAtlas != null) return true;
+                    break;
+                case ClimateType.Swamp:
+                    if (swampAtlas != null) return true;
+                    break;
+            }
+
             // Init working parameters
             AtlasParams ap = new AtlasParams();
-            ap.dictionary = terrainAtlasDict;
+            ap.dictionary = new Dictionary<int, RectangleF>();
             ap.climate = climate;
             ap.format = 4;
             ap.width = atlasWidth;
@@ -442,19 +503,38 @@ namespace XNALibrary
             ap.maxRowHeight = 0;
             ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
-            // Clear existing dictionary
-            terrainAtlasDict.Clear();
-
             // Add textures to atlas
             AddErrorBitmap(ref ap);
-            AddTextureFile(ClimateSet.Exterior_Terrain, weather, ref ap);
+            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Normal, ref ap);
+            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Winter, ref ap);
+            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Rain, ref ap);
 
             // Create texture from atlas buffer
-            terrainAtlas = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            terrainAtlas.SetData<byte>(ap.buffer);
+            Texture2D atlasTexture = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            atlasTexture.SetData<byte>(ap.buffer);
+            switch (climate)
+            {
+                case ClimateType.Desert:
+                    desertAtlas = atlasTexture;
+                    break;
+                case ClimateType.Mountain:
+                    mountainAtlas = atlasTexture;
+                    break;
+                case ClimateType.Temperate:
+                    temperateAtlas = atlasTexture;
+                    break;
+                case ClimateType.Swamp:
+                    swampAtlas = atlasTexture;
+                    break;
+            }
+
+            // Only need to store dictionary once, and it's the same
+            // for all climate types.
+            if (terrainAtlasDict.Count == 0)
+                terrainAtlasDict = ap.dictionary;
 
             // TEST: Save texture for review
-            //terrainAtlas.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
+            //atlasTexture.Save("C:\\test\\Terrain.png", ImageFileFormat.Png);
 
             return true;
         }
@@ -484,7 +564,7 @@ namespace XNALibrary
                 RectangleF rect = AddDFBitmap(key, ref dfBitmap, ref ap);
 
                 // Add key to dictionary
-                terrainAtlasDict.Add(key, rect);
+                ap.dictionary.Add(key, rect);
             }
         }
 
@@ -561,13 +641,13 @@ namespace XNALibrary
         {
             // Create red error image. Can only have one error per
             // atlas and it will always be key 0.
-            if (!terrainAtlasDict.ContainsKey(0))
+            if (!ap.dictionary.ContainsKey(0))
             {
                 DFManualImage errorImage = new DFManualImage(64, 64, DFBitmap.Formats.ARGB);
                 errorImage.Clear(0xff, 0xff, 0, 0);
                 DFBitmap dfBitmap = errorImage.DFBitmap;
                 RectangleF rect = AddDFBitmap(0, ref dfBitmap, ref ap);
-                terrainAtlasDict.Add(0, rect);
+                ap.dictionary.Add(0, rect);
             }
         }
 
