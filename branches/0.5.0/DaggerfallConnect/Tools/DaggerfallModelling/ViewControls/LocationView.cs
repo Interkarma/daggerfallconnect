@@ -39,7 +39,9 @@ namespace DaggerfallModelling.ViewControls
         const float rmbBlockSide = 4096.0f;
         const float rdbBlockSide = 2048.0f;
         private Dictionary<int, BlockPosition> exteriorLayout = new Dictionary<int,BlockPosition>();
+        private Dictionary<int, bool> exteriorResources = new Dictionary<int, bool>();
         private Dictionary<int, BlockPosition> dungeonLayout = new Dictionary<int, BlockPosition>();
+        private Dictionary<int, bool> dungeonResources = new Dictionary<int, bool>();
 
         // Appearance
         private Color backgroundColor = Color.LightGray;
@@ -199,15 +201,18 @@ namespace DaggerfallModelling.ViewControls
 
             // Get appropriate layout data
             Dictionary<int, BlockPosition> layout;
+            Dictionary<int, bool> resources;
             switch (batchMode)
             {
                 case BatchModes.SingleExteriorBlock:
                 case BatchModes.FullExterior:
                     layout = exteriorLayout;
+                    resources = exteriorResources;
                     break;
                 case BatchModes.SingleDungeonBlock:
                 case BatchModes.FullDungeon:
                     layout = dungeonLayout;
+                    resources = dungeonResources;
                     break;
                 default:
                     return;
@@ -239,10 +244,6 @@ namespace DaggerfallModelling.ViewControls
             // Update frustum matrix
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
-            // Used to translate ground down a few units to reduce
-            // z-fighting with other ground-aligned planes
-            Matrix ground = Matrix.CreateTranslation(0, -10, 0);
-
             // Draw visible blocks
             Matrix world;
             foreach (var layoutItem in layout)
@@ -259,6 +260,12 @@ namespace DaggerfallModelling.ViewControls
                 if (!viewFrustum.Intersects(blockBox))
                     continue;
 
+                // Late-load resources if not present
+                if (!resources[layoutItem.Key])
+                {
+                    resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
+                }
+
                 // Draw each model in this block
                 foreach (var modelItem in layoutItem.Value.block.Models)
                 {
@@ -271,6 +278,11 @@ namespace DaggerfallModelling.ViewControls
                     batchMode == BatchModes.FullExterior &&
                     BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
                 {
+                    // Used to translate ground down a few units to reduce
+                    // z-fighting with other ground-aligned planes
+                    Matrix ground = Matrix.CreateTranslation(0, -10, 0);
+
+                    // Draw ground
                     modelEffect.World = world * ground;
                     DrawGroundPlane(layoutItem.Key);
                 }
@@ -443,12 +455,12 @@ namespace DaggerfallModelling.ViewControls
         ///  This will replace existing exterior layout.
         /// </summary>
         /// <param name="blockName">Block name.</param>
-        public void LoadExterior(string blockName)
+        public void LoadExteriorBlock(string blockName)
         {
             // There is no climate context for standalone blocks
             host.TextureManager.Climate = DFLocation.ClimateType.None;
             
-            // Build layout
+            // Build single-block exterior layout
             BuildExteriorLayout(ref blockName);
         }
 
@@ -457,44 +469,31 @@ namespace DaggerfallModelling.ViewControls
         ///  This will replace existing dungeon layout.
         /// </summary>
         /// <param name="blockName">Block name.</param>
-        public void LoadDungeon(string blockName)
+        public void LoadDungeonBlock(string blockName)
         {
             // There is no climate context for standalone blocks
             host.TextureManager.Climate = DFLocation.ClimateType.None;
 
-            // Build layout
+            // Build single-block layout
             BuildDungeonLayout(ref blockName);
         }
 
         /// <summary>
-        /// Loads a full exterior location.
-        ///  This will replace existing exterior layout.
+        /// Loads a full location, including dungeon layout if present.
+        ///  This will replace existing layout.
         /// </summary>
         /// <param name="dfLocation">DFLocation.</param>
-        public void LoadExterior(ref DFLocation dfLocation)
+        public void LoadLocation(ref DFLocation dfLocation)
         {
             // Set climate for texture swaps
             host.TextureManager.Climate = dfLocation.Climate;
 
             // Build layout
             BuildExteriorLayout(ref dfLocation);
-        }
 
-        /// <summary>
-        /// Loads a full dungeon layout.
-        ///  This will replace existing dungeon layout.
-        /// </summary>
-        /// <param name="dfLocation">DFLocation.</param>
-        public void LoadDungeon(ref DFLocation dfLocation)
-        {
-            // No climate support in dungeons at this time
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
-
-            // Dungeon layout must be present in location
+            // Optionally build dungeon layout
             if (dfLocation.HasDungeon)
                 BuildDungeonLayout(ref dfLocation);
-            else
-                throw new Exception("Specified DFLocation does not contain a dungeon layout.");
         }
 
         #endregion
@@ -509,6 +508,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Creat exterior layout for one block
             exteriorLayout = new Dictionary<int, BlockPosition>(1);
+            exteriorResources = new Dictionary<int, bool>(1);
 
             // Get block key and name
             int key = GetBlockKey(0, 0);
@@ -525,11 +525,9 @@ namespace DaggerfallModelling.ViewControls
             // Build ground plane
             host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
-            // Load block models and textures
-            LoadBlockResources(ref blockPosition.block);
-
             // Add to layout dictionary
             exteriorLayout.Add(key, blockPosition);
+            exteriorResources.Add(key, false);
 
             // Bounds are equivalent to block
             exteriorBounds = blockPosition.block.BoundingBox;
@@ -550,6 +548,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Create dungeon layout
             dungeonLayout = new Dictionary<int, BlockPosition>();
+            dungeonResources = new Dictionary<int, bool>(1);
 
             // Get block key
             int key = GetBlockKey(0, 0);
@@ -562,11 +561,9 @@ namespace DaggerfallModelling.ViewControls
             // Set block position
             blockPosition.position = new Vector3(0, 0, 0);
 
-            // Load block models and textures
-            LoadBlockResources(ref blockPosition.block);
-
             // Add to layout dictionary
             dungeonLayout.Add(key, blockPosition);
+            dungeonResources.Add(key, false);
 
             // Bounds are equivalent to block
             dungeonBounds = blockPosition.block.BoundingBox;
@@ -594,6 +591,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Create exterior layout
             exteriorLayout = new Dictionary<int, BlockPosition>(width * height);
+            exteriorResources = new Dictionary<int, bool>(width * height);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -613,11 +611,9 @@ namespace DaggerfallModelling.ViewControls
                     // Build ground plane
                     host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
-                    // Load block models and textures
-                    LoadBlockResources(ref blockPosition.block);
-
                     // Add to layout dictionary
                     exteriorLayout.Add(key, blockPosition);
+                    exteriorResources.Add(key, false);
 
                     // Merge bounding boxes
                     Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -648,6 +644,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Create dungeon layout
             dungeonLayout = new Dictionary<int, BlockPosition>();
+            dungeonResources = new Dictionary<int, bool>();
             foreach (var block in dfLocation.Dungeon.Blocks)
             {
                 // Get block key
@@ -661,11 +658,9 @@ namespace DaggerfallModelling.ViewControls
                 // Set block position
                 blockPosition.position = new Vector3(block.X * rdbBlockSide, 0, -(block.Z * rdbBlockSide));
 
-                // Load block models and textures
-                LoadBlockResources(ref blockPosition.block);
-
                 // Add to layout dictionary
                 dungeonLayout.Add(key, blockPosition);
+                dungeonResources.Add(key, false);
 
                 // Merge bounding boxes
                 Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -705,9 +700,9 @@ namespace DaggerfallModelling.ViewControls
         ///  Resources cached by TextureManager and ModelManager are recovered quickly.
         /// </summary>
         /// <param name="block">BlockManager.Block.</param>
-        private void LoadBlockResources(ref BlockManager.Block block)
+        private bool LoadBlockResources(BlockManager.Block block)
         {
-            // Load block models
+            // Load model textures
             float minVertical = 0f, maxVertical = 0f;
             for (int i = 0; i < block.Models.Count; i++)
             {
@@ -743,6 +738,8 @@ namespace DaggerfallModelling.ViewControls
             Vector3 min = new Vector3(block.BoundingBox.Min.X, minVertical, block.BoundingBox.Min.Z);
             Vector3 max = new Vector3(block.BoundingBox.Max.X, maxVertical, block.BoundingBox.Max.Z);
             block.BoundingBox = new BoundingBox(min, max);
+
+            return true;
         }
 
         #endregion

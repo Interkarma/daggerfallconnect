@@ -218,8 +218,16 @@ namespace XNALibrary
 
             // Check if key already exists
             key = GetTextureKey(climateType, climateSet, record);
-            if (generalTextureDict.ContainsKey(key))
-                return key;
+            if (this.climateWeather == ClimateWeather.Winter)
+            {
+                if (winterTextureDict.ContainsKey(key))
+                    return key;
+            }
+            else
+            {
+                if (generalTextureDict.ContainsKey(key))
+                    return key;
+            }
 
             // Swap sets are missing a winter file in certain climates.
             if (climateType == ClimateType.Desert || climateType == ClimateType.Swamp)
@@ -247,6 +255,14 @@ namespace XNALibrary
         /// <returns>Texture2D.</returns>
         public Texture2D GetTexture(int key)
         {
+            // Try to return winter texture when required
+            if (this.climateWeather == ClimateWeather.Winter)
+            {
+                if (winterTextureDict.ContainsKey(key))
+                    return winterTextureDict[key];
+            }
+
+            // Otherwise return general texture
             if (!generalTextureDict.ContainsKey(key))
                 return null;
             else
@@ -254,21 +270,39 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Removes texture for current climate, based on key.
+        /// Remove cached texture based on key.
         /// </summary>
         /// <param name="key">Texture key.</param>
         public void RemoveTexture(int key)
         {
+            // Remove general texture og key
             if (generalTextureDict.ContainsKey(key))
                 generalTextureDict.Remove(key);
+
+            // Remove winter texture of key
+            if (winterTextureDict.ContainsKey(key))
+                winterTextureDict.Remove(key);
         }
 
         /// <summary>
-        /// Clear all textures for current climate.
+        /// Clear all cached textures.
         /// </summary>
         public void ClearTextures()
         {
+            // Remove general and winter dictionaries
             generalTextureDict.Clear();
+            winterTextureDict.Clear();
+        }
+
+        /// <summary>
+        /// Clear all climate dictionaries.
+        /// </summary>
+        public void ClearAtlases()
+        {
+            desertAtlas = null;
+            mountainAtlas = null;
+            temperateAtlas = null;
+            swampAtlas = null;
         }
 
         #endregion
@@ -295,7 +329,7 @@ namespace XNALibrary
         /// <returns>Texture key.</returns>
         private int GetTextureKey(ClimateType climateType, ClimateSet climateSet, int record)
         {
-            return (((int)climateType + 1) * 1000000) + ((int)climateSet * 1000) + record;
+            return 1000000 + ((int)climateType * 1000000) + ((int)climateSet * 1000) + record;
         }
 
         /// <summary>
@@ -344,7 +378,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets current terrain atlas based on climate.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Texture2D.</returns>
         private Texture2D GetTerrainAtlas()
         {
             switch (this.climateType)

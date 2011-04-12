@@ -682,13 +682,13 @@ namespace DaggerfallModelling.ViewControls
                 if (name.EndsWith(".RMB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.LoadExterior(name);
+                    view.LoadExteriorBlock(name);
                     view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
                 }
                 else if (name.EndsWith(".RDB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.LoadDungeon(name);
+                    view.LoadDungeonBlock(name);
                     view.BatchMode = LocationView.BatchModes.SingleDungeonBlock;
                 }
                 else
@@ -742,7 +742,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Load exterior
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.LoadExterior(ref dfLocation);
+            view.LoadLocation(ref dfLocation);
 
             // Set view mode
             viewMode = ViewModes.LocationView;
