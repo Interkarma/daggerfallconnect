@@ -241,7 +241,7 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
             host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
             host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 2; //host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;

@@ -43,6 +43,9 @@ namespace DaggerfallModelling.ViewControls
         private Dictionary<int, BlockPosition> dungeonLayout = new Dictionary<int, BlockPosition>();
         private Dictionary<int, bool> dungeonResources = new Dictionary<int, bool>();
 
+        // Status message
+        string currentStatus = string.Empty;
+
         // Appearance
         private Color backgroundColor = Color.LightGray;
 
@@ -58,20 +61,24 @@ namespace DaggerfallModelling.ViewControls
 
         // Camera
         private static float cameraFloor = 100.0f;
-        private static float cameraCeiling = 8192.0f;
+        private static float cameraCeiling = 10000.0f;
+        private static float cameraStart = 6000.0f;
         private BoundingBox exteriorBounds;
         private BoundingBox dungeonBounds;
-        private Vector3 cameraPosition = new Vector3(0, cameraCeiling, 0);
+        private Vector3 cameraPosition = new Vector3(0, 6000.0f, 0);
         private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
         private Vector3 cameraUpVector = Vector3.Up;
 
         // Movement
         private Vector3 cameraVelocity;
-        private float cameraStepMuliplier = 5.0f;
+        private float cameraStep = 5.0f;
 
         // Batching options
         BatchModes batchMode = BatchModes.SingleExteriorBlock;
         BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
+
+        // Ray testing
+        Ray mouseRay;
 
         #endregion
 
@@ -229,10 +236,18 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
             host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+
+            // TODO: Enable max anisotropy for free camera, but keep disabled for top-down
+            /*
             host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
             host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
             host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
             host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            */
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
@@ -262,8 +277,15 @@ namespace DaggerfallModelling.ViewControls
 
                 // Late-load resources if not present
                 if (!resources[layoutItem.Key])
-                {
                     resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
+
+                // Test ray against block bounds
+                float? distance = mouseRay.Intersects(blockBox);
+                if (distance != null)
+                {
+                    // TEST: Just show which block mouse is over for now
+                    currentStatus = layoutItem.Value.name;
+                    UpdateStatusMessage();
                 }
 
                 // Draw each model in this block
@@ -316,10 +338,13 @@ namespace DaggerfallModelling.ViewControls
                 if (host.RightMouseDown)
                 {
                     TranslateCameraXZ(
-                        (float)-host.MousePosDelta.X * cameraStepMuliplier,
-                        (float)-host.MousePosDelta.Y * cameraStepMuliplier);
+                        (float)-host.MousePosDelta.X * cameraStep,
+                        (float)-host.MousePosDelta.Y * cameraStep);
                 }
             }
+
+            // Update mouse ray
+            UpdateMouseRay(e.X, e.Y);
         }
 
         /// <summary>
@@ -354,13 +379,13 @@ namespace DaggerfallModelling.ViewControls
                 {
                     // Set scroll velocity on right mouse up
                     cameraVelocity = new Vector3(
-                        -host.MouseVelocity.X * cameraStepMuliplier,
+                        -host.MouseVelocity.X * cameraStep,
                         0.0f,
-                        -host.MouseVelocity.Y * cameraStepMuliplier);
+                        -host.MouseVelocity.Y * cameraStep);
 
                     // Cap velocity at very small amounts to prevent sliding
-                    if (cameraVelocity.X > -cameraStepMuliplier && cameraVelocity.X < cameraStepMuliplier) cameraVelocity.X = 0.0f;
-                    if (cameraVelocity.Z > -cameraStepMuliplier && cameraVelocity.Z < cameraStepMuliplier) cameraVelocity.Z = 0.0f;
+                    if (cameraVelocity.X > -cameraStep && cameraVelocity.X < cameraStep) cameraVelocity.X = 0.0f;
+                    if (cameraVelocity.Z > -cameraStep && cameraVelocity.Z < cameraStep) cameraVelocity.Z = 0.0f;
                 }
             }
         }
@@ -448,7 +473,7 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Content Loading
+        #region Map Loading
 
         /// <summary>
         /// Loads a single block as an exterior location.
@@ -462,6 +487,9 @@ namespace DaggerfallModelling.ViewControls
             
             // Build single-block exterior layout
             BuildExteriorLayout(ref blockName);
+
+            // Set status message
+            currentStatus = string.Format("Viewing RMB block {0}.", blockName);
         }
 
         /// <summary>
@@ -476,6 +504,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Build single-block layout
             BuildDungeonLayout(ref blockName);
+
+            // Set status message
+            currentStatus = string.Format("Viewing RDB block {0}.", blockName);
         }
 
         /// <summary>
@@ -494,6 +525,9 @@ namespace DaggerfallModelling.ViewControls
             // Optionally build dungeon layout
             if (dfLocation.HasDungeon)
                 BuildDungeonLayout(ref dfLocation);
+
+            // Set status message
+            currentStatus = string.Format("Exploring {0}.", dfLocation.Name);
         }
 
         #endregion
@@ -781,6 +815,25 @@ namespace DaggerfallModelling.ViewControls
         #region Private Methods
 
         /// <summary>
+        /// Gets appropriate layout dictionary to use based on batch mode.
+        /// </summary>
+        /// <returns>Layout dictionary.</returns>
+        private Dictionary<int, BlockPosition> GetLayoutDict()
+        {
+            switch (batchMode)
+            {
+                case BatchModes.SingleExteriorBlock:
+                case BatchModes.FullExterior:
+                    return exteriorLayout;
+                case BatchModes.SingleDungeonBlock:
+                case BatchModes.FullDungeon:
+                    return dungeonLayout;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
         /// Updates projection matrix to current view size.
         /// </summary>
         private void UpdateProjectionMatrix()
@@ -799,7 +852,29 @@ namespace DaggerfallModelling.ViewControls
         private void UpdateStatusMessage()
         {
             // Set the message
-            host.StatusMessage = string.Empty;
+            host.StatusMessage = currentStatus;
+        }
+
+        #endregion
+
+        #region Mouse Picking Methods
+
+        /// <summary>
+        /// Update mouse ray for picking.
+        /// </summary>
+        private void UpdateMouseRay(int x, int y)
+        {
+            // Unproject vectors into view area
+            Viewport vp = host.GraphicsDevice.Viewport;
+            Matrix world = Matrix.CreateTranslation(0, 0, 0);
+            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projectionMatrix, viewMatrix, world);
+            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projectionMatrix, viewMatrix, world);
+
+            // Create ray
+            Vector3 direction = far - near;
+            direction.Normalize();
+            mouseRay.Position = near;
+            mouseRay.Direction = direction;
         }
 
         #endregion

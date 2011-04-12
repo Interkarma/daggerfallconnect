@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
@@ -461,7 +462,7 @@ namespace DaggerfallModelling.ViewControls
             mousePosDelta = new Point(e.Location.X - mousePos.X, e.Location.Y - mousePos.Y);
             mouseTimeDelta = stopwatch.ElapsedTicks - mouseTime;
 
-            // Ensure mouse time delta is never 0 (possible, and screws with distance/time calcs obviously)
+            // Ensure mouse time delta is never 0 (avoids potential divide by zero)
             if (mouseTimeDelta == 0)
                 mouseTimeDelta = 1;
 

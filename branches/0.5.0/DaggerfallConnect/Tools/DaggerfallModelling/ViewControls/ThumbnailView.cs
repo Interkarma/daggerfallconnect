@@ -373,6 +373,10 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
             host.GraphicsDevice.RenderState.CullMode = CullMode.None;
+            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = vertexDeclaration;
