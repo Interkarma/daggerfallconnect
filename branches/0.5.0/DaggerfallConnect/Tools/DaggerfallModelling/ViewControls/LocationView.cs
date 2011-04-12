@@ -79,6 +79,7 @@ namespace DaggerfallModelling.ViewControls
 
         // Ray testing
         Ray mouseRay;
+        RenderableBoundingBox renderableBounds;
 
         #endregion
 
@@ -153,6 +154,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Start in normal camera mode
             CameraMode = CameraModes.Normal;
+            renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
         }
 
         #endregion
@@ -259,6 +261,13 @@ namespace DaggerfallModelling.ViewControls
             // Update frustum matrix
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
+            // Init variables used for tracking mouse ray and drawing bounding box
+            float? distance = null;
+            float minDistance = 99999999f;
+            bool mouseInBlock = false;
+            BlockManager.ModelInfo? closestModelInfo = null;
+            Matrix closestModelMatrix = Matrix.Identity;
+
             // Draw visible blocks
             Matrix world;
             foreach (var layoutItem in layout)
@@ -279,20 +288,41 @@ namespace DaggerfallModelling.ViewControls
                 if (!resources[layoutItem.Key])
                     resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
 
-                // Test ray against block bounds
-                float? distance = mouseRay.Intersects(blockBox);
-                if (distance != null)
+                // Test ray against block bounds.
+                // Is only performed when not scrolling.
+                if (cameraVelocity == Vector3.Zero)
                 {
-                    // TEST: Just show which block mouse is over for now
-                    currentStatus = layoutItem.Value.name;
-                    UpdateStatusMessage();
+                    distance = mouseRay.Intersects(blockBox);
+                    if (distance != null)
+                        mouseInBlock = true;
                 }
 
                 // Draw each model in this block
                 foreach (var modelItem in layoutItem.Value.block.Models)
                 {
+                    // Draw the model
                     modelEffect.World = modelItem.Matrix * world;
                     DrawSingleModel((int)modelItem.ModelId);
+
+                    // Test ray against model if ray also in this block
+                    if (mouseInBlock)
+                    {
+                        // TODO: Place intersected models in sorted array and test against face data
+
+                        BoundingBox modelBox = new BoundingBox(
+                            Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
+                            Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
+                        distance = mouseRay.Intersects(modelBox);
+                        if (distance != null)
+                        {
+                            if (distance < minDistance)
+                            {
+                                minDistance = distance.Value;
+                                closestModelInfo = modelItem;
+                                closestModelMatrix = modelEffect.World;
+                            }
+                        }
+                    }
                 }
 
                 // Optionally draw gound plane for this item
@@ -308,6 +338,14 @@ namespace DaggerfallModelling.ViewControls
                     modelEffect.World = world * ground;
                     DrawGroundPlane(layoutItem.Key);
                 }
+            }
+
+            // Draw bounding box if mouse over model
+            if (closestModelInfo != null)
+            {
+                renderableBounds.Draw(closestModelInfo.Value.BoundingBox,
+                    viewMatrix, projectionMatrix,
+                    closestModelMatrix);
             }
         }
 
