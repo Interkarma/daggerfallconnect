@@ -14,6 +14,7 @@ using System.Text;
 using System.Drawing;
 using System.Threading;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
@@ -361,18 +362,59 @@ namespace XNALibrary
             textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
             DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
 
-            // Create normal XNA texture
-            Texture2D normalTexture = new Texture2D(graphicsDevice, normalBitmap.Width, normalBitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-            normalTexture.SetData<byte>(normalBitmap.Data);
-            generalTextureDict.Add(key, normalTexture);
-
-            // Create winter XNA texture
+            // Create XNA textures
+            generalTextureDict.Add(key, CreateTexture(ref normalBitmap));
             if (supportsWinter)
-            {
-                Texture2D winterTexture = new Texture2D(graphicsDevice, winterBitmap.Width, winterBitmap.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
-                winterTexture.SetData<byte>(normalBitmap.Data);
-                winterTextureDict.Add(key, winterTexture);
-            }
+                winterTextureDict.Add(key, CreateTexture(ref winterBitmap));
+        }
+
+        /// <summary>
+        /// Creates Texture2D from DFBitmap.
+        ///  Will ensure each texture has power of two dimensions.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap source. Must be in ARGB format.</param>
+        /// <returns>Texture2D.</returns>
+        private Texture2D CreateTexture(ref DFBitmap dfBitmap)
+        {
+            // Get width and height as power of 2
+            int width = (IsPowerOfTwo(dfBitmap.Width)) ? dfBitmap.Width : NextPowerOfTwo(dfBitmap.Width);
+            int height = (IsPowerOfTwo(dfBitmap.Height)) ? dfBitmap.Height : NextPowerOfTwo(dfBitmap.Height);
+
+            // Create XNA texture
+            Texture2D texture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+
+            // Set data
+            texture.SetData<byte>(
+                0,
+                new Microsoft.Xna.Framework.Rectangle(0, 0, dfBitmap.Width, dfBitmap.Height),
+                dfBitmap.Data,
+                0,
+                dfBitmap.Width * dfBitmap.Height * 4,
+                SetDataOptions.None);
+
+            return texture;
+        }
+
+        /// <summary>
+        /// Check if value is a power of 2.
+        /// </summary>
+        /// <param name="x">Value to check.</param>
+        /// <returns>True if power of 2.</returns>
+        private bool IsPowerOfTwo(int x)
+        {
+            return (x & (x - 1)) == 0;
+        }
+
+        /// <summary>
+        /// Finds next power of 2 size for value.
+        /// </summary>
+        /// <param name="x">Value.</param>
+        /// <returns>Next power of 2.</returns>
+        private int NextPowerOfTwo(int x)
+        {
+            int i = 1;
+            while (i < x) { i <<= 1; }
+            return i;
         }
 
         /// <summary>

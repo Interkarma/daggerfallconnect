@@ -303,6 +303,13 @@ namespace XNALibrary
                 string archivePath = Path.Combine(arena2Path, TextureFile.IndexToFileName(dfSubMesh.TextureArchive));
                 System.Drawing.Size sz = TextureFile.QuickSize(archivePath, dfSubMesh.TextureRecord);
 
+                // Ensure texture dimensions are POW2 as TextureManager will be emitting POW2 textures
+                int width = (IsPowerOfTwo(sz.Width)) ? sz.Width : NextPowerOfTwo(sz.Width);
+                int height = (IsPowerOfTwo(sz.Height)) ? sz.Height : NextPowerOfTwo(sz.Height);
+                Vector2 scale = new Vector2(
+                    (float)sz.Width / (float)width,
+                    (float)sz.Height / (float)height);
+
                 // Loop through all planes in this submesh
                 foreach (DFMesh.DFPlane dfPlane in dfSubMesh.Planes)
                 {
@@ -318,7 +325,11 @@ namespace XNALibrary
                         // Store vertex data
                         model.Vertices[vertexCount].Position = position;
                         model.Vertices[vertexCount].Normal = normal;
-                        model.Vertices[vertexCount].TextureCoordinate = new Vector2(dfPoint.U / sz.Width, dfPoint.V / sz.Height);
+                        model.Vertices[vertexCount].TextureCoordinate = new Vector2(
+                            (dfPoint.U / sz.Width) * scale.X,
+                            (dfPoint.V / sz.Height) * scale.Y);
+
+                        // Inrement count
                         vertexCount++;
 
                         // Compare min and max vectors
@@ -386,6 +397,28 @@ namespace XNALibrary
                 // Increment submesh count
                 subMeshCount++;
             }
+        }
+
+        /// <summary>
+        /// Check if value is a power of 2.
+        /// </summary>
+        /// <param name="x">Value to check.</param>
+        /// <returns>True if power of 2.</returns>
+        private bool IsPowerOfTwo(int x)
+        {
+            return (x & (x - 1)) == 0;
+        }
+
+        /// <summary>
+        /// Finds next power of 2 size for value.
+        /// </summary>
+        /// <param name="x">Value.</param>
+        /// <returns>Next power of 2.</returns>
+        private int NextPowerOfTwo(int x)
+        {
+            int i = 1;
+            while (i < x) { i <<= 1; }
+            return i;
         }
 
         #endregion
