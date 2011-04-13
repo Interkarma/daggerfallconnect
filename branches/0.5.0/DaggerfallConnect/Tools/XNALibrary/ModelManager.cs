@@ -52,9 +52,14 @@ namespace XNALibrary
 
             /// <summary>Data for each SubMesh, grouped by texture.</summary>
             public SubMeshData[] SubMeshes;
+
+            /// <summary>Native face data for picking and collision tests.</summary>
+            public NativeFace NativeFaces;
         }
 
-        /// <summary>Defines submesh data.</summary>
+        /// <summary>
+        /// Defines submesh data.
+        /// </summary>
         public struct SubMeshData
         {
             /// <summary>Texture archive index.</summary>
@@ -68,6 +73,22 @@ namespace XNALibrary
 
             /// <summary>Index array desribing the triangles of this SubMesh.</summary>
             public int[] Indices;
+        }
+
+        /// <summary>
+        /// Describes a native Daggerfall face.
+        ///  Used for simplified face picking and collision testing.
+        /// </summary>
+        public struct NativeFace
+        {
+            /// <summary>The points making up this face.</summary>
+            public float[] Points;
+
+            /// <summary>Native texture archive for this face.</summary>
+            public int TextureArchive;
+
+            /// <summary>Native texture record for this face.</summary>
+            public int TextureRecord;
         }
 
         #endregion

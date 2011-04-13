@@ -272,10 +272,8 @@ namespace DaggerfallModelling.ViewControls
             Matrix world;
             foreach (var layoutItem in layout)
             {
-                // Create translation matrix for this block
-                world = Matrix.CreateTranslation(layout[layoutItem.Key].position);
-
                 // Create transformed block bounding box
+                world = Matrix.CreateTranslation(layout[layoutItem.Key].position);
                 BoundingBox blockBox = new BoundingBox(
                     Vector3.Transform(layoutItem.Value.block.BoundingBox.Min, world),
                     Vector3.Transform(layoutItem.Value.block.BoundingBox.Max, world));
@@ -300,18 +298,24 @@ namespace DaggerfallModelling.ViewControls
                 // Draw each model in this block
                 foreach (var modelItem in layoutItem.Value.block.Models)
                 {
-                    // Draw the model
+                    // Create transformed model bounding box
                     modelEffect.World = modelItem.Matrix * world;
+                    BoundingBox modelBox = new BoundingBox(
+                            Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
+                            Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
+
+                    // Test block bounding box against frustum
+                    if (!viewFrustum.Intersects(modelBox))
+                        continue;
+
+                    // Draw the model
                     DrawSingleModel((int)modelItem.ModelId);
 
                     // Test ray against model if ray also in this block
                     if (mouseInBlock)
                     {
                         // TODO: Place intersected models in sorted array and test against face data
-
-                        BoundingBox modelBox = new BoundingBox(
-                            Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
-                            Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
+                        
                         distance = mouseRay.Intersects(modelBox);
                         if (distance != null)
                         {
