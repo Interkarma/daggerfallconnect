@@ -582,6 +582,11 @@ namespace DaggerfallModelling.ViewControls
             // Swaps between two views using "back" button on mouse if available
             if (e.Button == MouseButtons.XButton1)
             {
+                // Do nothing if no previous view mode
+                if (lastViewMode == ViewModes.None)
+                    return;
+
+                // Swap current view mode with previous view mode
                 ViewModes tempViewMode;
                 tempViewMode = viewMode;
                 viewMode = lastViewMode;
@@ -718,9 +723,9 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Shows a single model.
         /// </summary>
-        /// <param name="key">ModelID of model to show.</param>
+        /// <param name="id">ModelID of model to show.</param>
         /// <param name="climate">ClimateType.</param>
-        public void ShowModelView(int key, DFLocation.ClimateType climate)
+        public void ShowModelView(int id, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -729,7 +734,10 @@ namespace DaggerfallModelling.ViewControls
             // Set view mode
             lastViewMode = viewMode;
             viewMode = ViewModes.ModelView;
-            viewClients[viewMode].ResumeView();
+            ModelView view = (ModelView)viewClients[ViewModes.ModelView];
+            view.Climate = climate;
+            view.ModelID = id;
+            view.ResumeView();
             RaiseViewModeChangedEvent();
         }
 
@@ -919,17 +927,18 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="array"></param>
         private void AssignFilteredModels(int[] array)
         {
+            // Do nothing if not initialised
+            if (!isReady)
+                return;
+
             // Assign new filter array to views.
             // Views have been designed not to perform any visible operation
             // when updating this list so they can all be notified at the same time.
             filteredModelsArray = array;
-            if (isReady)
-            {
-                viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
-                viewClients[ViewModes.ModelView].FilteredModelsChanged();
-                viewClients[ViewModes.BlockView].FilteredModelsChanged();
-                viewClients[ViewModes.LocationView].FilteredModelsChanged();
-            }
+            viewClients[ViewModes.ThumbnailView].FilteredModelsChanged();
+            viewClients[ViewModes.ModelView].FilteredModelsChanged();
+            viewClients[ViewModes.BlockView].FilteredModelsChanged();
+            viewClients[ViewModes.LocationView].FilteredModelsChanged();
         }
 
         /// <summary>

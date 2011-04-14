@@ -479,6 +479,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            base.ResumeView();
+
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
 

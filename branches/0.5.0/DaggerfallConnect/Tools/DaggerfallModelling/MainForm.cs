@@ -794,8 +794,9 @@ namespace DaggerfallModelling
                 !ContentView.IsReady)
                 return;
 
-            // Set view
-            ContentView.ShowModelView(0, DFLocation.ClimateType.None);
+            // Set view.
+            // Model id of -1 means just display what is already loaded.
+            ContentView.ShowModelView(-1, DFLocation.ClimateType.None);
         }
 
         /// <summary>

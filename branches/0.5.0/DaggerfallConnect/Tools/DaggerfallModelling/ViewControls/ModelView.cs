@@ -35,7 +35,6 @@ namespace DaggerfallModelling.ViewControls
         // Model
         private ModelManager.Model currentModel;
         private int currentModelIndex = 0;
-        private int currentModelId = -1;
 
         // Appearance
         private Color modelViewBackgroundColor = Color.LightGray;
@@ -56,8 +55,18 @@ namespace DaggerfallModelling.ViewControls
         private Matrix modelTranslation = Matrix.Identity;
         private float translationStep = 10.0f;
 
-        // Models list
-        private bool useFilteredModels = false;
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets current model in view.
+        /// </summary>
+        public int ModelID
+        {
+            get { return GetModel(); }
+            set { SetModel(value); }
+        }
 
         #endregion
 
@@ -98,6 +107,9 @@ namespace DaggerfallModelling.ViewControls
             float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+
+            // Load default model
+            ModelID = (int)host.ModelManager.Arch3dFile.GetRecordId(0);
         }
 
         /// <summary>
@@ -137,11 +149,9 @@ namespace DaggerfallModelling.ViewControls
         {
             if (host.LeftMouseDown)
             {
-                // TODO: Support multiple camera modes
-
                 // Adjust model rotation for normal camera
-                float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * 0.5f);
-                float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * 0.5f);
+                float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * 0.4f);
+                float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * 0.4f);
                 Matrix rotation = Matrix.CreateRotationY(modelYaw) * Matrix.CreateRotationX(modelPitch);
                 modelRotation *= rotation;
             }
@@ -204,16 +214,14 @@ namespace DaggerfallModelling.ViewControls
         {
             if (host.FilteredModelsArray == null)
             {
-                useFilteredModels = false;
                 currentModelIndex = 0;
-                LayoutModel();
+                SetModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
                 UpdateStatusMessage();
             }
             else
             {
-                useFilteredModels = true;
                 currentModelIndex = 0;
-                LayoutModel();
+                SetModel(host.FilteredModelsArray[currentModelIndex]);
                 UpdateStatusMessage();
             }
         }
@@ -224,8 +232,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            base.ResumeView();
             UpdateProjectionMatrix();
-            FilteredModelsChanged();
+            LayoutModel();
             host.Refresh();
         }
 
@@ -283,36 +292,75 @@ namespace DaggerfallModelling.ViewControls
         #region Model Management
 
         /// <summary>
-        /// Loads and positions current model.
+        /// Gets the current model ID.
         /// </summary>
-        private void LayoutModel()
+        /// <returns>ModelID.</returns>
+        private int GetModel()
         {
-            // Load model based on source
-            if (useFilteredModels)
+            if (host.FilteredModelsArray != null)
             {
-                if (host.FilteredModelsArray != null)
+                if (host.FilteredModelsArray.Length > 0)
+                    return host.FilteredModelsArray[currentModelIndex];
+            }
+            else
+            {
+                return (int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex);
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// View the specified model.
+        /// </summary>
+        /// <param name="id"></param>
+        private void SetModel(int id)
+        {
+            // Do nothing if model id -1
+            if (id == -1)
+                return;
+
+            // Sync index to id from filtered list or entire database
+            currentModelIndex = -1;
+            if (host.FilteredModelsArray != null)
+            {
+                // Find index in filtered list
+                for (int i = 0; i < host.FilteredModelsArray.Length; i++)
                 {
-                    if (host.FilteredModelsArray.Length > 0)
-                        LoadModel(host.FilteredModelsArray[currentModelIndex]);
+                    if (host.FilteredModelsArray[i] == id)
+                    {
+                        currentModelIndex = i;
+                        break;
+                    }
                 }
             }
             else
             {
-                LoadModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
+                currentModelIndex = host.ModelManager.Arch3dFile.GetRecordIndex((uint)id);
             }
 
+            // Display model
+            LoadModel(id);
+            LayoutModel();
+        }
+
+        /// <summary>
+        /// Positions current model.
+        /// </summary>
+        private void LayoutModel()
+        {
             // Update view matrix
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
         }
 
         /// <summary>
-        /// Loads a model for view. Should only be called from LayoutModel.
+        /// Loads a model for view.
         /// </summary>
-        /// <param name="id">ID of model.</param>
+        /// <param name="id">ModelID.</param>
         private void LoadModel(int id)
         {
             // Do nothing if model already loaded
-            if (currentModelId == id)
+            if (currentModel.DFMesh.ObjectId == id)
                 return;
 
             // Load the model
@@ -338,9 +386,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Apply matrix to model
             currentModel = host.ModelManager.TransformModel(ref currentModel, matrix);
-
-            // Store current model id
-            currentModelId = id;
 
             // Reset camera position and model rotation
             cameraPosition.X = 0.0f;

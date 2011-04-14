@@ -305,7 +305,8 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             // Thumbnails use native textures only
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
+            base.Climate = DFLocation.ClimateType.None;
+            base.ResumeView();
 
             // Check filtered models list is active.
             // A little bit of handling here to keep list at same position

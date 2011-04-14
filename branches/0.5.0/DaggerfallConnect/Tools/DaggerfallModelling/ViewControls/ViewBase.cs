@@ -34,6 +34,7 @@ namespace DaggerfallModelling.ViewControls
 
         protected ViewHost host = null;
         protected CameraModes cameraMode = CameraModes.None;
+        private DFLocation.ClimateType climateType = DFLocation.ClimateType.None;
 
         #endregion
 
@@ -63,6 +64,16 @@ namespace DaggerfallModelling.ViewControls
             set { cameraMode = value; }
         }
 
+        /// <summary>
+        /// Gets or sets climate type. Each view will maintain a
+        /// preferred climate type.
+        /// </summary>
+        public DFLocation.ClimateType Climate
+        {
+            get { return climateType; }
+            set { climateType = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -77,7 +88,21 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Public Methods
+        #region Public Virtual Methods
+
+        /// <summary>
+        /// Called when the view is resumed after being inactive.
+        ///  Allows view to perform any layout or other requirements before redraw.
+        /// </summary>
+        public virtual void ResumeView()
+        {
+            // Set preferred climate for this view
+            host.TextureManager.Climate = this.climateType;
+        }
+
+        #endregion
+
+        #region Public Abstract Methods
 
         /// <summary>
         /// Called when view must initialise itself.
@@ -145,12 +170,6 @@ namespace DaggerfallModelling.ViewControls
         /// The filtered list of models in the host has been modified.
         /// </summary>
         public abstract void FilteredModelsChanged();
-
-        /// <summary>
-        /// Called when the view is resumed after being inactive.
-        ///  Allows view to perform any layout or other requirements before redraw.
-        /// </summary>
-        public abstract void ResumeView();
 
         #endregion
 
