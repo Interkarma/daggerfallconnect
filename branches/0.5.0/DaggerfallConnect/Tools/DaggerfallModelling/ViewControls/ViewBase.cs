@@ -41,10 +41,10 @@ namespace DaggerfallModelling.ViewControls
 
         public enum CameraModes
         {
-            /// <summary>No camera mode possible (e.g. content not available).</summary>
+            /// <summary>No camera mode change possible.</summary>
             None,
-            /// <summary>Normal camera.</summary>
-            Normal,
+            /// <summary>Top-down camera.</summary>
+            TopDown,
             /// <summary>Free camera.</summary>
             Free,
         }
@@ -116,6 +116,12 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="e">MouseEventArgs</param>
         public abstract void OnMouseDown(MouseEventArgs e);
+
+        /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public abstract void OnMouseDoubleClick(MouseEventArgs e);
 
         /// <summary>
         /// Called when a mouse button is released.

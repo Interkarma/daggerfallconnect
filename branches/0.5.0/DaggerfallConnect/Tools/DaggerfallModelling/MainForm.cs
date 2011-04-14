@@ -178,9 +178,10 @@ namespace DaggerfallModelling
             SearchBlocksToolStripButton.Checked = searchBlocks;
             SearchLocationsToolStripButton.Checked = searchLocations;
 
-            // Update toolbar items
+            // Set initial view state
             UpdateActiveView();
             UpdateActiveCameraMode();
+            UpdateAvailableViews();
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -236,8 +237,6 @@ namespace DaggerfallModelling
                     case BlockTag:
                         blockViewAvailable = true;
                         ContentView.ShowBlockView(e.Node.Text);
-                        UpdateActiveView();
-                        UpdateActiveCameraMode();
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -251,8 +250,6 @@ namespace DaggerfallModelling
                             blockViewAvailable = true;
                             locationViewAvailable = true;
                             ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
-                            UpdateActiveView();
-                            UpdateActiveCameraMode();
                             return;
                         }
                         break;
@@ -349,8 +346,6 @@ namespace DaggerfallModelling
             // Load block into view
             blockViewAvailable = true;
             ContentView.ShowBlockView(e.Name);
-            UpdateActiveView();
-            UpdateActiveCameraMode();
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -367,6 +362,18 @@ namespace DaggerfallModelling
         private void ContentView_StatusMessageChanged(object sender, ViewHost.StatusMessageEventArgs e)
         {
             ContentViewStatusLabel.Text = e.Message;
+        }
+
+        /// <summary>
+        /// Called when content view mode changed.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">ViewModeChangedEventArgs.</param>
+        private void ContentView_ViewModeChanged(object sender, ViewHost.ViewModeChangedEventArgs e)
+        {
+            UpdateActiveView();
+            UpdateActiveCameraMode();
+            UpdateAvailableViews();
         }
 
         #endregion
@@ -773,8 +780,6 @@ namespace DaggerfallModelling
 
             // Set view
             ContentView.ShowThumbnailsView();
-            UpdateActiveView();
-            UpdateActiveCameraMode();
         }
 
         /// <summary>
@@ -790,9 +795,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set view
-            ContentView.ShowModelView(0);
-            UpdateActiveView();
-            UpdateActiveCameraMode();
+            ContentView.ShowModelView(0, DFLocation.ClimateType.None);
         }
 
         /// <summary>
@@ -809,8 +812,6 @@ namespace DaggerfallModelling
 
             // Set view
             ContentView.ShowBlockView(string.Empty);
-            UpdateActiveView();
-            UpdateActiveCameraMode();
         }
 
         /// <summary>
@@ -836,9 +837,7 @@ namespace DaggerfallModelling
                     break;
             }
 
-            // Set view
-            UpdateActiveView();
-            UpdateActiveCameraMode();
+            // TODO: Set view
         }
 
         #endregion
@@ -862,9 +861,6 @@ namespace DaggerfallModelling
         /// </summary>
         private void UpdateActiveView()
         {
-            // Update available views
-            UpdateAvailableViews();
-
             // Uncheck items
             ViewThumbsToolStripButton.Checked = false;
             ViewSingleModelToolStripButton.Checked = false;
@@ -897,20 +893,20 @@ namespace DaggerfallModelling
         private void UpdateActiveCameraMode()
         {
             // Check camera mode
-            NormalCameraToolStripButton.Checked = false;
+            TopDownCameraToolStripButton.Checked = false;
             FreeCameraToolStripButton.Checked = false;
-            NormalCameraToolStripButton.Enabled = true;
+            TopDownCameraToolStripButton.Enabled = true;
             FreeCameraToolStripButton.Enabled = false;
             switch (ContentView.CameraMode)
             {
-                case ViewBase.CameraModes.Normal:
-                    NormalCameraToolStripButton.Checked = true;
+                case ViewBase.CameraModes.TopDown:
+                    TopDownCameraToolStripButton.Checked = true;
                     break;
                 case ViewBase.CameraModes.Free:
                     FreeCameraToolStripButton.Checked = true;
                     break;
                 default:
-                    NormalCameraToolStripButton.Enabled = false;
+                    TopDownCameraToolStripButton.Enabled = false;
                     FreeCameraToolStripButton.Enabled = false;
                     break;
             }

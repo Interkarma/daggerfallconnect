@@ -153,7 +153,7 @@ namespace DaggerfallModelling.ViewControls
             : base(host)
         {
             // Start in normal camera mode
-            CameraMode = CameraModes.Normal;
+            CameraMode = CameraModes.TopDown;
             renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
         }
 
@@ -194,7 +194,7 @@ namespace DaggerfallModelling.ViewControls
         public override void Tick()
         {
             // Apply camera velocity in normal mode
-            if (CameraMode == CameraModes.Normal)
+            if (CameraMode == CameraModes.TopDown)
             {
                 TranslateCameraXZ(cameraVelocity.X, cameraVelocity.Z);
             }
@@ -208,6 +208,7 @@ namespace DaggerfallModelling.ViewControls
             // Clear display
             host.GraphicsDevice.Clear(backgroundColor);
 
+            #region Get Layout
             // Get appropriate layout data
             Dictionary<int, BlockPosition> layout;
             Dictionary<int, bool> resources;
@@ -230,7 +231,9 @@ namespace DaggerfallModelling.ViewControls
             // Nothing to do if layout is empty
             if (layout.Count == 0)
                 return;
+            #endregion
 
+            #region Set Render States
             // Set render states
             host.GraphicsDevice.RenderState.DepthBufferEnable = true;
             host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -250,7 +253,9 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
             host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
             */
+            #endregion
 
+            #region Setup
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
@@ -267,7 +272,9 @@ namespace DaggerfallModelling.ViewControls
             bool mouseInBlock = false;
             BlockManager.ModelInfo? closestModelInfo = null;
             Matrix closestModelMatrix = Matrix.Identity;
+            #endregion
 
+            #region Step Layout
             // Draw visible blocks
             Matrix world;
             foreach (var layoutItem in layout)
@@ -343,7 +350,9 @@ namespace DaggerfallModelling.ViewControls
                     DrawGroundPlane(layoutItem.Key);
                 }
             }
+            #endregion
 
+            #region Bounding Box
             // Draw bounding box if mouse over model
             if (closestModelInfo != null)
             {
@@ -351,6 +360,7 @@ namespace DaggerfallModelling.ViewControls
                     viewMatrix, projectionMatrix,
                     closestModelMatrix);
             }
+            #endregion
         }
 
         /// <summary>
@@ -374,7 +384,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseMove(MouseEventArgs e)
         {
             // Normal camera movement
-            if (CameraMode == CameraModes.Normal)
+            if (CameraMode == CameraModes.TopDown)
             {
                 // Scene dragging
                 if (host.RightMouseDown)
@@ -414,7 +424,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseUp(MouseEventArgs e)
         {
             // Normal camera movement
-            if (CameraMode == CameraModes.Normal)
+            if (CameraMode == CameraModes.TopDown)
             {
                 // Scene dragging
                 if (e.Button == MouseButtons.Right)
@@ -430,6 +440,14 @@ namespace DaggerfallModelling.ViewControls
                     if (cameraVelocity.Z > -cameraStep && cameraVelocity.Z < cameraStep) cameraVelocity.Z = 0.0f;
                 }
             }
+        }
+
+        /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public override void OnMouseDoubleClick(MouseEventArgs e)
+        {
         }
 
         /// <summary>
@@ -582,7 +600,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         private void BuildExteriorLayout(ref string blockName)
         {
-            // Creat exterior layout for one block
+            // Create exterior layout for one block
             exteriorLayout = new Dictionary<int, BlockPosition>(1);
             exteriorResources = new Dictionary<int, bool>(1);
 

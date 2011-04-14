@@ -70,7 +70,7 @@ namespace DaggerfallModelling.ViewControls
             : base(host)
         {
             // Start in normal camera mode
-            CameraMode = CameraModes.Normal;
+            CameraMode = CameraModes.None;
         }
 
         #endregion
@@ -170,6 +170,14 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseUp(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public override void OnMouseDoubleClick(MouseEventArgs e)
         {
         }
 

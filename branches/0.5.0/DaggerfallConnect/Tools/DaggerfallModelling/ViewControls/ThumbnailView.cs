@@ -246,6 +246,17 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            // Send selected model to model view
+            if (mouseOverThumb != -1)
+                host.ShowModelView(mouseOverThumb, DFLocation.ClimateType.None);
+        }
+
+        /// <summary>
         /// Called when mouse enters client area.
         /// </summary>
         /// <param name="e">EventArgs</param>
@@ -293,6 +304,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            // Thumbnails use native textures only
+            host.TextureManager.Climate = DFLocation.ClimateType.None;
+
             // Check filtered models list is active.
             // A little bit of handling here to keep list at same position
             // unless a reset is specfically needed due to array gone, overflow, etc.
@@ -469,6 +483,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 ypos = -thumbHeight;
                 thumbScrollAmount = 0;
+                thumbScrollVelocity = 0;
             }
 
             // Stop scrolling down when bottom row in view
@@ -476,6 +491,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 ypos = -thumbHeight;
                 thumbScrollAmount = 0;
+                thumbScrollVelocity = 0;
             }
 
             // Remove out of range thumbnails
@@ -652,7 +668,11 @@ namespace DaggerfallModelling.ViewControls
         private void ScrollThumbsView(int amount)
         {
             // Get total rows
-            int totalRows = host.ModelManager.Arch3dFile.Count / thumbsPerRow;
+            int totalRows = 0;
+            if (host.FilteredModelsArray != null)
+                totalRows = host.FilteredModelsArray.Length / thumbsPerRow;
+            else
+                totalRows = host.ModelManager.Arch3dFile.Count / thumbsPerRow;
 
             // Apply scroll amount
             thumbScrollAmount += amount;
@@ -660,11 +680,16 @@ namespace DaggerfallModelling.ViewControls
             // Handle scrolling models up with a new row appearing at the bottom
             if (thumbScrollAmount <= -(thumbHeight + thumbSpacing))
             {
-                if (thumbsFirstVisibleRow < totalRows)
+                int visibleRows = host.Height / (thumbHeight + thumbSpacing);
+                if (thumbsFirstVisibleRow < totalRows - (visibleRows - 2))
                 {
                     thumbsFirstVisibleRow++;
                     thumbScrollAmount += (thumbHeight + thumbSpacing);
                     UpdateStatusMessage();
+                }
+                else
+                {
+                    thumbScrollAmount -= amount;
                 }
             }
 

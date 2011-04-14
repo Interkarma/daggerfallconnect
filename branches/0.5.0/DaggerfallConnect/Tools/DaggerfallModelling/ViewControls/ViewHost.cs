@@ -70,6 +70,7 @@ namespace DaggerfallModelling.ViewControls
         private Color backgroundColour = Color.Gray;
 
         // Views
+        private ViewModes lastViewMode = ViewModes.None;
         private ViewModes viewMode = ViewModes.ThumbnailView;
         private Dictionary<ViewModes, ViewBase> viewClients;
 
@@ -127,7 +128,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets current view mode
+        /// Gets current view mode.
         /// </summary>
         public ViewModes ViewMode
         {
@@ -300,6 +301,11 @@ namespace DaggerfallModelling.ViewControls
             public string Message;
         }
 
+        public class ViewModeChangedEventArgs
+        {
+            public ViewModes ViewMode;
+        }
+
         #endregion
 
         #region StatusMessageChanged Event
@@ -319,6 +325,27 @@ namespace DaggerfallModelling.ViewControls
 
             // Raise event
             StatusMessageChanged(this, e);
+        }
+
+        #endregion
+
+        #region ViewModeChanged Event
+
+        public delegate void ViewModeChangedEventHandler(object sender, ViewModeChangedEventArgs e);
+        public event ViewModeChangedEventHandler ViewModeChanged;
+
+        protected virtual void RaiseViewModeChangedEvent()
+        {
+            // Do nothing when not created
+            if (ViewModeChanged == null)
+                return;
+
+            // Assign arguments
+            ViewModeChangedEventArgs e = new ViewModeChangedEventArgs();
+            e.ViewMode = viewMode;
+
+            // Raise event
+            ViewModeChanged(this, e);
         }
 
         #endregion
@@ -528,6 +555,7 @@ namespace DaggerfallModelling.ViewControls
             base.OnMouseUp(e);
 
             // Store button state
+            
             switch (e.Button)
             {
                 case MouseButtons.Left:
@@ -541,6 +569,40 @@ namespace DaggerfallModelling.ViewControls
             // Send to view
             if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseUp(e);
+        }
+
+        /// <summary>
+        /// Mouse button pressed and release.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+
+            // Swaps between two views using "back" button on mouse if available
+            if (e.Button == MouseButtons.XButton1)
+            {
+                ViewModes tempViewMode;
+                tempViewMode = viewMode;
+                viewMode = lastViewMode;
+                lastViewMode = tempViewMode;
+                if (isReady && viewMode != ViewModes.None)
+                    viewClients[viewMode].ResumeView();
+                RaiseViewModeChangedEvent();
+            }
+        }
+
+        /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            base.OnMouseDoubleClick(e);
+
+            // Send to view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].OnMouseDoubleClick(e);
         }
 
         /// <summary>
@@ -647,23 +709,28 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.ThumbnailView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
         /// Shows a single model.
         /// </summary>
-        /// <param name="modelId">Index of model to show.</param>
-        public void ShowModelView(int index)
+        /// <param name="key">ModelID of model to show.</param>
+        /// <param name="climate">ClimateType.</param>
+        public void ShowModelView(int key, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
                 return;
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.ModelView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -694,13 +761,15 @@ namespace DaggerfallModelling.ViewControls
                 }
                 else
                 {
-                    throw new Exception("Not a valid block name");
+                    throw new Exception("Not a valid block name.");
                 }
             }
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.BlockView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -713,8 +782,10 @@ namespace DaggerfallModelling.ViewControls
             view.BatchMode = LocationView.BatchModes.FullExterior;
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.LocationView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -727,8 +798,10 @@ namespace DaggerfallModelling.ViewControls
             view.BatchMode = LocationView.BatchModes.FullDungeon;
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.LocationView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -746,8 +819,10 @@ namespace DaggerfallModelling.ViewControls
             view.LoadLocation(ref dfLocation);
 
             // Set view mode
+            lastViewMode = viewMode;
             viewMode = ViewModes.LocationView;
             viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -759,6 +834,8 @@ namespace DaggerfallModelling.ViewControls
             // Exit if not ready
             if (!isReady)
                 return;
+
+            // Not implemented
         }
 
         /// <summary>
@@ -811,7 +888,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Load fonts
             arialSmallFont = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\ArialSmall");
-
 
             // Set ready flag
             isReady = true;

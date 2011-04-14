@@ -59,7 +59,7 @@
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.NormalCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.TopDownCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.FreeCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.ToggleControllerToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -344,7 +344,7 @@
             this.ViewBlockToolStripButton,
             this.ViewLocationToolStripButton,
             this.toolStripSeparator4,
-            this.NormalCameraToolStripButton,
+            this.TopDownCameraToolStripButton,
             this.FreeCameraToolStripButton,
             this.toolStripSeparator5,
             this.ToggleControllerToolStripButton,
@@ -411,14 +411,14 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
-            // NormalCameraToolStripButton
+            // TopDownCameraToolStripButton
             // 
-            this.NormalCameraToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.NormalCameraToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.NormalCamera;
-            this.NormalCameraToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.NormalCameraToolStripButton.Name = "NormalCameraToolStripButton";
-            this.NormalCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.NormalCameraToolStripButton.Text = "Normal Camera";
+            this.TopDownCameraToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TopDownCameraToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.NormalCamera;
+            this.TopDownCameraToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TopDownCameraToolStripButton.Name = "TopDownCameraToolStripButton";
+            this.TopDownCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.TopDownCameraToolStripButton.Text = "Top Down Camera";
             // 
             // FreeCameraToolStripButton
             // 
@@ -473,6 +473,7 @@
             this.ContentView.TabIndex = 0;
             this.ContentView.Text = "ContentView";
             this.ContentView.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
+            this.ContentView.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
             // MainStatusStrip
             // 
@@ -528,7 +529,7 @@
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Daggerfall Modelling";
+            this.Text = "Daggerfall Modelling (Alpha)";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -594,7 +595,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private DaggerfallModelling.ViewControls.ViewHost ContentView;
         private System.Windows.Forms.ToolStripButton ViewLocationToolStripButton;
-        private System.Windows.Forms.ToolStripButton NormalCameraToolStripButton;
+        private System.Windows.Forms.ToolStripButton TopDownCameraToolStripButton;
         private System.Windows.Forms.ToolStripButton FreeCameraToolStripButton;
         private System.Windows.Forms.ToolStripButton ToggleControllerToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
