@@ -61,7 +61,7 @@ namespace DaggerfallModelling.ViewControls
         public CameraModes CameraMode
         {
             get { return cameraMode; }
-            set { cameraMode = value; }
+            set { OnChangeCameraMode(value); }
         }
 
         /// <summary>
@@ -155,21 +155,22 @@ namespace DaggerfallModelling.ViewControls
         public abstract void OnMouseUp(MouseEventArgs e);
 
         /// <summary>
-        /// Called when mouse enters client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public abstract void OnMouseEnter(EventArgs e);
-
-        /// <summary>
-        /// Called when mouse leaves client area.
-        /// </summary>
-        /// <param name="e"></param>
-        public abstract void OnMouseLeave(EventArgs e);
-
-        /// <summary>
         /// The filtered list of models in the host has been modified.
         /// </summary>
         public abstract void FilteredModelsChanged();
+
+        #endregion
+
+        #region Protected Virtual Methods
+
+        /// <summary>
+        /// Called to change camera mode.
+        /// </summary>
+        /// <param name="mode">New camera mode.</param>
+        protected virtual void OnChangeCameraMode(CameraModes cameraMode)
+        {
+            this.cameraMode = cameraMode;
+        }
 
         #endregion
 

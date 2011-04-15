@@ -64,7 +64,6 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
         // Mouse
-        private bool mouseInClientArea = false;
         private int mouseOverThumb = -1;
 
         // Models list
@@ -172,7 +171,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view should redraw.
+        /// Called by host when view should resize.
         /// </summary>
         public override void Resize()
         {
@@ -254,24 +253,6 @@ namespace DaggerfallModelling.ViewControls
             // Send selected model to model view
             if (mouseOverThumb != -1)
                 host.ShowModelView(mouseOverThumb, DFLocation.ClimateType.None);
-        }
-
-        /// <summary>
-        /// Called when mouse enters client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseEnter(EventArgs e)
-        {
-            mouseInClientArea = true;
-        }
-
-        /// <summary>
-        /// Called when mouse leaves client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseLeave(EventArgs e)
-        {
-            mouseInClientArea = false;
         }
 
         /// <summary>
@@ -717,7 +698,7 @@ namespace DaggerfallModelling.ViewControls
             mouseOverThumb = -1;
 
             // Do nothing further when mouse not in client area
-            if (!mouseInClientArea)
+            if (!host.MouseInClientArea)
                 return;
 
             // Scan for current mouse over thumb

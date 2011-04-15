@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlockManager.cs" />
+    <Compile Include="Camera.cs" />
     <Compile Include="ContentHelper.cs" />
     <Compile Include="Intersection.cs" />
     <Compile Include="ModelManager.cs" />

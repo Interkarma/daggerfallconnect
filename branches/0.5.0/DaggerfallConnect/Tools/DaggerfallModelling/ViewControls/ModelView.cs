@@ -53,7 +53,11 @@ namespace DaggerfallModelling.ViewControls
         // Movement
         private Matrix modelRotation = Matrix.Identity;
         private Matrix modelTranslation = Matrix.Identity;
-        private float translationStep = 10.0f;
+        private float cameraStep = 0.5f;
+        private float wheelStep = 10.0f;
+
+        // Ray testing
+        RenderableBoundingBox renderableBounds;
 
         #endregion
 
@@ -80,6 +84,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Start in normal camera mode
             CameraMode = CameraModes.None;
+            renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
         }
 
         #endregion
@@ -132,7 +137,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Called by host when view should redraw.
+        /// Called by host when view should resize.
         /// </summary>
         public override void Resize()
         {
@@ -149,11 +154,19 @@ namespace DaggerfallModelling.ViewControls
         {
             if (host.LeftMouseDown)
             {
-                // Adjust model rotation for normal camera
+                // Adjust model rotation
                 float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * 0.4f);
                 float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * 0.4f);
                 Matrix rotation = Matrix.CreateRotationY(modelYaw) * Matrix.CreateRotationX(modelPitch);
                 modelRotation *= rotation;
+            }
+            else if (host.RightMouseDown)
+            {
+                // Adjust camera X-Y translation
+                TranslateCamera(
+                        (float)-host.MousePosDelta.X * cameraStep,
+                        (float)host.MousePosDelta.Y * cameraStep,
+                        0.0f);
             }
         }
 
@@ -163,7 +176,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
-            float amount = ((float)e.Delta / 120.0f) * translationStep;
+            // Adjust camera Z translation
+            float amount = ((float)e.Delta / 120.0f) * wheelStep;
             TranslateCamera(0, 0, -amount);
         }
 
@@ -188,22 +202,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Called when mouse enters client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseEnter(EventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Called when mouse leaves client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseLeave(EventArgs e)
         {
         }
 
@@ -233,6 +231,7 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             base.ResumeView();
+            UpdateStatusMessage();
             UpdateProjectionMatrix();
             LayoutModel();
             host.Refresh();
@@ -255,10 +254,22 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
             host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
-            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
-            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+
+            // Set anisotropy
+            if (host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy > 0)
+            {
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            }
+            else
+            {
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+            }
 
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
@@ -285,6 +296,9 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
             }
+
+            // Draw bounding box
+            renderableBounds.Draw(currentModel.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
         }
 
         #endregion
@@ -400,14 +414,27 @@ namespace DaggerfallModelling.ViewControls
 
         private void TranslateCamera(float X, float Y, float Z)
         {
+            Vector3 Min = currentModel.BoundingBox.Min;
+            Vector3 Max = currentModel.BoundingBox.Max;
+
             // Translate camera vector
             cameraPosition.X += X;
             cameraPosition.Y += Y;
             cameraPosition.Z += Z;
 
+            // Cap X
+            if (cameraPosition.X < Min.X * 2)
+                cameraPosition.X = Min.X * 2;
+            if (cameraPosition.X > Max.X * 2)
+                cameraPosition.X = Max.X * 2;
+
+            // Cap Y
+            if (cameraPosition.Y < Min.Y * 2)
+                cameraPosition.Y = Min.Y * 2;
+            if (cameraPosition.Y > Max.Y * 2)
+                cameraPosition.Y = Max.Y * 2;
+
             // Cap Z
-            Vector3 Min = currentModel.BoundingBox.Min;
-            Vector3 Max = currentModel.BoundingBox.Max;
             if (cameraPosition.Z < nearPlaneDistance)
                 cameraPosition.Z = nearPlaneDistance;
             if (cameraPosition.Z > farPlaneDistance - (Max.Z - Min.Z))
@@ -439,8 +466,26 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateStatusMessage()
         {
+            int count;
+            string message;
+
+            // State how many models we are viewing
+            if (host.FilteredModelsArray == null)
+            {
+                count = host.ModelManager.Arch3dFile.Count;
+                message = string.Format("Exploring all {0} models in ARCH3D.BSA.", count);
+            }
+            else
+            {
+                count = host.FilteredModelsArray.Length;
+                message = string.Format("Exploring filtered list of {0} models.", count);
+            }
+
+            // Add position in list
+            message += string.Format(" You are viewing model {0}, which has an ID of {1}.", currentModelIndex, currentModel.DFMesh.ObjectId);
+
             // Set the message
-            host.StatusMessage = string.Empty;
+            host.StatusMessage = message;
         }
 
         #endregion

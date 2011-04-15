@@ -236,7 +236,7 @@ namespace DaggerfallModelling
                         break;
                     case BlockTag:
                         blockViewAvailable = true;
-                        ContentView.ShowBlockView(e.Node.Text);
+                        ContentView.ShowBlockView(e.Node.Text, DFLocation.ClimateType.None);
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -345,7 +345,7 @@ namespace DaggerfallModelling
 
             // Load block into view
             blockViewAvailable = true;
-            ContentView.ShowBlockView(e.Name);
+            ContentView.ShowBlockView(e.Name, DFLocation.ClimateType.None);
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -374,6 +374,28 @@ namespace DaggerfallModelling
             UpdateActiveView();
             UpdateActiveCameraMode();
             UpdateAvailableViews();
+        }
+
+        /// <summary>
+        /// User selected top down camera.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        private void TopDownCameraToolStripButton_Click(object sender, EventArgs e)
+        {
+            ContentView.CameraMode = ViewBase.CameraModes.TopDown;
+            UpdateActiveCameraMode();
+        }
+
+        /// <summary>
+        /// User selected free down camera.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        private void FreeCameraToolStripButton_Click(object sender, EventArgs e)
+        {
+            ContentView.CameraMode = ViewBase.CameraModes.Free;
+            UpdateActiveCameraMode();
         }
 
         #endregion
@@ -812,7 +834,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set view
-            ContentView.ShowBlockView(string.Empty);
+            ContentView.ShowBlockView(string.Empty, DFLocation.ClimateType.None);
         }
 
         /// <summary>
@@ -896,14 +918,16 @@ namespace DaggerfallModelling
             // Check camera mode
             TopDownCameraToolStripButton.Checked = false;
             FreeCameraToolStripButton.Checked = false;
-            TopDownCameraToolStripButton.Enabled = true;
-            FreeCameraToolStripButton.Enabled = false;
             switch (ContentView.CameraMode)
             {
                 case ViewBase.CameraModes.TopDown:
+                    TopDownCameraToolStripButton.Enabled = true;
+                    FreeCameraToolStripButton.Enabled = true;
                     TopDownCameraToolStripButton.Checked = true;
                     break;
                 case ViewBase.CameraModes.Free:
+                    TopDownCameraToolStripButton.Enabled = true;
+                    FreeCameraToolStripButton.Enabled = true;
                     FreeCameraToolStripButton.Checked = true;
                     break;
                 default:

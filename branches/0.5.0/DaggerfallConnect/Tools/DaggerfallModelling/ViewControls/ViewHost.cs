@@ -51,6 +51,7 @@ namespace DaggerfallModelling.ViewControls
         private long mouseTime;
         private Point mousePosDelta;
         private long mouseTimeDelta;
+        private bool mouseInClientArea = false;
         private bool leftMouseDown = false;
         private bool rightMouseDown = false;
         private Vector2 mouseVelocity;
@@ -248,6 +249,14 @@ namespace DaggerfallModelling.ViewControls
         public bool RightMouseDown
         {
             get { return rightMouseDown; }
+        }
+
+        /// <summary>
+        /// Gets flag stating if mouse is in client area of control.
+        /// </summary>
+        public bool MouseInClientArea
+        {
+            get { return mouseInClientArea; }
         }
 
         /// <summary>
@@ -582,18 +591,7 @@ namespace DaggerfallModelling.ViewControls
             // Swaps between two views using "back" button on mouse if available
             if (e.Button == MouseButtons.XButton1)
             {
-                // Do nothing if no previous view mode
-                if (lastViewMode == ViewModes.None)
-                    return;
-
-                // Swap current view mode with previous view mode
-                ViewModes tempViewMode;
-                tempViewMode = viewMode;
-                viewMode = lastViewMode;
-                lastViewMode = tempViewMode;
-                if (isReady && viewMode != ViewModes.None)
-                    viewClients[viewMode].ResumeView();
-                RaiseViewModeChangedEvent();
+                SwapViewModes();
             }
         }
 
@@ -618,9 +616,7 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnMouseEnter(e);
 
-            // Send to view
-            if (isReady && viewMode != ViewModes.None)
-                viewClients[viewMode].OnMouseEnter(e);
+            mouseInClientArea = true;
         }
 
         /// <summary>
@@ -631,9 +627,7 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnMouseLeave(e);
 
-            // Send to view
-            if (isReady && viewMode != ViewModes.None)
-                viewClients[viewMode].OnMouseLeave(e);
+            mouseInClientArea = false;
         }
 
         /// <summary>
@@ -658,6 +652,12 @@ namespace DaggerfallModelling.ViewControls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+
+            // Swap between view modes on space
+            if (e.KeyCode == System.Windows.Forms.Keys.Space)
+            {
+                SwapViewModes();
+            }
         }
 
         #endregion
@@ -666,7 +666,6 @@ namespace DaggerfallModelling.ViewControls
 
         /// <summary>
         /// Allows view to set up managers for content loading. Must be called post control creation.
-        ///  of control.
         /// </summary>
         /// <param name="arena2Path"></param>
         /// <returns></returns>
@@ -745,7 +744,7 @@ namespace DaggerfallModelling.ViewControls
         /// Shows a single block.
         /// </summary>
         /// <param name="name">Block name.</param>
-        public void ShowBlockView(string name)
+        public void ShowBlockView(string name, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -758,7 +757,7 @@ namespace DaggerfallModelling.ViewControls
                 if (name.EndsWith(".RMB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.LoadExteriorBlock(name);
+                    view.LoadExteriorBlock(name, climate);
                     view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
                 }
                 else if (name.EndsWith(".RDB"))
@@ -949,6 +948,25 @@ namespace DaggerfallModelling.ViewControls
         {
             this.statusMessage = statusMessage;
             RaiseStatusMessageChangedEvent();
+        }
+
+        /// <summary>
+        /// Swaps between current and previous view modes.
+        /// </summary>
+        private void SwapViewModes()
+        {
+            // Do nothing if no previous view mode
+            if (lastViewMode == ViewModes.None)
+                return;
+
+            // Swap current view mode with previous view mode
+            ViewModes tempViewMode;
+            tempViewMode = viewMode;
+            viewMode = lastViewMode;
+            lastViewMode = tempViewMode;
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         #endregion

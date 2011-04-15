@@ -52,22 +52,16 @@ namespace DaggerfallModelling.ViewControls
         // XNA
         private VertexDeclaration modelVertexDeclaration;
         private BasicEffect modelEffect;
-        private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 40000.0f;
-        private Matrix projectionMatrix;
-        private Matrix viewMatrix;
-        private Matrix worldMatrix;
         private BoundingFrustum viewFrustum;
 
         // Camera
-        private static float cameraFloor = 100.0f;
-        private static float cameraCeiling = 10000.0f;
-        private static float cameraStart = 6000.0f;
+        private Camera topDownCamera = new Camera();
+        private Camera freeCamera = new Camera();
+        private static float cameraFloorHeight = 100.0f;
+        private static float cameraCeilingHeight = 10000.0f;
+        private static float cameraStartHeight = 6000.0f;
         private BoundingBox exteriorBounds;
         private BoundingBox dungeonBounds;
-        private Vector3 cameraPosition = new Vector3(0, 6000.0f, 0);
-        private Vector3 cameraReference = new Vector3(0, -1.0f, -0.01f);
-        private Vector3 cameraUpVector = Vector3.Up;
 
         // Movement
         private Vector3 cameraVelocity;
@@ -178,14 +172,14 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.AmbientLightColor = new Vector3(0.4f, 0.4f, 0.4f);
             modelEffect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
 
-            // Setup camera
-            float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
-            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
-            worldMatrix = Matrix.Identity;
+            // Setup initial camera positions
+            InitCameraPosition();
 
-            // Create initial view frustum
-            viewFrustum = new BoundingFrustum(viewMatrix * projectionMatrix);
+            // Setup camera projection matrices
+            UpdateProjectionMatrix();
+
+            // Create view frustum
+            viewFrustum = new BoundingFrustum(Matrix.Identity);
         }
 
         /// <summary>
@@ -193,10 +187,15 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Tick()
         {
-            // Apply camera velocity in normal mode
-            if (CameraMode == CameraModes.TopDown)
+            if (CameraMode == CameraModes.Free)
             {
-                TranslateCameraXZ(cameraVelocity.X, cameraVelocity.Z);
+                freeCamera.Update();
+            }
+            else
+            {
+                // Apply camera velocity in topdown mode
+                TranslateTopDownCamera(cameraVelocity.X, cameraVelocity.Z);
+                topDownCamera.Update();
             }
         }
 
@@ -259,16 +258,18 @@ namespace DaggerfallModelling.ViewControls
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
-            // Set view and projection matrices
-            modelEffect.View = viewMatrix;
-            modelEffect.Projection = projectionMatrix;
+            // Get view and projection matrices based on camera mode
+            Matrix view = (CameraMode == CameraModes.Free) ? freeCamera.View : topDownCamera.View;
+            Matrix projection = (CameraMode == CameraModes.Free) ? freeCamera.Projection : freeCamera.Projection;
 
-            // Update frustum matrix
-            viewFrustum.Matrix = viewMatrix * projectionMatrix;
+            // Update matrices
+            modelEffect.View = view;
+            modelEffect.Projection = projection;
+            viewFrustum.Matrix = view * projection;
 
             // Init variables used for tracking mouse ray and drawing bounding box
             float? distance = null;
-            float minDistance = farPlaneDistance;
+            float minDistance = 999999999f;
             bool mouseInBlock = false;
             BlockManager.ModelInfo? closestModelInfo = null;
             Matrix closestModelMatrix = Matrix.Identity;
@@ -356,22 +357,20 @@ namespace DaggerfallModelling.ViewControls
             // Draw bounding box if mouse over model
             if (closestModelInfo != null)
             {
-                renderableBounds.Draw(closestModelInfo.Value.BoundingBox,
-                    viewMatrix, projectionMatrix,
+                renderableBounds.Draw(
+                    closestModelInfo.Value.BoundingBox,
+                    view,
+                    projection,
                     closestModelMatrix);
             }
             #endregion
         }
 
         /// <summary>
-        /// Called by host when view should redraw.
+        /// Called by host when view should resize.
         /// </summary>
         public override void Resize()
         {
-            // Host must be ready as projection matrix depends on host control dimensions
-            if (!host.IsReady)
-                return;
-
             // Update projection matrix and refresh
             UpdateProjectionMatrix();
             host.Refresh();
@@ -389,7 +388,7 @@ namespace DaggerfallModelling.ViewControls
                 // Scene dragging
                 if (host.RightMouseDown)
                 {
-                    TranslateCameraXZ(
+                    TranslateTopDownCamera(
                         (float)-host.MousePosDelta.X * cameraStep,
                         (float)-host.MousePosDelta.Y * cameraStep);
                 }
@@ -447,22 +446,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Called when mouse enters client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseEnter(EventArgs e)
-        {
-        }
-
-        /// <summary>
-        /// Called when mouse leaves client area.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        public override void OnMouseLeave(EventArgs e)
         {
         }
 
@@ -542,10 +525,10 @@ namespace DaggerfallModelling.ViewControls
         ///  This will replace existing exterior layout.
         /// </summary>
         /// <param name="blockName">Block name.</param>
-        public void LoadExteriorBlock(string blockName)
+        public void LoadExteriorBlock(string blockName, DFLocation.ClimateType climate)
         {
-            // There is no climate context for standalone blocks
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
+            // Set climate
+            Climate = climate;
             
             // Build single-block exterior layout
             BuildExteriorLayout(ref blockName);
@@ -561,8 +544,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         public void LoadDungeonBlock(string blockName)
         {
-            // There is no climate context for standalone blocks
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
+            // Disable climate for dungeon blocks
+            Climate = DFLocation.ClimateType.None;
 
             // Build single-block layout
             BuildDungeonLayout(ref blockName);
@@ -578,8 +561,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void LoadLocation(ref DFLocation dfLocation)
         {
-            // Set climate for texture swaps
-            host.TextureManager.Climate = dfLocation.Climate;
+            // Set climate
+            Climate = dfLocation.Climate;
 
             // Build layout
             BuildExteriorLayout(ref dfLocation);
@@ -631,9 +614,8 @@ namespace DaggerfallModelling.ViewControls
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
 
-            // Centre camera in layout
-            cameraPosition.X = (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2;
-            cameraPosition.Z = -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2;
+            // Init camera pos
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -667,9 +649,8 @@ namespace DaggerfallModelling.ViewControls
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
 
-            // Centre camera in layout
-            cameraPosition.X = (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2;
-            cameraPosition.Z = -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2;
+            // Init camera pos
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -724,9 +705,8 @@ namespace DaggerfallModelling.ViewControls
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
 
-            // Centre camera in layout
-            cameraPosition.X = (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2;
-            cameraPosition.Z = -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2;
+            // Init camera pos
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -769,10 +749,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
-
-            // Centre camera in layout
-            cameraPosition.X = (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2;
-            cameraPosition.Z = -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2;
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -842,9 +819,72 @@ namespace DaggerfallModelling.ViewControls
 
         #region Camera Methods
 
-        private void TranslateCameraXZ(float x, float z)
+        /// <summary>
+        /// Initialise camera positions.
+        /// </summary>
+        private void InitCameraPosition()
+        {
+            InitFreeCameraPosition();
+            InitTopDownCameraPosition();
+        }
+
+        /// <summary>
+        /// Sets free camera to starting position.
+        /// </summary>
+        private void InitFreeCameraPosition()
+        {
+            // Exterior view
+            if (BatchMode == BatchModes.FullExterior ||
+                BatchMode == BatchModes.SingleExteriorBlock)
+            {
+            }
+
+            // Update camera
+            freeCamera.Update();
+        }
+
+        /// <summary>
+        /// Sets top-down camera to starting position.
+        /// </summary>
+        private void InitTopDownCameraPosition()
+        {
+            // Exterior view
+            if (BatchMode == BatchModes.FullExterior ||
+                BatchMode == BatchModes.SingleExteriorBlock)
+            {
+                // Centre top down camera in layout
+                topDownCamera.Position = new Vector3(
+                    (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2,
+                    cameraStartHeight,
+                    -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2);
+                topDownCamera.Reference = new Vector3(0, -1.0f, -0.01f);
+            }
+
+            // Dungeon view
+            if (BatchMode == BatchModes.FullDungeon ||
+                BatchMode == BatchModes.SingleDungeonBlock)
+            {
+                // Centre top down camera in layout
+                topDownCamera.Position = new Vector3(
+                    (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2,
+                    cameraStartHeight,
+                    -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2);
+                topDownCamera.Reference = new Vector3(0, -1.0f, -0.01f);
+            }
+
+            // Update camera
+            topDownCamera.Update();
+        }
+
+        /// <summary>
+        /// Translates top-down camera.
+        /// </summary>
+        /// <param name="x">X amount.</param>
+        /// <param name="z">Z amount.</param>
+        private void TranslateTopDownCamera(float x, float z)
         {
             // Translate camera vector
+            Vector3 cameraPosition = topDownCamera.Position;
             cameraPosition.X += x;
             cameraPosition.Z += z;
 
@@ -868,8 +908,8 @@ namespace DaggerfallModelling.ViewControls
                 if (cameraPosition.Z > dungeonBounds.Max.Z) cameraPosition.Z = dungeonBounds.Max.Z;
             }
 
-            // Update view matrix
-            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+            // Update position
+            topDownCamera.Position = cameraPosition;
         }
 
         #endregion
@@ -900,12 +940,22 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateProjectionMatrix()
         {
-            // Create projection matrix
-            if (host.IsReady)
-            {
-                float aspectRatio = (float)host.Width / (float)host.Height;
-                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
-            }
+            // Get aspect ratio
+            float aspectRatio = (float)host.ClientRectangle.Width / (float)host.ClientRectangle.Height;
+
+            // Update top down camera
+            topDownCamera.Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                aspectRatio,
+                topDownCamera.NearPlane,
+                topDownCamera.FarPlane);
+
+            // Setup free camera
+            freeCamera.Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                aspectRatio,
+                freeCamera.NearPlane,
+                freeCamera.FarPlane);
         }
 
         /// <summary>
@@ -926,11 +976,15 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateMouseRay(int x, int y)
         {
+            // Get appropriate view matrix
+            Matrix view = (CameraMode == CameraModes.Free) ? freeCamera.View : topDownCamera.View;
+            Matrix projection = (CameraMode == CameraModes.Free) ? freeCamera.Projection : freeCamera.Projection;
+
             // Unproject vectors into view area
             Viewport vp = host.GraphicsDevice.Viewport;
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projectionMatrix, viewMatrix, world);
-            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projectionMatrix, viewMatrix, world);
+            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, world);
+            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projection, view, world);
 
             // Create ray
             Vector3 direction = far - near;

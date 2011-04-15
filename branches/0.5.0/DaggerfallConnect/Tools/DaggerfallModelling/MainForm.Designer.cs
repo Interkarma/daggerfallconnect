@@ -39,7 +39,6 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
-            this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
             this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
             this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -65,12 +64,13 @@
             this.ToggleControllerToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ContentPanel = new System.Windows.Forms.Panel();
-            this.ContentView = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
+            this.ContentView = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -206,21 +206,6 @@
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
-            // 
-            // AutoMapViewer
-            // 
-            this.AutoMapViewer.BackColor = System.Drawing.Color.Gray;
-            this.AutoMapViewer.BlocksFile = null;
-            this.AutoMapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AutoMapViewer.Location = new System.Drawing.Point(0, 25);
-            this.AutoMapViewer.MapsFile = null;
-            this.AutoMapViewer.Name = "AutoMapViewer";
-            this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
-            this.AutoMapViewer.TabIndex = 2;
-            this.AutoMapViewer.Text = "AutoMapViewer";
-            this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
-            this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
-            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             // 
             // AutoMapToolStrip
             // 
@@ -418,7 +403,8 @@
             this.TopDownCameraToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.TopDownCameraToolStripButton.Name = "TopDownCameraToolStripButton";
             this.TopDownCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.TopDownCameraToolStripButton.Text = "Top Down Camera";
+            this.TopDownCameraToolStripButton.Text = "Top-Down Camera";
+            this.TopDownCameraToolStripButton.Click += new System.EventHandler(this.TopDownCameraToolStripButton_Click);
             // 
             // FreeCameraToolStripButton
             // 
@@ -427,7 +413,8 @@
             this.FreeCameraToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.FreeCameraToolStripButton.Name = "FreeCameraToolStripButton";
             this.FreeCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.FreeCameraToolStripButton.Text = "Free Camera [Not Implemented]";
+            this.FreeCameraToolStripButton.Text = "Free Camera";
+            this.FreeCameraToolStripButton.Click += new System.EventHandler(this.FreeCameraToolStripButton_Click);
             // 
             // toolStripSeparator5
             // 
@@ -460,20 +447,6 @@
             this.ContentPanel.Name = "ContentPanel";
             this.ContentPanel.Size = new System.Drawing.Size(862, 715);
             this.ContentPanel.TabIndex = 2;
-            // 
-            // ContentView
-            // 
-            this.ContentView.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
-            this.ContentView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ContentView.FilteredModelsArray = null;
-            this.ContentView.Location = new System.Drawing.Point(0, 0);
-            this.ContentView.Name = "ContentView";
-            this.ContentView.Size = new System.Drawing.Size(862, 715);
-            this.ContentView.StatusMessage = null;
-            this.ContentView.TabIndex = 0;
-            this.ContentView.Text = "ContentView";
-            this.ContentView.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
-            this.ContentView.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
             // MainStatusStrip
             // 
@@ -517,6 +490,35 @@
             this.MainTips.InitialDelay = 500;
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
+            // 
+            // AutoMapViewer
+            // 
+            this.AutoMapViewer.BackColor = System.Drawing.Color.Gray;
+            this.AutoMapViewer.BlocksFile = null;
+            this.AutoMapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.AutoMapViewer.Location = new System.Drawing.Point(0, 25);
+            this.AutoMapViewer.MapsFile = null;
+            this.AutoMapViewer.Name = "AutoMapViewer";
+            this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
+            this.AutoMapViewer.TabIndex = 2;
+            this.AutoMapViewer.Text = "AutoMapViewer";
+            this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
+            this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
+            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
+            // 
+            // ContentView
+            // 
+            this.ContentView.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
+            this.ContentView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ContentView.FilteredModelsArray = null;
+            this.ContentView.Location = new System.Drawing.Point(0, 0);
+            this.ContentView.Name = "ContentView";
+            this.ContentView.Size = new System.Drawing.Size(862, 715);
+            this.ContentView.StatusMessage = null;
+            this.ContentView.TabIndex = 0;
+            this.ContentView.Text = "ContentView";
+            this.ContentView.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
+            this.ContentView.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
             // MainForm
             // 
