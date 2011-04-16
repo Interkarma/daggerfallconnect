@@ -31,8 +31,8 @@ namespace XNALibrary
         #region Class Variables
 
         // Movement
-        private const float spinRate = 300.0f;
-        private const float moveRate = 1200.0f;
+        private const float spinRate = 1.0f;
+        private const float moveRate = 10.0f;
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -44,16 +44,41 @@ namespace XNALibrary
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
-        private Vector3 cameraPosition = new Vector3(0, 0, 0);
+        private BoundingBox cameraBounds = new BoundingBox();
+        private Vector3 cameraPosition = new Vector3(0, 64f, 0);
         private Vector3 cameraReference = Vector3.Forward;
         private Vector3 cameraUpVector = Vector3.Up;
+        private Vector3 cameraTransformedReference;
+        private Vector3 cameraTarget;
         private float cameraYaw = 0.0f;
         private float cameraPitch = 0.0f;
-        private Vector3 movement;
+        private Vector3 movement = Vector3.Zero;
+        private Matrix rotation = Matrix.Identity;
+
+        #endregion
+
+        #region Class Structures
+
+        [Flags]
+        public enum UpdateFlags
+        {
+            None = 0,
+            Keyboard = 1,
+            Controller = 2,
+        }
 
         #endregion
 
         #region Public Properties
+
+        /// <summary>
+        /// Gets or sets camera bounds.
+        /// </summary>
+        public BoundingBox Bounds
+        {
+            get { return cameraBounds; }
+            set { cameraBounds = value; EnforceBounds(); }
+        }
 
         /// <summary>
         /// Gets or sets projection matrix.
@@ -88,7 +113,7 @@ namespace XNALibrary
         public Vector3 Position
         {
             get { return cameraPosition; }
-            set { cameraPosition = value; }
+            set { cameraPosition = value; EnforceBounds(); }
         }
 
         /// <summary>
@@ -143,17 +168,121 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
+        /// Resets camera yaw and pitch.
+        /// </summary>
+        public void ResetReference()
+        {
+            cameraYaw = 0f;
+            cameraPitch = 0f;
+        }
+
+        /// <summary>
+        /// Translate camera by coordinates.
+        /// </summary>
+        /// <param name="X">X amount.</param>
+        /// <param name="Y">Y amount.</param>
+        /// <param name="Z">Z amount.</param>
+        public void Translate(float X, float Y, float Z)
+        {
+            cameraPosition.X += X;
+            cameraPosition.Y += Y;
+            cameraPosition.Z += Z;
+            EnforceBounds();
+        }
+
+        /// <summary>
         /// Called when the camera should poll input methods and update.
         /// </summary>
-        public void Update()
+        public void Update(UpdateFlags flags)
         {
-            // Update view matrix
-            viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
+            // Init movement and rotation
+            movement = Vector3.Zero;
+            rotation = Matrix.Identity;
 
-            // Get state from input devices
-            //GamePadState gamePadState = GamePad.GetState(0);
-            //MouseState mouseState = Mouse.GetState();
-            KeyboardState keyboardState = Keyboard.GetState();
+            // Keyboard movement
+            if ((flags & UpdateFlags.Keyboard) == UpdateFlags.Keyboard)
+            {
+                KeyboardState ks = Keyboard.GetState();
+                if (ks.IsKeyDown(Keys.Q))                               // Look left
+                    cameraYaw += spinRate;
+                if (ks.IsKeyDown(Keys.E))                               // Look right
+                    cameraYaw -= spinRate;
+                if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
+                    movement.Z -= moveRate;
+                if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
+                    movement.Z += moveRate;
+                if (ks.IsKeyDown(Keys.A) || ks.IsKeyDown(Keys.Left))    // Move left
+                    movement.X -= moveRate;
+                if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
+                    movement.X += moveRate;
+            }
+
+            // Controller movement
+            if ((flags & UpdateFlags.Controller) == UpdateFlags.Keyboard)
+            {
+                GamePadState gamePadState = GamePad.GetState(0);
+            }
+
+            // Apply rotation
+            Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
+            rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
+
+            // Apply movement
+            if (movement != Vector3.Zero)
+            {
+                Vector3.Transform(ref movement, ref rotation, out movement);
+                cameraPosition += movement;
+                EnforceBounds();
+            }
+            
+            // Transform camera
+            Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
+            Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
+
+            // Update view matrix
+            Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
+        }
+
+        /// <summary>
+        /// Centres camera within X-Z bounds, with a specified height.
+        /// </summary>
+        public void CentreInBounds(float height)
+        {
+            cameraPosition = new Vector3(
+                    cameraBounds.Min.X + (cameraBounds.Max.X - cameraBounds.Min.X) / 2,
+                    height,
+                    cameraBounds.Min.Z + (cameraBounds.Max.Z - cameraBounds.Min.Z) / 2);
+        }
+
+        /// <summary>
+        /// Sets new aspect ratio and recreates projection matrix.
+        /// </summary>
+        /// <param name="aspectRatio">New aspect ratio.</param>
+        public void SetAspectRatio(float aspectRatio)
+        {
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                aspectRatio,
+                nearPlaneDistance,
+                farPlaneDistance);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Checks and enforces camera bounds.
+        /// </summary>
+        private void EnforceBounds()
+        {
+            // Keep camera position within defined bounds
+            if (cameraPosition.X < cameraBounds.Min.X) cameraPosition.X = cameraBounds.Min.X;
+            if (cameraPosition.Y < cameraBounds.Min.Y) cameraPosition.Y = cameraBounds.Min.Y;
+            if (cameraPosition.Z < cameraBounds.Min.Z) cameraPosition.Z = cameraBounds.Min.Z;
+            if (cameraPosition.X > cameraBounds.Max.X) cameraPosition.X = cameraBounds.Max.X;
+            if (cameraPosition.Y > cameraBounds.Max.Y) cameraPosition.Y = cameraBounds.Max.Y;
+            if (cameraPosition.Z > cameraBounds.Max.Z) cameraPosition.Z = cameraBounds.Max.Z;
         }
 
         #endregion

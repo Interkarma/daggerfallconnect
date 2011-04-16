@@ -43,6 +43,11 @@ namespace DaggerfallModelling.ViewControls
         private Dictionary<int, BlockPosition> dungeonLayout = new Dictionary<int, BlockPosition>();
         private Dictionary<int, bool> dungeonResources = new Dictionary<int, bool>();
 
+        // Location
+        string currentBlockName = string.Empty;
+        int currentLatitude = -1;
+        int currentLongitude = -1;
+
         // Status message
         string currentStatus = string.Empty;
 
@@ -54,14 +59,15 @@ namespace DaggerfallModelling.ViewControls
         private BasicEffect modelEffect;
         private BoundingFrustum viewFrustum;
 
-        // Camera
-        private Camera topDownCamera = new Camera();
-        private Camera freeCamera = new Camera();
-        private static float cameraFloorHeight = 100.0f;
+        // Cameras
+        private Camera exteriorTopDownCamera = new Camera();
+        private Camera exteriorFreeCamera = new Camera();
+        private Camera dungeonTopDownCamera = new Camera();
+        private Camera dungeonFreeCamera = new Camera();
+        private static float cameraFloorHeight = 60.0f;
         private static float cameraCeilingHeight = 10000.0f;
         private static float cameraStartHeight = 6000.0f;
-        private BoundingBox exteriorBounds;
-        private BoundingBox dungeonBounds;
+        private static float cameraDungeonFreedom = 1000.0f;
 
         // Movement
         private Vector3 cameraVelocity;
@@ -133,7 +139,15 @@ namespace DaggerfallModelling.ViewControls
         public BatchModes BatchMode
         {
             get { return batchMode; }
-            set { batchMode = value; }
+            set { ChangeBatchMode(value); }
+        }
+
+        /// <summary>
+        /// Gets active camera.
+        /// </summary>
+        public Camera ActiveCamera
+        {
+            get { return GetActiveCamera(); }
         }
 
         #endregion
@@ -187,16 +201,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Tick()
         {
-            if (CameraMode == CameraModes.Free)
-            {
-                freeCamera.Update();
-            }
-            else
-            {
-                // Apply camera velocity in topdown mode
-                TranslateTopDownCamera(cameraVelocity.X, cameraVelocity.Z);
-                topDownCamera.Update();
-            }
+            // Update cameras
+            UpdateCameras();
         }
 
         /// <summary>
@@ -237,21 +243,24 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.RenderState.DepthBufferEnable = true;
             host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
             host.GraphicsDevice.RenderState.AlphaTestEnable = false;
-            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
             host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
-            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
 
-            // TODO: Enable max anisotropy for free camera, but keep disabled for top-down
-            /*
-            host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
-            host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
-            host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-            host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
-            */
+            // Set anisotropy based on camera mode
+            if (cameraMode == CameraModes.Free)
+            {
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            }
+            else
+            {
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+            }
+            
             #endregion
 
             #region Setup
@@ -259,8 +268,8 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
             // Get view and projection matrices based on camera mode
-            Matrix view = (CameraMode == CameraModes.Free) ? freeCamera.View : topDownCamera.View;
-            Matrix projection = (CameraMode == CameraModes.Free) ? freeCamera.Projection : freeCamera.Projection;
+            Matrix view = ActiveCamera.View;
+            Matrix projection = ActiveCamera.Projection;
 
             // Update matrices
             modelEffect.View = view;
@@ -312,9 +321,9 @@ namespace DaggerfallModelling.ViewControls
                             Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
                             Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
 
-                    // Test block bounding box against frustum
-                    if (!viewFrustum.Intersects(modelBox))
-                        continue;
+                    // Test model bounding box against frustum
+                    //if (!viewFrustum.Intersects(modelBox))
+                    //    continue;
 
                     // Draw the model
                     DrawSingleModel((int)modelItem.ModelId);
@@ -344,7 +353,7 @@ namespace DaggerfallModelling.ViewControls
                 {
                     // Used to translate ground down a few units to reduce
                     // z-fighting with other ground-aligned planes
-                    Matrix ground = Matrix.CreateTranslation(0, -10, 0);
+                    Matrix ground = Matrix.CreateTranslation(0, -7, 0);
 
                     // Draw ground
                     modelEffect.World = world * ground;
@@ -355,7 +364,7 @@ namespace DaggerfallModelling.ViewControls
 
             #region Bounding Box
             // Draw bounding box if mouse over model
-            if (closestModelInfo != null)
+            if (closestModelInfo != null && host.MouseInClientArea)
             {
                 renderableBounds.Draw(
                     closestModelInfo.Value.BoundingBox,
@@ -382,20 +391,21 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
+            // Update mouse ray
+            UpdateMouseRay(e.X, e.Y);
+
             // Normal camera movement
             if (CameraMode == CameraModes.TopDown)
             {
                 // Scene dragging
                 if (host.RightMouseDown)
                 {
-                    TranslateTopDownCamera(
+                    ActiveCamera.Translate(
                         (float)-host.MousePosDelta.X * cameraStep,
+                        0f,
                         (float)-host.MousePosDelta.Y * cameraStep);
                 }
             }
-
-            // Update mouse ray
-            UpdateMouseRay(e.X, e.Y);
         }
 
         /// <summary>
@@ -462,7 +472,20 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
-            base.ResumeView();
+            //base.ResumeView();
+
+            // Climate swaps in dungeons now implemented yet.
+            // Set climate type manually for now to ensure
+            // dungeons do not use climate swaps.
+            if (batchMode == BatchModes.SingleExteriorBlock ||
+                batchMode == BatchModes.FullExterior)
+            {
+                host.TextureManager.Climate = base.Climate;
+            }
+            else
+            {
+                host.TextureManager.Climate = DFLocation.ClimateType.None;
+            }
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -471,6 +494,18 @@ namespace DaggerfallModelling.ViewControls
             UpdateProjectionMatrix();
             UpdateStatusMessage();
             host.Refresh();
+        }
+
+        /// <summary>
+        /// Called to change camera mode.
+        /// </summary>
+        /// <param name="mode">New camera mode.</param>
+        protected override void OnChangeCameraMode(CameraModes cameraMode)
+        {
+            base.OnChangeCameraMode(cameraMode);
+
+            // Clear camera velocity
+            cameraVelocity = Vector3.Zero;
         }
 
         #endregion
@@ -485,6 +520,10 @@ namespace DaggerfallModelling.ViewControls
             // Exit if no model loaded
             if (model.Vertices == null)
                 return;
+
+            // Set wrap mode
+            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
             foreach (var submesh in model.SubMeshes)
             {
@@ -507,6 +546,10 @@ namespace DaggerfallModelling.ViewControls
             // Set terrain texture atlas
             modelEffect.Texture = host.TextureManager.TerrainAtlas;
 
+            // Set clamp mode
+            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
+            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+
             modelEffect.Begin();
             modelEffect.CurrentTechnique.Passes[0].Begin();
 
@@ -527,6 +570,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         public void LoadExteriorBlock(string blockName, DFLocation.ClimateType climate)
         {
+            // Do nothing loading same block as current
+            if (blockName == currentBlockName)
+                return;
+
             // Set climate
             Climate = climate;
             
@@ -535,6 +582,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set status message
             currentStatus = string.Format("Viewing RMB block {0}.", blockName);
+
+            // Store block name
+            currentBlockName = blockName;
         }
 
         /// <summary>
@@ -544,6 +594,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         public void LoadDungeonBlock(string blockName)
         {
+            // Do nothing loading same block as current
+            if (blockName == currentBlockName)
+                return;
+
             // Disable climate for dungeon blocks
             Climate = DFLocation.ClimateType.None;
 
@@ -552,6 +606,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set status message
             currentStatus = string.Format("Viewing RDB block {0}.", blockName);
+
+            // Store block name
+            currentBlockName = blockName;
         }
 
         /// <summary>
@@ -561,6 +618,11 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="dfLocation">DFLocation.</param>
         public void LoadLocation(ref DFLocation dfLocation)
         {
+            // Do nothing if loading same location as current
+            if (currentLatitude == dfLocation.MapTableData.Latitude &&
+                currentLongitude == dfLocation.MapTableData.Longitude)
+                return;
+
             // Set climate
             Climate = dfLocation.Climate;
 
@@ -573,6 +635,10 @@ namespace DaggerfallModelling.ViewControls
 
             // Set status message
             currentStatus = string.Format("Exploring {0}.", dfLocation.Name);
+
+            // Store location coordinates
+            currentLatitude = (int)dfLocation.MapTableData.Latitude;
+            currentLongitude = (int)dfLocation.MapTableData.Longitude;
         }
 
         #endregion
@@ -590,8 +656,8 @@ namespace DaggerfallModelling.ViewControls
             exteriorResources = new Dictionary<int, bool>(1);
 
             // Get block key and name
-            int key = GetBlockKey(0, 0);
             string name = host.BlockManager.BlocksFile.CheckName(blockName);
+            int key = GetBlockKey(0, 0);
 
             // Create block position data
             BlockPosition blockPosition = new BlockPosition();
@@ -609,7 +675,11 @@ namespace DaggerfallModelling.ViewControls
             exteriorResources.Add(key, false);
 
             // Bounds are equivalent to block
-            exteriorBounds = blockPosition.block.BoundingBox;
+            BoundingBox bounds = blockPosition.block.BoundingBox;
+            bounds.Min.Y = cameraFloorHeight;
+            bounds.Max.Y = cameraCeilingHeight;
+            exteriorTopDownCamera.Bounds = bounds;
+            exteriorFreeCamera.Bounds = bounds;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -643,8 +713,20 @@ namespace DaggerfallModelling.ViewControls
             dungeonLayout.Add(key, blockPosition);
             dungeonResources.Add(key, false);
 
-            // Bounds are equivalent to block
-            dungeonBounds = blockPosition.block.BoundingBox;
+            // Set top down bounds to have a higher ceiling
+            BoundingBox topDownBounds = blockPosition.block.BoundingBox;
+            topDownBounds.Max.Y = cameraCeilingHeight;
+            dungeonTopDownCamera.Bounds = topDownBounds;
+
+            // Set free camera to have more camera movement around the outside
+            BoundingBox freeBounds = blockPosition.block.BoundingBox;
+            freeBounds.Min.X -= cameraDungeonFreedom;
+            freeBounds.Max.X += cameraDungeonFreedom;
+            freeBounds.Min.Y -= cameraDungeonFreedom;
+            freeBounds.Max.Y = cameraDungeonFreedom;
+            freeBounds.Min.Z -= cameraDungeonFreedom;
+            freeBounds.Max.Z += cameraDungeonFreedom;
+            dungeonFreeCamera.Bounds = freeBounds;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -674,8 +756,8 @@ namespace DaggerfallModelling.ViewControls
                 for (int x = 0; x < width; x++)
                 {
                     // Get block key and name
-                    int key = GetBlockKey(x, y);
                     string name = host.BlockManager.BlocksFile.CheckName(host.MapsFile.GetRmbBlockName(ref dfLocation, x, y));
+                    int key = GetBlockKey(x, y);
 
                     // Create block position data
                     BlockPosition blockPosition = new BlockPosition();
@@ -700,7 +782,10 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Set bounds
-            exteriorBounds = bounds;
+            bounds.Min.Y = cameraFloorHeight;
+            bounds.Max.Y = cameraCeilingHeight;
+            exteriorTopDownCamera.Bounds = bounds;
+            exteriorFreeCamera.Bounds = bounds;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -726,6 +811,12 @@ namespace DaggerfallModelling.ViewControls
                 // Get block key
                 int key = GetBlockKey(block.X, block.Z);
 
+                // Some dungeons (e.g. Orsinium) encode more than one block with identical coordinates.
+                // It is not yet known if Daggerfall uses the first or subsequent blocks.
+                // We are using the first instance here until research shows otherwise.
+                if (dungeonLayout.ContainsKey(key))
+                    continue;
+
                 // Create block position data
                 BlockPosition blockPosition = new BlockPosition();
                 blockPosition.name = block.BlockName;
@@ -744,8 +835,20 @@ namespace DaggerfallModelling.ViewControls
                 bounds = BoundingBox.CreateMerged(bounds, new BoundingBox(min, max));
             }
 
-            // Set bounds
-            dungeonBounds = bounds;
+            // Set top down bounds to have a higher ceiling
+            BoundingBox topDownBounds = bounds;
+            topDownBounds.Max.Y = cameraCeilingHeight;
+            dungeonTopDownCamera.Bounds = topDownBounds;
+            
+            // Set free camera to have more camera movement around the outside
+            BoundingBox freeBounds = bounds;
+            freeBounds.Min.X -= cameraDungeonFreedom;
+            freeBounds.Max.X += cameraDungeonFreedom;
+            freeBounds.Min.Y -= cameraDungeonFreedom;
+            freeBounds.Max.Y = cameraDungeonFreedom;
+            freeBounds.Min.Z -= cameraDungeonFreedom;
+            freeBounds.Max.Z += cameraDungeonFreedom;
+            dungeonFreeCamera.Bounds = freeBounds;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -820,27 +923,30 @@ namespace DaggerfallModelling.ViewControls
         #region Camera Methods
 
         /// <summary>
+        /// Gets active camera based on batch mode and camera mode.
+        /// </summary>
+        /// <returns>Camera.</returns>
+        private Camera GetActiveCamera()
+        {
+            switch (batchMode)
+            {
+                case BatchModes.SingleExteriorBlock:
+                case BatchModes.FullExterior:
+                    return (cameraMode == CameraModes.Free) ? exteriorFreeCamera : exteriorTopDownCamera;
+                case BatchModes.SingleDungeonBlock:
+                case BatchModes.FullDungeon:
+                default:
+                    return (cameraMode == CameraModes.Free) ? dungeonFreeCamera : dungeonTopDownCamera;
+            }
+        }
+
+        /// <summary>
         /// Initialise camera positions.
         /// </summary>
         private void InitCameraPosition()
         {
-            InitFreeCameraPosition();
             InitTopDownCameraPosition();
-        }
-
-        /// <summary>
-        /// Sets free camera to starting position.
-        /// </summary>
-        private void InitFreeCameraPosition()
-        {
-            // Exterior view
-            if (BatchMode == BatchModes.FullExterior ||
-                BatchMode == BatchModes.SingleExteriorBlock)
-            {
-            }
-
-            // Update camera
-            freeCamera.Update();
+            InitFreeCameraPosition();
         }
 
         /// <summary>
@@ -848,68 +954,53 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void InitTopDownCameraPosition()
         {
-            // Exterior view
-            if (BatchMode == BatchModes.FullExterior ||
-                BatchMode == BatchModes.SingleExteriorBlock)
-            {
-                // Centre top down camera in layout
-                topDownCamera.Position = new Vector3(
-                    (exteriorBounds.Max.X - exteriorBounds.Min.X) / 2,
-                    cameraStartHeight,
-                    -(exteriorBounds.Max.Z - exteriorBounds.Min.Z) / 2);
-                topDownCamera.Reference = new Vector3(0, -1.0f, -0.01f);
-            }
+            // Reset top down cameras
+            exteriorTopDownCamera.ResetReference();
+            dungeonTopDownCamera.ResetReference();
 
-            // Dungeon view
-            if (BatchMode == BatchModes.FullDungeon ||
-                BatchMode == BatchModes.SingleDungeonBlock)
-            {
-                // Centre top down camera in layout
-                topDownCamera.Position = new Vector3(
-                    (dungeonBounds.Max.X - dungeonBounds.Min.X) / 2,
-                    cameraStartHeight,
-                    -(dungeonBounds.Max.Z - dungeonBounds.Min.Z) / 2);
-                topDownCamera.Reference = new Vector3(0, -1.0f, -0.01f);
-            }
+            // Set position
+            exteriorTopDownCamera.CentreInBounds(cameraStartHeight);
+            dungeonTopDownCamera.CentreInBounds(cameraStartHeight);
 
-            // Update camera
-            topDownCamera.Update();
+            // Set reference
+            exteriorTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+            dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+
+            // Update
+            exteriorTopDownCamera.Update(Camera.UpdateFlags.None);
+            dungeonTopDownCamera.Update(Camera.UpdateFlags.None);
         }
 
         /// <summary>
-        /// Translates top-down camera.
+        /// Sets free camera to starting position.
         /// </summary>
-        /// <param name="x">X amount.</param>
-        /// <param name="z">Z amount.</param>
-        private void TranslateTopDownCamera(float x, float z)
+        private void InitFreeCameraPosition()
         {
-            // Translate camera vector
-            Vector3 cameraPosition = topDownCamera.Position;
-            cameraPosition.X += x;
-            cameraPosition.Z += z;
+            // Reset free cameras
+            exteriorFreeCamera.ResetReference();
+            dungeonFreeCamera.ResetReference();
 
-            // Keep camera within exterior bounds
-            if (batchMode == BatchModes.SingleExteriorBlock ||
-                batchMode == BatchModes.FullExterior)
-            {
-                if (cameraPosition.X < exteriorBounds.Min.X) cameraPosition.X = exteriorBounds.Min.X;
-                if (cameraPosition.Z < exteriorBounds.Min.Z) cameraPosition.Z = exteriorBounds.Min.Z;
-                if (cameraPosition.X > exteriorBounds.Max.X) cameraPosition.X = exteriorBounds.Max.X;
-                if (cameraPosition.Z > exteriorBounds.Max.Z) cameraPosition.Z = exteriorBounds.Max.Z;
-            }
+            // Set exterior position
+            Vector3 exteriorPos = new Vector3(
+                exteriorFreeCamera.Bounds.Max.X / 2,
+                cameraFloorHeight,
+                exteriorFreeCamera.Bounds.Max.Z);
+            exteriorFreeCamera.Position = exteriorPos;
 
-            // Keep camera within dungeon bounds
-            if (batchMode == BatchModes.SingleDungeonBlock ||
-                batchMode == BatchModes.FullDungeon)
-            {
-                if (cameraPosition.X < dungeonBounds.Min.X) cameraPosition.X = dungeonBounds.Min.X;
-                if (cameraPosition.Z < dungeonBounds.Min.Z) cameraPosition.Z = dungeonBounds.Min.Z;
-                if (cameraPosition.X > dungeonBounds.Max.X) cameraPosition.X = dungeonBounds.Max.X;
-                if (cameraPosition.Z > dungeonBounds.Max.Z) cameraPosition.Z = dungeonBounds.Max.Z;
-            }
+            // Set dungeon free camera position
+            Vector3 dungeonPos = new Vector3(
+                dungeonFreeCamera.Bounds.Min.X + (dungeonFreeCamera.Bounds.Max.X - dungeonFreeCamera.Bounds.Min.X) / 2,
+                1024f,
+                dungeonFreeCamera.Bounds.Max.Z);
+            dungeonFreeCamera.Position = dungeonPos;
 
-            // Update position
-            topDownCamera.Position = cameraPosition;
+            // Set reference
+            exteriorFreeCamera.Reference = new Vector3(0f, 0f, -1f);
+            dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
+
+            // Update
+            exteriorFreeCamera.Update(Camera.UpdateFlags.None);
+            dungeonFreeCamera.Update(Camera.UpdateFlags.None);
         }
 
         #endregion
@@ -940,22 +1031,12 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void UpdateProjectionMatrix()
         {
-            // Get aspect ratio
+            // Update aspect ratio for all cameras
             float aspectRatio = (float)host.ClientRectangle.Width / (float)host.ClientRectangle.Height;
-
-            // Update top down camera
-            topDownCamera.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,
-                aspectRatio,
-                topDownCamera.NearPlane,
-                topDownCamera.FarPlane);
-
-            // Setup free camera
-            freeCamera.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,
-                aspectRatio,
-                freeCamera.NearPlane,
-                freeCamera.FarPlane);
+            exteriorTopDownCamera.SetAspectRatio(aspectRatio);
+            exteriorFreeCamera.SetAspectRatio(aspectRatio);
+            dungeonTopDownCamera.SetAspectRatio(aspectRatio);
+            dungeonFreeCamera.SetAspectRatio(aspectRatio);
         }
 
         /// <summary>
@@ -965,6 +1046,62 @@ namespace DaggerfallModelling.ViewControls
         {
             // Set the message
             host.StatusMessage = currentStatus;
+        }
+
+        /// <summary>
+        /// Sets batch mode.
+        /// </summary>
+        /// <param name="mode"></param>
+        private void ChangeBatchMode(BatchModes mode)
+        {
+            // Apply mode
+            batchMode = mode;
+        }
+
+        /// <summary>
+        /// Conditionally updates cameras.
+        /// </summary>
+        private void UpdateCameras()
+        {
+            // Update based on camera mode
+            if (CameraMode == CameraModes.Free)
+            {
+                // Host must be focused
+                if (!host.Focused)
+                    return;
+
+                // Update based on batch mode
+                switch (batchMode)
+                {
+                    case BatchModes.SingleExteriorBlock:
+                    case BatchModes.FullExterior:
+                        exteriorFreeCamera.Update(Camera.UpdateFlags.Keyboard);
+                        break;
+                    case BatchModes.SingleDungeonBlock:
+                    case BatchModes.FullDungeon:
+                        dungeonFreeCamera.Update(Camera.UpdateFlags.Keyboard);
+                        break;
+
+                }
+            }
+            else if (CameraMode == CameraModes.TopDown)
+            {
+                // Apply camera velocity
+                ActiveCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
+
+                // Update based on batch mode
+                switch (batchMode)
+                {
+                    case BatchModes.SingleExteriorBlock:
+                    case BatchModes.FullExterior:
+                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None);
+                        break;
+                    case BatchModes.SingleDungeonBlock:
+                    case BatchModes.FullDungeon:
+                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None);
+                        break;
+                }
+            }
         }
 
         #endregion
@@ -977,8 +1114,8 @@ namespace DaggerfallModelling.ViewControls
         private void UpdateMouseRay(int x, int y)
         {
             // Get appropriate view matrix
-            Matrix view = (CameraMode == CameraModes.Free) ? freeCamera.View : topDownCamera.View;
-            Matrix projection = (CameraMode == CameraModes.Free) ? freeCamera.Projection : freeCamera.Projection;
+            Matrix view = ActiveCamera.View;
+            Matrix projection = ActiveCamera.Projection;
 
             // Unproject vectors into view area
             Viewport vp = host.GraphicsDevice.Viewport;

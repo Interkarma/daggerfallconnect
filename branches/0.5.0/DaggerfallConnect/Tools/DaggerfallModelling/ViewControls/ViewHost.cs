@@ -270,6 +270,14 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Gets location climate, or None if no location loaded.
+        /// </summary>
+        public DFLocation.ClimateType LocationClimate
+        {
+            get { return GetLocationClimate(); }
+        }
+
+        /// <summary>
         /// Gets small sprite font.
         /// </summary>
         public SpriteFont SmallFont
@@ -823,6 +831,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Load exterior
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.BatchMode = LocationView.BatchModes.FullExterior;
             view.LoadLocation(ref dfLocation);
 
             // Set view mode
@@ -842,7 +851,16 @@ namespace DaggerfallModelling.ViewControls
             if (!isReady)
                 return;
 
-            // Not implemented
+            // Load dungeon
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.BatchMode = LocationView.BatchModes.FullDungeon;
+            view.LoadLocation(ref dfLocation);
+
+            // Set view mode
+            lastViewMode = viewMode;
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
         }
 
         /// <summary>
@@ -930,6 +948,10 @@ namespace DaggerfallModelling.ViewControls
             if (!isReady)
                 return;
 
+            // Do nothing if going from null to null
+            if (filteredModelsArray == null && array == null)
+                return;
+
             // Assign new filter array to views.
             // Views have been designed not to perform any visible operation
             // when updating this list so they can all be notified at the same time.
@@ -967,6 +989,18 @@ namespace DaggerfallModelling.ViewControls
             if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].ResumeView();
             RaiseViewModeChangedEvent();
+        }
+
+        /// <summary>
+        /// Gets climate of current location.
+        /// </summary>
+        /// <returns>Location climate, or None if no location loaded.</returns>
+        private DFLocation.ClimateType GetLocationClimate()
+        {
+            if (!isReady)
+                return DFLocation.ClimateType.None;
+
+            return viewClients[ViewModes.LocationView].Climate;
         }
 
         #endregion

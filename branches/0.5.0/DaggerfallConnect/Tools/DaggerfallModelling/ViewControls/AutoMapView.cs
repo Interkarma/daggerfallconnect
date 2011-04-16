@@ -134,6 +134,14 @@ namespace DaggerfallModelling.ViewControls
             get { return dfLocation; }
         }
 
+        /// <summary>
+        /// Gets
+        /// </summary>
+        public string SelectedBlockName
+        {
+            get { return GetSelectedBlockName(); }
+        }
+
         #endregion
 
         #region Constructors
@@ -695,6 +703,31 @@ namespace DaggerfallModelling.ViewControls
             RaiseModeChangedEvent();
         }
 
+        /// <summary>
+        /// Gets name of selected block for current mode.
+        /// </summary>
+        /// <returns>Name of selected block, or String.Empty if no selection.</returns>
+        private string GetSelectedBlockName()
+        {
+            if (viewMode == ViewModes.Exterior)
+            {
+                if (selectedExteriorBlock == -1)
+                    return string.Empty;
+                else
+                    return exteriorLayout[selectedExteriorBlock].name;
+            }
+
+            if (viewMode == ViewModes.Dungeon)
+            {
+                if (selectedDungeonBlock == -1)
+                    return string.Empty;
+                else
+                    return dungeonLayout[selectedDungeonBlock].name;
+            }
+
+            return string.Empty;
+        }
+
         #endregion
 
         #region AutoMap Layout
@@ -850,6 +883,9 @@ namespace DaggerfallModelling.ViewControls
                 {
                     case DFBlock.RdbTypes.Start:
                         pen = new Pen(dungeonStartColour);
+                        break;
+                    case DFBlock.RdbTypes.Border:
+                        pen = new Pen(dungeonBorderColour);
                         break;
                     default:
                         pen = new Pen(dungeonNormalColour);

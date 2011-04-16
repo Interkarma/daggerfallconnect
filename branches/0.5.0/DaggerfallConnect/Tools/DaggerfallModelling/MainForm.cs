@@ -106,7 +106,7 @@ namespace DaggerfallModelling
             AutoMapViewer.MapsFile = mapsFile;
 
             // Initialise content host
-            ContentView.SetArena2Path(appSettings.Arena2Path);
+            ContentViewer.SetArena2Path(appSettings.Arena2Path);
         }
 
         private void BrowseArena2Path()
@@ -151,7 +151,6 @@ namespace DaggerfallModelling
                 SearchLocationsToolStripButton.Enabled = true;
                 SearchLabel.Enabled = true;
                 SearchTextBox.Enabled = true;
-                ClearSearchButton.Enabled = true;
             }
             else
             {
@@ -160,7 +159,6 @@ namespace DaggerfallModelling
                 SearchLocationsToolStripButton.Enabled = false;
                 SearchLabel.Enabled = false;
                 SearchTextBox.Enabled = false;
-                ClearSearchButton.Enabled = false;
             }
         }
 
@@ -235,8 +233,9 @@ namespace DaggerfallModelling
                     case ModelTag:
                         break;
                     case BlockTag:
+                        // Show view
                         blockViewAvailable = true;
-                        ContentView.ShowBlockView(e.Node.Text, DFLocation.ClimateType.None);
+                        ContentViewer.ShowBlockView(e.Node.Text, DFLocation.ClimateType.None);
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -246,10 +245,15 @@ namespace DaggerfallModelling
                             KeyToRegionLocation(key, out region, out location);
                             AutoMapViewer.ShowLocation(region, location);
 
-                            // Show view
+                            // Set flags
                             blockViewAvailable = true;
                             locationViewAvailable = true;
-                            ContentView.ShowLocationExterior(AutoMapViewer.DFLocation);
+
+                            // Show location
+                            if (AutoMapViewer.ViewMode == AutoMapView.ViewModes.Dungeon)
+                                ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
+                            else
+                                ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
                             return;
                         }
                         break;
@@ -317,11 +321,19 @@ namespace DaggerfallModelling
         private void ExteriorModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Exterior);
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
+                ContentViewer.ShowLocationExterior();
+            else
+                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Dungeon);
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
+                ContentViewer.ShowLocationDungeon();
+            else
+                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
@@ -341,11 +353,18 @@ namespace DaggerfallModelling
 
         private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
         {
-            // TODO: Centre on block if viewing location, rather than display a single block
+            // Display single block only if not in location mode
+            if (ContentViewer.ViewMode != ViewHost.ViewModes.LocationView)
+            {
+                // Get climate type
+                DFLocation.ClimateType climate = DFLocation.ClimateType.None;
+                if (locationViewAvailable && AutoMapViewer.ViewMode == AutoMapView.ViewModes.Exterior)
+                    climate = ContentViewer.LocationClimate;
 
-            // Load block into view
-            blockViewAvailable = true;
-            ContentView.ShowBlockView(e.Name, DFLocation.ClimateType.None);
+                // Load block into view
+                blockViewAvailable = true;
+                ContentViewer.ShowBlockView(e.Name, climate);
+            }
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -383,7 +402,7 @@ namespace DaggerfallModelling
         /// <param name="e">EventArgs.</param>
         private void TopDownCameraToolStripButton_Click(object sender, EventArgs e)
         {
-            ContentView.CameraMode = ViewBase.CameraModes.TopDown;
+            ContentViewer.CameraMode = ViewBase.CameraModes.TopDown;
             UpdateActiveCameraMode();
         }
 
@@ -394,7 +413,7 @@ namespace DaggerfallModelling
         /// <param name="e">EventArgs.</param>
         private void FreeCameraToolStripButton_Click(object sender, EventArgs e)
         {
-            ContentView.CameraMode = ViewBase.CameraModes.Free;
+            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             UpdateActiveCameraMode();
         }
 
@@ -415,14 +434,22 @@ namespace DaggerfallModelling
             // Clear map block browser
             AutoMapViewer.Clear();
 
+            // Clear filtered model array and switch back to thumbnails
+            ContentViewer.FilteredModelsArray = null;
+            ContentViewer.ShowThumbnailsView();
+
+            // Clear available view
+            blockViewAvailable = false;
+            locationViewAvailable = false;
+            UpdateAvailableViews();
+
             // Disable search controls
             SearchPaneToolStrip.Enabled = false;
             SearchTextBox.Enabled = false;
-            ClearSearchButton.Enabled = false;
             SearchResultsTreeView.Visible = false;
 
             // Halt content animation
-            ContentView.EnableAnimTimer(false);
+            ContentViewer.EnableAnimTimer(false);
 
             // Drop in searching image
             PictureBox pb = new PictureBox();
@@ -447,14 +474,13 @@ namespace DaggerfallModelling
             // Enable search controls
             SearchPaneToolStrip.Enabled = true;
             SearchTextBox.Enabled = true;
-            ClearSearchButton.Enabled = true;
             SearchResultsTreeView.Visible = true;
 
             // Clear searching image
             SearchResultsPanel.Controls.Remove(pb);
 
             // Resume content animation
-            ContentView.EnableAnimTimer(true);
+            ContentViewer.EnableAnimTimer(true);
 
             // Set focus to results tree
             SearchResultsTreeView.Focus();
@@ -598,7 +624,7 @@ namespace DaggerfallModelling
                     locationsTitle,
                     SearchResultsImageList.Images.IndexOfKey("find"),
                     SearchResultsImageList.Images.IndexOfKey("find"));
-                ShowMapsFound(ref mapsNode);
+                ShowLocationsFound(ref mapsNode);
             }
 
             // Sort results tree
@@ -626,7 +652,7 @@ namespace DaggerfallModelling
             }
 
             // Assign filtered array to content view
-            ContentView.FilteredModelsArray = modelsArray;
+            ContentViewer.FilteredModelsArray = modelsArray;
         }
 
         private void ShowBlocksFound(ref TreeNode node)
@@ -642,7 +668,7 @@ namespace DaggerfallModelling
             }
         }
 
-        private void ShowMapsFound(ref TreeNode node)
+        private void ShowLocationsFound(ref TreeNode node)
         {
             foreach (var map in mapsFound)
             {
@@ -796,12 +822,12 @@ namespace DaggerfallModelling
         private void ViewThumbsToolStripButton_Click(object sender, EventArgs e)
         {
             // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.ThumbnailView ||
-                !ContentView.IsReady)
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.ThumbnailView ||
+                !ContentViewer.IsReady)
                 return;
 
             // Set view
-            ContentView.ShowThumbnailsView();
+            ContentViewer.ShowThumbnailsView();
         }
 
         /// <summary>
@@ -812,13 +838,13 @@ namespace DaggerfallModelling
         private void ViewSingleModelToolStripButton_Click(object sender, EventArgs e)
         {
             // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.ModelView ||
-                !ContentView.IsReady)
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.ModelView ||
+                !ContentViewer.IsReady)
                 return;
 
             // Set view.
             // Model id of -1 means just display what is already loaded.
-            ContentView.ShowModelView(-1, DFLocation.ClimateType.None);
+            ContentViewer.ShowModelView(-1, ContentViewer.LocationClimate);
         }
 
         /// <summary>
@@ -829,12 +855,12 @@ namespace DaggerfallModelling
         private void ViewBlockToolStripButton_Click(object sender, EventArgs e)
         {
             // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.BlockView ||
-                !ContentView.IsReady)
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.BlockView ||
+                !ContentViewer.IsReady)
                 return;
 
             // Set view
-            ContentView.ShowBlockView(string.Empty, DFLocation.ClimateType.None);
+            ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         /// <summary>
@@ -845,22 +871,23 @@ namespace DaggerfallModelling
         private void ViewLocationToolStripButton_Click(object sender, EventArgs e)
         {
             // Do nothing if this is already current view
-            if (ContentView.ViewMode == ViewHost.ViewModes.LocationView ||
-                !ContentView.IsReady)
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView ||
+                !ContentViewer.IsReady)
                 return;
 
             // Switch host into appropriate content mode
             switch (AutoMapViewer.ViewMode)
             {
                 case AutoMapView.ViewModes.Exterior:
-                    ContentView.ShowLocationExterior();
+                    ContentViewer.ShowLocationExterior();
                     break;
                 case AutoMapView.ViewModes.Dungeon:
-                    ContentView.ShowLocationDungeon();
+                    ContentViewer.ShowLocationDungeon();
+                    break;
+                default:
+                    ContentViewer.ShowLocationExterior();
                     break;
             }
-
-            // TODO: Set view
         }
 
         #endregion
@@ -891,7 +918,7 @@ namespace DaggerfallModelling
             ViewLocationToolStripButton.Checked = false;
 
             // Check current item
-            switch (ContentView.ViewMode)
+            switch (ContentViewer.ViewMode)
             {
                 case ViewHost.ViewModes.ThumbnailView:
                     ViewThumbsToolStripButton.Checked = true;
@@ -918,7 +945,7 @@ namespace DaggerfallModelling
             // Check camera mode
             TopDownCameraToolStripButton.Checked = false;
             FreeCameraToolStripButton.Checked = false;
-            switch (ContentView.CameraMode)
+            switch (ContentViewer.CameraMode)
             {
                 case ViewBase.CameraModes.TopDown:
                     TopDownCameraToolStripButton.Enabled = true;

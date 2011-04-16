@@ -580,7 +580,7 @@ namespace XNALibrary
             ap.buffer = new byte[(atlasWidth * atlasHeight) * ap.format];
 
             // Add textures to atlas
-            AddErrorBitmap(ref ap);
+            //AddErrorBitmap(ref ap);
             AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Normal, ref ap);
             AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Winter, ref ap);
             AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Rain, ref ap);
