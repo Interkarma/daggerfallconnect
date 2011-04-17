@@ -2,7 +2,7 @@
 
 _Alpha Version 0.6.0_
 
-== Searching ==
+= Searching =
 
 To use the search feature, you must first select a resource type to search for. By default, Daggerfall Modelling will search for *Locations*, as shown below.
 
