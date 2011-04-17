@@ -325,6 +325,18 @@ namespace DaggerfallModelling.ViewControls
             host.Refresh();
         }
 
+        /// <summary>
+        /// Called when view should reset, release resources, destroy layouts, etc.
+        /// </summary>
+        public override void ResetView()
+        {
+            // Force a full layout next resume
+            thumbDict.Clear();
+            useFilteredModels = false;
+            thumbsFirstVisibleRow = 0;
+            thumbScrollAmount = 0;
+        }
+
         #endregion
 
         #region Drawing Methods

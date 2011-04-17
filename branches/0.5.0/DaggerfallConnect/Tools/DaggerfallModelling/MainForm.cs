@@ -74,7 +74,21 @@ namespace DaggerfallModelling
             if (!Directory.Exists(appSettings.Arena2Path))
                 return;
 
-            // TODO: Clear search, automap, and model view states
+            // Reset resources
+            if (ContentViewer.IsReady)
+            {
+                ContentViewer.TextureManager.ClearTextures();
+                ContentViewer.TextureManager.ClearAtlases();
+                ContentViewer.ModelManager.ClearModels();
+            }
+
+            // Reset search
+            SearchResultsTreeView.Nodes.Clear();
+            ContentViewer.FilteredModelsArray = null;
+
+            // Reset views
+            AutoMapViewer.SetViewMode(AutoMapView.ViewModes.None);
+            ContentViewer.ResetViews();
 
             try
             {
@@ -107,6 +121,9 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
+
+            // Show thumbnails view
+            ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -160,6 +177,47 @@ namespace DaggerfallModelling
                 SearchLabel.Enabled = false;
                 SearchTextBox.Enabled = false;
             }
+        }
+
+        private bool ActivateSearchResultsNode(TreeNode node)
+        {
+            // Look for node select
+            if (node.Tag is string)
+            {
+                switch ((string)node.Tag)
+                {
+                    case ModelTag:
+                        ContentViewer.ShowModelView(int.Parse(node.Text), DFLocation.ClimateType.None);
+                        break;
+                    case BlockTag:
+                        // Show view
+                        blockViewAvailable = true;
+                        ContentViewer.ShowBlockView(node.Text, DFLocation.ClimateType.None);
+                        break;
+                    case LocationTag:
+                        int key, region, location;
+                        if (int.TryParse(node.Name, out key))
+                        {
+                            // Show in automap
+                            KeyToRegionLocation(key, out region, out location);
+                            AutoMapViewer.ShowLocation(region, location);
+
+                            // Set flags
+                            blockViewAvailable = true;
+                            locationViewAvailable = true;
+
+                            // Show location
+                            if (AutoMapViewer.ViewMode == AutoMapView.ViewModes.Dungeon)
+                                ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
+                            else
+                                ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
+                            return true;
+                        }
+                        break;
+                }
+            }
+
+            return false;
         }
 
         #endregion
@@ -225,40 +283,19 @@ namespace DaggerfallModelling
 
         private void SearchResultsTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            // Look for node select
-            if (e.Node.Tag is string)
-            {
-                switch ((string)e.Node.Tag)
-                {
-                    case ModelTag:
-                        break;
-                    case BlockTag:
-                        // Show view
-                        blockViewAvailable = true;
-                        ContentViewer.ShowBlockView(e.Node.Text, DFLocation.ClimateType.None);
-                        break;
-                    case LocationTag:
-                        int key, region, location;
-                        if (int.TryParse(e.Node.Name, out key))
-                        {
-                            // Show in automap
-                            KeyToRegionLocation(key, out region, out location);
-                            AutoMapViewer.ShowLocation(region, location);
+            // Activate node and exit if location loaded
+            if (ActivateSearchResultsNode(e.Node) == true)
+                return;
 
-                            // Set flags
-                            blockViewAvailable = true;
-                            locationViewAvailable = true;
+            // Clear map block browser
+            AutoMapViewer.Clear();
+        }
 
-                            // Show location
-                            if (AutoMapViewer.ViewMode == AutoMapView.ViewModes.Dungeon)
-                                ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
-                            else
-                                ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
-                            return;
-                        }
-                        break;
-                }
-            }
+        private void SearchResultsTreeView_DoubleClick(object sender, EventArgs e)
+        {
+            // Activate node and exit if location loaded
+            if (ActivateSearchResultsNode(SearchResultsTreeView.SelectedNode) == true)
+                return;
 
             // Clear map block browser
             AutoMapViewer.Clear();
@@ -364,7 +401,12 @@ namespace DaggerfallModelling
                 // Load block into view
                 blockViewAvailable = true;
                 ContentViewer.ShowBlockView(e.Name, climate);
+
+                return;
             }
+
+            // Move to block location
+            ContentViewer.MoveToBlock(e.X, e.Y);
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)
@@ -652,7 +694,8 @@ namespace DaggerfallModelling
             }
 
             // Assign filtered array to content view
-            ContentViewer.FilteredModelsArray = modelsArray;
+            if (modelsArray.Length > 0)
+                ContentViewer.FilteredModelsArray = modelsArray;
         }
 
         private void ShowBlocksFound(ref TreeNode node)

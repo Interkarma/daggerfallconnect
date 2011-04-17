@@ -134,6 +134,7 @@
             this.SearchResultsTreeView.Size = new System.Drawing.Size(320, 332);
             this.SearchResultsTreeView.TabIndex = 2;
             this.SearchResultsTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.SearchResultsTreeView_BeforeExpand);
+            this.SearchResultsTreeView.DoubleClick += new System.EventHandler(this.SearchResultsTreeView_DoubleClick);
             this.SearchResultsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SearchResultsTree_AfterSelect);
             // 
             // SearchResultsImageList

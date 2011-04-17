@@ -72,6 +72,7 @@ namespace DaggerfallModelling.ViewControls
         // Movement
         private Vector3 cameraVelocity;
         private float cameraStep = 5.0f;
+        private float wheelStep = 100.0f;
 
         // Batching options
         BatchModes batchMode = BatchModes.SingleExteriorBlock;
@@ -79,6 +80,7 @@ namespace DaggerfallModelling.ViewControls
 
         // Ray testing
         Ray mouseRay;
+        int mouseOverModel = -1;
         RenderableBoundingBox renderableBounds;
 
         #endregion
@@ -362,6 +364,18 @@ namespace DaggerfallModelling.ViewControls
             }
             #endregion
 
+            #region MouseOverModel
+            if (closestModelInfo != null && host.MouseInClientArea)
+            {
+                // Store mouse over closest model
+                mouseOverModel = (int)closestModelInfo.Value.ModelId;
+            }
+            else
+            {
+                mouseOverModel = -1;
+            }
+            #endregion
+
             #region Bounding Box
             // Draw bounding box if mouse over model
             if (closestModelInfo != null && host.MouseInClientArea)
@@ -394,7 +408,7 @@ namespace DaggerfallModelling.ViewControls
             // Update mouse ray
             UpdateMouseRay(e.X, e.Y);
 
-            // Normal camera movement
+            // Top down camera movement
             if (CameraMode == CameraModes.TopDown)
             {
                 // Scene dragging
@@ -414,6 +428,12 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
+            // Top down camera movement
+            if (CameraMode == CameraModes.TopDown)
+            {
+                float amount = ((float)e.Delta / 120.0f) * wheelStep;
+                ActiveCamera.Translate(0, -amount, 0);
+            }
         }
 
         /// <summary>
@@ -457,13 +477,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
-        }
-
-        /// <summary>
-        /// Called when filtered models array has been changed.
-        /// </summary>
-        public override void FilteredModelsChanged()
-        {
+            if (mouseOverModel != -1)
+            {
+                host.ShowModelView(mouseOverModel, Climate);
+            }
         }
 
         /// <summary>
@@ -506,6 +523,33 @@ namespace DaggerfallModelling.ViewControls
 
             // Clear camera velocity
             cameraVelocity = Vector3.Zero;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Moves active camera to X-Z origin of specified block.
+        ///  Nothing happens if block is not found.
+        /// </summary>
+        /// <param name="name">Name of block.</param>
+        public void MoveToBlock(int x, int z)
+        {
+            // Search for block in active layout
+            Dictionary<int, BlockPosition> layout = GetLayoutDict();
+            BlockPosition foundBlock = new BlockPosition();
+            int key = GetBlockKey(x, z);
+            if (layout.ContainsKey(key))
+                foundBlock = layout[key];
+            else
+                return;
+
+            // Move active camera to block position
+            Vector3 pos = ActiveCamera.Position;
+            pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
+            pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
+            ActiveCamera.Position = pos;
         }
 
         #endregion
@@ -723,7 +767,7 @@ namespace DaggerfallModelling.ViewControls
             freeBounds.Min.X -= cameraDungeonFreedom;
             freeBounds.Max.X += cameraDungeonFreedom;
             freeBounds.Min.Y -= cameraDungeonFreedom;
-            freeBounds.Max.Y = cameraDungeonFreedom;
+            freeBounds.Max.Y += cameraDungeonFreedom;
             freeBounds.Min.Z -= cameraDungeonFreedom;
             freeBounds.Max.Z += cameraDungeonFreedom;
             dungeonFreeCamera.Bounds = freeBounds;
@@ -823,7 +867,7 @@ namespace DaggerfallModelling.ViewControls
                 blockPosition.block = host.BlockManager.LoadBlock(block.BlockName);
 
                 // Set block position
-                blockPosition.position = new Vector3(block.X * rdbBlockSide, 0, -(block.Z * rdbBlockSide));
+                blockPosition.position = new Vector3(block.X * rdbBlockSide, 0f, -(block.Z * rdbBlockSide));
 
                 // Add to layout dictionary
                 dungeonLayout.Add(key, blockPosition);
@@ -845,7 +889,7 @@ namespace DaggerfallModelling.ViewControls
             freeBounds.Min.X -= cameraDungeonFreedom;
             freeBounds.Max.X += cameraDungeonFreedom;
             freeBounds.Min.Y -= cameraDungeonFreedom;
-            freeBounds.Max.Y = cameraDungeonFreedom;
+            freeBounds.Max.Y += cameraDungeonFreedom;
             freeBounds.Min.Z -= cameraDungeonFreedom;
             freeBounds.Max.Z += cameraDungeonFreedom;
             dungeonFreeCamera.Bounds = freeBounds;
@@ -879,7 +923,7 @@ namespace DaggerfallModelling.ViewControls
         private bool LoadBlockResources(BlockManager.Block block)
         {
             // Load model textures
-            float minVertical = 0f, maxVertical = 0f;
+            float minVertical = float.MaxValue, maxVertical = float.MinValue;
             for (int i = 0; i < block.Models.Count; i++)
             {
                 // Get model info
@@ -1066,20 +1110,27 @@ namespace DaggerfallModelling.ViewControls
             // Update based on camera mode
             if (CameraMode == CameraModes.Free)
             {
-                // Host must be focused
-                if (!host.Focused)
-                    return;
+                // Set input flags
+                Camera.UpdateFlags flags = Camera.UpdateFlags.None;
+                if (host.Focused)
+                {
+                    flags |= Camera.UpdateFlags.Keyboard;
+                }
+                if (host.MouseInClientArea)
+                {
+                     flags |= Camera.UpdateFlags.Mouse;
+                }
 
                 // Update based on batch mode
                 switch (batchMode)
                 {
                     case BatchModes.SingleExteriorBlock:
                     case BatchModes.FullExterior:
-                        exteriorFreeCamera.Update(Camera.UpdateFlags.Keyboard);
+                        exteriorFreeCamera.Update(flags);
                         break;
                     case BatchModes.SingleDungeonBlock:
                     case BatchModes.FullDungeon:
-                        dungeonFreeCamera.Update(Camera.UpdateFlags.Keyboard);
+                        dungeonFreeCamera.Update(flags);
                         break;
 
                 }

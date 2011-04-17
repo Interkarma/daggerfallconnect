@@ -864,11 +864,31 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Centres location view on a specific block.
+        /// Moves active camera to origin of specified block.
         /// </summary>
-        public void CentreOnBlock()
+        public void MoveToBlock(int x, int z)
         {
-            // Not implemented
+            // Exit if not ready
+            if (!isReady)
+                return;
+
+            // Move to block
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            view.MoveToBlock(x, z);
+        }
+
+        /// <summary>
+        /// Requests each view to reset, release resources, destroy layouts, etc.
+        /// </summary>
+        public void ResetViews()
+        {
+            if (!isReady)
+                return;
+
+            viewClients[ViewModes.ThumbnailView].ResetView();
+            viewClients[ViewModes.ModelView].ResetView();
+            viewClients[ViewModes.BlockView].ResetView();
+            viewClients[ViewModes.LocationView].ResetView();
         }
 
         #endregion

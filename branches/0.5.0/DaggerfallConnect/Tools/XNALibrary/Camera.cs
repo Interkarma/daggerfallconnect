@@ -31,8 +31,10 @@ namespace XNALibrary
         #region Class Variables
 
         // Movement
-        private const float spinRate = 1.0f;
+        private const float keyboardSpinRate = 1.0f;
+        private const float mouseSpinRate = 0.1f;
         private const float moveRate = 10.0f;
+        private const float mouseMoveRate = 2.0f; 
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -55,6 +57,11 @@ namespace XNALibrary
         private Vector3 movement = Vector3.Zero;
         private Matrix rotation = Matrix.Identity;
 
+        // Mouse
+        private Point lastMousePos = Point.Zero;
+        private Point mousePos = Point.Zero;
+        private Point mouseDelta = Point.Zero;
+
         #endregion
 
         #region Class Structures
@@ -64,7 +71,8 @@ namespace XNALibrary
         {
             None = 0,
             Keyboard = 1,
-            Controller = 2,
+            Mouse = 2,
+            Controller = 4,
         }
 
         #endregion
@@ -199,14 +207,14 @@ namespace XNALibrary
             movement = Vector3.Zero;
             rotation = Matrix.Identity;
 
-            // Keyboard movement
+            // Keyboard input
             if ((flags & UpdateFlags.Keyboard) == UpdateFlags.Keyboard)
             {
                 KeyboardState ks = Keyboard.GetState();
                 if (ks.IsKeyDown(Keys.Q))                               // Look left
-                    cameraYaw += spinRate;
+                    cameraYaw += keyboardSpinRate;
                 if (ks.IsKeyDown(Keys.E))                               // Look right
-                    cameraYaw -= spinRate;
+                    cameraYaw -= keyboardSpinRate;
                 if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
                     movement.Z -= moveRate;
                 if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
@@ -217,11 +225,54 @@ namespace XNALibrary
                     movement.X += moveRate;
             }
 
-            // Controller movement
+            // Mouse input
+            if ((flags & UpdateFlags.Mouse) == UpdateFlags.Mouse)
+            {
+                // Update mouse state
+                MouseState ms = Mouse.GetState();
+                lastMousePos = mousePos;
+                mousePos.X = ms.X;
+                mousePos.Y = ms.Y;
+                mouseDelta.X = mousePos.X - lastMousePos.X;
+                mouseDelta.Y = mousePos.Y - lastMousePos.Y;
+
+                // Mouse-look with left-button pressed
+                if (ms.LeftButton == ButtonState.Pressed)
+                {
+                    cameraYaw -= mouseDelta.X * mouseSpinRate;
+                    cameraPitch -= mouseDelta.Y * mouseSpinRate;
+                }
+
+                // Movement with right-button pressed
+                if (ms.RightButton == ButtonState.Pressed)
+                {
+                    movement.Z += mouseDelta.Y * mouseMoveRate;
+                }
+
+                // Movement with middle-button pressed
+                if (ms.MiddleButton == ButtonState.Pressed)
+                {
+                    movement.X += mouseDelta.X * moveRate;
+                    movement.Y -= mouseDelta.Y * moveRate;
+                }
+            }
+
+            // Controller input
             if ((flags & UpdateFlags.Controller) == UpdateFlags.Keyboard)
             {
-                GamePadState gamePadState = GamePad.GetState(0);
+                GamePadState cs = GamePad.GetState(0);
             }
+
+            // Limit yaw
+            if (cameraYaw > 360)
+                cameraYaw -= 360;
+            else if (cameraYaw < 0)
+                cameraYaw += 360;
+            // Limit pitch
+            if (cameraPitch > 89)
+                cameraPitch = 89;
+            if (cameraPitch < -89)
+                cameraPitch = -89;
 
             // Apply rotation
             Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);

@@ -187,6 +187,8 @@
     <None Include="Resources\controller.png" />
     <None Include="Resources\arrow_left.png" />
     <None Include="Resources\arrow_right.png" />
+    <None Include="Resources\package.png" />
+    <None Include="Resources\model_find2.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

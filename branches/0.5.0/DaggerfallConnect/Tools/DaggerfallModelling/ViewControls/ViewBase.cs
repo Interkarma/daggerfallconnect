@@ -100,6 +100,60 @@ namespace DaggerfallModelling.ViewControls
             host.TextureManager.Climate = this.climateType;
         }
 
+        /// <summary>
+        /// Called when view should reset, release resources, destroy layouts, etc.
+        /// </summary>
+        public virtual void ResetView()
+        {
+        }
+
+        /// <summary>
+        /// Called when view should track mouse movement.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public virtual void OnMouseMove(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when the mouse wheel is scrolled.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public virtual void OnMouseWheel(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when a mouse button is pressed.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public virtual void OnMouseDown(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when user double-clicks mouse.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public virtual void OnMouseDoubleClick(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when a mouse button is released.
+        /// </summary>
+        /// <param name="e">MouseEventArgs</param>
+        public virtual void OnMouseUp(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// The filtered list of models in the host has been modified.
+        /// </summary>
+        public virtual void FilteredModelsChanged()
+        {
+        }
+
         #endregion
 
         #region Public Abstract Methods
@@ -123,41 +177,6 @@ namespace DaggerfallModelling.ViewControls
         /// Called when view should resize.
         /// </summary>
         public abstract void Resize();
-
-        /// <summary>
-        /// Called when view should track mouse movement.
-        /// </summary>
-        /// <param name="e">MouseEventArgs</param>
-        public abstract void OnMouseMove(MouseEventArgs e);
-
-        /// <summary>
-        /// Called when the mouse wheel is scrolled.
-        /// </summary>
-        /// <param name="e">MouseEventArgs</param>
-        public abstract void OnMouseWheel(MouseEventArgs e);
-
-        /// <summary>
-        /// Called when a mouse button is pressed.
-        /// </summary>
-        /// <param name="e">MouseEventArgs</param>
-        public abstract void OnMouseDown(MouseEventArgs e);
-
-        /// <summary>
-        /// Called when user double-clicks mouse.
-        /// </summary>
-        /// <param name="e">MouseEventArgs.</param>
-        public abstract void OnMouseDoubleClick(MouseEventArgs e);
-
-        /// <summary>
-        /// Called when a mouse button is released.
-        /// </summary>
-        /// <param name="e">MouseEventArgs</param>
-        public abstract void OnMouseUp(MouseEventArgs e);
-
-        /// <summary>
-        /// The filtered list of models in the host has been modified.
-        /// </summary>
-        public abstract void FilteredModelsChanged();
 
         #endregion
 
