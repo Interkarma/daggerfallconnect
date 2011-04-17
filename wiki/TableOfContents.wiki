@@ -1,6 +1,8 @@
 * [DaggerfallModelling Daggerfall Modelling]
  * [UsingDaggerfallModelling Introduction]
  * [SearchingInDaggerfallModelling Searching]
+ * [DaggerfallModelling_ThumbnailsView Thumbnails View]
+ * [DaggerfallModelling_ModelView Model View]
 
 * [Tutorials Daggerfall Connect Tutorials]
  * [BasicTutorial1 Basic Tutorial 1]
