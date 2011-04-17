@@ -3,6 +3,7 @@
  * [SearchingInDaggerfallModelling Searching]
  * [DaggerfallModelling_ThumbnailsView Thumbnails View]
  * [DaggerfallModelling_ModelView Model View]
+ * [DaggerfallModelling_LocationView Location View]
 
 * [Tutorials Daggerfall Connect Tutorials]
  * [BasicTutorial1 Basic Tutorial 1]
