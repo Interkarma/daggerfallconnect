@@ -1,0 +1,27 @@
+#summary Getting started with Daggerfall Modelling.
+
+_Alpha Version 0.6.0_
+
+= Summary =
+
+Daggerfall Modelling is a 3D model explorer/exporter for Bethesda's 1996 RPG Daggerfall.
+
+Currently in Alpha, Daggerfall Modelling can explore 3D resources used to build all cities and dungeons in the Illiac Bay. Exporting models to Collada format is planned in a future version.
+
+== Supported Operating Systems ==
+
+ * Windows XP SP2.
+ * Windows Vista SP1.
+ * Windows 7.
+
+_NOTE:_ Daggerfall Modelling also runs in VMWare Workstation 7.x using the above operating systems as guests with VMWare Tools installed and 3D acceleration enabled.
+
+== Other Prerequisites ==
+
+ * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b2c0358-915b-4eb5-9b1d-10e506da9d0f Microsoft .NET Framework 2.0 SP2] (Required by Windows XP only).
+ * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=53867a2a-e249-4560-8011-98eb3e799ef2 Microsoft XNA Framework Redistributable 3.1] (Required by all systems).
+ * A 3D video adapter with Shader Model 2.0 support or higher.
+
+_NOTE:_ It is *very important* Windows XP is using *.NET Framework 2.0 Service Pack 2* or higher. Previous versions of .NET Framework 2.0 contain bugs that will affect Daggerfall Modelling. You can obtain the latest version of .NET using Microsoft Update, or at minimum by installing the version linked above.
+
+Windows Vista and Windows 7 already contain the appropriate .NET Framework 2.0, and it is only necessary to install the XNA Framework Redistributable 3.1 linked above.
