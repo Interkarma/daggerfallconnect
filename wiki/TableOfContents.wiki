@@ -1,5 +1,6 @@
 * [DaggerfallModelling Daggerfall Modelling]
  * [UsingDaggerfallModelling Introduction]
+ * [SearchingInDaggerfallModelling Searching]
 
 * [Tutorials Daggerfall Connect Tutorials]
  * [BasicTutorial1 Basic Tutorial 1]
