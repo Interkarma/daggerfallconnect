@@ -1,4 +1,6 @@
-* [Tutorials]
+* [DaggerfallModelling Daggerfall Modelling]
+
+* [Tutorials Daggerfall Connect Tutorials]
  * [BasicTutorial1 Basic Tutorial 1]
  * [BasicTutorial2 Basic Tutorial 2]
  * [BasicTutorial3 Basic Tutorial 3]
