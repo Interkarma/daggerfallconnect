@@ -18,6 +18,8 @@ Toolbar buttons above the Search Pane define what resources you want to search f
  # *Blocks*. A block is a collection of models. There are two types of blocks: .RMB blocks are used to build exterior locations, and .RDB blocks are used to build dungeons. Blocks are based on a filename like 'MAGEAA13.RMB' or 'S0000999.RDB'.
  # *Locations*. When searching for locations, enter a full or partial match for the location name, such as 'Daggerfall', 'Wayrest', or 'Sentinel'. Daggerfall Modelling will list all locations, across all regions, matching your search string. Locations in the search results pane each have a unique icon showing if they are a Home, City, Dungeon, Tavern, or Temple.
 
+You can read more about [SearchingInDaggerfallModelling searching] in Daggerfall Modelling.
+
 == Auto Map ==
 
 After selecting a location, the *Auto Map* renders a 2D map of the block layout used to construct that location. This is the same auto map data you see in game, and uses the same colouring for shops, guilds, etc.
@@ -31,5 +33,3 @@ Similar to the exterior auto map, the dungeon layout is displayed as a block lay
 This is where you explore thumbnails, individual models, blocks, and entire locations.
 
 The *Content View* is a versatile and context-sensitive 3D viewer.  The various view modes are each covered in their own article.
-
-Read on to learn more about the search feature.
