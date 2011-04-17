@@ -2,7 +2,7 @@
 
 _Alpha Version 0.6.0_
 
-= Form Layout =
+= Introduction =
 
 Daggerfall Modelling has three main areas, as shown below:
 
