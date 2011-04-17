@@ -19,10 +19,20 @@ _NOTE:_ Daggerfall Modelling also runs in VMWare Workstation 7.x using the above
 
 == Other Prerequisites ==
 
+ * Installed version of Daggerfall patched to 2.13.
  * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b2c0358-915b-4eb5-9b1d-10e506da9d0f Microsoft .NET Framework 2.0 SP2] (Required by Windows XP only).
  * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=53867a2a-e249-4560-8011-98eb3e799ef2 Microsoft XNA Framework Redistributable 3.1] (Required by all systems).
- * A 3D video adapter with Shader Model 2.0 support or higher.
+ * 3D video adapter with Shader Model 2.0 support or higher.
 
 _NOTE:_ It is *very important* Windows XP is using *.NET Framework 2.0 Service Pack 2* or higher. Previous versions of .NET Framework 2.0 contain bugs that will affect Daggerfall Modelling. You can obtain the latest version of .NET using Microsoft Update, or at minimum by installing the version linked above.
 
 Windows Vista and Windows 7 already contain the appropriate .NET Framework 2.0, and it is only necessary to install the XNA Framework Redistributable 3.1 linked above.
+
+== Getting Started ==
+
+ # Download the latest version of Daggerfall Modelling from the [http://code.google.com/p/daggerfallconnect/downloads/list Downloads] page.
+ # After downloading, double-click the installation file and follow prompts to install. The installer will create a *Start Menu* group called *Daggerfall Workshop* containing a link to open *Daggerfall Modelling*.
+ # The first time you run Daggerfall Modelling, you will be asked to set your *ARENA2 Path*. This is the folder containing the game files.
+ # After setting your ARENA2 folder, Daggerfall Modelling will load resources and become ready to use as shown below. Congratulations! Continue reading to learn how to use Daggerfall Modelling.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/wiki_firstopen.png
