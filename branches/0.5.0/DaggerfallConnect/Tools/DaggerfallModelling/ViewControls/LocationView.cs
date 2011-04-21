@@ -280,7 +280,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Init variables used for tracking mouse ray and drawing bounding box
             float? distance = null;
-            float minDistance = 999999999f;
+            float minDistance = float.MaxValue;
             bool mouseInBlock = false;
             BlockManager.ModelInfo? closestModelInfo = null;
             Matrix closestModelMatrix = Matrix.Identity;

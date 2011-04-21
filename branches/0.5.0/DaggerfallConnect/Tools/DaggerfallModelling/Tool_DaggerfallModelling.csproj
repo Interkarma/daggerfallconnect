@@ -34,6 +34,7 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GWrapCollada, Version=1.0.4128.25735, Culture=neutral, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -43,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\AppSettings.cs" />
+    <Compile Include="Classes\DFCollada.cs" />
     <Compile Include="Classes\XmlHelper.cs" />
     <Compile Include="Dialogs\AboutDialog.cs">
       <SubType>Form</SubType>
@@ -176,6 +178,7 @@
     <Content Include="AboutDaggerfallModelling.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Dependencies\GWrapCollada.dll" />
     <Content Include="License\DaggerfallModelling.txt" />
     <Content Include="mainform.ico" />
     <None Include="Resources\application_view_tile.png" />
