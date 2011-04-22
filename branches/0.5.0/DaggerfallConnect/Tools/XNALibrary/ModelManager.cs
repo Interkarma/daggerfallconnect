@@ -44,7 +44,7 @@ namespace XNALibrary
         /// </summary>
         public struct Model
         {
-            /// <summary>Original geometry for picking and collision tests.</summary>
+            /// <summary>Original geometry for picking native data.</summary>
             public DFMesh DFMesh;
 
             /// <summary>Axis-aligned bounding box of mesh data.</summary>

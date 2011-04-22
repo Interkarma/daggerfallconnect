@@ -85,6 +85,9 @@ namespace DaggerfallModelling.ViewControls
         // Status message
         private string statusMessage;
 
+        // Ray testing
+        Ray mouseRay;
+
         #endregion
 
         #region Class Structures
@@ -283,6 +286,16 @@ namespace DaggerfallModelling.ViewControls
         public SpriteFont SmallFont
         {
             get { return arialSmallFont; }
+        }
+
+        /// <summary>
+        /// Gets current mouse ray.
+        ///  Client view must call UpdateMouseRay() with matrices
+        ///  for this to be current.
+        /// </summary>
+        public Ray MouseRay
+        {
+            get { return mouseRay; }
         }
 
         #endregion
@@ -889,6 +902,31 @@ namespace DaggerfallModelling.ViewControls
             viewClients[ViewModes.ModelView].ResetView();
             viewClients[ViewModes.BlockView].ResetView();
             viewClients[ViewModes.LocationView].ResetView();
+        }
+
+        #endregion
+
+        #region Mouse Picking Methods
+
+        /// <summary>
+        /// Update mouse ray for picking.
+        /// </summary>
+        /// <param name="x">Mouse X in viewport.</param>
+        /// <param name="y">Mouse Y in viewport.</param>
+        /// <param name="view">View matrix.</param>
+        /// <param name="projection">Projection matrix.</param>
+        public void UpdateMouseRay(int x, int y, Matrix view, Matrix projection)
+        {
+            // Unproject vectors into view area
+            Viewport vp = this.GraphicsDevice.Viewport;
+            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, Matrix.Identity);
+            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projection, view, Matrix.Identity);
+
+            // Create ray
+            Vector3 direction = far - near;
+            direction.Normalize();
+            mouseRay.Position = near;
+            mouseRay.Direction = direction;
         }
 
         #endregion

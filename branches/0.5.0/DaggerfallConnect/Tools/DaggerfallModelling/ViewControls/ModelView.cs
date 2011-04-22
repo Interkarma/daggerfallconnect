@@ -41,7 +41,9 @@ namespace DaggerfallModelling.ViewControls
 
         // XNA
         private VertexDeclaration modelVertexDeclaration;
+        private VertexDeclaration lineVertexDeclaration;
         private BasicEffect modelEffect;
+        private BasicEffect lineEffect;
         private float nearPlaneDistance = 1.0f;
         private float farPlaneDistance = 5000.0f;
         private Matrix projectionMatrix;
@@ -56,7 +58,8 @@ namespace DaggerfallModelling.ViewControls
         private float cameraStep = 0.5f;
         private float wheelStep = 10.0f;
 
-        // Ray testing
+        // Bounds
+        VertexPositionColor[] planeLines = new VertexPositionColor[64];
         RenderableBoundingBox renderableBounds;
 
         #endregion
@@ -108,6 +111,15 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.AmbientLightColor = new Vector3(0.4f, 0.4f, 0.4f);
             modelEffect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
 
+            // Create vertex declaration
+            lineVertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionColor.VertexElements);
+
+            // Setup line BasicEffect
+            lineEffect = new BasicEffect(host.GraphicsDevice, null);
+            lineEffect.LightingEnabled = false;
+            lineEffect.TextureEnabled = false;
+            lineEffect.VertexColorEnabled = true;
+
             // Setup camera
             float aspectRatio = (float)host.GraphicsDevice.Viewport.Width / (float)host.GraphicsDevice.Viewport.Height;
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, nearPlaneDistance, farPlaneDistance);
@@ -152,6 +164,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
+            // Update mouse ray
+            Matrix world = modelRotation * modelTranslation;
+            host.UpdateMouseRay(e.X, e.Y, viewMatrix, projectionMatrix);
+
             if (host.LeftMouseDown)
             {
                 // Adjust model rotation
@@ -278,8 +294,19 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.View = viewMatrix;
             modelEffect.Projection = projectionMatrix;
 
-            // Transform world in normal camera mode
+            // Transform world
             modelEffect.World = modelRotation * modelTranslation;
+
+            // Test for intersection
+            bool insideBoundingBox;
+            int subMeshResult, planeResult;
+            Intersection.RayIntersectsDFMesh(
+                host.MouseRay,
+                modelEffect.World,
+                ref currentModel,
+                out insideBoundingBox,
+                out subMeshResult,
+                out planeResult);
 
             // Draw submeshes
             foreach (var submesh in currentModel.SubMeshes)
@@ -297,8 +324,81 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.End();
             }
 
-            // Draw bounding box
-            renderableBounds.Draw(currentModel.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
+            // Only do this when mouse inside bounding box
+            if (insideBoundingBox)
+            {
+                //renderableBounds.Draw(currentModel.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
+                DrawNativeFace(Color.White, subMeshResult, planeResult, modelEffect.World);
+            }
+        }
+
+        /// <summary>
+        /// Draw a native face as a line list.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="subMesh">SubMesh index.</param>
+        /// <param name="plane">Plane index.</param>
+        /// <param name="matrix">World transform.</param>
+        private void DrawNativeFace(Color color, int subMesh, int plane, Matrix matrix)
+        {
+            // Exit if indices not set
+            if (subMesh == -1 || plane == -1)
+                return;
+
+            // Build line primitives for this face
+            int lineCount = 0;
+            Vector3 vertex1, vertex2;
+            DFMesh.DFPoint[] points = currentModel.DFMesh.SubMeshes[subMesh].Planes[plane].Points;
+            for (int p = 0; p < points.Length - 1; p++)
+            {
+                // Add first point
+                vertex1.X = points[p].X;
+                vertex1.Y = -points[p].Y;
+                vertex1.Z = -points[p].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex1;
+
+                // Add second point
+                vertex2.X = points[p+1].X;
+                vertex2.Y = -points[p+1].Y;
+                vertex2.Z = -points[p+1].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex2;
+            }
+
+            // Join final point to first point
+            vertex1.X = points[0].X;
+            vertex1.Y = -points[0].Y;
+            vertex1.Z = -points[0].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex1;
+            vertex2.X = points[points.Length - 1].X;
+            vertex2.Y = -points[points.Length - 1].Y;
+            vertex2.Z = -points[points.Length - 1].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex2;
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = lineVertexDeclaration;
+
+            // Set view and projection matrices
+            lineEffect.View = viewMatrix;
+            lineEffect.Projection = projectionMatrix;
+            lineEffect.World = matrix;
+
+            // Set render states
+            host.GraphicsDevice.RenderState.DepthBufferEnable = false;
+            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
+
+            lineEffect.Begin();
+            lineEffect.CurrentTechnique.Passes[0].Begin();
+
+            // Draw lines
+            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, planeLines, 0, lineCount / 2);
+
+            lineEffect.CurrentTechnique.Passes[0].End();
+            lineEffect.End();
         }
 
         #endregion
@@ -390,21 +490,12 @@ namespace DaggerfallModelling.ViewControls
                     currentModel.SubMeshes[sm].TextureRecord);
             }
 
-            // Centre model
+            // Centre camera and reset model rotation
             Vector3 Min = currentModel.BoundingBox.Min;
             Vector3 Max = currentModel.BoundingBox.Max;
-            float transX = (float)(Min.X + ((Max.X - Min.X) / 2));
-            float transY = (float)(Min.Y + ((Max.Y - Min.Y) / 2));
-            float transZ = (float)(Min.Z + ((Max.Z - Min.Z) / 2));
-            Matrix matrix = Matrix.CreateTranslation(-transX, -transY, -transZ);
-
-            // Apply matrix to model
-            currentModel = host.ModelManager.TransformModel(ref currentModel, matrix);
-
-            // Reset camera position and model rotation
-            cameraPosition.X = 0.0f;
-            cameraPosition.Y = 0.0f;
-            cameraPosition.Z = 600.0f + (Max.Z - Min.Z);
+            cameraPosition.X = (float)(Min.X + ((Max.X - Min.X) / 2));
+            cameraPosition.Y = (float)(Min.Y + ((Max.Y - Min.Y) / 2));
+            cameraPosition.Z = 700.0f + (Max.Z - Min.Z);
             modelRotation = Matrix.Identity;
         }
 
@@ -423,16 +514,18 @@ namespace DaggerfallModelling.ViewControls
             cameraPosition.Z += Z;
 
             // Cap X
-            if (cameraPosition.X < Min.X * 2)
-                cameraPosition.X = Min.X * 2;
-            if (cameraPosition.X > Max.X * 2)
-                cameraPosition.X = Max.X * 2;
+            float xAmount = (Max.X - Min.X) * 4;
+            if (cameraPosition.X < -xAmount)
+                cameraPosition.X = -xAmount;
+            if (cameraPosition.X > xAmount)
+                cameraPosition.X = xAmount;
 
             // Cap Y
-            if (cameraPosition.Y < Min.Y * 2)
-                cameraPosition.Y = Min.Y * 2;
-            if (cameraPosition.Y > Max.Y * 2)
-                cameraPosition.Y = Max.Y * 2;
+            float yAmount = (Max.Y - Min.Y) * 4;
+            if (cameraPosition.Y < -yAmount)
+                cameraPosition.Y = -yAmount;
+            if (cameraPosition.Y > yAmount)
+                cameraPosition.Y = yAmount;
 
             // Cap Z
             if (cameraPosition.Z < nearPlaneDistance)

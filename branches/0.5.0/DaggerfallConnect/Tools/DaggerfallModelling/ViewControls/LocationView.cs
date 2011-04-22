@@ -79,7 +79,6 @@ namespace DaggerfallModelling.ViewControls
         BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
 
         // Ray testing
-        Ray mouseRay;
         int mouseOverModel = -1;
         RenderableBoundingBox renderableBounds;
 
@@ -309,7 +308,7 @@ namespace DaggerfallModelling.ViewControls
                 // Is only performed when not scrolling.
                 if (cameraVelocity == Vector3.Zero)
                 {
-                    distance = mouseRay.Intersects(blockBox);
+                    distance = host.MouseRay.Intersects(blockBox);
                     if (distance != null)
                         mouseInBlock = true;
                 }
@@ -335,7 +334,7 @@ namespace DaggerfallModelling.ViewControls
                     {
                         // TODO: Place intersected models in sorted array and test against face data
                         
-                        distance = mouseRay.Intersects(modelBox);
+                        distance = host.MouseRay.Intersects(modelBox);
                         if (distance != null)
                         {
                             if (distance < minDistance)
@@ -406,7 +405,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseMove(MouseEventArgs e)
         {
             // Update mouse ray
-            UpdateMouseRay(e.X, e.Y);
+            host.UpdateMouseRay(e.X, e.Y, ActiveCamera.View, ActiveCamera.Projection);
 
             // Top down camera movement
             if (CameraMode == CameraModes.TopDown)
@@ -1153,32 +1152,6 @@ namespace DaggerfallModelling.ViewControls
                         break;
                 }
             }
-        }
-
-        #endregion
-
-        #region Mouse Picking Methods
-
-        /// <summary>
-        /// Update mouse ray for picking.
-        /// </summary>
-        private void UpdateMouseRay(int x, int y)
-        {
-            // Get appropriate view matrix
-            Matrix view = ActiveCamera.View;
-            Matrix projection = ActiveCamera.Projection;
-
-            // Unproject vectors into view area
-            Viewport vp = host.GraphicsDevice.Viewport;
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, world);
-            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projection, view, world);
-
-            // Create ray
-            Vector3 direction = far - near;
-            direction.Normalize();
-            mouseRay.Position = near;
-            mouseRay.Direction = direction;
         }
 
         #endregion
