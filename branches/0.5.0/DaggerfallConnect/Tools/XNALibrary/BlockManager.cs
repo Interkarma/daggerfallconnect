@@ -301,15 +301,15 @@ namespace XNALibrary
                             // Get rotation matrix for each axis
                             degreesX = obj.Resources.ModelResource.XRotation / rotationDivisor;
                             degreesY = obj.Resources.ModelResource.YRotation / rotationDivisor;
-                            degreesZ = obj.Resources.ModelResource.ZRotation / rotationDivisor;
+                            degreesZ = -obj.Resources.ModelResource.ZRotation / rotationDivisor;
                             rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
                             rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
                             rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
 
                             // Create final rotation matrix
                             rotation = Matrix.Identity;
-                            rotation *= rotationX;
                             rotation *= rotationY;
+                            rotation *= rotationX;
                             rotation *= rotationZ;
 
                             // Create stub of model info. This is initialised to an arbitrary size.

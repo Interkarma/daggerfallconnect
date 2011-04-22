@@ -314,37 +314,55 @@ namespace DaggerfallModelling.ViewControls
                 }
 
                 // Draw each model in this block
-                foreach (var modelItem in layoutItem.Value.block.Models)
+                for (int modelItem = 0; modelItem < layoutItem.Value.block.Models.Count; modelItem++)
                 {
                     // Create transformed model bounding box
-                    modelEffect.World = modelItem.Matrix * world;
+                    modelEffect.World = layoutItem.Value.block.Models[modelItem].Matrix * world;
                     BoundingBox modelBox = new BoundingBox(
-                            Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
-                            Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
+                            Vector3.Transform(layoutItem.Value.block.Models[modelItem].BoundingBox.Min, modelEffect.World),
+                            Vector3.Transform(layoutItem.Value.block.Models[modelItem].BoundingBox.Max, modelEffect.World));
 
                     // Test model bounding box against frustum
                     //if (!viewFrustum.Intersects(modelBox))
                     //    continue;
 
                     // Draw the model
-                    DrawSingleModel((int)modelItem.ModelId);
+                    DrawSingleModel((int)layoutItem.Value.block.Models[modelItem].ModelId);
 
-                    // Test ray against model if ray also in this block
+                    // Test for model intersection if mouse inside this block
                     if (mouseInBlock)
                     {
-                        // TODO: Place intersected models in sorted array and test against face data
-                        
-                        distance = host.MouseRay.Intersects(modelBox);
-                        if (distance != null)
-                        {
-                            if (distance < minDistance)
-                            {
-                                minDistance = distance.Value;
-                                closestModelInfo = modelItem;
-                                closestModelMatrix = modelEffect.World;
-                            }
-                        }
+                        // Test model intersection
+                        ModelManager.Model model = host.ModelManager.GetModel((int)layoutItem.Value.block.Models[modelItem].ModelId);
+                        bool insideBoundingBox;
+                        int subMeshResult, planeResult;
+                        Intersection.RayIntersectsDFMesh(
+                            host.MouseRay,
+                            modelEffect.World,
+                            ref model,
+                            out insideBoundingBox,
+                            out subMeshResult,
+                            out planeResult);
+
+                        // TODO: Handle intersection
                     }
+
+                    //// Test ray against model if ray also in this block
+                    //if (mouseInBlock)
+                    //{
+                    //    // TODO: Place intersected models in sorted array and test against face data
+
+                    //    distance = host.MouseRay.Intersects(modelBox);
+                    //    if (distance != null)
+                    //    {
+                    //        if (distance < minDistance)
+                    //        {
+                    //            minDistance = distance.Value;
+                    //            closestModelInfo = modelItem;
+                    //            closestModelMatrix = modelEffect.World;
+                    //        }
+                    //    }
+                    //}
                 }
 
                 // Optionally draw gound plane for this item
@@ -364,15 +382,15 @@ namespace DaggerfallModelling.ViewControls
             #endregion
 
             #region MouseOverModel
-            if (closestModelInfo != null && host.MouseInClientArea)
-            {
-                // Store mouse over closest model
-                mouseOverModel = (int)closestModelInfo.Value.ModelId;
-            }
-            else
-            {
-                mouseOverModel = -1;
-            }
+            //if (closestModelInfo != null && host.MouseInClientArea)
+            //{
+            //    // Store mouse over closest model
+            //    mouseOverModel = (int)closestModelInfo.Value.ModelId;
+            //}
+            //else
+            //{
+            //    mouseOverModel = -1;
+            //}
             #endregion
 
             #region Bounding Box
