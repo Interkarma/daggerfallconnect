@@ -36,36 +36,37 @@ namespace XNALibrary
         /// <param name="ray">Ray.</param>
         /// <param name="modelTransform">World space transform.</param>
         /// <param name="model">ModelManager.Model.</param>
-        /// <param name="insideBoundingBox">True if ray intersects bounding box.</param>
+        /// <param name="insideBoundingSphere">True if ray intersects bounding sphere.</param>
         /// <param name="subMeshResult">Index of DFSubMesh intersected by ray, or -1 on miss.</param>
         /// <param name="planeResult">Index of DFPlane interested by ray, or -1 on miss.</param>
-        public static void RayIntersectsDFMesh(Ray ray,
+        /// <returns>Distance to intersection.</returns>
+        public static float? RayIntersectsDFMesh(Ray ray,
                                             Matrix modelTransform,
                                             ref ModelManager.Model model,
-                                            out bool insideBoundingBox,
+                                            out bool insideBoundingSphere,
                                             out int subMeshResult,
                                             out int planeResult)
         {
             // Reset results
-            insideBoundingBox = false;
+            insideBoundingSphere = false;
             subMeshResult = -1;
             planeResult = -1;
 
             // Transform ray back to object space
             Matrix inverseTransform = Matrix.Invert(modelTransform);
             ray.Position = Vector3.Transform(ray.Position, inverseTransform);
-            ray.Direction = Vector3.Transform(ray.Direction, inverseTransform);
+            ray.Direction = Vector3.TransformNormal(ray.Direction, inverseTransform);
 
-            // Test against bounding box
+            // Test against bounding sphere
             if (ray.Intersects(model.BoundingBox) == null)
             {
                 // No intersection possible
-                return;
+                return null;
             }
             else
             {
-                // Ray is inside bounding box
-                insideBoundingBox = true;
+                // Ray is inside bounding sphere
+                insideBoundingSphere = true;
             }
 
             // Test each submesh
@@ -122,10 +123,6 @@ namespace XNALibrary
                                 closestIntersection = intersection;
                                 subMeshResult = subMeshIndex;
                                 planeResult = planeIndex;
-
-                                // Break out of this plane to continue searching
-                                // for a closer match.
-                                //break;
                             }
                         }
                     }
@@ -137,6 +134,8 @@ namespace XNALibrary
                 // Increment subMeshIndex
                 subMeshIndex++;
             }
+
+            return closestIntersection;
         }
 
         /// <summary>

@@ -44,12 +44,12 @@ namespace DaggerfallModelling.ViewControls
         private int dungeonLayoutCount = 0;
 
         // Location
-        string currentBlockName = string.Empty;
-        int currentLatitude = -1;
-        int currentLongitude = -1;
+        private string currentBlockName = string.Empty;
+        private int currentLatitude = -1;
+        private int currentLongitude = -1;
 
         // Status message
-        string currentStatus = string.Empty;
+        private string currentStatus = string.Empty;
 
         // Appearance
         private Color backgroundColor = Color.LightGray;
@@ -75,13 +75,15 @@ namespace DaggerfallModelling.ViewControls
         private float wheelStep = 100.0f;
 
         // Batching options
-        BatchModes batchMode = BatchModes.SingleExteriorBlock;
-        BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
+        private BatchModes batchMode = BatchModes.SingleExteriorBlock;
+        private BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
 
         // Ray testing
-        uint? mouseOverModel = null;
-        RenderableBoundingBox renderableBoundingBox;
-        RenderableBoundingSphere renderableBoundingSphere;
+        private const int defaultIntersectionCapacity = 35;
+        private uint? mouseOverModel = null;
+        private List<ModelIntersection> modelIntersections;
+        private RenderableBoundingBox renderableBoundingBox;
+        private RenderableBoundingSphere renderableBoundingSphere;
 
         #endregion
 
@@ -133,6 +135,64 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region SubClasses
+
+        /// <summary>
+        /// Describes a model that has intersected with a ray.
+        ///  Used when sorting intersections for face-accurate picking.
+        /// </summary>
+        private class ModelIntersection : IComparable<ModelIntersection>
+        {
+            // Variables
+            private float? distance;
+            private uint? modelId;
+            private Matrix matrix;
+
+            // Properties
+            public float? Distance
+            {
+                get { return distance; }
+                set { distance = value; }
+            }
+            public uint? ModelID
+            {
+                get { return modelId; }
+                set { modelId = value; }
+            }
+            public Matrix Matrix
+            {
+                get { return matrix; }
+                set { matrix = value; }
+            }
+
+            // Constructors
+            public ModelIntersection()
+            {
+                this.distance = null;
+                this.modelId = null;
+                this.matrix = Matrix.Identity;
+            }
+            public ModelIntersection(float? distance, uint? modelId, Matrix matrix)
+            {
+                this.distance = distance;
+                this.modelId = modelId;
+                this.matrix = matrix;
+            }
+
+            // IComparable
+            public int CompareTo(ModelIntersection other)
+            {
+                int returnValue = -1;
+                if (other.Distance < this.Distance)
+                    returnValue = 1;
+                else if (other.Distance == this.Distance)
+                    returnValue = 0;
+                return returnValue;
+            }
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -166,6 +226,9 @@ namespace DaggerfallModelling.ViewControls
             CameraMode = CameraModes.TopDown;
             renderableBoundingBox = new RenderableBoundingBox(host.GraphicsDevice);
             renderableBoundingSphere = new RenderableBoundingSphere(host.GraphicsDevice);
+
+            // Create model intersections list
+            modelIntersections = new List<ModelIntersection>();
         }
 
         #endregion
@@ -213,172 +276,11 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Draw()
         {
-            //
-            // Update pipeline
-            //
-            // Clear display.
-            // Get layout.
-            //   Update bounding box if needed.
-            //   Load content if needed.
-            // Step through layout.
-            //    Draw model.
-            //       Set render states.
-            //       Set vertex declaration
-            //       Set anisotropy.
-            //       DrawUserIndexPrimitives.
-            //    Check mouse ray in block bounds.
-            //       Check mouse ray in model bounds.
-            //       Store which model is intersected.
-            //     Draw ground plane for exterior blocks.
-            // Draw bounding box of intersected model.
-            //
-
+            // Execute pipeline
             host.GraphicsDevice.Clear(backgroundColor);
             SetRenderStates();
             DrawScene();
-
-            //#region Setup
-            //// Init variables used for tracking mouse ray and drawing bounding box
-            //float? distance = null;
-            //float minDistance = float.MaxValue;
-            //bool mouseInBlock = false;
-            //BlockManager.ModelInfo? closestModelInfo = null;
-            //Matrix closestModelMatrix = Matrix.Identity;
-            //#endregion
-
-            //#region Step Layout
-            //// Draw visible blocks
-            //Matrix world;
-            //foreach (var layoutItem in layout)
-            //{
-            //    // Create transformed block bounding box
-            //    world = Matrix.CreateTranslation(layout[layoutItem.Key].position);
-            //    BoundingBox blockBox = new BoundingBox(
-            //        Vector3.Transform(layoutItem.Value.block.BoundingBox.Min, world),
-            //        Vector3.Transform(layoutItem.Value.block.BoundingBox.Max, world));
-
-            //    // Test block bounding box against frustum
-            //    if (!viewFrustum.Intersects(blockBox))
-            //        continue;
-
-            //    // Late-load resources if not present
-            //    if (!resources[layoutItem.Key])
-            //        resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
-
-            //    // Test ray against block bounds.
-            //    // Is only performed when not scrolling.
-            //    if (cameraVelocity == Vector3.Zero)
-            //    {
-            //        distance = host.MouseRay.Intersects(blockBox);
-            //        if (distance != null)
-            //            mouseInBlock = true;
-            //    }
-
-            //    // Draw each model in this block
-            //    foreach (var modelItem in layoutItem.Value.block.Models)
-            //    {
-            //        // Create transformed model bounding box
-            //        modelEffect.World = modelItem.Matrix * world;
-            //        BoundingBox modelBox = new BoundingBox(
-            //                Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
-            //                Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
-
-            //        // Test model bounding box against frustum
-            //        //if (!viewFrustum.Intersects(modelBox))
-            //        //    continue;
-
-            //        // Test ray against model if ray also in this block
-            //        if (mouseInBlock)
-            //        {
-            //            distance = host.MouseRay.Intersects(modelBox);
-            //            if (distance != null)
-            //            {
-            //                ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
-
-            //                // Test plane intersections for this model
-            //                bool insideBoundingBox;
-            //                int subMeshResult, planeResult;
-            //                Intersection.RayIntersectsDFMesh(
-            //                    host.MouseRay,
-            //                    modelEffect.World,
-            //                    ref model,
-            //                    out insideBoundingBox,
-            //                    out subMeshResult,
-            //                    out planeResult);
-
-            //                //// Test plane intersections for this model
-            //                //ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
-            //                //bool insideBoundingBox;
-            //                //int subMeshResult, planeResult;
-            //                //Intersection.RayIntersectsDFMesh(
-            //                //    host.MouseRay,
-            //                //    modelEffect.World,
-            //                //    ref model,
-            //                //    out insideBoundingBox,
-            //                //    out subMeshResult,
-            //                //    out planeResult);
-
-            //                //// Store this model if we intersect a plane.
-            //                //// This means mouse is over this model.
-            //                //if (subMeshResult != -1 && planeResult != -1)
-            //                //{
-            //                //    minDistance = distance.Value;
-            //                //    closestModelInfo = modelItem;
-            //                //    closestModelMatrix = modelEffect.World;
-            //                //}
-
-            //                //if (distance < minDistance)
-            //                //{
-            //                //    minDistance = distance.Value;
-            //                //    closestModelInfo = modelItem;
-            //                //    closestModelMatrix = modelEffect.World;
-            //                //}
-            //            }
-            //        }
-
-            //        // Draw the model
-            //        DrawSingleModel((int)modelItem.ModelId);
-            //    }
-
-            //    // Optionally draw gound plane for this item
-            //    if (batchMode == BatchModes.SingleExteriorBlock ||
-            //        batchMode == BatchModes.FullExterior &&
-            //        BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
-            //    {
-            //        // Used to translate ground down a few units to reduce
-            //        // z-fighting with other ground-aligned planes
-            //        Matrix ground = Matrix.CreateTranslation(0, -7, 0);
-
-            //        // Draw ground
-            //        modelEffect.World = world * ground;
-            //        DrawGroundPlane(layoutItem.Key);
-            //    }
-            //}
-            //#endregion
-
-            //#region MouseOverModel
-            //if (closestModelInfo != null && host.MouseInClientArea)
-            //{
-            //    // Store mouse over closest model
-            //    mouseOverModel = (int)closestModelInfo.Value.ModelId;
-            //}
-            //else
-            //{
-            //    mouseOverModel = -1;
-            //}
-            //#endregion
-
-            //#region Bounding Box
-            //// Draw bounding box if mouse over model
-            //if (closestModelInfo != null && host.MouseInClientArea)
-            //{
-            //    renderableBounds.Draw(
-            //        closestModelInfo.Value.BoundingBox,
-            //        view,
-            //        projection,
-            //        closestModelMatrix);
-            //}
-            //#endregion
+            MouseModelIntersection();
         }
 
         /// <summary>
@@ -546,7 +448,7 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
-        #region Rendering Methods
+        #region Rendering Pipeline
 
         /// <summary>
         /// Sets render states prior to drawing.
@@ -597,7 +499,13 @@ namespace DaggerfallModelling.ViewControls
             // Update view frustum
             viewFrustum.Matrix = ActiveCamera.BoundingFrustumMatrix;
 
+            // Reset model intersections list
+            modelIntersections.Clear();
+            modelIntersections.Capacity = defaultIntersectionCapacity;
+
             // Step through block layout
+            float? intersectDistance;
+            bool mouseInBlock = false;
             Matrix blockTransform;
             BoundingBox blockBounds;
             for (int i = 0; i < count; i++)
@@ -615,8 +523,19 @@ namespace DaggerfallModelling.ViewControls
                 if (!viewFrustum.Intersects(blockBounds))
                     continue;
 
+                // Test mouse ray against block bounds.
+                // Only performed when not auto-scrolling.
+                if (cameraVelocity == Vector3.Zero)
+                {
+                    intersectDistance = host.MouseRay.Intersects(blockBounds);
+                    if (intersectDistance != null)
+                        mouseInBlock = true;
+                    else
+                        mouseInBlock = false;
+                }
+
                 // Draw block
-                DrawBlock(ref layout[i].block, ref blockTransform);
+                DrawBlock(ref layout[i].block, ref blockTransform, mouseInBlock);
             }
         }
 
@@ -624,9 +543,13 @@ namespace DaggerfallModelling.ViewControls
         /// Draw a single block.
         /// </summary>
         /// <param name="block">BlockManager.Block</param>
-        private void DrawBlock(ref BlockManager.Block block, ref Matrix blockTransform)
+        /// <param name="blockTransform">Block transform.</param>
+        /// <param name="mouseInBlock">True if mouse ray in block bounds.</param>
+        private void DrawBlock(ref BlockManager.Block block, ref Matrix blockTransform, bool mouseInBlock)
         {
             // Draw each model in this block
+            int modelIndex = 0;
+            float? intersectDistance;
             Matrix modelTransform;
             BoundingSphere modelBounds;
             foreach (var modelInfo in block.Models)
@@ -640,9 +563,27 @@ namespace DaggerfallModelling.ViewControls
                 if (!viewFrustum.Intersects(modelBounds))
                     continue;
 
+                // Test mouse ray against model bounds
+                if (mouseInBlock)
+                {
+                    intersectDistance = host.MouseRay.Intersects(modelBounds);
+                    if (intersectDistance != null)
+                    {
+                        // Add to intersection list
+                        ModelIntersection mi = new ModelIntersection(
+                            intersectDistance,
+                            modelInfo.ModelId,
+                            modelTransform);
+                        modelIntersections.Add(mi);
+                    }
+                }
+
                 // Draw the model
                 ModelManager.Model model = host.ModelManager.GetModel(modelInfo.ModelId);
                 DrawModel(ref model, ref modelTransform);
+
+                // Increment index
+                modelIndex++;
             }
 
             // Optionally draw gound plane for this block
@@ -667,6 +608,11 @@ namespace DaggerfallModelling.ViewControls
             //    blockTransform);
         }
 
+        /// <summary>
+        /// Draw a single model.
+        /// </summary>
+        /// <param name="model">ModelManager.Model.</param>
+        /// <param name="modelTransform">Model transform.</param>
         private void DrawModel(ref ModelManager.Model model, ref Matrix modelTransform)
         {
             // Set world matrix
@@ -699,7 +645,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // TEST: Draw model bounding sphere
-            //renderableBoundingSphere.Color = Color.Red;
+            //renderableBoundingSphere.Color = Color.White;
             //renderableBoundingSphere.Draw(
             //    model.BoundingSphere,
             //    modelEffect.View,
@@ -707,6 +653,11 @@ namespace DaggerfallModelling.ViewControls
             //    modelTransform);
         }
 
+        /// <summary>
+        /// Draw a ground plane.
+        /// </summary>
+        /// <param name="block">BlockManager.Block.</param>
+        /// <param name="groundTransform">Ground transform.</param>
         private void DrawGroundPlane(ref BlockManager.Block block, ref Matrix groundTransform)
         {
             // Set world matrix
@@ -729,6 +680,63 @@ namespace DaggerfallModelling.ViewControls
 
             modelEffect.CurrentTechnique.Passes[0].End();
             modelEffect.End();
+        }
+
+        /// <summary>
+        /// Tests mouse ray against model intersections to
+        ///  determine actual intersection at face level.
+        /// </summary>
+        private void MouseModelIntersection()
+        {
+            // Nothing to do if no intersections
+            if (modelIntersections.Count == 0)
+                return;
+
+            // Sort intersections by distance
+            modelIntersections.Sort();
+
+            // Iterate intersections
+            float? intersection = null;
+            float? closestIntersection = null;
+            ModelIntersection closestModelIntersection = null;
+            foreach (var mi in modelIntersections)
+            {
+                // Get model
+                ModelManager.Model model = host.ModelManager.GetModel(mi.ModelID.Value);
+
+                // Test model
+                bool insideBoundingSphere;
+                int subMeshResult, planeResult;
+                intersection = Intersection.RayIntersectsDFMesh(
+                    host.MouseRay,
+                    mi.Matrix,
+                    ref model,
+                    out insideBoundingSphere,
+                    out subMeshResult,
+                    out planeResult);
+
+                if (intersection != null)
+                {
+                    if (closestIntersection == null || intersection < closestIntersection)
+                    {
+                        closestIntersection = intersection;
+                        closestModelIntersection = mi;
+                    }
+                }
+            }
+
+            // Draw bounding sphere on closest model
+            if (closestModelIntersection != null)
+            {
+                // Draw bounding box to see what has been intersected
+                ModelManager.Model model = host.ModelManager.GetModel(closestModelIntersection.ModelID.Value);
+                renderableBoundingSphere.Color = Color.White;
+                renderableBoundingSphere.Draw(
+                    model.BoundingSphere,
+                    ActiveCamera.View,
+                    ActiveCamera.Projection,
+                    closestModelIntersection.Matrix);
+            }
         }
 
         #endregion

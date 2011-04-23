@@ -298,13 +298,13 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.World = modelRotation * modelTranslation;
 
             // Test for intersection
-            bool insideBoundingBox;
+            bool insideBoundingSphere;
             int subMeshResult, planeResult;
             Intersection.RayIntersectsDFMesh(
                 host.MouseRay,
                 modelEffect.World,
                 ref currentModel,
-                out insideBoundingBox,
+                out insideBoundingSphere,
                 out subMeshResult,
                 out planeResult);
 
@@ -324,8 +324,8 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.End();
             }
 
-            // Only do this when mouse inside bounding box
-            if (insideBoundingBox)
+            // Only do this when mouse inside bounding sphere
+            if (insideBoundingSphere)
             {
                 //renderableBounds.Draw(currentModel.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
                 DrawNativeFace(Color.White, subMeshResult, planeResult, modelEffect.World);
