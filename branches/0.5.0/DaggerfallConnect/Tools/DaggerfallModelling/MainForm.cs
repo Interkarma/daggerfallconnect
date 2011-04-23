@@ -187,7 +187,7 @@ namespace DaggerfallModelling
                 switch ((string)node.Tag)
                 {
                     case ModelTag:
-                        ContentViewer.ShowModelView(int.Parse(node.Text), DFLocation.ClimateType.None);
+                        ContentViewer.ShowModelView(uint.Parse(node.Text), DFLocation.ClimateType.None);
                         break;
                     case BlockTag:
                         // Show view
@@ -676,7 +676,7 @@ namespace DaggerfallModelling
         private void ShowModelsFound(ref TreeNode node)
         {
             // Create new filtered model array
-            int[] modelsArray = new int[modelsFound.Count];
+            uint[] modelsArray = new uint[modelsFound.Count];
 
             int index = 0;
             foreach (var model in modelsFound)
@@ -690,7 +690,7 @@ namespace DaggerfallModelling
                 modelNode.Tag = ModelTag;
 
                 // Populate filtered models
-                modelsArray[index++] = (int)model.Value;
+                modelsArray[index++] = model.Value;
             }
 
             // Assign filtered array to content view
@@ -886,8 +886,8 @@ namespace DaggerfallModelling
                 return;
 
             // Set view.
-            // Model id of -1 means just display what is already loaded.
-            ContentViewer.ShowModelView(-1, ContentViewer.LocationClimate);
+            // Model id of null means just display what is already loaded.
+            ContentViewer.ShowModelView(null, ContentViewer.LocationClimate);
         }
 
         /// <summary>

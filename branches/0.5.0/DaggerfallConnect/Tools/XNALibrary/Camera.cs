@@ -160,6 +160,15 @@ namespace XNALibrary
             set { farPlaneDistance = value; }
         }
 
+        /// <summary>
+        /// Gets current view*projection matrix for a
+        ///  BoundingFrustum.
+        /// </summary>
+        public Matrix BoundingFrustumMatrix
+        {
+            get { return viewMatrix * projectionMatrix; }
+        }
+
         #endregion
 
         #region Constructors
@@ -268,6 +277,7 @@ namespace XNALibrary
                 cameraYaw -= 360;
             else if (cameraYaw < 0)
                 cameraYaw += 360;
+
             // Limit pitch
             if (cameraPitch > 89)
                 cameraPitch = 89;

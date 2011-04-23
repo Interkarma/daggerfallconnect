@@ -33,7 +33,7 @@ namespace XNALibrary
         string arena2Path = string.Empty;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
-        private Dictionary<int, Model> modelDict;
+        private Dictionary<uint, Model> modelDict;
 
         #endregion
 
@@ -49,6 +49,9 @@ namespace XNALibrary
 
             /// <summary>Axis-aligned bounding box of mesh data.</summary>
             public BoundingBox BoundingBox;
+
+            /// <summary>Bounding sphere containing mesh data.</summary>
+            public BoundingSphere BoundingSphere;
 
             /// <summary>Vertex array containing position, normal, and texture coordinates.</summary>
             public VertexPositionNormalTexture[] Vertices;
@@ -108,7 +111,7 @@ namespace XNALibrary
             graphicsDevice = device;
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             this.arena2Path = arena2Path;
-            modelDict = new Dictionary<int, Model>();
+            modelDict = new Dictionary<uint, Model>();
         }
 
         #endregion
@@ -120,7 +123,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="key">ID of mesh.</param>
         /// <returns>True if successful.</returns>
-        public bool LoadModel(int key)
+        public bool LoadModel(uint key)
         {
             // Return if already loaded
             if (modelDict.ContainsKey(key))
@@ -144,7 +147,7 @@ namespace XNALibrary
         /// <param name="key">ID of mesh.</param>
         /// <param name="modelOut">Model out.</param>
         /// <returns>True if successful.</returns>
-        public bool LoadModel(int key, out Model modelOut)
+        public bool LoadModel(uint key, out Model modelOut)
         {
             // Return if already loaded
             if (modelDict.ContainsKey(key))
@@ -170,7 +173,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
-        public Model GetModel(int key)
+        public Model GetModel(uint key)
         {
             // Return model if already loaded
             if (modelDict.ContainsKey(key))
@@ -191,7 +194,7 @@ namespace XNALibrary
         /// <param name="key">ID of model.</param>
         /// <param name="addDictionary">True to store in ModelManager's dictionary. False to just return model.</param>
         /// <returns></returns>
-        public Model GetModel(int key, bool addDictionary)
+        public Model GetModel(uint key, bool addDictionary)
         {
             // Work as normal
             if (addDictionary)
@@ -212,7 +215,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <param name="model">Model object.</param>
-        public void SetModel(int key, ref Model model)
+        public void SetModel(uint key, ref Model model)
         {
             if (modelDict.ContainsKey(key))
                 modelDict[key] = model;
@@ -224,7 +227,7 @@ namespace XNALibrary
         /// Removes model.
         /// </summary>
         /// <param name="key">ID of model.</param>
-        public void RemoveModel(int key)
+        public void RemoveModel(uint key)
         {
             if (modelDict.ContainsKey(key))
                 modelDict.Remove(key);
@@ -351,6 +354,19 @@ namespace XNALibrary
 
             // Create bounding box
             model.BoundingBox = new BoundingBox(min, max);
+
+            // Find model centre
+            Vector3 modelCenter;
+            modelCenter.X = min.X + (max.X - min.X) / 2;
+            modelCenter.Y = min.Y + (max.Y - min.Y) / 2;
+            modelCenter.Z = min.Z + (max.Z - min.Z) / 2;
+
+            // Find model radius
+            float modelRadius;
+            modelRadius = Vector3.Distance(min, max) / 2;
+
+            // Create bounding sphere
+            model.BoundingSphere = new BoundingSphere(modelCenter, modelRadius);
         }
 
         /// <summary>

@@ -50,6 +50,9 @@ namespace XNALibrary
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
 
+            /// <summary>Flag set when block needs an update.</summary>
+            public bool UpdateRequired;
+
             /// <summary>Bounding volume of this block in local space.</summary>
             public BoundingBox BoundingBox;
 
@@ -73,6 +76,9 @@ namespace XNALibrary
 
             /// <summary>Bounding volume of this model in local space.</summary>
             public BoundingBox BoundingBox;
+
+            /// <summary>Bounding sphere containing mesh data.</summary>
+            public BoundingSphere BoundingSphere;
         }
 
         #endregion
@@ -186,6 +192,7 @@ namespace XNALibrary
             // Create new local block instance
             Block block = new Block();
             block.DFBlock = dfBlock;
+            block.UpdateRequired = true;
 
             // Build a model from this block
             switch (block.DFBlock.Type)
@@ -212,8 +219,8 @@ namespace XNALibrary
             // Create bounding box for this block.
             // All outdoor blocks are initialised to 4096x512x4096.
             // Blocks are laid out on a 2D grid in X-Z space of 4096x4096 per block,
-            // so only height is arbitrary. You should adjust block height later using
-            // max model height while loading resources.
+            // so only height is arbitrary. You should adjust bounding box later
+            // to properly contain block.
             Vector3 blockMin = new Vector3(0, 0, -4096);
             Vector3 blockMax = new Vector3(4096, 512, 0);
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
@@ -247,12 +254,9 @@ namespace XNALibrary
                     objMatrix *= rotation;
                     objMatrix *= translation;
 
-                    // Create stub of model info. This is initialised to an arbitrary size.
-                    // You will need to adjust dimensions later once resources are loaded.
-                    // The stored matrix can be used to transform model and bounding box.
+                    // Create stub of model info
                     ModelInfo modelInfo = new ModelInfo();
                     modelInfo.ModelId = obj.ModelIdNum;
-                    modelInfo.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
                     block.Models.Add(modelInfo);
                 }
@@ -268,8 +272,8 @@ namespace XNALibrary
             // Create bounding box for this block.
             // All dungeon blocks are initialised to 2048x2048x2048.
             // Blocks are laid out on a 2D grid in X-Z space of 2048x2048 per block,
-            // so only height is arbitrary. You should adjust block height later using
-            // max model height while loading resources.
+            // so only height is arbitrary. You should adjust bounding box later
+            // to properly contain block.
             Vector3 blockMin = new Vector3(0, 0, -2048);
             Vector3 blockMax = new Vector3(2048, 2048, 0);
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
@@ -312,12 +316,9 @@ namespace XNALibrary
                             rotation *= rotationX;
                             rotation *= rotationZ;
 
-                            // Create stub of model info. This is initialised to an arbitrary size.
-                            // You will need to adjust dimensions later once resources are loaded.
-                            // The stored matrix can be used to transform model and bounding box.
+                            // Create stub of model info
                             ModelInfo modelInfo = new ModelInfo();
                             modelInfo.ModelId = modelId;
-                            modelInfo.BoundingBox = new BoundingBox(new Vector3(0, 0, 0), new Vector3(256, 256, 256));
                             modelInfo.Matrix = rotation * translation;
                             block.Models.Add(modelInfo);
                             break;

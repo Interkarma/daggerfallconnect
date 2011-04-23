@@ -78,6 +78,7 @@
     <Compile Include="ModelManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderableBoundingBox.cs" />
+    <Compile Include="RenderableBoundingSphere.cs" />
     <Compile Include="TextureManager.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -51,7 +51,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets BoundingBox colour.
         /// </summary>
-        Color Color
+        public Color Color
         {
             get { return boundingBoxColor; }
             set { boundingBoxColor = value; }
@@ -113,7 +113,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="boundingBox">New bounding box to draw.</param>
         /// <param name="viewMatrix">View matrix.</param>
-        /// <param name="projectionMatrix">Projections matrix.</param>
+        /// <param name="projectionMatrix">Projection matrix.</param>
         /// <param name="worldMatrix">World Matrix.</param>
         public void Draw(BoundingBox boundingBox, Matrix viewMatrix, Matrix projectionMatrix, Matrix worldMatrix)
         {

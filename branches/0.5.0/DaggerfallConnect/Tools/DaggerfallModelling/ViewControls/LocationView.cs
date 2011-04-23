@@ -38,10 +38,10 @@ namespace DaggerfallModelling.ViewControls
         // Layout
         const float rmbBlockSide = 4096.0f;
         const float rdbBlockSide = 2048.0f;
-        private Dictionary<int, BlockPosition> exteriorLayout = new Dictionary<int,BlockPosition>();
-        private Dictionary<int, bool> exteriorResources = new Dictionary<int, bool>();
-        private Dictionary<int, BlockPosition> dungeonLayout = new Dictionary<int, BlockPosition>();
-        private Dictionary<int, bool> dungeonResources = new Dictionary<int, bool>();
+        private BlockPosition[] exteriorLayout = new BlockPosition[64];
+        private BlockPosition[] dungeonLayout = new BlockPosition[32];
+        private int exteriorLayoutCount = 0;
+        private int dungeonLayoutCount = 0;
 
         // Location
         string currentBlockName = string.Empty;
@@ -79,8 +79,9 @@ namespace DaggerfallModelling.ViewControls
         BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
 
         // Ray testing
-        int mouseOverModel = -1;
-        RenderableBoundingBox renderableBounds;
+        uint? mouseOverModel = null;
+        RenderableBoundingBox renderableBoundingBox;
+        RenderableBoundingSphere renderableBoundingSphere;
 
         #endregion
 
@@ -163,7 +164,8 @@ namespace DaggerfallModelling.ViewControls
         {
             // Start in normal camera mode
             CameraMode = CameraModes.TopDown;
-            renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);
+            renderableBoundingBox = new RenderableBoundingBox(host.GraphicsDevice);
+            renderableBoundingSphere = new RenderableBoundingSphere(host.GraphicsDevice);
         }
 
         #endregion
@@ -211,177 +213,150 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Draw()
         {
-            // Clear display
+            //
+            // Update pipeline
+            //
+            // Clear display.
+            // Get layout.
+            //   Update bounding box if needed.
+            //   Load content if needed.
+            // Step through layout.
+            //    Draw model.
+            //       Set render states.
+            //       Set vertex declaration
+            //       Set anisotropy.
+            //       DrawUserIndexPrimitives.
+            //    Check mouse ray in block bounds.
+            //       Check mouse ray in model bounds.
+            //       Store which model is intersected.
+            //     Draw ground plane for exterior blocks.
+            // Draw bounding box of intersected model.
+            //
+
             host.GraphicsDevice.Clear(backgroundColor);
+            SetRenderStates();
+            DrawScene();
 
-            #region Get Layout
-            // Get appropriate layout data
-            Dictionary<int, BlockPosition> layout;
-            Dictionary<int, bool> resources;
-            switch (batchMode)
-            {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
-                    layout = exteriorLayout;
-                    resources = exteriorResources;
-                    break;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
-                    layout = dungeonLayout;
-                    resources = dungeonResources;
-                    break;
-                default:
-                    return;
-            }
+            //#region Setup
+            //// Init variables used for tracking mouse ray and drawing bounding box
+            //float? distance = null;
+            //float minDistance = float.MaxValue;
+            //bool mouseInBlock = false;
+            //BlockManager.ModelInfo? closestModelInfo = null;
+            //Matrix closestModelMatrix = Matrix.Identity;
+            //#endregion
 
-            // Nothing to do if layout is empty
-            if (layout.Count == 0)
-                return;
-            #endregion
+            //#region Step Layout
+            //// Draw visible blocks
+            //Matrix world;
+            //foreach (var layoutItem in layout)
+            //{
+            //    // Create transformed block bounding box
+            //    world = Matrix.CreateTranslation(layout[layoutItem.Key].position);
+            //    BoundingBox blockBox = new BoundingBox(
+            //        Vector3.Transform(layoutItem.Value.block.BoundingBox.Min, world),
+            //        Vector3.Transform(layoutItem.Value.block.BoundingBox.Max, world));
 
-            #region Set Render States
-            // Set render states
-            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
-            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
-            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
-            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            //    // Test block bounding box against frustum
+            //    if (!viewFrustum.Intersects(blockBox))
+            //        continue;
 
-            // Set anisotropy based on camera mode
-            if (cameraMode == CameraModes.Free)
-            {
-                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
-                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
-                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
-            }
-            else
-            {
-                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
-            }
-            
-            #endregion
+            //    // Late-load resources if not present
+            //    if (!resources[layoutItem.Key])
+            //        resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
 
-            #region Setup
-            // Set vertex declaration
-            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+            //    // Test ray against block bounds.
+            //    // Is only performed when not scrolling.
+            //    if (cameraVelocity == Vector3.Zero)
+            //    {
+            //        distance = host.MouseRay.Intersects(blockBox);
+            //        if (distance != null)
+            //            mouseInBlock = true;
+            //    }
 
-            // Get view and projection matrices based on camera mode
-            Matrix view = ActiveCamera.View;
-            Matrix projection = ActiveCamera.Projection;
+            //    // Draw each model in this block
+            //    foreach (var modelItem in layoutItem.Value.block.Models)
+            //    {
+            //        // Create transformed model bounding box
+            //        modelEffect.World = modelItem.Matrix * world;
+            //        BoundingBox modelBox = new BoundingBox(
+            //                Vector3.Transform(modelItem.BoundingBox.Min, modelEffect.World),
+            //                Vector3.Transform(modelItem.BoundingBox.Max, modelEffect.World));
 
-            // Update matrices
-            modelEffect.View = view;
-            modelEffect.Projection = projection;
-            viewFrustum.Matrix = view * projection;
+            //        // Test model bounding box against frustum
+            //        //if (!viewFrustum.Intersects(modelBox))
+            //        //    continue;
 
-            // Init variables used for tracking mouse ray and drawing bounding box
-            float? distance = null;
-            float minDistance = float.MaxValue;
-            bool mouseInBlock = false;
-            BlockManager.ModelInfo? closestModelInfo = null;
-            Matrix closestModelMatrix = Matrix.Identity;
-            #endregion
+            //        // Test ray against model if ray also in this block
+            //        if (mouseInBlock)
+            //        {
+            //            distance = host.MouseRay.Intersects(modelBox);
+            //            if (distance != null)
+            //            {
+            //                ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
 
-            #region Step Layout
-            // Draw visible blocks
-            Matrix world;
-            foreach (var layoutItem in layout)
-            {
-                // Create transformed block bounding box
-                world = Matrix.CreateTranslation(layout[layoutItem.Key].position);
-                BoundingBox blockBox = new BoundingBox(
-                    Vector3.Transform(layoutItem.Value.block.BoundingBox.Min, world),
-                    Vector3.Transform(layoutItem.Value.block.BoundingBox.Max, world));
+            //                // Test plane intersections for this model
+            //                bool insideBoundingBox;
+            //                int subMeshResult, planeResult;
+            //                Intersection.RayIntersectsDFMesh(
+            //                    host.MouseRay,
+            //                    modelEffect.World,
+            //                    ref model,
+            //                    out insideBoundingBox,
+            //                    out subMeshResult,
+            //                    out planeResult);
 
-                // Test block bounding box against frustum
-                if (!viewFrustum.Intersects(blockBox))
-                    continue;
+            //                //// Test plane intersections for this model
+            //                //ModelManager.Model model = host.ModelManager.GetModel((int)modelItem.ModelId);
+            //                //bool insideBoundingBox;
+            //                //int subMeshResult, planeResult;
+            //                //Intersection.RayIntersectsDFMesh(
+            //                //    host.MouseRay,
+            //                //    modelEffect.World,
+            //                //    ref model,
+            //                //    out insideBoundingBox,
+            //                //    out subMeshResult,
+            //                //    out planeResult);
 
-                // Late-load resources if not present
-                if (!resources[layoutItem.Key])
-                    resources[layoutItem.Key] = LoadBlockResources(layoutItem.Value.block);
+            //                //// Store this model if we intersect a plane.
+            //                //// This means mouse is over this model.
+            //                //if (subMeshResult != -1 && planeResult != -1)
+            //                //{
+            //                //    minDistance = distance.Value;
+            //                //    closestModelInfo = modelItem;
+            //                //    closestModelMatrix = modelEffect.World;
+            //                //}
 
-                // Test ray against block bounds.
-                // Is only performed when not scrolling.
-                if (cameraVelocity == Vector3.Zero)
-                {
-                    distance = host.MouseRay.Intersects(blockBox);
-                    if (distance != null)
-                        mouseInBlock = true;
-                }
+            //                //if (distance < minDistance)
+            //                //{
+            //                //    minDistance = distance.Value;
+            //                //    closestModelInfo = modelItem;
+            //                //    closestModelMatrix = modelEffect.World;
+            //                //}
+            //            }
+            //        }
 
-                // Draw each model in this block
-                for (int modelItem = 0; modelItem < layoutItem.Value.block.Models.Count; modelItem++)
-                {
-                    // Create transformed model bounding box
-                    modelEffect.World = layoutItem.Value.block.Models[modelItem].Matrix * world;
-                    BoundingBox modelBox = new BoundingBox(
-                            Vector3.Transform(layoutItem.Value.block.Models[modelItem].BoundingBox.Min, modelEffect.World),
-                            Vector3.Transform(layoutItem.Value.block.Models[modelItem].BoundingBox.Max, modelEffect.World));
+            //        // Draw the model
+            //        DrawSingleModel((int)modelItem.ModelId);
+            //    }
 
-                    // Test model bounding box against frustum
-                    //if (!viewFrustum.Intersects(modelBox))
-                    //    continue;
+            //    // Optionally draw gound plane for this item
+            //    if (batchMode == BatchModes.SingleExteriorBlock ||
+            //        batchMode == BatchModes.FullExterior &&
+            //        BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
+            //    {
+            //        // Used to translate ground down a few units to reduce
+            //        // z-fighting with other ground-aligned planes
+            //        Matrix ground = Matrix.CreateTranslation(0, -7, 0);
 
-                    // Draw the model
-                    DrawSingleModel((int)layoutItem.Value.block.Models[modelItem].ModelId);
+            //        // Draw ground
+            //        modelEffect.World = world * ground;
+            //        DrawGroundPlane(layoutItem.Key);
+            //    }
+            //}
+            //#endregion
 
-                    // Test for model intersection if mouse inside this block
-                    if (mouseInBlock)
-                    {
-                        // Test model intersection
-                        ModelManager.Model model = host.ModelManager.GetModel((int)layoutItem.Value.block.Models[modelItem].ModelId);
-                        bool insideBoundingBox;
-                        int subMeshResult, planeResult;
-                        Intersection.RayIntersectsDFMesh(
-                            host.MouseRay,
-                            modelEffect.World,
-                            ref model,
-                            out insideBoundingBox,
-                            out subMeshResult,
-                            out planeResult);
-
-                        // TODO: Handle intersection
-                    }
-
-                    //// Test ray against model if ray also in this block
-                    //if (mouseInBlock)
-                    //{
-                    //    // TODO: Place intersected models in sorted array and test against face data
-
-                    //    distance = host.MouseRay.Intersects(modelBox);
-                    //    if (distance != null)
-                    //    {
-                    //        if (distance < minDistance)
-                    //        {
-                    //            minDistance = distance.Value;
-                    //            closestModelInfo = modelItem;
-                    //            closestModelMatrix = modelEffect.World;
-                    //        }
-                    //    }
-                    //}
-                }
-
-                // Optionally draw gound plane for this item
-                if (batchMode == BatchModes.SingleExteriorBlock ||
-                    batchMode == BatchModes.FullExterior &&
-                    BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
-                {
-                    // Used to translate ground down a few units to reduce
-                    // z-fighting with other ground-aligned planes
-                    Matrix ground = Matrix.CreateTranslation(0, -7, 0);
-
-                    // Draw ground
-                    modelEffect.World = world * ground;
-                    DrawGroundPlane(layoutItem.Key);
-                }
-            }
-            #endregion
-
-            #region MouseOverModel
+            //#region MouseOverModel
             //if (closestModelInfo != null && host.MouseInClientArea)
             //{
             //    // Store mouse over closest model
@@ -391,19 +366,19 @@ namespace DaggerfallModelling.ViewControls
             //{
             //    mouseOverModel = -1;
             //}
-            #endregion
+            //#endregion
 
-            #region Bounding Box
-            // Draw bounding box if mouse over model
-            if (closestModelInfo != null && host.MouseInClientArea)
-            {
-                renderableBounds.Draw(
-                    closestModelInfo.Value.BoundingBox,
-                    view,
-                    projection,
-                    closestModelMatrix);
-            }
-            #endregion
+            //#region Bounding Box
+            //// Draw bounding box if mouse over model
+            //if (closestModelInfo != null && host.MouseInClientArea)
+            //{
+            //    renderableBounds.Draw(
+            //        closestModelInfo.Value.BoundingBox,
+            //        view,
+            //        projection,
+            //        closestModelMatrix);
+            //}
+            //#endregion
         }
 
         /// <summary>
@@ -481,7 +456,7 @@ namespace DaggerfallModelling.ViewControls
                         0.0f,
                         -host.MouseVelocity.Y * cameraStep);
 
-                    // Cap velocity at very small amounts to prevent sliding
+                    // Cap velocity at very small amounts to limit drifting
                     if (cameraVelocity.X > -cameraStep && cameraVelocity.X < cameraStep) cameraVelocity.X = 0.0f;
                     if (cameraVelocity.Z > -cameraStep && cameraVelocity.Z < cameraStep) cameraVelocity.Z = 0.0f;
                 }
@@ -494,9 +469,9 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
-            if (mouseOverModel != -1)
+            if (mouseOverModel != null)
             {
-                host.ShowModelView(mouseOverModel, Climate);
+                host.ShowModelView(mouseOverModel.Value, Climate);
             }
         }
 
@@ -553,30 +528,152 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="name">Name of block.</param>
         public void MoveToBlock(int x, int z)
         {
-            // Search for block in active layout
-            Dictionary<int, BlockPosition> layout = GetLayoutDict();
-            BlockPosition foundBlock = new BlockPosition();
-            int key = GetBlockKey(x, z);
-            if (layout.ContainsKey(key))
-                foundBlock = layout[key];
-            else
-                return;
+            //// Search for block in active layout
+            //Dictionary<int, BlockPosition> layout = GetLayoutDict();
+            //BlockPosition foundBlock = new BlockPosition();
+            //int key = GetBlockKey(x, z);
+            //if (layout.ContainsKey(key))
+            //    foundBlock = layout[key];
+            //else
+            //    return;
 
-            // Move active camera to block position
-            Vector3 pos = ActiveCamera.Position;
-            pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
-            pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
-            ActiveCamera.Position = pos;
+            //// Move active camera to block position
+            //Vector3 pos = ActiveCamera.Position;
+            //pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
+            //pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
+            //ActiveCamera.Position = pos;
         }
 
         #endregion
 
-        #region Drawing Methods
+        #region Rendering Methods
 
-        private void DrawSingleModel(int key)
+        /// <summary>
+        /// Sets render states prior to drawing.
+        /// </summary>
+        private void SetRenderStates()
         {
-            // Get model
-            ModelManager.Model model = host.ModelManager.GetModel(key);
+            // Set render states
+            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
+            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+            // Set anisotropy based on camera mode
+            if (cameraMode == CameraModes.Free)
+            {
+                // Set max anisotropy
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            }
+            else
+            {
+                // Set zero anisotropy
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+            }
+        }
+
+        /// <summary>
+        /// Draw scene elements.
+        /// </summary>
+        private void DrawScene()
+        {
+            // Get batch layout data            
+            int count;
+            BlockPosition[] layout;
+            GetLayoutArray(out layout, out count);
+            if (layout == null)
+                return;
+
+            // Update view and projection matrices
+            modelEffect.View = ActiveCamera.View;
+            modelEffect.Projection = ActiveCamera.Projection;
+            
+            // Update view frustum
+            viewFrustum.Matrix = ActiveCamera.BoundingFrustumMatrix;
+
+            // Step through block layout
+            Matrix blockTransform;
+            BoundingBox blockBounds;
+            for (int i = 0; i < count; i++)
+            {
+                // Update block if required
+                if (layout[i].block.UpdateRequired)
+                    UpdateBlock(ref layout[i].block);
+
+                // Create transformed block bounding box
+                blockTransform = Matrix.CreateTranslation(layout[i].position);
+                blockBounds.Min = Vector3.Transform(layout[i].block.BoundingBox.Min, blockTransform);
+                blockBounds.Max = Vector3.Transform(layout[i].block.BoundingBox.Max, blockTransform);
+
+                // Do nothing further if block is not visible
+                if (!viewFrustum.Intersects(blockBounds))
+                    continue;
+
+                // Draw block
+                DrawBlock(ref layout[i].block, ref blockTransform);
+            }
+        }
+
+        /// <summary>
+        /// Draw a single block.
+        /// </summary>
+        /// <param name="block">BlockManager.Block</param>
+        private void DrawBlock(ref BlockManager.Block block, ref Matrix blockTransform)
+        {
+            // Draw each model in this block
+            Matrix modelTransform;
+            BoundingSphere modelBounds;
+            foreach (var modelInfo in block.Models)
+            {
+                // Create transformed model bounding sphere
+                modelTransform = modelInfo.Matrix * blockTransform;
+                modelBounds.Center = Vector3.Transform(modelInfo.BoundingSphere.Center, modelTransform);
+                modelBounds.Radius = modelInfo.BoundingSphere.Radius;
+
+                // Do nothing further if model not visible
+                if (!viewFrustum.Intersects(modelBounds))
+                    continue;
+
+                // Draw the model
+                ModelManager.Model model = host.ModelManager.GetModel(modelInfo.ModelId);
+                DrawModel(ref model, ref modelTransform);
+            }
+
+            // Optionally draw gound plane for this block
+            if (batchMode == BatchModes.SingleExteriorBlock ||
+                batchMode == BatchModes.FullExterior &&
+                BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
+            {
+                // Translate ground down a few units to reduce
+                // z-fighting with other ground-aligned planes
+                Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
+
+                // Draw ground plane
+                DrawGroundPlane(ref block, ref groundTransform);
+            }
+
+            // TEST: Draw block bounding box
+            //renderableBoundingBox.Color = Color.Blue;
+            //renderableBoundingBox.Draw(
+            //    block.BoundingBox,
+            //    modelEffect.View,
+            //    modelEffect.Projection,
+            //    blockTransform);
+        }
+
+        private void DrawModel(ref ModelManager.Model model, ref Matrix modelTransform)
+        {
+            // Set world matrix
+            modelEffect.World = modelTransform;
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
             // Exit if no model loaded
             if (model.Vertices == null)
@@ -600,10 +697,24 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
             }
+
+            // TEST: Draw model bounding sphere
+            //renderableBoundingSphere.Color = Color.Red;
+            //renderableBoundingSphere.Draw(
+            //    model.BoundingSphere,
+            //    modelEffect.View,
+            //    modelEffect.Projection,
+            //    modelTransform);
         }
 
-        private void DrawGroundPlane(int key)
+        private void DrawGroundPlane(ref BlockManager.Block block, ref Matrix groundTransform)
         {
+            // Set world matrix
+            modelEffect.World = groundTransform;
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+
             // Set terrain texture atlas
             modelEffect.Texture = host.TextureManager.TerrainAtlas;
 
@@ -614,7 +725,7 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.Begin();
             modelEffect.CurrentTechnique.Passes[0].Begin();
 
-            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, exteriorLayout[key].block.GroundPlaneVertices, 0, 512);
+            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, block.GroundPlaneVertices, 0, 512);
 
             modelEffect.CurrentTechnique.Passes[0].End();
             modelEffect.End();
@@ -646,6 +757,10 @@ namespace DaggerfallModelling.ViewControls
 
             // Store block name
             currentBlockName = blockName;
+
+            // Init camera
+            cameraVelocity = Vector3.Zero;
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -670,6 +785,10 @@ namespace DaggerfallModelling.ViewControls
 
             // Store block name
             currentBlockName = blockName;
+
+            // Init camera
+            cameraVelocity = Vector3.Zero;
+            InitCameraPosition();
         }
 
         /// <summary>
@@ -700,6 +819,10 @@ namespace DaggerfallModelling.ViewControls
             // Store location coordinates
             currentLatitude = (int)dfLocation.MapTableData.Latitude;
             currentLongitude = (int)dfLocation.MapTableData.Longitude;
+
+            // Init camera
+            cameraVelocity = Vector3.Zero;
+            InitCameraPosition();
         }
 
         #endregion
@@ -712,10 +835,6 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         private void BuildExteriorLayout(ref string blockName)
         {
-            // Create exterior layout for one block
-            exteriorLayout = new Dictionary<int, BlockPosition>(1);
-            exteriorResources = new Dictionary<int, bool>(1);
-
             // Get block key and name
             string name = host.BlockManager.BlocksFile.CheckName(blockName);
             int key = GetBlockKey(0, 0);
@@ -732,8 +851,8 @@ namespace DaggerfallModelling.ViewControls
             host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
             // Add to layout dictionary
-            exteriorLayout.Add(key, blockPosition);
-            exteriorResources.Add(key, false);
+            exteriorLayout[0] = blockPosition;
+            exteriorLayoutCount = 1;
 
             // Bounds are equivalent to block
             BoundingBox bounds = blockPosition.block.BoundingBox;
@@ -741,12 +860,6 @@ namespace DaggerfallModelling.ViewControls
             bounds.Max.Y = cameraCeilingHeight;
             exteriorTopDownCamera.Bounds = bounds;
             exteriorFreeCamera.Bounds = bounds;
-
-            // Clear scroll velocity
-            cameraVelocity = Vector3.Zero;
-
-            // Init camera pos
-            InitCameraPosition();
         }
 
         /// <summary>
@@ -755,10 +868,6 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="blockName">Block name.</param>
         private void BuildDungeonLayout(ref string blockName)
         {
-            // Create dungeon layout
-            dungeonLayout = new Dictionary<int, BlockPosition>();
-            dungeonResources = new Dictionary<int, bool>(1);
-
             // Get block key
             int key = GetBlockKey(0, 0);
 
@@ -771,29 +880,16 @@ namespace DaggerfallModelling.ViewControls
             blockPosition.position = new Vector3(0, 0, 0);
 
             // Add to layout dictionary
-            dungeonLayout.Add(key, blockPosition);
-            dungeonResources.Add(key, false);
+            dungeonLayout[0] = blockPosition;
+            dungeonLayoutCount = 1;
 
             // Set top down bounds to have a higher ceiling
             BoundingBox topDownBounds = blockPosition.block.BoundingBox;
             topDownBounds.Max.Y = cameraCeilingHeight;
             dungeonTopDownCamera.Bounds = topDownBounds;
 
-            // Set free camera to have more camera movement around the outside
-            BoundingBox freeBounds = blockPosition.block.BoundingBox;
-            freeBounds.Min.X -= cameraDungeonFreedom;
-            freeBounds.Max.X += cameraDungeonFreedom;
-            freeBounds.Min.Y -= cameraDungeonFreedom;
-            freeBounds.Max.Y += cameraDungeonFreedom;
-            freeBounds.Min.Z -= cameraDungeonFreedom;
-            freeBounds.Max.Z += cameraDungeonFreedom;
-            dungeonFreeCamera.Bounds = freeBounds;
-
-            // Clear scroll velocity
-            cameraVelocity = Vector3.Zero;
-
-            // Init camera pos
-            InitCameraPosition();
+            // Set initial free camera bounds
+            SetDungeonFreeCameraBounds(blockPosition.block.BoundingBox);
         }
 
         /// <summary>
@@ -810,8 +906,7 @@ namespace DaggerfallModelling.ViewControls
             BoundingBox bounds = new BoundingBox();
 
             // Create exterior layout
-            exteriorLayout = new Dictionary<int, BlockPosition>(width * height);
-            exteriorResources = new Dictionary<int, bool>(width * height);
+            exteriorLayoutCount = 0;
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -832,8 +927,7 @@ namespace DaggerfallModelling.ViewControls
                     host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
                     // Add to layout dictionary
-                    exteriorLayout.Add(key, blockPosition);
-                    exteriorResources.Add(key, false);
+                    exteriorLayout[exteriorLayoutCount++] = blockPosition;
 
                     // Merge bounding boxes
                     Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -847,12 +941,6 @@ namespace DaggerfallModelling.ViewControls
             bounds.Max.Y = cameraCeilingHeight;
             exteriorTopDownCamera.Bounds = bounds;
             exteriorFreeCamera.Bounds = bounds;
-
-            // Clear scroll velocity
-            cameraVelocity = Vector3.Zero;
-
-            // Init camera pos
-            InitCameraPosition();
         }
 
         /// <summary>
@@ -865,8 +953,7 @@ namespace DaggerfallModelling.ViewControls
             BoundingBox bounds = new BoundingBox();
 
             // Create dungeon layout
-            dungeonLayout = new Dictionary<int, BlockPosition>();
-            dungeonResources = new Dictionary<int, bool>();
+            dungeonLayoutCount = 0;
             foreach (var block in dfLocation.Dungeon.Blocks)
             {
                 // Get block key
@@ -875,8 +962,8 @@ namespace DaggerfallModelling.ViewControls
                 // Some dungeons (e.g. Orsinium) encode more than one block with identical coordinates.
                 // It is not yet known if Daggerfall uses the first or subsequent blocks.
                 // We are using the first instance here until research shows otherwise.
-                if (dungeonLayout.ContainsKey(key))
-                    continue;
+                //if (dungeonLayout.ContainsKey(key))
+                //    continue;
 
                 // Create block position data
                 BlockPosition blockPosition = new BlockPosition();
@@ -887,8 +974,7 @@ namespace DaggerfallModelling.ViewControls
                 blockPosition.position = new Vector3(block.X * rdbBlockSide, 0f, -(block.Z * rdbBlockSide));
 
                 // Add to layout dictionary
-                dungeonLayout.Add(key, blockPosition);
-                dungeonResources.Add(key, false);
+                dungeonLayout[dungeonLayoutCount++] = blockPosition;
 
                 // Merge bounding boxes
                 Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -900,20 +986,9 @@ namespace DaggerfallModelling.ViewControls
             BoundingBox topDownBounds = bounds;
             topDownBounds.Max.Y = cameraCeilingHeight;
             dungeonTopDownCamera.Bounds = topDownBounds;
-            
-            // Set free camera to have more camera movement around the outside
-            BoundingBox freeBounds = bounds;
-            freeBounds.Min.X -= cameraDungeonFreedom;
-            freeBounds.Max.X += cameraDungeonFreedom;
-            freeBounds.Min.Y -= cameraDungeonFreedom;
-            freeBounds.Max.Y += cameraDungeonFreedom;
-            freeBounds.Min.Z -= cameraDungeonFreedom;
-            freeBounds.Max.Z += cameraDungeonFreedom;
-            dungeonFreeCamera.Bounds = freeBounds;
 
-            // Clear scroll velocity
-            cameraVelocity = Vector3.Zero;
-            InitCameraPosition();
+            // Set initial free camera bounds
+            SetDungeonFreeCameraBounds(bounds);
         }
 
         /// <summary>
@@ -927,19 +1002,51 @@ namespace DaggerfallModelling.ViewControls
             return z * 100 + x;
         }
 
+        /// <summary>
+        /// Gets appropriate layout array to use based on batch mode.
+        /// </summary>
+        /// <param name="layout">Layout array output.</param>
+        /// <param name="count">Layout count output.</param>
+        private void GetLayoutArray(out BlockPosition[] layout, out int count)
+        {
+            // Reset outputs
+            layout = null;
+            count = 0;
+
+            // Get layout information
+            switch (batchMode)
+            {
+                case BatchModes.SingleExteriorBlock:
+                case BatchModes.FullExterior:
+                    if (exteriorLayoutCount > 0)
+                    {
+                        layout = exteriorLayout;
+                        count = exteriorLayoutCount;
+                    }
+                    break;
+                case BatchModes.SingleDungeonBlock:
+                case BatchModes.FullDungeon:
+                    if (dungeonLayoutCount > 0)
+                    {
+                        layout = dungeonLayout;
+                        count = dungeonLayoutCount;
+                    }
+                    break;
+            }
+        }
+
         #endregion
 
         #region Resource Loading
 
         /// <summary>
-        /// Loads model and texture resources for specified block.
-        ///  This method also updates block bounding box based on the models it contains.
-        ///  Resources cached by TextureManager and ModelManager are recovered quickly.
+        /// Ensures block content is loaded and bounding box correctly sized.
         /// </summary>
         /// <param name="block">BlockManager.Block.</param>
-        private bool LoadBlockResources(BlockManager.Block block)
+        private bool UpdateBlock(ref BlockManager.Block block)
         {
             // Load model textures
+            Vector3 min, max;
             float minVertical = float.MaxValue, maxVertical = float.MinValue;
             for (int i = 0; i < block.Models.Count; i++)
             {
@@ -948,7 +1055,7 @@ namespace DaggerfallModelling.ViewControls
 
                 // Load model resource
                 ModelManager.Model model;
-                host.ModelManager.LoadModel((int)info.ModelId, out model);
+                host.ModelManager.LoadModel(info.ModelId, out model);
 
                 // Load texture resources for this model
                 for (int sm = 0; sm < model.SubMeshes.Length; sm++)
@@ -958,23 +1065,38 @@ namespace DaggerfallModelling.ViewControls
                         model.SubMeshes[sm].TextureRecord);
                 }
 
-                // Set model bounding box
+                // Set model info bounds
                 info.BoundingBox = model.BoundingBox;
+                info.BoundingSphere = model.BoundingSphere;
 
-                // Track vertical extents using model bounds
-                if (model.BoundingBox.Min.Y < minVertical)
-                    minVertical = model.BoundingBox.Min.Y;
-                if (model.BoundingBox.Max.Y > maxVertical)
-                    maxVertical = model.BoundingBox.Max.Y;
+                // Track position of transformed model for correct vertical bounds
+                min = Vector3.Transform(model.BoundingBox.Min, info.Matrix);
+                max = Vector3.Transform(model.BoundingBox.Max, info.Matrix);
+                if (min.Y < minVertical) minVertical = min.Y;
+                if (max.Y > maxVertical) maxVertical = max.Y;
 
                 // Set model info
                 block.Models[i] = info;
             }
 
-            // Update block bounding box
-            Vector3 min = new Vector3(block.BoundingBox.Min.X, minVertical, block.BoundingBox.Min.Z);
-            Vector3 max = new Vector3(block.BoundingBox.Max.X, maxVertical, block.BoundingBox.Max.Z);
-            block.BoundingBox = new BoundingBox(min, max);
+            // Ensure vertical limits are not still at test values.
+            // This can happen when a block has zero models.
+            if (minVertical == float.MaxValue) minVertical = 0;
+            if (maxVertical == float.MinValue) maxVertical = 256f;
+
+            // Update block vertical bounds
+            block.BoundingBox.Min.Y = minVertical;
+            block.BoundingBox.Max.Y = maxVertical;
+
+            // Update dungeon camera vertical limits
+            if (batchMode == BatchModes.SingleDungeonBlock ||
+                batchMode == BatchModes.FullDungeon)
+            {
+                UpdateDungeonFreeCameraBounds(block.BoundingBox);
+            }
+
+            // Clear update flag
+            block.UpdateRequired = false;
 
             return true;
         }
@@ -1064,61 +1186,6 @@ namespace DaggerfallModelling.ViewControls
             dungeonFreeCamera.Update(Camera.UpdateFlags.None);
         }
 
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Gets appropriate layout dictionary to use based on batch mode.
-        /// </summary>
-        /// <returns>Layout dictionary.</returns>
-        private Dictionary<int, BlockPosition> GetLayoutDict()
-        {
-            switch (batchMode)
-            {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
-                    return exteriorLayout;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
-                    return dungeonLayout;
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// Updates projection matrix to current view size.
-        /// </summary>
-        private void UpdateProjectionMatrix()
-        {
-            // Update aspect ratio for all cameras
-            float aspectRatio = (float)host.ClientRectangle.Width / (float)host.ClientRectangle.Height;
-            exteriorTopDownCamera.SetAspectRatio(aspectRatio);
-            exteriorFreeCamera.SetAspectRatio(aspectRatio);
-            dungeonTopDownCamera.SetAspectRatio(aspectRatio);
-            dungeonFreeCamera.SetAspectRatio(aspectRatio);
-        }
-
-        /// <summary>
-        /// Updates status message.
-        /// </summary>
-        private void UpdateStatusMessage()
-        {
-            // Set the message
-            host.StatusMessage = currentStatus;
-        }
-
-        /// <summary>
-        /// Sets batch mode.
-        /// </summary>
-        /// <param name="mode"></param>
-        private void ChangeBatchMode(BatchModes mode)
-        {
-            // Apply mode
-            batchMode = mode;
-        }
-
         /// <summary>
         /// Conditionally updates cameras.
         /// </summary>
@@ -1135,7 +1202,7 @@ namespace DaggerfallModelling.ViewControls
                 }
                 if (host.MouseInClientArea)
                 {
-                     flags |= Camera.UpdateFlags.Mouse;
+                    flags |= Camera.UpdateFlags.Mouse;
                 }
 
                 // Update based on batch mode
@@ -1170,6 +1237,75 @@ namespace DaggerfallModelling.ViewControls
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Set dungeon free camera bounds.
+        ///  This is done at initial layout.
+        /// </summary>
+        /// <param name="bounds">BoundingBox.</param>
+        private void SetDungeonFreeCameraBounds(BoundingBox bounds)
+        {
+            bounds.Min.X -= cameraDungeonFreedom;
+            bounds.Max.X += cameraDungeonFreedom;
+            bounds.Min.Y -= cameraDungeonFreedom;
+            bounds.Max.Y += cameraDungeonFreedom;
+            bounds.Min.Z -= cameraDungeonFreedom;
+            bounds.Max.Z += cameraDungeonFreedom;
+            dungeonFreeCamera.Bounds = bounds;
+        }
+
+        /// <summary>
+        /// Update dungeon free camera bounds.
+        ///  This is done after loading block resources.
+        /// </summary>
+        /// <param name="bounds">BoundingBox.</param>
+        private void UpdateDungeonFreeCameraBounds(BoundingBox bounds)
+        {
+            BoundingBox newBounds = dungeonFreeCamera.Bounds;
+
+            if (bounds.Min.Y < newBounds.Min.Y)
+                newBounds.Min.Y = bounds.Min.Y - cameraDungeonFreedom;
+            if (bounds.Max.Y > newBounds.Max.Y)
+                newBounds.Max.Y = bounds.Max.Y + cameraDungeonFreedom;
+
+            dungeonFreeCamera.Bounds = newBounds;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Updates projection matrix to current view size.
+        /// </summary>
+        private void UpdateProjectionMatrix()
+        {
+            // Update aspect ratio for all cameras
+            float aspectRatio = (float)host.ClientRectangle.Width / (float)host.ClientRectangle.Height;
+            exteriorTopDownCamera.SetAspectRatio(aspectRatio);
+            exteriorFreeCamera.SetAspectRatio(aspectRatio);
+            dungeonTopDownCamera.SetAspectRatio(aspectRatio);
+            dungeonFreeCamera.SetAspectRatio(aspectRatio);
+        }
+
+        /// <summary>
+        /// Updates status message.
+        /// </summary>
+        private void UpdateStatusMessage()
+        {
+            // Set the message
+            host.StatusMessage = currentStatus;
+        }
+
+        /// <summary>
+        /// Sets batch mode.
+        /// </summary>
+        /// <param name="mode"></param>
+        private void ChangeBatchMode(BatchModes mode)
+        {
+            // Apply mode
+            batchMode = mode;
         }
 
         #endregion

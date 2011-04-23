@@ -37,7 +37,7 @@ namespace DaggerfallModelling.ViewControls
         private int thumbSpacing = 16;
         private int thumbWidth;
         private int thumbHeight;
-        private Dictionary<int, Thumbnails> thumbDict = new Dictionary<int, Thumbnails>();
+        private Dictionary<uint, Thumbnails> thumbDict = new Dictionary<uint, Thumbnails>();
 
         // Scrolling
         private int thumbScrollAmount = 0;
@@ -64,7 +64,7 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = new Vector3(0, 1, 0);
 
         // Mouse
-        private int mouseOverThumb = -1;
+        private uint? mouseOverThumb = null;
 
         // Models list
         private bool useFilteredModels = false;
@@ -79,7 +79,7 @@ namespace DaggerfallModelling.ViewControls
         private struct Thumbnails
         {
             public int index;
-            public int key;
+            public uint key;
             public Rectangle rect;
             public ModelManager.Model model;
             public Texture2D texture;
@@ -93,9 +93,9 @@ namespace DaggerfallModelling.ViewControls
 
         /// <summary>
         /// Gets model key of thumbnail under the mouse.
-        ///  Returns -1 if no thumbnail under mouse.
+        ///  Returns null if no thumbnail under mouse.
         /// </summary>
-        public int MouseOverThumbnail
+        public uint? MouseOverThumbnail
         {
             get { return mouseOverThumb; } 
         }
@@ -251,8 +251,8 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
             // Send selected model to model view
-            if (mouseOverThumb != -1)
-                host.ShowModelView(mouseOverThumb, DFLocation.ClimateType.None);
+            if (mouseOverThumb != null)
+                host.ShowModelView(mouseOverThumb.Value, DFLocation.ClimateType.None);
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace DaggerfallModelling.ViewControls
         private void DrawThumbnails()
         {
             // Draw thumbnail sprites
-            int drawTextKey = -1;
+            uint? drawTextKey = null;
             host.SpriteBatch.Begin(SpriteBlendMode.None, SpriteSortMode.Immediate, SaveStateMode.None);
             foreach (var item in thumbDict)
             {
@@ -360,9 +360,9 @@ namespace DaggerfallModelling.ViewControls
             // Draw thumbnail id text. This is done in a second batch to avoid alpha problems
             // with sprite render on some cards.
             host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
-            if (drawTextKey != -1)
+            if (drawTextKey != null)
             {
-                Thumbnails thumb = thumbDict[drawTextKey];
+                Thumbnails thumb = thumbDict[drawTextKey.Value];
                 string thumbText = string.Format("{0}", thumb.key.ToString());
                 Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
                 int textX = (int)thumb.rect.X + (int)(thumb.rect.Width - thumbTextSize.X) / 2;
@@ -489,7 +489,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Remove out of range thumbnails
-            List<int> keysToRemove = new List<int>();
+            List<uint> keysToRemove = new List<uint>();
             foreach (var item in thumbDict)
             {
                 // Queue for removal if out of range
@@ -498,7 +498,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Remove thumbnails queued for deletion
-            foreach (int key in keysToRemove)
+            foreach (uint key in keysToRemove)
                 thumbDict.Remove(key);
 
             // Arrange thumbnails, updating existing and inserting new
@@ -510,11 +510,11 @@ namespace DaggerfallModelling.ViewControls
                 if (index >= 0)
                 {
                     // Get key based on model source
-                    int key;
+                    uint key;
                     if (!useFilteredModels)
                     {
                         // Use full model database
-                        key = (int)host.ModelManager.Arch3dFile.GetRecordId(index);
+                        key = host.ModelManager.Arch3dFile.GetRecordId(index);
                     }
                     else
                     {
@@ -707,7 +707,7 @@ namespace DaggerfallModelling.ViewControls
         private void TrackMouseOver()
         {
             // Clear previous mouse over thumb
-            mouseOverThumb = -1;
+            mouseOverThumb = null;
 
             // Do nothing further when mouse not in client area
             if (!host.MouseInClientArea)
@@ -728,8 +728,8 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Animate thumbnail during mouse-over state.
         /// </summary>
-        /// <param name="key"></param>
-        private void AnimateThumb(int key)
+        /// <param name="key">Key.</param>
+        private void AnimateThumb(uint key)
         {
             if (!thumbDict.ContainsKey(key))
                 return;

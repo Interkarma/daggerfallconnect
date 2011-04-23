@@ -69,7 +69,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets or sets current model in view.
         /// </summary>
-        public int ModelID
+        public uint? ModelID
         {
             get { return GetModel(); }
             set { SetModel(value); }
@@ -126,7 +126,7 @@ namespace DaggerfallModelling.ViewControls
             viewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraReference, cameraUpVector);
 
             // Load default model
-            ModelID = (int)host.ModelManager.Arch3dFile.GetRecordId(0);
+            ModelID = host.ModelManager.Arch3dFile.GetRecordId(0);
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace DaggerfallModelling.ViewControls
             if (host.FilteredModelsArray == null)
             {
                 currentModelIndex = 0;
-                SetModel((int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
+                SetModel(host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex));
                 UpdateStatusMessage();
             }
             else
@@ -409,7 +409,7 @@ namespace DaggerfallModelling.ViewControls
         /// Gets the current model ID.
         /// </summary>
         /// <returns>ModelID.</returns>
-        private int GetModel()
+        private uint? GetModel()
         {
             if (host.FilteredModelsArray != null)
             {
@@ -418,20 +418,20 @@ namespace DaggerfallModelling.ViewControls
             }
             else
             {
-                return (int)host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex);
+                return host.ModelManager.Arch3dFile.GetRecordId(currentModelIndex);
             }
 
-            return -1;
+            return null;
         }
 
         /// <summary>
         /// View the specified model.
         /// </summary>
         /// <param name="id"></param>
-        private void SetModel(int id)
+        private void SetModel(uint? id)
         {
-            // Do nothing if model id -1
-            if (id == -1)
+            // Do nothing if id is null
+            if (id == null)
                 return;
 
             // Sync index to id from filtered list or entire database
@@ -471,14 +471,14 @@ namespace DaggerfallModelling.ViewControls
         /// Loads a model for view.
         /// </summary>
         /// <param name="id">ModelID.</param>
-        private void LoadModel(int id)
+        private void LoadModel(uint? id)
         {
             // Do nothing if model already loaded
             if (currentModel.DFMesh.ObjectId == id)
                 return;
 
             // Load the model
-            currentModel = host.ModelManager.GetModel(id, false);
+            currentModel = host.ModelManager.GetModel(id.Value, false);
 
             // Load texture for each submesh.
             for (int sm = 0; sm < currentModel.SubMeshes.Length; sm++)

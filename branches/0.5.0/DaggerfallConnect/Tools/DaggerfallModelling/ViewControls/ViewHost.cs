@@ -80,7 +80,7 @@ namespace DaggerfallModelling.ViewControls
         private SpriteFont arialSmallFont;
 
         // Filtered model array consumed by thumbnail and single model views
-        private int[] filteredModelsArray;
+        private uint[] filteredModelsArray;
 
         // Status message
         private string statusMessage;
@@ -266,7 +266,7 @@ namespace DaggerfallModelling.ViewControls
         /// Gets or sets filtered model ID list for views.
         ///  Set to null to use full model database.
         /// </summary>
-        public int[] FilteredModelsArray
+        public uint[] FilteredModelsArray
         {
             get { return filteredModelsArray; }
             set { AssignFilteredModels(value); }
@@ -745,7 +745,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="id">ModelID of model to show.</param>
         /// <param name="climate">ClimateType.</param>
-        public void ShowModelView(int id, DFLocation.ClimateType climate)
+        public void ShowModelView(uint? id, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -1000,7 +1000,7 @@ namespace DaggerfallModelling.ViewControls
         /// Set filtered model array and notify views to update.
         /// </summary>
         /// <param name="array"></param>
-        private void AssignFilteredModels(int[] array)
+        private void AssignFilteredModels(uint[] array)
         {
             // Do nothing if not initialised
             if (!isReady)
