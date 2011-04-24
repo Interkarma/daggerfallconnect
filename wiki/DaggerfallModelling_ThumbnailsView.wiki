@@ -1,6 +1,6 @@
 #summary Using the Thumbnails View in Daggerfall Modelling.
 
-_Alpha Version 0.6.0_
+_Alpha Version 0.6.8_
 
 = Thumbnails View =
 
