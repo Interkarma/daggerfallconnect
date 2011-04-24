@@ -58,6 +58,8 @@
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.ExportModelToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.TopDownCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.FreeCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -333,6 +335,8 @@
             this.ViewBlockToolStripButton,
             this.ViewLocationToolStripButton,
             this.toolStripSeparator4,
+            this.ExportModelToolStripButton,
+            this.toolStripSeparator7,
             this.TopDownCameraToolStripButton,
             this.FreeCameraToolStripButton,
             this.toolStripSeparator5,
@@ -399,6 +403,21 @@
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ExportModelToolStripButton
+            // 
+            this.ExportModelToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ExportModelToolStripButton.Image = global::DaggerfallModelling.Properties.Resources.disk;
+            this.ExportModelToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ExportModelToolStripButton.Name = "ExportModelToolStripButton";
+            this.ExportModelToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.ExportModelToolStripButton.Text = "Export Model";
+            this.ExportModelToolStripButton.Click += new System.EventHandler(this.ExportModelToolStripButton_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
             // 
             // TopDownCameraToolStripButton
             // 
@@ -591,6 +610,8 @@
         private System.Windows.Forms.ToolStripButton ToggleControllerToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripButton ExportModelToolStripButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
 

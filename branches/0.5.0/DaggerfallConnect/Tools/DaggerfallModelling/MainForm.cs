@@ -234,10 +234,8 @@ namespace DaggerfallModelling
             SearchBlocksToolStripButton.Checked = searchBlocks;
             SearchLocationsToolStripButton.Checked = searchLocations;
 
-            // Set initial view state
-            UpdateActiveView();
-            UpdateActiveCameraMode();
-            UpdateAvailableViews();
+            // Update toolbars
+            UpdateToolbars();
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -432,9 +430,8 @@ namespace DaggerfallModelling
         /// <param name="e">ViewModeChangedEventArgs.</param>
         private void ContentView_ViewModeChanged(object sender, ViewHost.ViewModeChangedEventArgs e)
         {
-            UpdateActiveView();
-            UpdateActiveCameraMode();
-            UpdateAvailableViews();
+            // Update toolbars
+            UpdateToolbars();
         }
 
         /// <summary>
@@ -457,6 +454,83 @@ namespace DaggerfallModelling
         {
             ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             UpdateActiveCameraMode();
+        }
+
+        /// <summary>
+        /// Show dialog to export model to Collada format.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        private void ExportModelToolStripButton_Click(object sender, EventArgs e)
+        {
+            // Setup dialog
+            Dialogs.BrowseExportModelDialog dlg = new Dialogs.BrowseExportModelDialog();
+            dlg.OutputPath = appSettings.ColladaExportPath;
+            dlg.Orientation = appSettings.ColladaExportOrientation;
+            dlg.ImageFormat = appSettings.ColladaExportImageFormat;
+
+            // Show dialog
+            if (dlg.ShowDialog() != DialogResult.OK)
+                return;
+
+            // Create DFCollada
+            Classes.DFCollada dfCollada = new DaggerfallModelling.Classes.DFCollada(appSettings.Arena2Path);
+
+            // Set up vector
+            switch (dlg.Orientation)
+            {
+                case 0:
+                    dfCollada.UpVector = Classes.DFCollada.UpVectors.X_UP;
+                    break;
+                case 1:
+                    dfCollada.UpVector = Classes.DFCollada.UpVectors.Y_UP;
+                    break;
+                case 2:
+                    dfCollada.UpVector = Classes.DFCollada.UpVectors.Z_UP;
+                    break;
+                default:
+                    dfCollada.UpVector = Classes.DFCollada.UpVectors.Y_UP;
+                    break;
+            }
+
+            // Set image format
+            switch (dlg.ImageFormat)
+            {
+                case 0:
+                    dfCollada.ImageFormat = System.Drawing.Imaging.ImageFormat.Jpeg;
+                    break;
+                case 1:
+                    dfCollada.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                    break;
+                case 2:
+                    dfCollada.ImageFormat = System.Drawing.Imaging.ImageFormat.Tiff;
+                    break;
+                case 3:
+                    dfCollada.ImageFormat = System.Drawing.Imaging.ImageFormat.Bmp;
+                    break;
+                default:
+                    dfCollada.ImageFormat = System.Drawing.Imaging.ImageFormat.Png;
+                    break;
+            }
+
+            // Set output paths
+            dfCollada.ModelOutputPath = dlg.OutputPath;
+            dfCollada.ImageOutputRelativePath = "images";
+
+            // Execute
+            try
+            {
+                dfCollada.DFMeshToCollada(ContentViewer.ModelView.ModelID.Value);
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine(err.Message);
+            }
+
+            // Save settings
+            appSettings.ColladaExportPath = dlg.OutputPath;
+            appSettings.ColladaExportOrientation = dlg.Orientation;
+            appSettings.ColladaExportImageFormat = dlg.ImageFormat;
         }
 
         #endregion
@@ -938,6 +1012,16 @@ namespace DaggerfallModelling
         #region Toolbar Update Methods
 
         /// <summary>
+        /// Updates toolbars.
+        /// </summary>
+        private void UpdateToolbars()
+        {
+            UpdateAvailableViews();
+            UpdateActiveView();
+            UpdateActiveCameraMode();
+        }
+
+        /// <summary>
         /// Enables or disables view modes based on context.
         ///  Thumbnail and single model views are always available, even when empty.
         ///  Block view is only available when a block has been loaded.
@@ -959,6 +1043,7 @@ namespace DaggerfallModelling
             ViewSingleModelToolStripButton.Checked = false;
             ViewBlockToolStripButton.Checked = false;
             ViewLocationToolStripButton.Checked = false;
+            ExportModelToolStripButton.Enabled = false;
 
             // Check current item
             switch (ContentViewer.ViewMode)
@@ -968,6 +1053,7 @@ namespace DaggerfallModelling
                     break;
                 case ViewHost.ViewModes.ModelView:
                     ViewSingleModelToolStripButton.Checked = true;
+                    ExportModelToolStripButton.Enabled = true;
                     break;
                 case ViewHost.ViewModes.BlockView:
                     ViewBlockToolStripButton.Checked = true;

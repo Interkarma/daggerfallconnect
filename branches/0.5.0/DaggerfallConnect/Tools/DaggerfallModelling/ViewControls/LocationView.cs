@@ -40,6 +40,8 @@ namespace DaggerfallModelling.ViewControls
         const float rdbBlockSide = 2048.0f;
         private BlockPosition[] exteriorLayout = new BlockPosition[64];
         private BlockPosition[] dungeonLayout = new BlockPosition[32];
+        private Dictionary<int, int> exteriorLayoutDict = new Dictionary<int,int>();
+        private Dictionary<int, int> dungeonLayoutDict =  new Dictionary<int,int>();
         private int exteriorLayoutCount = 0;
         private int dungeonLayoutCount = 0;
 
@@ -56,6 +58,8 @@ namespace DaggerfallModelling.ViewControls
 
         // XNA
         private VertexDeclaration modelVertexDeclaration;
+        private VertexDeclaration lineVertexDeclaration;
+        private BasicEffect lineEffect;
         private BasicEffect modelEffect;
         private BoundingFrustum viewFrustum;
 
@@ -84,6 +88,9 @@ namespace DaggerfallModelling.ViewControls
         private List<ModelIntersection> modelIntersections;
         private RenderableBoundingBox renderableBoundingBox;
         private RenderableBoundingSphere renderableBoundingSphere;
+
+        // Line drawing
+        VertexPositionColor[] planeLines = new VertexPositionColor[64];
 
         #endregion
 
@@ -251,6 +258,15 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.EnableDefaultLighting();
             modelEffect.AmbientLightColor = new Vector3(0.4f, 0.4f, 0.4f);
             modelEffect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
+
+            // Create vertex declaration
+            lineVertexDeclaration = new VertexDeclaration(host.GraphicsDevice, VertexPositionColor.VertexElements);
+
+            // Setup line BasicEffect
+            lineEffect = new BasicEffect(host.GraphicsDevice, null);
+            lineEffect.LightingEnabled = false;
+            lineEffect.TextureEnabled = false;
+            lineEffect.VertexColorEnabled = true;
 
             // Setup initial camera positions
             InitCameraPosition();
@@ -430,20 +446,24 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="name">Name of block.</param>
         public void MoveToBlock(int x, int z)
         {
-            //// Search for block in active layout
-            //Dictionary<int, BlockPosition> layout = GetLayoutDict();
-            //BlockPosition foundBlock = new BlockPosition();
-            //int key = GetBlockKey(x, z);
-            //if (layout.ContainsKey(key))
-            //    foundBlock = layout[key];
-            //else
-            //    return;
+            // Search for block in active layout
+            int count;
+            BlockPosition[] layout;
+            Dictionary<int, int> layoutDict;
+            GetLayoutArray(out layout, out count);
+            GetLayoutDict(out layoutDict);
+            BlockPosition foundBlock = new BlockPosition();
+            int key = GetBlockKey(x, z);
+            if (layoutDict.ContainsKey(key))
+                foundBlock = layout[layoutDict[key]];
+            else
+                return;
 
-            //// Move active camera to block position
-            //Vector3 pos = ActiveCamera.Position;
-            //pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
-            //pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
-            //ActiveCamera.Position = pos;
+            // Move active camera to block position
+            Vector3 pos = ActiveCamera.Position;
+            pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
+            pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
+            ActiveCamera.Position = pos;
         }
 
         #endregion
@@ -725,18 +745,95 @@ namespace DaggerfallModelling.ViewControls
                 }
             }
 
-            // Draw bounding sphere on closest model
+            // Draw bounding mesh on closest model
             if (closestModelIntersection != null)
             {
                 // Draw bounding box to see what has been intersected
                 ModelManager.Model model = host.ModelManager.GetModel(closestModelIntersection.ModelID.Value);
-                renderableBoundingSphere.Color = Color.White;
-                renderableBoundingSphere.Draw(
-                    model.BoundingSphere,
-                    ActiveCamera.View,
-                    ActiveCamera.Projection,
-                    closestModelIntersection.Matrix);
+                DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
+
+                // Store modelid of model under mouse
+                mouseOverModel = closestModelIntersection.ModelID;
             }
+        }
+
+        /// <summary>
+        /// Draw native mesh as wireframe lines.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="model">ModelManager.Model.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void DrawNativeMesh(Color color, ref ModelManager.Model model, Matrix matrix)
+        {
+            // Scale up just a little to make outline visually pop
+            matrix = Matrix.CreateScale(1.015f) * matrix;
+
+            // Set view and projection matrices
+            lineEffect.View = ActiveCamera.View;
+            lineEffect.Projection = ActiveCamera.Projection;
+            lineEffect.World = matrix;
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = lineVertexDeclaration;
+
+            // Draw faces
+            foreach (var subMesh in model.DFMesh.SubMeshes)
+            {
+                foreach (var plane in subMesh.Planes)
+                {
+                    DrawNativeFace(color, plane.Points, ref matrix);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw a native face as a line list.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="points">DFMesh.DFPoint.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void DrawNativeFace(Color color, DFMesh.DFPoint[] points, ref Matrix matrix)
+        {
+            // Build line primitives for this face
+            int lineCount = 0;
+            Vector3 vertex1, vertex2;
+            for (int p = 0; p < points.Length - 1; p++)
+            {
+                // Add first point
+                vertex1.X = points[p].X;
+                vertex1.Y = -points[p].Y;
+                vertex1.Z = -points[p].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex1;
+
+                // Add second point
+                vertex2.X = points[p + 1].X;
+                vertex2.Y = -points[p + 1].Y;
+                vertex2.Z = -points[p + 1].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex2;
+            }
+
+            // Join final point to first point
+            vertex1.X = points[0].X;
+            vertex1.Y = -points[0].Y;
+            vertex1.Z = -points[0].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex1;
+            vertex2.X = points[points.Length - 1].X;
+            vertex2.Y = -points[points.Length - 1].Y;
+            vertex2.Z = -points[points.Length - 1].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex2;
+
+            lineEffect.Begin();
+            lineEffect.CurrentTechnique.Passes[0].Begin();
+
+            // Draw lines
+            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, planeLines, 0, lineCount / 2);
+
+            lineEffect.CurrentTechnique.Passes[0].End();
+            lineEffect.End();
         }
 
         #endregion
@@ -858,9 +955,13 @@ namespace DaggerfallModelling.ViewControls
             // Build ground plane
             host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
-            // Add to layout dictionary
+            // Add to layout array
             exteriorLayout[0] = blockPosition;
             exteriorLayoutCount = 1;
+
+            // Add to layout dictionary
+            exteriorLayoutDict.Clear();
+            exteriorLayoutDict.Add(key, 0);
 
             // Bounds are equivalent to block
             BoundingBox bounds = blockPosition.block.BoundingBox;
@@ -887,9 +988,13 @@ namespace DaggerfallModelling.ViewControls
             // Set block position
             blockPosition.position = new Vector3(0, 0, 0);
 
-            // Add to layout dictionary
+            // Add to layout array
             dungeonLayout[0] = blockPosition;
             dungeonLayoutCount = 1;
+
+            // Add to layout dictionary
+            dungeonLayoutDict.Clear();
+            dungeonLayoutDict.Add(key, 0);
 
             // Set top down bounds to have a higher ceiling
             BoundingBox topDownBounds = blockPosition.block.BoundingBox;
@@ -913,6 +1018,9 @@ namespace DaggerfallModelling.ViewControls
             // Bounding box for layout
             BoundingBox bounds = new BoundingBox();
 
+            // Reset layout dictionary
+            exteriorLayoutDict.Clear();
+
             // Create exterior layout
             exteriorLayoutCount = 0;
             for (int y = 0; y < height; y++)
@@ -934,8 +1042,14 @@ namespace DaggerfallModelling.ViewControls
                     // Build ground plane
                     host.BlockManager.BuildRmbGroundPlane(host.TextureManager, ref blockPosition.block);
 
+                    // Add to layout array
+                    exteriorLayout[exteriorLayoutCount] = blockPosition;
+
                     // Add to layout dictionary
-                    exteriorLayout[exteriorLayoutCount++] = blockPosition;
+                    exteriorLayoutDict.Add(key, exteriorLayoutCount);
+
+                    // Increment count
+                    exteriorLayoutCount++;
 
                     // Merge bounding boxes
                     Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -960,6 +1074,9 @@ namespace DaggerfallModelling.ViewControls
             // Bounding box for layout
             BoundingBox bounds = new BoundingBox();
 
+            // Reset layout dictionary
+            dungeonLayoutDict.Clear();
+
             // Create dungeon layout
             dungeonLayoutCount = 0;
             foreach (var block in dfLocation.Dungeon.Blocks)
@@ -970,8 +1087,8 @@ namespace DaggerfallModelling.ViewControls
                 // Some dungeons (e.g. Orsinium) encode more than one block with identical coordinates.
                 // It is not yet known if Daggerfall uses the first or subsequent blocks.
                 // We are using the first instance here until research shows otherwise.
-                //if (dungeonLayout.ContainsKey(key))
-                //    continue;
+                if (dungeonLayoutDict.ContainsKey(key))
+                    continue;
 
                 // Create block position data
                 BlockPosition blockPosition = new BlockPosition();
@@ -981,8 +1098,14 @@ namespace DaggerfallModelling.ViewControls
                 // Set block position
                 blockPosition.position = new Vector3(block.X * rdbBlockSide, 0f, -(block.Z * rdbBlockSide));
 
+                // Add to layout array
+                dungeonLayout[dungeonLayoutCount] = blockPosition;
+
                 // Add to layout dictionary
-                dungeonLayout[dungeonLayoutCount++] = blockPosition;
+                dungeonLayoutDict.Add(key, dungeonLayoutCount);
+
+                // Increment count
+                dungeonLayoutCount++;
 
                 // Merge bounding boxes
                 Vector3 min = blockPosition.block.BoundingBox.Min + blockPosition.position;
@@ -1039,6 +1162,29 @@ namespace DaggerfallModelling.ViewControls
                         layout = dungeonLayout;
                         count = dungeonLayoutCount;
                     }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets appropriate layout dictionary based on batch mode.
+        /// </summary>
+        /// <param name="layoutDict">Layout dictionary output.</param>
+        private void GetLayoutDict(out Dictionary<int, int> layoutDict)
+        {
+            // Get layout dictionary
+            switch (batchMode)
+            {
+                case BatchModes.SingleExteriorBlock:
+                case BatchModes.FullExterior:
+                    layoutDict = exteriorLayoutDict;
+                    break;
+                case BatchModes.SingleDungeonBlock:
+                case BatchModes.FullDungeon:
+                    layoutDict = dungeonLayoutDict;
+                    break;
+                default:
+                    layoutDict = new Dictionary<int, int>();
                     break;
             }
         }

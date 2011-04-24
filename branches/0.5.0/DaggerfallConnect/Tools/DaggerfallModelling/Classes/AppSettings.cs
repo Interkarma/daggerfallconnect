@@ -39,14 +39,23 @@ namespace DaggerfallModelling.Classes
         // Application settings (as saved and loaded in "Settings.xml"
         private const string Setting_Arena2Path = "Arena2Path";
         private const string Setting_IsMaximised = "IsMaximised";
+        private const string Setting_ColladaExportPath = "ColladaExportPath";
+        private const string Setting_ColladaExportOrientation = "ColladaExportOrientation";
+        private const string Setting_ColladaExportImageFormat = "ColladaExportImageFormat";
 
         // Application defaults (deployed first time "Settings.xml" is created
         private const string Default_Arena2Path = "C:\\dosgames\\DAGGER\\ARENA2";
-        private const int Default_IsMaximised = 0;
+        private const int Default_IsMaximised = 1;
+        private const string Default_ColladaExportPath = "";
+        private const int Default_ColladaExportOrientation = 2;
+        private const int Default_ColladaExportImageFormat = 1;
 
         // Application settings states (as read from "Settings.xml")
-        private string State_Arena2Path = string.Empty;
-        private int State_IsMaximised = 0;
+        private string State_Arena2Path;
+        private int State_IsMaximised;
+        private string State_ColladaExportPath;
+        private int State_ColladaExportOrientation;
+        private int State_ColladaExportImageFormat;
 
         #endregion
 
@@ -83,6 +92,33 @@ namespace DaggerfallModelling.Classes
             set { State_IsMaximised = value; }
         }
 
+        /// <summary>
+        /// Gets or sets ColladaExportPath setting.
+        /// </summary>
+        public string ColladaExportPath
+        {
+            get { return State_ColladaExportPath; }
+            set { State_ColladaExportPath = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets ColladaExportOrientation setting.
+        /// </summary>
+        public int ColladaExportOrientation
+        {
+            get { return State_ColladaExportOrientation; }
+            set { State_ColladaExportOrientation = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets ColladaExportImageFormat setting.
+        /// </summary>
+        public int ColladaExportImageFormat
+        {
+            get { return State_ColladaExportImageFormat; }
+            set { State_ColladaExportImageFormat = value; }
+        }
+
         #endregion
 
         #region Public Methods
@@ -90,7 +126,7 @@ namespace DaggerfallModelling.Classes
         /// <summary>
         /// Saves live settings back to file.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if successful.</returns>
         public bool SaveSettings()
         {
             return WriteSettingsXml();
@@ -119,6 +155,9 @@ namespace DaggerfallModelling.Classes
                 // Append default settings
                 helper.AppendElement(SettingsXml, null, Setting_Arena2Path, Default_Arena2Path);
                 helper.AppendElement(SettingsXml, null, Setting_IsMaximised, Default_IsMaximised.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_ColladaExportPath, Default_ColladaExportPath);
+                helper.AppendElement(SettingsXml, null, Setting_ColladaExportOrientation, Default_ColladaExportOrientation.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_ColladaExportImageFormat, Default_ColladaExportImageFormat.ToString());
 
                 // Save file
                 SettingsXml.Save(SettingsFilePath);
@@ -164,6 +203,18 @@ namespace DaggerfallModelling.Classes
                 nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
                 State_IsMaximised = int.Parse(nodes.Item(0).InnerText);
 
+                // Read ColladaExportPath
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);
+                State_ColladaExportPath = nodes.Item(0).InnerText;
+
+                // Read ColladaExportOrientation
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportOrientation);
+                State_ColladaExportOrientation = int.Parse(nodes.Item(0).InnerText);
+
+                // Read ColladaExportImageFormat
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportImageFormat);
+                State_ColladaExportImageFormat = int.Parse(nodes.Item(0).InnerText);
+
                 // Ensure Arena2Path exists
                 if (!Directory.Exists(State_Arena2Path))
                     throw new Exception(string.Format("'{0}' does not exist.", State_Arena2Path));
@@ -196,6 +247,18 @@ namespace DaggerfallModelling.Classes
                 // Write IsMaximised
                 nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
                 nodes.Item(0).InnerText = State_IsMaximised.ToString();
+
+                // Write ColladaExportPath
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);
+                nodes.Item(0).InnerText = State_ColladaExportPath;
+
+                // Write ColladaExportOrientation
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportOrientation);
+                nodes.Item(0).InnerText = State_ColladaExportOrientation.ToString();
+
+                // Write ColladaExportImageFormat
+                nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportImageFormat);
+                nodes.Item(0).InnerText = State_ColladaExportImageFormat.ToString();
 
                 // Save file
                 SettingsXml.Save(SettingsFilePath);

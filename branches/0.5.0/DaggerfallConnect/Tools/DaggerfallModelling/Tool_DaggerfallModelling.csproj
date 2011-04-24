@@ -58,6 +58,12 @@
     <Compile Include="Dialogs\BrowseArena2Folder.designer.cs">
       <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\BrowseExportModelDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\BrowseExportModelDialog.designer.cs">
+      <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -83,6 +89,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\BrowseArena2Folder.resx">
       <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\BrowseExportModelDialog.resx">
+      <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -192,6 +201,7 @@
     <None Include="Resources\arrow_right.png" />
     <None Include="Resources\package.png" />
     <None Include="Resources\model_find2.png" />
+    <None Include="Resources\disk.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -160,13 +160,11 @@ namespace DaggerfallModelling.Classes
                 throw new Exception(error);
             }
 
-            // Test image output path
+            // Test or create image output path
             string fullImageOutputPath = Path.Combine(modelOutputPath, imageOutputRelativePath);
             if (!Directory.Exists(fullImageOutputPath))
             {
-                string error = string.Format("Image output path '{0}' does not exist.", fullImageOutputPath);
-                Console.WriteLine(error);
-                throw new Exception(error);
+                Directory.CreateDirectory(fullImageOutputPath);
             }
 
             // Create dae root

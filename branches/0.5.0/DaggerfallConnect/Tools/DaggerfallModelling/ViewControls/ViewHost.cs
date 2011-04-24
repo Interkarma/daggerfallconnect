@@ -298,6 +298,14 @@ namespace DaggerfallModelling.ViewControls
             get { return mouseRay; }
         }
 
+        /// <summary>
+        /// Gets model view or NULL if not ready.
+        /// </summary>
+        public ModelView ModelView
+        {
+            get { return (isReady) ? (ModelView)viewClients[ViewModes.ModelView] : null; }
+        }
+
         #endregion
 
         #region Constructors
