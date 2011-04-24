@@ -1,6 +1,6 @@
 #summary Working with Daggerfall Modelling.
 
-_Alpha Version 0.6.0_
+_Alpha Version 0.6.8_
 
 = Introduction =
 
