@@ -1,6 +1,7 @@
 * [DaggerfallModelling Daggerfall Modelling]
  * [UsingDaggerfallModelling Introduction]
  * [SearchingInDaggerfallModelling Searching]
+ * [DaggerfallModelling_ExportingModels Exporting Tutorial]
  * [DaggerfallModelling_ThumbnailsView Thumbnails View]
  * [DaggerfallModelling_ModelView Model View]
  * [DaggerfallModelling_BlockView Block View]
