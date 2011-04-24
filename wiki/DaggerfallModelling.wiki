@@ -1,7 +1,7 @@
 #summary Getting started with Daggerfall Modelling.
 #labels Featured
 
-_Alpha Version 0.6.0_
+_Alpha Version 0.6.8_
 
 = Summary =
 
