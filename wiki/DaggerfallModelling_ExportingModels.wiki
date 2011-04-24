@@ -1,0 +1,45 @@
+#summary How to export a model to Collada format.
+
+_Alpha Version 0.6.8_
+
+= Exporting Models =
+
+From Daggerfall Modelling 0.6.8 it is possible to export a single model to Collada .dae format. Textures are exported to a selection of image formats.
+
+Following is a brief tutorial on exporting a model from a location and opening it in Blender.
+
+== 1. Finding Somewhere Interesting ==
+
+In Daggerfall Modelling type "direnni" into the search field and hit Enter. This will locate Direnni Tower on the Isle of Balfiera. Expand out the search results and select Direnni Tower. This will load the location as shown below.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/ExportTutorial1.png
+
+== 2. Switch To Exterior Mode ==
+
+As Direnni Tower is primarily a dungeon location, Daggerfall Modelling will open it in Dungeon Mode. Switch to the exterior of this dungeon by clicking the Exterior Mode button.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/ExportTutorial2.png
+
+== 3. Switch To Free Camera ==
+
+We now have a top-down view of the outside of Direnni Tower. This is nice, but it would be nicer if we could fly around the tower. Switch to Free Camera by clicking the toolbar button highlighted below.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/ExportTutorial3.png
+
+Check the controls in [DaggerfallModelling_LocationView Location View] to learn how to fly around the scene. Go ahead and explore a little before proceeding.
+
+== 4. Selecting A Model ==
+
+The only model of interest is Direnni Tower itself. When you move the mouse over the tower, it is outlined in gold wireframe as shown. If you double-click a highlighted model, the selected model will be opened in Model View. It is possible to select any model you can touch with the mouse in Block and Location scenes.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/ExportTutorial4.png
+
+== 5. Model View ==
+
+After double-clicking the highlighted model, you will find yourself in [DaggerfallModelling_ModelView Model View]. This view is for exploring an individual model in detail. You will notice that faces are highlighted as you move the mouse over the model. This will eventually be used to query face properties such as the texture used by that face.
+
+http://www.dfworkshop.net/wp-content/uploads/2011/04/ExportTutorial5.png
+
+== 6. Export The Model ==
+
+With a model loaded into the Model View, we can export this model to Collada format. This is true of any model loaded into this view, whether you searched for it, selected it from a thumbnail, or picked it from a city or dungeon.
