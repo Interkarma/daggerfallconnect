@@ -199,11 +199,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets total elapsed time in milliseconds.
+        /// Gets total elapsed time in timer ticks.
         /// </summary>
-        public long Timer
+        public Stopwatch Timer
         {
-            get { return stopwatch.ElapsedTicks; }
+            get { return stopwatch; }
         }
 
         /// <summary>

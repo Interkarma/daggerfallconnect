@@ -36,14 +36,21 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         // Layout
-        const float rmbBlockSide = 4096.0f;
-        const float rdbBlockSide = 2048.0f;
+        private const float rmbBlockSide = 4096.0f;
+        private const float rdbBlockSide = 2048.0f;
         private BlockPosition[] exteriorLayout = new BlockPosition[64];
         private BlockPosition[] dungeonLayout = new BlockPosition[32];
         private Dictionary<int, int> exteriorLayoutDict = new Dictionary<int,int>();
         private Dictionary<int, int> dungeonLayoutDict =  new Dictionary<int,int>();
         private int exteriorLayoutCount = 0;
         private int dungeonLayoutCount = 0;
+
+        // Batching
+        private const int batchArrayLength = 768;
+        private BatchModes batchMode = BatchModes.SingleExteriorBlock;
+        private BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
+        private Dictionary<int, BatchItemArray> exteriorBatches = new Dictionary<int, BatchItemArray>();
+        private Dictionary<int, BatchItemArray> dungeonBatches = new Dictionary<int, BatchItemArray>();
 
         // Location
         private string currentBlockName = string.Empty;
@@ -78,10 +85,6 @@ namespace DaggerfallModelling.ViewControls
         private float cameraStep = 5.0f;
         private float wheelStep = 100.0f;
 
-        // Batching options
-        private BatchModes batchMode = BatchModes.SingleExteriorBlock;
-        private BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
-
         // Ray testing
         private const int defaultIntersectionCapacity = 35;
         private uint? mouseOverModel = null;
@@ -91,6 +94,16 @@ namespace DaggerfallModelling.ViewControls
 
         // Line drawing
         VertexPositionColor[] planeLines = new VertexPositionColor[64];
+        
+#if DEBUG
+        // Performance profiling
+        private WeakReference gcTracker = new WeakReference(new object());
+        private long drawTime;
+        private int visibleTriangles;
+        private int visibleBatches;
+        private int maxBatchArrayLength;
+        private int garbageCollections = 0;
+#endif
 
         #endregion
 
@@ -116,7 +129,8 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Describes optional rendering features. Options can be combined.
         /// </summary>
-        [Flags] public enum BatchOptions
+        [Flags]
+        public enum BatchOptions
         {
             /// <summary>No flags set.</summary>
             None = 0,
@@ -138,6 +152,28 @@ namespace DaggerfallModelling.ViewControls
             public string name;
             public Vector3 position;
             public BlockManager.Block block;
+        }
+
+        /// <summary>
+        /// Stores a fixes array of BatchItem which is allocated
+        ///  during scene build to minimise garbage collections laters.
+        /// </summary>
+        private struct BatchItemArray
+        {
+            public int Length;
+            public BatchItem[] BatchItems;
+        }
+
+        /// <summary>
+        /// Represents a visible submesh. These batches are grouped by
+        ///  texture while walking the scene then all executed at once.
+        ///  This reduces the number of texture changes and begin-end blocks.
+        /// </summary>
+        private struct BatchItem
+        {
+            public Matrix ModelTransform;
+            public VertexPositionNormalTexture[] Vertices;
+            public int[] Indices;
         }
 
         #endregion
@@ -285,6 +321,15 @@ namespace DaggerfallModelling.ViewControls
         {
             // Update cameras
             UpdateCameras();
+
+#if DEBUG
+            // Track garbage collections
+            if (!gcTracker.IsAlive)
+            {
+                garbageCollections++;
+                gcTracker = new WeakReference(new object());
+            }
+#endif
         }
 
         /// <summary>
@@ -292,11 +337,37 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Draw()
         {
+#if DEBUG
+            // Reset performance metrics
+            visibleBatches = 0;
+            visibleTriangles = 0;
+            maxBatchArrayLength = 0;
+            long startTime = host.Timer.ElapsedTicks;
+#endif
+
             // Execute pipeline
             host.GraphicsDevice.Clear(backgroundColor);
-            SetRenderStates();
-            DrawScene();
+            ClearBatches();
+            BatchScene();
             MouseModelIntersection();
+            SetRenderStates();
+            DrawBatches();
+
+#if DEBUG
+            // Get total draw time (will always be at least 1 tick)
+            drawTime = (host.Timer.ElapsedTicks - startTime) + 1;
+
+            // Display performance status in debug mode
+            string performance = string.Format(
+                "GarbageCollections={0}, VisibleBatches={1}, MaxBatchArrayLength={2}, VisibleTriangles={3}, DrawTime={4}, FPS={5:0.00}",
+                garbageCollections,
+                visibleBatches,
+                maxBatchArrayLength,
+                visibleTriangles,
+                drawTime,
+                System.Diagnostics.Stopwatch.Frequency / (float)drawTime);
+            host.StatusMessage = performance;
+#endif
         }
 
         /// <summary>
@@ -399,8 +470,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
-            //base.ResumeView();
-
             // Climate swaps in dungeons now implemented yet.
             // Set climate type manually for now to ensure
             // dungeons do not use climate swaps.
@@ -471,39 +540,31 @@ namespace DaggerfallModelling.ViewControls
         #region Rendering Pipeline
 
         /// <summary>
-        /// Sets render states prior to drawing.
+        /// Clears batch lists. These are rebuilt each scene
+        ///  from visible submeshes.
         /// </summary>
-        private void SetRenderStates()
+        private void ClearBatches()
         {
-            // Set render states
-            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
-            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
-            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
-            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            // Get batches
+            Dictionary<int, BatchItemArray> batches;
+            GetBatches(out batches);
 
-            // Set anisotropy based on camera mode
-            if (cameraMode == CameraModes.Free)
+            // Clear each batch list
+            List<int> keys = new List<int>(batches.Keys);
+            foreach (int key in keys)
             {
-                // Set max anisotropy
-                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
-                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
-                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
-            }
-            else
-            {
-                // Set zero anisotropy
-                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+                // Zero out length of each array
+                BatchItemArray batchArray = batches[key];
+                batchArray.Length = 0;
+                batches[key] = batchArray;
             }
         }
 
         /// <summary>
-        /// Draw scene elements.
+        /// Step through scene elements testing intersections
+        ///  and batching visible triangles.
         /// </summary>
-        private void DrawScene()
+        private void BatchScene()
         {
             // Get batch layout data            
             int count;
@@ -511,10 +572,6 @@ namespace DaggerfallModelling.ViewControls
             GetLayoutArray(out layout, out count);
             if (layout == null)
                 return;
-
-            // Update view and projection matrices
-            modelEffect.View = ActiveCamera.View;
-            modelEffect.Projection = ActiveCamera.Projection;
             
             // Update view frustum
             viewFrustum.Matrix = ActiveCamera.BoundingFrustumMatrix;
@@ -554,20 +611,20 @@ namespace DaggerfallModelling.ViewControls
                         mouseInBlock = false;
                 }
 
-                // Draw block
-                DrawBlock(ref layout[i].block, ref blockTransform, mouseInBlock);
+                // Batch block
+                BatchBlock(ref layout[i].block, ref blockTransform, mouseInBlock);
             }
         }
 
         /// <summary>
-        /// Draw a single block.
+        /// Step through a block to find visible models.
         /// </summary>
         /// <param name="block">BlockManager.Block</param>
         /// <param name="blockTransform">Block transform.</param>
         /// <param name="mouseInBlock">True if mouse ray in block bounds.</param>
-        private void DrawBlock(ref BlockManager.Block block, ref Matrix blockTransform, bool mouseInBlock)
+        private void BatchBlock(ref BlockManager.Block block, ref Matrix blockTransform, bool mouseInBlock)
         {
-            // Draw each model in this block
+            // Iterate each model in this block
             int modelIndex = 0;
             float? intersectDistance;
             Matrix modelTransform;
@@ -598,81 +655,67 @@ namespace DaggerfallModelling.ViewControls
                     }
                 }
 
-                // Draw the model
+                // Add the model
                 ModelManager.Model model = host.ModelManager.GetModel(modelInfo.ModelId);
-                DrawModel(ref model, ref modelTransform);
+                BatchModel(ref model, ref modelTransform);
 
                 // Increment index
                 modelIndex++;
             }
 
-            // Optionally draw gound plane for this block
-            if (batchMode == BatchModes.SingleExteriorBlock ||
-                batchMode == BatchModes.FullExterior &&
-                BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
-            {
-                // Translate ground down a few units to reduce
-                // z-fighting with other ground-aligned planes
-                Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
+            //// Optionally draw gound plane for this block
+            //if (batchMode == BatchModes.SingleExteriorBlock ||
+            //    batchMode == BatchModes.FullExterior &&
+            //    BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
+            //{
+            //    // Translate ground down a few units to reduce
+            //    // z-fighting with other ground-aligned planes
+            //    Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
 
-                // Draw ground plane
-                DrawGroundPlane(ref block, ref groundTransform);
-            }
-
-            // TEST: Draw block bounding box
-            //renderableBoundingBox.Color = Color.Blue;
-            //renderableBoundingBox.Draw(
-            //    block.BoundingBox,
-            //    modelEffect.View,
-            //    modelEffect.Projection,
-            //    blockTransform);
+            //    // Draw ground plane
+            //    //DrawGroundPlane(ref block, ref groundTransform);
+            //}
         }
 
         /// <summary>
-        /// Draw a single model.
+        /// Step through a model and add triangles to batch.
         /// </summary>
         /// <param name="model">ModelManager.Model.</param>
         /// <param name="modelTransform">Model transform.</param>
-        private void DrawModel(ref ModelManager.Model model, ref Matrix modelTransform)
+        private void BatchModel(ref ModelManager.Model model, ref Matrix modelTransform)
         {
-            // Set world matrix
-            modelEffect.World = modelTransform;
-
-            // Set vertex declaration
-            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
-
             // Exit if no model loaded
             if (model.Vertices == null)
                 return;
 
-            // Set wrap mode
-            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            // Get batches
+            Dictionary<int, BatchItemArray> batches;
+            GetBatches(out batches);
 
-            foreach (var submesh in model.SubMeshes)
+            // Batch submeshes
+            foreach (var subMesh in model.SubMeshes)
             {
-                modelEffect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
+#if DEBUG
+                // Increment triangle counter
+                visibleTriangles += subMesh.Indices.Length / 3;
+#endif
 
-                modelEffect.Begin();
-                modelEffect.CurrentTechnique.Passes[0].Begin();
-
-                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                    model.Vertices, 0, model.Vertices.Length,
-                    submesh.Indices, 0, submesh.Indices.Length / 3);
-
-                modelEffect.CurrentTechnique.Passes[0].End();
-                modelEffect.End();
+                // Add subMesh to batch
+                if (batches.ContainsKey(subMesh.TextureKey))
+                {
+                    // Add reference to vertex and index data to batch
+                    BatchItemArray batchArray = batches[subMesh.TextureKey];
+                    int index = batchArray.Length;
+                    batchArray.BatchItems[index].ModelTransform = modelTransform;
+                    batchArray.BatchItems[index].Vertices = model.Vertices;
+                    batchArray.BatchItems[index].Indices = subMesh.Indices;
+                    batchArray.Length++;
+                    batches[subMesh.TextureKey] = batchArray;
+                }
             }
-
-            // TEST: Draw model bounding sphere
-            //renderableBoundingSphere.Color = Color.White;
-            //renderableBoundingSphere.Draw(
-            //    model.BoundingSphere,
-            //    modelEffect.View,
-            //    modelEffect.Projection,
-            //    modelTransform);
         }
 
+        /*
         /// <summary>
         /// Draw a ground plane.
         /// </summary>
@@ -689,6 +732,10 @@ namespace DaggerfallModelling.ViewControls
             // Set terrain texture atlas
             modelEffect.Texture = host.TextureManager.TerrainAtlas;
 
+            // TEST: Increment counters
+            textureChanges++;
+            trianglesDrawn += 512;
+
             // Set clamp mode
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
@@ -701,6 +748,7 @@ namespace DaggerfallModelling.ViewControls
             modelEffect.CurrentTechnique.Passes[0].End();
             modelEffect.End();
         }
+        */
 
         /// <summary>
         /// Tests mouse ray against model intersections to
@@ -836,6 +884,99 @@ namespace DaggerfallModelling.ViewControls
             lineEffect.End();
         }
 
+        /// <summary>
+        /// Sets render states prior to drawing.
+        /// </summary>
+        private void SetRenderStates()
+        {
+            // Set render states
+            host.GraphicsDevice.RenderState.DepthBufferEnable = true;
+            host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
+            host.GraphicsDevice.RenderState.AlphaTestEnable = false;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
+            // Set anisotropy based on camera mode
+            if (cameraMode == CameraModes.Free)
+            {
+                // Set max anisotropy
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Anisotropic;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = host.GraphicsDevice.GraphicsDeviceCapabilities.MaxAnisotropy;
+            }
+            else
+            {
+                // Set zero anisotropy
+                host.GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+                host.GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+            }
+        }
+
+        /// <summary>
+        /// Draw batches of visible triangles that have been sorted by texture
+        ///  to minimise begin-end blocks.
+        /// </summary>
+        private void DrawBatches()
+        {
+            // Get batches
+            Dictionary<int, BatchItemArray> batches;
+            GetBatches(out batches);
+
+            // Set vertex declaration
+            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+
+            // Update view and projection matrices
+            modelEffect.View = ActiveCamera.View;
+            modelEffect.Projection = ActiveCamera.Projection;
+
+            // Set sampler state
+            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+
+            // Iterate batch lists
+            foreach (var item in batches)
+            {
+                BatchItemArray batchArray = item.Value;
+
+                // Do nothing if batch empty
+                if (batchArray.Length == 0)
+                    continue;
+
+                // Track max length of batch array
+#if DEBUG
+                if (batchArray.Length > maxBatchArrayLength)
+                    maxBatchArrayLength = batchArray.Length;
+#endif
+
+                modelEffect.Texture = host.TextureManager.GetTexture(item.Key);
+
+                modelEffect.Begin();
+                modelEffect.CurrentTechnique.Passes[0].Begin();
+
+                // Iterate batch items
+                for (int i = 0; i < batchArray.Length; i++)
+                {
+                    modelEffect.World = batchArray.BatchItems[i].ModelTransform;
+                    modelEffect.CommitChanges();
+
+                    host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
+                        batchArray.BatchItems[i].Vertices, 0, batchArray.BatchItems[i].Vertices.Length,
+                        batchArray.BatchItems[i].Indices, 0, batchArray.BatchItems[i].Indices.Length / 3);
+                }
+
+                modelEffect.CurrentTechnique.Passes[0].End();
+                modelEffect.End();
+
+#if DEBUG
+                // Update visible batch counter
+                visibleBatches++;
+#endif
+
+            }
+        }
+
         #endregion
 
         #region Map Loading
@@ -959,6 +1100,9 @@ namespace DaggerfallModelling.ViewControls
             exteriorLayout[0] = blockPosition;
             exteriorLayoutCount = 1;
 
+            // Clear batches dict
+            exteriorBatches.Clear();
+
             // Add to layout dictionary
             exteriorLayoutDict.Clear();
             exteriorLayoutDict.Add(key, 0);
@@ -992,6 +1136,9 @@ namespace DaggerfallModelling.ViewControls
             dungeonLayout[0] = blockPosition;
             dungeonLayoutCount = 1;
 
+            // Clear batches dict
+            dungeonBatches.Clear();
+
             // Add to layout dictionary
             dungeonLayoutDict.Clear();
             dungeonLayoutDict.Add(key, 0);
@@ -1020,6 +1167,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Reset layout dictionary
             exteriorLayoutDict.Clear();
+
+            // Clear batches dict
+            exteriorBatches.Clear();
 
             // Create exterior layout
             exteriorLayoutCount = 0;
@@ -1076,6 +1226,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Reset layout dictionary
             dungeonLayoutDict.Clear();
+
+            // Clear batches dict
+            dungeonBatches.Clear();
 
             // Create dungeon layout
             dungeonLayoutCount = 0;
@@ -1189,6 +1342,29 @@ namespace DaggerfallModelling.ViewControls
             }
         }
 
+        /// <summary>
+        /// Gets appropriate batch dictionary based on batch mode.
+        /// </summary>
+        /// <param name="batches">Batch dictionary output.</param>
+        private void GetBatches(out Dictionary<int, BatchItemArray> batches)
+        {
+            // Get layout dictionary
+            switch (batchMode)
+            {
+                case BatchModes.SingleExteriorBlock:
+                case BatchModes.FullExterior:
+                    batches = exteriorBatches;
+                    break;
+                case BatchModes.SingleDungeonBlock:
+                case BatchModes.FullDungeon:
+                    batches = dungeonBatches;
+                    break;
+                default:
+                    batches = new Dictionary<int, BatchItemArray>();
+                    break;
+            }
+        }
+
         #endregion
 
         #region Resource Loading
@@ -1199,7 +1375,12 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="block">BlockManager.Block.</param>
         private bool UpdateBlock(ref BlockManager.Block block)
         {
+            // Get batches
+            Dictionary<int, BatchItemArray> batches;
+            GetBatches(out batches);
+
             // Load model textures
+            int textureKey;
             Vector3 min, max;
             float minVertical = float.MaxValue, maxVertical = float.MinValue;
             for (int i = 0; i < block.Models.Count; i++)
@@ -1214,9 +1395,27 @@ namespace DaggerfallModelling.ViewControls
                 // Load texture resources for this model
                 for (int sm = 0; sm < model.SubMeshes.Length; sm++)
                 {
-                    model.SubMeshes[sm].TextureKey = host.TextureManager.LoadTexture(
+                    // Load texture for this submesh
+                    textureKey = host.TextureManager.LoadTexture(
                         model.SubMeshes[sm].TextureArchive,
                         model.SubMeshes[sm].TextureRecord);
+
+                    // Store texture key in model
+                    model.SubMeshes[sm].TextureKey = textureKey;
+
+                    // Start a new batch if this is a texture we haven't seen before
+                    if (!batches.ContainsKey(textureKey))
+                    {
+                        // Create new batch array.
+                        // These arrays are of a fixed length as dynamic
+                        // objects create lots of garbage at run-time.
+                        // The Length is simply reset and the array reused
+                        // each frame.
+                        BatchItemArray batchArray;
+                        batchArray.Length = 0;
+                        batchArray.BatchItems = new BatchItem[batchArrayLength];
+                        batches.Add(textureKey, batchArray);
+                    }
                 }
 
                 // Set model info bounds
