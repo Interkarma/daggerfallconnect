@@ -60,7 +60,7 @@ namespace DaggerfallModelling.ViewControls
         private Stopwatch stopwatch = Stopwatch.StartNew();
         private Timer updateTimer = new Timer();
         private readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
-        private readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
+        private readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
         private TimeSpan accumulatedTime;
         private TimeSpan lastTime;
 
@@ -207,11 +207,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets accumulated engine time (not clock time) in seconds.
+        /// Gets accumulated game time in seconds.
         /// </summary>
-        public float TimeDelta
+        public TimeSpan ElapsedGameTime
         {
-            get { return (float)accumulatedTime.TotalSeconds; }
+            get { return accumulatedTime; }
         }
 
         /// <summary>

@@ -712,6 +712,8 @@ namespace DaggerfallModelling.ViewControls
                     batchArray.Length++;
                     batches[subMesh.TextureKey] = batchArray;
                 }
+                else
+                    throw new Exception("Batch array not found.");
             }
         }
 
@@ -1503,8 +1505,8 @@ namespace DaggerfallModelling.ViewControls
             dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
 
             // Update
-            exteriorTopDownCamera.Update(Camera.UpdateFlags.None);
-            dungeonTopDownCamera.Update(Camera.UpdateFlags.None);
+            exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+            dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
         }
 
         /// <summary>
@@ -1535,8 +1537,8 @@ namespace DaggerfallModelling.ViewControls
             dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
 
             // Update
-            exteriorFreeCamera.Update(Camera.UpdateFlags.None);
-            dungeonFreeCamera.Update(Camera.UpdateFlags.None);
+            exteriorFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+            dungeonFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
         }
 
         /// <summary>
@@ -1563,11 +1565,11 @@ namespace DaggerfallModelling.ViewControls
                 {
                     case BatchModes.SingleExteriorBlock:
                     case BatchModes.FullExterior:
-                        exteriorFreeCamera.Update(flags);
+                        exteriorFreeCamera.Update(flags, host.ElapsedGameTime);
                         break;
                     case BatchModes.SingleDungeonBlock:
                     case BatchModes.FullDungeon:
-                        dungeonFreeCamera.Update(flags);
+                        dungeonFreeCamera.Update(flags, host.ElapsedGameTime);
                         break;
 
                 }
@@ -1582,11 +1584,11 @@ namespace DaggerfallModelling.ViewControls
                 {
                     case BatchModes.SingleExteriorBlock:
                     case BatchModes.FullExterior:
-                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None);
+                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
                         break;
                     case BatchModes.SingleDungeonBlock:
                     case BatchModes.FullDungeon:
-                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None);
+                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
                         break;
                 }
             }

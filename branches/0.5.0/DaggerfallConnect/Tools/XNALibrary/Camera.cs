@@ -31,10 +31,12 @@ namespace XNALibrary
         #region Class Variables
 
         // Movement
-        private const float keyboardSpinRate = 1.0f;
-        private const float mouseSpinRate = 0.1f;
-        private const float moveRate = 10.0f;
-        private const float mouseMoveRate = 2.0f; 
+        private const float keyboardSpinRate = 80.0f;
+        private const float mouseSpinRate = 6.0f;
+        private const float moveRate = 1200.0f;
+        private const float movementShiftKeyMultiplier = 3.0f;
+        private const float mouseMoveRate = 100.0f;
+        private const float middleButonMoveRate = 100.0f;
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -210,8 +212,13 @@ namespace XNALibrary
         /// <summary>
         /// Called when the camera should poll input methods and update.
         /// </summary>
-        public void Update(UpdateFlags flags)
+        /// <param name="flags">Update flags.</param>
+        /// <param name="gameTime">Game time.</param>
+        public void Update(UpdateFlags flags, TimeSpan gameTime)
         {
+            // Get time delta
+            float timeDelta = (float)gameTime.TotalSeconds;
+
             // Init movement and rotation
             movement = Vector3.Zero;
             rotation = Matrix.Identity;
@@ -219,19 +226,26 @@ namespace XNALibrary
             // Keyboard input
             if ((flags & UpdateFlags.Keyboard) == UpdateFlags.Keyboard)
             {
+                // Get movement
                 KeyboardState ks = Keyboard.GetState();
                 if (ks.IsKeyDown(Keys.Q))                               // Look left
-                    cameraYaw += keyboardSpinRate;
+                    cameraYaw += keyboardSpinRate * timeDelta;
                 if (ks.IsKeyDown(Keys.E))                               // Look right
-                    cameraYaw -= keyboardSpinRate;
+                    cameraYaw -= keyboardSpinRate * timeDelta;
                 if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
-                    movement.Z -= moveRate;
+                    movement.Z -= moveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
-                    movement.Z += moveRate;
+                    movement.Z += moveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.A) || ks.IsKeyDown(Keys.Left))    // Move left
-                    movement.X -= moveRate;
+                    movement.X -= moveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
-                    movement.X += moveRate;
+                    movement.X += moveRate * timeDelta;
+
+                // Double movement if shift is down
+                if (ks.IsKeyDown(Keys.LeftShift) || ks.IsKeyDown(Keys.RightShift))
+                {
+                    movement *= movementShiftKeyMultiplier;
+                }
             }
 
             // Mouse input
@@ -248,21 +262,21 @@ namespace XNALibrary
                 // Mouse-look with left-button pressed
                 if (ms.LeftButton == ButtonState.Pressed)
                 {
-                    cameraYaw -= mouseDelta.X * mouseSpinRate;
-                    cameraPitch -= mouseDelta.Y * mouseSpinRate;
+                    cameraYaw -= (mouseDelta.X * mouseSpinRate) * timeDelta;
+                    cameraPitch -= (mouseDelta.Y * mouseSpinRate) * timeDelta;
                 }
 
                 // Movement with right-button pressed
                 if (ms.RightButton == ButtonState.Pressed)
                 {
-                    movement.Z += mouseDelta.Y * mouseMoveRate;
+                    movement.Z += (mouseDelta.Y * mouseMoveRate) * timeDelta;
                 }
 
                 // Movement with middle-button pressed
                 if (ms.MiddleButton == ButtonState.Pressed)
                 {
-                    movement.X += mouseDelta.X * moveRate;
-                    movement.Y -= mouseDelta.Y * moveRate;
+                    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
+                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
                 }
             }
 
