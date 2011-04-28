@@ -6,15 +6,13 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace XNALibrary
@@ -42,7 +40,7 @@ namespace XNALibrary
         /// <returns>Distance to intersection.</returns>
         public static float? RayIntersectsDFMesh(Ray ray,
                                             Matrix modelTransform,
-                                            ref ModelManager.Model model,
+                                            ref ModelManager.ModelData model,
                                             out bool insideBoundingSphere,
                                             out int subMeshResult,
                                             out int planeResult)
@@ -149,7 +147,7 @@ namespace XNALibrary
         /// <param name="face">Index of triangle interested by ray, or NULL on miss.</param>
         public static void RayIntersectsModel(Ray ray,
                                             Matrix modelTransform,
-                                            ref ModelManager.Model model,
+                                            ref ModelManager.ModelData model,
                                             out int? subMeshResult,
                                             out int? faceResult)
         {

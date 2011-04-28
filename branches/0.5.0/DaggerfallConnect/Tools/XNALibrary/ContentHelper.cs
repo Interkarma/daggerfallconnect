@@ -1,12 +1,18 @@
-﻿#region Imports
+﻿// Project:         XNALibrary
+// Description:     Simple XNA game library for DaggerfallConnect.
+// Copyright:       Copyright (C) 2011 Gavin Clayton
+// License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
+// Web Site:        http://www.dfworkshop.net
+// Contact:         Gavin Clayton (interkarma@dfworkshop.net)
+// Project Page:    http://code.google.com/p/daggerfallconnect/
 
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
-
 #endregion
 
 namespace XNALibrary

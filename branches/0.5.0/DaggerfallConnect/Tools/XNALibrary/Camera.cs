@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,14 +15,13 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace XNALibrary
 {
 
     /// <summary>
-    /// Camera class. Does not inherit from GameComponent so it can be used with WinForms.
+    /// Camera class.
     /// </summary>
     public class Camera
     {
@@ -31,10 +29,10 @@ namespace XNALibrary
         #region Class Variables
 
         // Movement
-        private const float keyboardSpinRate = 80.0f;
-        private const float mouseSpinRate = 6.0f;
-        private const float moveRate = 1200.0f;
-        private const float movementShiftKeyMultiplier = 3.0f;
+        private const float keyboardSpinRate = 200.0f;
+        private const float mouseSpinRate = 10.0f;
+        private const float moveRate = 1500.0f;
+        private const float movementShiftKeyMultiplier = 4.0f;
         private const float mouseMoveRate = 100.0f;
         private const float middleButonMoveRate = 100.0f;
 
@@ -169,6 +167,22 @@ namespace XNALibrary
         public Matrix BoundingFrustumMatrix
         {
             get { return viewMatrix * projectionMatrix; }
+        }
+
+        /// <summary>
+        /// Gets camera yaw in degrees.
+        /// </summary>
+        public float Yaw
+        {
+            get { return cameraYaw; }
+        }
+
+        /// <summary>
+        /// Gets camera pitch in degrees.
+        /// </summary>
+        public float Pitch
+        {
+            get { return cameraPitch; }
         }
 
         #endregion

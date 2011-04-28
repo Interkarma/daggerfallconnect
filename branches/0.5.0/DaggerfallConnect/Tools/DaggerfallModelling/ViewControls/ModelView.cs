@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +17,6 @@ using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -33,7 +31,7 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         // Model
-        private ModelManager.Model currentModel;
+        private ModelManager.ModelData currentModel;
         private int currentModelIndex = 0;
 
         // Appearance
@@ -247,6 +245,7 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             base.ResumeView();
+            host.ModelManager.CacheModels = false;
             UpdateStatusMessage();
             UpdateProjectionMatrix();
             LayoutModel();
@@ -478,7 +477,7 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Load the model
-            currentModel = host.ModelManager.GetModel(id.Value, false);
+            currentModel = host.ModelManager.GetModel(id.Value);
 
             // Load texture for each submesh.
             for (int sm = 0; sm < currentModel.SubMeshes.Length; sm++)

@@ -1,4 +1,4 @@
-﻿// Project:         DaggerfallModelling
+﻿// Project:         XNALibrary
 // Description:     Explore and export 3D models from Daggerfall.
 // Copyright:       Copyright (C) 2011 Gavin Clayton
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -6,15 +6,13 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 #endregion
 
 namespace XNALibrary

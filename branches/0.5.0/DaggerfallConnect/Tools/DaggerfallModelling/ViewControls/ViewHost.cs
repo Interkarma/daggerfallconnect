@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,7 +19,7 @@ using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-
+using DaggerfallModelling.ViewComponents;
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -112,6 +111,14 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets current Arena2Path.
+        /// </summary>
+        public string Arena2Path
+        {
+            get { return arena2Path; }
+        }
 
         /// <summary>
         /// Gets or sets status message.
@@ -315,7 +322,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public ViewHost()
         {
-            // Create view dictionary
+            // Create view dictionaries
             viewClients = new Dictionary<ViewModes, ViewBase>();
 
             // Create content helper

@@ -74,6 +74,20 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap application_side_contract {
+            get {
+                object obj = ResourceManager.GetObject("application_side_contract", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap application_side_expand {
+            get {
+                object obj = ResourceManager.GetObject("application_side_expand", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap application_view_tile {
             get {
                 object obj = ResourceManager.GetObject("application_view_tile", resourceCulture);

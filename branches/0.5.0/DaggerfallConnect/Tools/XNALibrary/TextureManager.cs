@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +17,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace XNALibrary
@@ -135,6 +133,14 @@ namespace XNALibrary
         public Texture2D TerrainAtlas
         {
             get { return GetTerrainAtlas(); }
+        }
+
+        /// <summary>
+        /// Gets TextureFile object.
+        /// </summary>
+        public TextureFile TextureFile
+        {
+            get { return textureFile; }
         }
 
         #endregion
@@ -377,8 +383,8 @@ namespace XNALibrary
         private Texture2D CreateTexture(ref DFBitmap dfBitmap)
         {
             // Get width and height as power of 2
-            int width = (IsPowerOfTwo(dfBitmap.Width)) ? dfBitmap.Width : NextPowerOfTwo(dfBitmap.Width);
-            int height = (IsPowerOfTwo(dfBitmap.Height)) ? dfBitmap.Height : NextPowerOfTwo(dfBitmap.Height);
+            int width = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Width)) ? dfBitmap.Width : PowerOfTwo.NextPowerOfTwo(dfBitmap.Width);
+            int height = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Height)) ? dfBitmap.Height : PowerOfTwo.NextPowerOfTwo(dfBitmap.Height);
 
             // Create XNA texture
             Texture2D texture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
@@ -393,28 +399,6 @@ namespace XNALibrary
                 SetDataOptions.None);
 
             return texture;
-        }
-
-        /// <summary>
-        /// Check if value is a power of 2.
-        /// </summary>
-        /// <param name="x">Value to check.</param>
-        /// <returns>True if power of 2.</returns>
-        private bool IsPowerOfTwo(int x)
-        {
-            return (x & (x - 1)) == 0;
-        }
-
-        /// <summary>
-        /// Finds next power of 2 size for value.
-        /// </summary>
-        /// <param name="x">Value.</param>
-        /// <returns>Next power of 2.</returns>
-        private int NextPowerOfTwo(int x)
-        {
-            int i = 1;
-            while (i < x) { i <<= 1; }
-            return i;
         }
 
         /// <summary>

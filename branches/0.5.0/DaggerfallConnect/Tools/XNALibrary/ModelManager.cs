@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,7 +15,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace XNALibrary
@@ -33,7 +31,8 @@ namespace XNALibrary
         string arena2Path = string.Empty;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
-        private Dictionary<uint, Model> modelDict;
+        private Dictionary<uint, ModelData> modelDict;
+        private bool cacheModels = true;
 
         #endregion
 
@@ -42,7 +41,7 @@ namespace XNALibrary
         /// <summary>
         /// Defines mesh data and bounding box.
         /// </summary>
-        public struct Model
+        public struct ModelData
         {
             /// <summary>Original geometry for picking native data.</summary>
             public DFMesh DFMesh;
@@ -58,24 +57,24 @@ namespace XNALibrary
 
             /// <summary>Data for each SubMesh, grouped by texture.</summary>
             public SubMeshData[] SubMeshes;
-        }
 
-        /// <summary>
-        /// Defines submesh data.
-        /// </summary>
-        public struct SubMeshData
-        {
-            /// <summary>Texture archive index.</summary>
-            public int TextureArchive;
+            /// <summary>
+            /// Defines submesh data.
+            /// </summary>
+            public struct SubMeshData
+            {
+                /// <summary>Texture archive index.</summary>
+                public int TextureArchive;
 
-            /// <summary>Texture record index.</summary>
-            public int TextureRecord;
+                /// <summary>Texture record index.</summary>
+                public int TextureRecord;
 
-            /// <summary>User-defined texture key.</summary>
-            public int TextureKey;
+                /// <summary>User-defined texture key.</summary>
+                public int TextureKey;
 
-            /// <summary>Index array desribing the triangles of this SubMesh.</summary>
-            public int[] Indices;
+                /// <summary>Index array desribing the triangles of this SubMesh.</summary>
+                public int[] Indices;
+            }
         }
 
         #endregion
@@ -98,6 +97,17 @@ namespace XNALibrary
             get { return arch3dFile; }
         }
 
+        /// <summary>
+        /// Gets or sets flag controlling cache behaviour.
+        ///  True will cache models when loaded.
+        ///  False will not cache models when loaded.
+        /// </summary>
+        public bool CacheModels
+        {
+            get { return cacheModels; }
+            set { cacheModels = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -111,7 +121,7 @@ namespace XNALibrary
             graphicsDevice = device;
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             this.arena2Path = arena2Path;
-            modelDict = new Dictionary<uint, Model>();
+            modelDict = new Dictionary<uint, ModelData>();
         }
 
         #endregion
@@ -119,94 +129,30 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
-        /// Load and convert Daggerfall mesh data.
-        /// </summary>
-        /// <param name="key">ID of mesh.</param>
-        /// <returns>True if successful.</returns>
-        public bool LoadModel(uint key)
-        {
-            // Return if already loaded
-            if (modelDict.ContainsKey(key))
-                return true;
-
-            // Load mesh data
-            int index = arch3dFile.GetRecordIndex((uint)key);
-            if (index == -1)
-                return false;
-
-            // Convert model and store in dictionary
-            Model model = LoadMeshData(index);
-            modelDict.Add(key, model);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Load and convert Daggerfall mesh data.
-        /// </summary>
-        /// <param name="key">ID of mesh.</param>
-        /// <param name="modelOut">Model out.</param>
-        /// <returns>True if successful.</returns>
-        public bool LoadModel(uint key, out Model modelOut)
-        {
-            // Return if already loaded
-            if (modelDict.ContainsKey(key))
-            {
-                modelOut = modelDict[key];
-                return true;
-            }
-
-            // Load mesh data
-            if (LoadModel(key))
-            {
-                modelOut = modelDict[key];
-                return true;
-            }
-
-            // Load failed
-            modelOut = new Model();
-            return false;
-        }
-
-        /// <summary>
-        /// Gets a Daggerfall model. Will load model if not already loaded.
+        /// Retrieves ModelData from cache.
+        ///  Will load model if not in cache, or if caching is disabled.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
-        public Model GetModel(uint key)
+        public ModelData GetModel(uint key)
         {
-            // Return model if already loaded
-            if (modelDict.ContainsKey(key))
-                return modelDict[key];
-
-            // Load model
-            if (LoadModel(key))
-                return modelDict[key];
-
-            return new Model();
+            // Load model data
+            ModelData modelData;
+            LoadModelData(key, out modelData);
+            return modelData;
         }
 
         /// <summary>
-        /// Gets a Daggerfall model. Will load model if not already loaded.
-        ///  In this overload storing in ModelManager dictionary is optional.
-        ///  Use this method to acquire models for an external caching scheme.
+        /// Retrieves ModelData from cache.
+        ///  Will load model if not in cache, or if caching is disabled.
         /// </summary>
         /// <param name="key">ID of model.</param>
-        /// <param name="addDictionary">True to store in ModelManager's dictionary. False to just return model.</param>
-        /// <returns></returns>
-        public Model GetModel(uint key, bool addDictionary)
+        /// <param name="model">ModelData out.</param>
+        /// <returns>True if successful.</returns>
+        public bool GetModel(uint key, out ModelData model)
         {
-            // Work as normal
-            if (addDictionary)
-                return GetModel(key);
-
-            // Load mesh data
-            int index = arch3dFile.GetRecordIndex((uint)key);
-            if (index == -1)
-                return new Model(); ;
-
-            // Convert model and store in dictionary
-            return LoadMeshData(index);
+            // Load model data
+            return LoadModelData(key, out model);
         }
 
         /// <summary>
@@ -215,8 +161,13 @@ namespace XNALibrary
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <param name="model">Model object.</param>
-        public void SetModel(uint key, ref Model model)
+        public void SetModel(uint key, ref ModelData model)
         {
+            // Do nothing if not caching models
+            if (!cacheModels)
+                return;
+
+            // Add or overwrite cache
             if (modelDict.ContainsKey(key))
                 modelDict[key] = model;
             else
@@ -224,12 +175,12 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Removes model.
+        /// Removes model from cache.
         /// </summary>
         /// <param name="key">ID of model.</param>
         public void RemoveModel(uint key)
         {
-            if (modelDict.ContainsKey(key))
+            if (cacheModels && modelDict.ContainsKey(key))
                 modelDict.Remove(key);
         }
 
@@ -238,7 +189,8 @@ namespace XNALibrary
         /// </summary>
         public void ClearModels()
         {
-            modelDict.Clear();
+            if (cacheModels)
+                modelDict.Clear();
         }
 
         /// <summary>
@@ -247,11 +199,11 @@ namespace XNALibrary
         /// <param name="model">Source Model.</param>
         /// <param name="matrix">Matrix applied to output model.</param>
         /// <returns>Transformed Model.</returns>
-        public Model TransformModel(ref Model model, Matrix matrix)
+        public ModelData TransformModel(ref ModelData model, Matrix matrix)
         {
             // Transform model
             int vertexPos = 0;
-            Model transformedModel = model;
+            ModelData transformedModel = model;
             foreach (var vertex in transformedModel.Vertices)
             {
                 transformedModel.Vertices[vertexPos].Position = Vector3.Transform(vertex.Position, matrix);
@@ -272,22 +224,43 @@ namespace XNALibrary
         #region Private Methods
 
         /// <summary>
-        /// Loads mesh data from DFMesh.
+        /// Loads model data from DFMesh.
         /// </summary>
-        /// <param name="dfMesh">DFMesh source.</param>
-        /// <returns>Mesh object.</returns>
-        private Model LoadMeshData(int index)
+        /// <param name="key">Key of source mesh.</param>
+        /// <param name="model">ModelData out.</param>
+        /// <returns>True if successful.</returns>
+        private bool LoadModelData(uint key, out ModelData model)
         {
-            // Create new mesh
-            Model model = new Model();
+            // Return from cache if present
+            if (cacheModels && modelDict.ContainsKey(key))
+            {
+                model = modelDict[key];
+                return true;
+            }
+
+            // New model object
+            model = new ModelData();
+
+            // Find mesh index
+            int index = arch3dFile.GetRecordIndex(key);
+            if (index == -1)
+                return false;
+
+            // Get DFMesh
             DFMesh dfMesh = arch3dFile.GetMesh(index);
+            if (dfMesh.TotalVertices == 0)
+                return false;
 
             // Load mesh data
             model.DFMesh = dfMesh;
             LoadVertices(ref dfMesh, ref model);
             LoadIndices(ref dfMesh, ref model);
 
-            return model;
+            // Add to cache
+            if (cacheModels)
+                modelDict.Add(key, model);
+
+            return true;
         }
 
         /// <summary>
@@ -295,7 +268,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="dfMesh">DFMesh source object.</param>
         /// <param name="model">Model object.</param>
-        private void LoadVertices(ref DFMesh dfMesh, ref Model model)
+        private void LoadVertices(ref DFMesh dfMesh, ref ModelData model)
         {
             // Allocate vertex buffer
             model.Vertices = new VertexPositionNormalTexture[dfMesh.TotalVertices];
@@ -313,8 +286,8 @@ namespace XNALibrary
                 System.Drawing.Size sz = TextureFile.QuickSize(archivePath, dfSubMesh.TextureRecord);
 
                 // Ensure texture dimensions are POW2 as TextureManager will be emitting POW2 textures
-                int width = (IsPowerOfTwo(sz.Width)) ? sz.Width : NextPowerOfTwo(sz.Width);
-                int height = (IsPowerOfTwo(sz.Height)) ? sz.Height : NextPowerOfTwo(sz.Height);
+                int width = (PowerOfTwo.IsPowerOfTwo(sz.Width)) ? sz.Width : PowerOfTwo.NextPowerOfTwo(sz.Width);
+                int height = (PowerOfTwo.IsPowerOfTwo(sz.Height)) ? sz.Height : PowerOfTwo.NextPowerOfTwo(sz.Height);
                 Vector2 scale = new Vector2(
                     (float)sz.Width / (float)width,
                     (float)sz.Height / (float)height);
@@ -374,10 +347,10 @@ namespace XNALibrary
         /// </summary>
         /// <param name="dfMesh">DFMesh source object.</param>
         /// <param name="model">Model object.</param>
-        private void LoadIndices(ref DFMesh dfMesh, ref Model model)
+        private void LoadIndices(ref DFMesh dfMesh, ref ModelData model)
         {
             // Allocate local submesh buffer
-            model.SubMeshes = new SubMeshData[dfMesh.SubMeshes.Length];
+            model.SubMeshes = new ModelData.SubMeshData[dfMesh.SubMeshes.Length];
 
             // Loop through all submeshes
             int subMeshCount = 0, vertexCount = 0;
@@ -419,28 +392,6 @@ namespace XNALibrary
                 // Increment submesh count
                 subMeshCount++;
             }
-        }
-
-        /// <summary>
-        /// Check if value is a power of 2.
-        /// </summary>
-        /// <param name="x">Value to check.</param>
-        /// <returns>True if power of 2.</returns>
-        private bool IsPowerOfTwo(int x)
-        {
-            return (x & (x - 1)) == 0;
-        }
-
-        /// <summary>
-        /// Finds next power of 2 size for value.
-        /// </summary>
-        /// <param name="x">Value.</param>
-        /// <returns>Next power of 2.</returns>
-        private int NextPowerOfTwo(int x)
-        {
-            int i = 1;
-            while (i < x) { i <<= 1; }
-            return i;
         }
 
         #endregion

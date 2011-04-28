@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,7 +14,6 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-
 #endregion
 
 namespace DaggerfallModelling.Dialogs

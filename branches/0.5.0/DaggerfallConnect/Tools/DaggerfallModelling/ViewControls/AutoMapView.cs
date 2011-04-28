@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +16,6 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace DaggerfallModelling.ViewControls

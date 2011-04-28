@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +17,6 @@ using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -81,7 +79,7 @@ namespace DaggerfallModelling.ViewControls
             public int index;
             public uint key;
             public Rectangle rect;
-            public ModelManager.Model model;
+            public ModelManager.ModelData model;
             public Texture2D texture;
             public Matrix matrix;
             public float rotation;
@@ -319,6 +317,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Reset layout, status message, and refresh
+            host.ModelManager.CacheModels = false;
             thumbScrollVelocity = 0;
             LayoutThumbnails();
             UpdateStatusMessage();
@@ -372,7 +371,7 @@ namespace DaggerfallModelling.ViewControls
             host.SpriteBatch.End();
         }
 
-        private void DrawSingleModel(ref ModelManager.Model model)
+        private void DrawSingleModel(ref ModelManager.ModelData model)
         {
             // Set render states
             host.GraphicsDevice.RenderState.DepthBufferEnable = true;
@@ -575,7 +574,7 @@ namespace DaggerfallModelling.ViewControls
             if (thumb.model.Vertices == null)
             {
                 // Load model
-                thumb.model = host.ModelManager.GetModel(thumb.key, false);
+                thumb.model = host.ModelManager.GetModel(thumb.key);
 
                 // Load texture for each submesh.
                 for (int sm = 0; sm < thumb.model.SubMeshes.Length; sm++)

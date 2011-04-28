@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +18,6 @@ using System.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DaggerfallModelling.ViewControls;
-
 #endregion
 
 namespace DaggerfallModelling
@@ -121,6 +119,12 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
+
+            // TEST: Set a specific view while testing content
+            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            //ContentViewer.ShowLocationExterior(dfLocation);
+            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            //UpdateActiveCameraMode();
 
             // Show thumbnails view
             ContentViewer.ShowThumbnailsView();
@@ -1094,6 +1098,22 @@ namespace DaggerfallModelling
         }
 
         #endregion
+
+        private void ToggleSearchPaneToolStripButton_Click(object sender, EventArgs e)
+        {
+            if (ToggleSearchPaneToolStripButton.Checked)
+            {
+                MainSplitContainer.Panel1Collapsed = true;
+                ToggleSearchPaneToolStripButton.Checked = false;
+                ToggleSearchPaneToolStripButton.Image = Properties.Resources.application_side_expand;
+            }
+            else
+            {
+                MainSplitContainer.Panel1Collapsed = false;
+                ToggleSearchPaneToolStripButton.Checked = true;
+                ToggleSearchPaneToolStripButton.Image = Properties.Resources.application_side_contract;
+            }
+        }
 
     }
 }

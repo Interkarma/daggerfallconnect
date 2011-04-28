@@ -64,6 +64,8 @@
     <Compile Include="Dialogs\BrowseExportModelDialog.designer.cs">
       <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="ViewComponents\ComponentBase.cs" />
+    <Compile Include="ViewComponents\SkyComponent.cs" />
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -202,6 +204,8 @@
     <None Include="Resources\package.png" />
     <None Include="Resources\model_find2.png" />
     <None Include="Resources\disk.png" />
+    <None Include="Resources\application_side_contract.png" />
+    <None Include="Resources\application_side_expand.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

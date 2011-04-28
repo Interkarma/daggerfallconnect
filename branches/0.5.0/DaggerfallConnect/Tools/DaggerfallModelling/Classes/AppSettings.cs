@@ -6,14 +6,12 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.IO;
-
 #endregion
 
 namespace DaggerfallModelling.Classes

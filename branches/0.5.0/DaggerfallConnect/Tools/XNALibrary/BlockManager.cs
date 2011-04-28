@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +16,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
-
 #endregion
 
 namespace XNALibrary
@@ -34,7 +32,7 @@ namespace XNALibrary
 
         private BlocksFile blocksFile;
         private const float rotationDivisor = 5.68888888888889f;
-        private Dictionary<string, Block> blockDictionary;
+        private Dictionary<string, BlockData> blockDictionary;
 
         #endregion
 
@@ -45,7 +43,7 @@ namespace XNALibrary
         ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
         ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
-        public struct Block
+        public struct BlockData
         {
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
@@ -60,13 +58,13 @@ namespace XNALibrary
             public VertexPositionNormalTexture[] GroundPlaneVertices;
 
             /// <summary>Array of models used to build this block.</summary>
-            public List<ModelInfo> Models;
+            public List<BlockModel> Models;
         }
 
         /// <summary>
         /// Describes a bounding volume and model ID within the block.
         /// </summary>
-        public struct ModelInfo
+        public struct BlockModel
         {
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
@@ -107,7 +105,7 @@ namespace XNALibrary
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
 
             // Create block dictionary 
-            blockDictionary = new Dictionary<string, Block>();
+            blockDictionary = new Dictionary<string, BlockData>();
         }
 
         #endregion
@@ -119,7 +117,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="name">Name of block.</param>
         /// <returns>Block.</returns>
-        public Block LoadBlock(string name)
+        public BlockData LoadBlock(string name)
         {
             if (!blockDictionary.ContainsKey(name))
             {
@@ -137,7 +135,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="index">Index of block.</param>
         /// <returns>Block.</returns>
-        public Block LoadBlock(int index)
+        public BlockData LoadBlock(int index)
         {
             string name = blocksFile.GetBlockName(index);
             if (!blockDictionary.ContainsKey(name))
@@ -158,7 +156,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="textureManager">TextureManager.</param>
         /// <param name="block">Block.</param>
-        public void BuildRmbGroundPlane(TextureManager textureManager, ref Block block)
+        public void BuildRmbGroundPlane(TextureManager textureManager, ref BlockData block)
         {
             // Create vertex list for ground plane.
             // A ground plane consists of 16x16 tiled squares.
@@ -184,13 +182,13 @@ namespace XNALibrary
 
         #region Content Loading Methods
 
-        private Block LoadBlockData(string name)
+        private BlockData LoadBlockData(string name)
         {
             // Get block data
             DFBlock dfBlock = blocksFile.GetBlock(name);
 
             // Create new local block instance
-            Block block = new Block();
+            BlockData block = new BlockData();
             block.DFBlock = dfBlock;
             block.UpdateRequired = true;
 
@@ -214,7 +212,7 @@ namespace XNALibrary
             return block;
         }
 
-        private void StubRmbBlockLayout(ref Block block)
+        private void StubRmbBlockLayout(ref BlockData block)
         {
             // Create bounding box for this block.
             // All outdoor blocks are initialised to 4096x512x4096.
@@ -228,7 +226,7 @@ namespace XNALibrary
             // Create model info list with a starting capacity equal to subrecord count.
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
-            block.Models = new List<ModelInfo>(block.DFBlock.RmbBlock.SubRecords.Length);
+            block.Models = new List<BlockModel>(block.DFBlock.RmbBlock.SubRecords.Length);
 
             // Iterate through all subrecords
             float degrees;
@@ -255,7 +253,7 @@ namespace XNALibrary
                     objMatrix *= translation;
 
                     // Create stub of model info
-                    ModelInfo modelInfo = new ModelInfo();
+                    BlockModel modelInfo = new BlockModel();
                     modelInfo.ModelId = obj.ModelIdNum;
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
                     block.Models.Add(modelInfo);
@@ -263,7 +261,7 @@ namespace XNALibrary
             }
         }
 
-        private void StubRdbBlockLayout(ref Block block)
+        private void StubRdbBlockLayout(ref BlockData block)
         {
             float degreesX, degreesY, degreesZ;
             Matrix rotationX, rotationY, rotationZ;
@@ -279,7 +277,7 @@ namespace XNALibrary
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
             // Create empty model info list. This will grow as needed
-            block.Models = new List<ModelInfo>();
+            block.Models = new List<BlockModel>();
 
             // Iterate through object groups
             foreach (DFBlock.RdbObjectRoot group in block.DFBlock.RdbBlock.ObjectRootList)
@@ -317,7 +315,7 @@ namespace XNALibrary
                             rotation *= rotationZ;
 
                             // Create stub of model info
-                            ModelInfo modelInfo = new ModelInfo();
+                            BlockModel modelInfo = new BlockModel();
                             modelInfo.ModelId = modelId;
                             modelInfo.Matrix = rotation * translation;
                             block.Models.Add(modelInfo);

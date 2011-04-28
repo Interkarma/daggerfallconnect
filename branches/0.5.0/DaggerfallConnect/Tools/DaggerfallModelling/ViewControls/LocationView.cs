@@ -6,8 +6,7 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Imports
-
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +17,7 @@ using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-
+using DaggerfallModelling.ViewComponents;
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -51,6 +50,9 @@ namespace DaggerfallModelling.ViewControls
         private BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
         private Dictionary<int, BatchItemArray> exteriorBatches = new Dictionary<int, BatchItemArray>();
         private Dictionary<int, BatchItemArray> dungeonBatches = new Dictionary<int, BatchItemArray>();
+
+        // Components
+        private SkyComponent sky;
 
         // Location
         private string currentBlockName = string.Empty;
@@ -97,6 +99,7 @@ namespace DaggerfallModelling.ViewControls
         
 #if DEBUG
         // Performance profiling
+        private StringBuilder perfStatusBuilder = new StringBuilder(256);
         private WeakReference gcTracker = new WeakReference(new object());
         private long drawTime;
         private int visibleTriangles;
@@ -134,14 +137,20 @@ namespace DaggerfallModelling.ViewControls
         {
             /// <summary>No flags set.</summary>
             None = 0,
+            /// <summary>Render sky behind exterior blocks.</summary>
+            RmbSky = 1,
             /// <summary>Render ground plane below exterior blocks.</summary>
-            RmbGroundPlane = 1,
+            RmbGroundPlane = 2,
             /// <summary>Render miscellaneous ground objects (e.g. signs and gravestones).</summary>
-            RmbGroundObjects = 2,
+            RmbGroundObjects = 4,
             /// <summary>Render ground scenery (e.g. rocks and trees) in exterior blocks.</summary>
-            RmbGroundFlats = 4,
+            RmbGroundFlats = 8,
             /// <summary>Render flats (e.g. NPCs and lights) in dungeon blocks. </summary>
-            RdbFlats = 8,
+            RdbFlats = 16,
+            /// <summary>Mouse-model picking.</summary>
+            MousePicking = 32,
+            /// <summary>Controller-model picking.</summary>
+            ControllerPicking = 64,
         }
 
         /// <summary>
@@ -151,7 +160,7 @@ namespace DaggerfallModelling.ViewControls
         {
             public string name;
             public Vector3 position;
-            public BlockManager.Block block;
+            public BlockManager.BlockData block;
         }
 
         /// <summary>
@@ -312,6 +321,11 @@ namespace DaggerfallModelling.ViewControls
 
             // Create view frustum
             viewFrustum = new BoundingFrustum(Matrix.Identity);
+
+            // Create sky component
+            sky = new SkyComponent(host);
+            sky.Initialize();
+            sky.Enabled = false;
         }
 
         /// <summary>
@@ -321,6 +335,9 @@ namespace DaggerfallModelling.ViewControls
         {
             // Update cameras
             UpdateCameras();
+
+            // Update components
+            sky.Tick();
 
 #if DEBUG
             // Track garbage collections
@@ -347,17 +364,19 @@ namespace DaggerfallModelling.ViewControls
 
             // Execute pipeline
             host.GraphicsDevice.Clear(backgroundColor);
+            SetRenderStates();
+            sky.Draw();
             ClearBatches();
             BatchScene();
             MouseModelIntersection();
-            SetRenderStates();
             DrawBatches();
 
 #if DEBUG
             // Get total draw time (will always be at least 1 tick)
             drawTime = (host.Timer.ElapsedTicks - startTime) + 1;
 
-            // Display performance status in debug mode
+            // The String.Format here creates nearly all the garbage collections reported.
+            // TODO: Implement a garbage-free means of reporting this information.
             string performance = string.Format(
                 "GarbageCollections={0}, VisibleBatches={1}, MaxBatchArrayLength={2}, VisibleTriangles={3}, DrawTime={4}, FPS={5:0.00}",
                 garbageCollections,
@@ -487,6 +506,7 @@ namespace DaggerfallModelling.ViewControls
             cameraVelocity = Vector3.Zero;
 
             // Resume view
+            host.ModelManager.CacheModels = true;
             UpdateProjectionMatrix();
             UpdateStatusMessage();
             host.Refresh();
@@ -622,7 +642,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="block">BlockManager.Block</param>
         /// <param name="blockTransform">Block transform.</param>
         /// <param name="mouseInBlock">True if mouse ray in block bounds.</param>
-        private void BatchBlock(ref BlockManager.Block block, ref Matrix blockTransform, bool mouseInBlock)
+        private void BatchBlock(ref BlockManager.BlockData block, ref Matrix blockTransform, bool mouseInBlock)
         {
             // Iterate each model in this block
             int modelIndex = 0;
@@ -656,7 +676,7 @@ namespace DaggerfallModelling.ViewControls
                 }
 
                 // Add the model
-                ModelManager.Model model = host.ModelManager.GetModel(modelInfo.ModelId);
+                ModelManager.ModelData model = host.ModelManager.GetModel(modelInfo.ModelId);
                 BatchModel(ref model, ref modelTransform);
 
                 // Increment index
@@ -673,7 +693,7 @@ namespace DaggerfallModelling.ViewControls
             //    Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
 
             //    // Draw ground plane
-            //    //DrawGroundPlane(ref block, ref groundTransform);
+            //    DrawGroundPlane(ref block, ref groundTransform);
             //}
         }
 
@@ -682,7 +702,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="model">ModelManager.Model.</param>
         /// <param name="modelTransform">Model transform.</param>
-        private void BatchModel(ref ModelManager.Model model, ref Matrix modelTransform)
+        private void BatchModel(ref ModelManager.ModelData model, ref Matrix modelTransform)
         {
             // Exit if no model loaded
             if (model.Vertices == null)
@@ -699,7 +719,6 @@ namespace DaggerfallModelling.ViewControls
                 // Increment triangle counter
                 visibleTriangles += subMesh.Indices.Length / 3;
 #endif
-
                 // Add subMesh to batch
                 if (batches.ContainsKey(subMesh.TextureKey))
                 {
@@ -733,10 +752,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Set terrain texture atlas
             modelEffect.Texture = host.TextureManager.TerrainAtlas;
-
-            // TEST: Increment counters
-            textureChanges++;
-            trianglesDrawn += 512;
 
             // Set clamp mode
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
@@ -772,7 +787,7 @@ namespace DaggerfallModelling.ViewControls
             foreach (var mi in modelIntersections)
             {
                 // Get model
-                ModelManager.Model model = host.ModelManager.GetModel(mi.ModelID.Value);
+                ModelManager.ModelData model = host.ModelManager.GetModel(mi.ModelID.Value);
 
                 // Test model
                 bool insideBoundingSphere;
@@ -799,7 +814,7 @@ namespace DaggerfallModelling.ViewControls
             if (closestModelIntersection != null)
             {
                 // Draw bounding box to see what has been intersected
-                ModelManager.Model model = host.ModelManager.GetModel(closestModelIntersection.ModelID.Value);
+                ModelManager.ModelData model = host.ModelManager.GetModel(closestModelIntersection.ModelID.Value);
                 DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
 
                 // Store modelid of model under mouse
@@ -813,7 +828,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="color">Line color.</param>
         /// <param name="model">ModelManager.Model.</param>
         /// <param name="matrix">Matrix.</param>
-        private void DrawNativeMesh(Color color, ref ModelManager.Model model, Matrix matrix)
+        private void DrawNativeMesh(Color color, ref ModelManager.ModelData model, Matrix matrix)
         {
             // Scale up just a little to make outline visually pop
             matrix = Matrix.CreateScale(1.015f) * matrix;
@@ -1375,7 +1390,7 @@ namespace DaggerfallModelling.ViewControls
         /// Ensures block content is loaded and bounding box correctly sized.
         /// </summary>
         /// <param name="block">BlockManager.Block.</param>
-        private bool UpdateBlock(ref BlockManager.Block block)
+        private bool UpdateBlock(ref BlockManager.BlockData block)
         {
             // Get batches
             Dictionary<int, BatchItemArray> batches;
@@ -1388,11 +1403,12 @@ namespace DaggerfallModelling.ViewControls
             for (int i = 0; i < block.Models.Count; i++)
             {
                 // Get model info
-                BlockManager.ModelInfo info = block.Models[i];
+                BlockManager.BlockModel info = block.Models[i];
 
                 // Load model resource
-                ModelManager.Model model;
-                host.ModelManager.LoadModel(info.ModelId, out model);
+                ModelManager.ModelData model;
+                if (!host.ModelManager.GetModel(info.ModelId, out model))
+                    return false;
 
                 // Load texture resources for this model
                 for (int sm = 0; sm < model.SubMeshes.Length; sm++)

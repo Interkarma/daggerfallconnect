@@ -76,6 +76,7 @@
     <Compile Include="ContentHelper.cs" />
     <Compile Include="Intersection.cs" />
     <Compile Include="ModelManager.cs" />
+    <Compile Include="PowerOfTwo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderableBoundingBox.cs" />
     <Compile Include="RenderableBoundingSphere.cs" />
