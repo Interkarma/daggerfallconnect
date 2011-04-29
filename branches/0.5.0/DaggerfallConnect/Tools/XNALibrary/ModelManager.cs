@@ -21,7 +21,8 @@ namespace XNALibrary
 {
     /// <summary>
     /// Helper class to load and store Daggerfall models for XNA. Does not load textures, but does calc UV coordinates.
-    ///  This is to allow developers to apply their own texture logic independant of model loading.
+    ///  This is to allow developers to apply their own texture logic independent of model loading.
+    ///  Model data is stored as vertex and index arrays.
     /// </summary>
     public class ModelManager
     {
@@ -31,8 +32,8 @@ namespace XNALibrary
         string arena2Path = string.Empty;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
-        private Dictionary<uint, ModelData> modelDict;
-        private bool cacheModels = true;
+        private Dictionary<uint, ModelData> modelDataDict;
+        private bool cacheModelData = true;
 
         #endregion
 
@@ -43,17 +44,26 @@ namespace XNALibrary
         /// </summary>
         public struct ModelData
         {
-            /// <summary>Original geometry for picking native data.</summary>
+            /// <summary>Native geometry as read from ARCH3D.BSA.</summary>
             public DFMesh DFMesh;
 
-            /// <summary>Axis-aligned bounding box of mesh data.</summary>
+            /// <summary>Axis-aligned bounding box tightly surrounding mesh data.</summary>
             public BoundingBox BoundingBox;
 
-            /// <summary>Bounding sphere containing mesh data.</summary>
+            /// <summary>Bounding sphere tightly surrounding mesh data.</summary>
             public BoundingSphere BoundingSphere;
 
             /// <summary>Vertex array containing position, normal, and texture coordinates.</summary>
             public VertexPositionNormalTexture[] Vertices;
+
+            /// <summary>Index array desribing the triangles of this mesh.</summary>
+            public short[] Indices;
+
+            /// <summary>Vertex buffer.</summary>
+            public VertexBuffer VertexBuffer;
+
+            /// <summary>Index buffer.</summary>
+            public IndexBuffer IndexBuffer;
 
             /// <summary>Data for each SubMesh, grouped by texture.</summary>
             public SubMeshData[] SubMeshes;
@@ -63,17 +73,14 @@ namespace XNALibrary
             /// </summary>
             public struct SubMeshData
             {
-                /// <summary>Texture archive index.</summary>
-                public int TextureArchive;
-
-                /// <summary>Texture record index.</summary>
-                public int TextureRecord;
-
-                /// <summary>User-defined texture key.</summary>
+                /// <summary>TextureManager key.</summary>
                 public int TextureKey;
 
-                /// <summary>Index array desribing the triangles of this SubMesh.</summary>
-                public int[] Indices;
+                /// <summary>Location in the index array at which to start reading vertices.</summary>
+                public int StartIndex;
+
+                /// <summary>Number of primitives in this submesh.</summary>
+                public int PrimitiveCount;
             }
         }
 
@@ -99,13 +106,13 @@ namespace XNALibrary
 
         /// <summary>
         /// Gets or sets flag controlling cache behaviour.
-        ///  True will cache models when loaded.
-        ///  False will not cache models when loaded.
+        ///  True will cache model data when loaded.
+        ///  False will not cache model data when loaded.
         /// </summary>
-        public bool CacheModels
+        public bool CacheModelData
         {
-            get { return cacheModels; }
-            set { cacheModels = value; }
+            get { return cacheModelData; }
+            set { cacheModelData = value; }
         }
 
         #endregion
@@ -121,7 +128,7 @@ namespace XNALibrary
             graphicsDevice = device;
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
             this.arena2Path = arena2Path;
-            modelDict = new Dictionary<uint, ModelData>();
+            modelDataDict = new Dictionary<uint, ModelData>();
         }
 
         #endregion
@@ -129,12 +136,11 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
-        /// Retrieves ModelData from cache.
-        ///  Will load model if not in cache, or if caching is disabled.
+        /// Get model data.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
-        public ModelData GetModel(uint key)
+        public ModelData GetModelData(uint key)
         {
             // Load model data
             ModelData modelData;
@@ -143,80 +149,80 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Retrieves ModelData from cache.
-        ///  Will load model if not in cache, or if caching is disabled.
+        /// Get model data.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <param name="model">ModelData out.</param>
         /// <returns>True if successful.</returns>
-        public bool GetModel(uint key, out ModelData model)
+        public bool GetModelData(uint key, out ModelData modelData)
         {
             // Load model data
-            return LoadModelData(key, out model);
+            return LoadModelData(key, out modelData);
         }
 
         /// <summary>
-        /// Sets a model. Use a unique key to store as a different model
-        ///  or existing key to overwrite a model.
+        /// Set model data. Use a unique key to store as different model data
+        ///  or existing key to overwrite model data.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <param name="model">Model object.</param>
-        public void SetModel(uint key, ref ModelData model)
+        public void SetModelData(uint key, ref ModelData modelData)
         {
             // Do nothing if not caching models
-            if (!cacheModels)
+            if (!cacheModelData)
                 return;
 
             // Add or overwrite cache
-            if (modelDict.ContainsKey(key))
-                modelDict[key] = model;
+            if (modelDataDict.ContainsKey(key))
+                modelDataDict[key] = modelData;
             else
-                modelDict.Add(key, model);
+                modelDataDict.Add(key, modelData);
         }
 
         /// <summary>
-        /// Removes model from cache.
+        /// Removes model data from cache.
         /// </summary>
         /// <param name="key">ID of model.</param>
-        public void RemoveModel(uint key)
+        public void RemoveModelData(uint key)
         {
-            if (cacheModels && modelDict.ContainsKey(key))
-                modelDict.Remove(key);
+            if (cacheModelData && modelDataDict.ContainsKey(key))
+                modelDataDict.Remove(key);
         }
 
         /// <summary>
-        /// Clear all models.
+        /// Clear all cached model data.
         /// </summary>
-        public void ClearModels()
+        public void ClearModelData()
         {
-            if (cacheModels)
-                modelDict.Clear();
+            if (cacheModelData)
+                modelDataDict.Clear();
         }
 
         /// <summary>
-        /// Transforms vertices and bounding box of model. Source model is unchanged.
+        /// Transforms vertices and bounding box of model data.
+        ///  Source model data is unchanged.
         /// </summary>
         /// <param name="model">Source Model.</param>
         /// <param name="matrix">Matrix applied to output model.</param>
         /// <returns>Transformed Model.</returns>
-        public ModelData TransformModel(ref ModelData model, Matrix matrix)
+        public ModelData TransformModelData(ref ModelData modelData, Matrix matrix)
         {
             // Transform model
             int vertexPos = 0;
-            ModelData transformedModel = model;
-            foreach (var vertex in transformedModel.Vertices)
+            ModelData transformedModelData = modelData;
+            foreach (var vertex in transformedModelData.Vertices)
             {
-                transformedModel.Vertices[vertexPos].Position = Vector3.Transform(vertex.Position, matrix);
-                transformedModel.Vertices[vertexPos].Normal = vertex.Normal;
-                transformedModel.Vertices[vertexPos].TextureCoordinate = vertex.TextureCoordinate;
+                transformedModelData.Vertices[vertexPos].Position = Vector3.Transform(vertex.Position, matrix);
+                transformedModelData.Vertices[vertexPos].Normal = vertex.Normal;
+                transformedModelData.Vertices[vertexPos].TextureCoordinate = vertex.TextureCoordinate;
                 vertexPos++;
             }
 
             // Transform bounding box
-            transformedModel.BoundingBox.Min = Vector3.Transform(transformedModel.BoundingBox.Min, matrix);
-            transformedModel.BoundingBox.Max = Vector3.Transform(transformedModel.BoundingBox.Max, matrix);
+            transformedModelData.BoundingBox.Min = Vector3.Transform(transformedModelData.BoundingBox.Min, matrix);
+            transformedModelData.BoundingBox.Max = Vector3.Transform(transformedModelData.BoundingBox.Max, matrix);
 
-            return transformedModel;
+            return transformedModelData;
         }
 
         #endregion
@@ -232,9 +238,9 @@ namespace XNALibrary
         private bool LoadModelData(uint key, out ModelData model)
         {
             // Return from cache if present
-            if (cacheModels && modelDict.ContainsKey(key))
+            if (cacheModelData && modelDataDict.ContainsKey(key))
             {
-                model = modelDict[key];
+                model = modelDataDict[key];
                 return true;
             }
 
@@ -253,12 +259,12 @@ namespace XNALibrary
 
             // Load mesh data
             model.DFMesh = dfMesh;
-            LoadVertices(ref dfMesh, ref model);
-            LoadIndices(ref dfMesh, ref model);
+            LoadVertices(ref model);
+            LoadIndices(ref model);
 
             // Add to cache
-            if (cacheModels)
-                modelDict.Add(key, model);
+            if (cacheModelData)
+                modelDataDict.Add(key, model);
 
             return true;
         }
@@ -266,12 +272,11 @@ namespace XNALibrary
         /// <summary>
         /// Loads all vertices for this DFMesh.
         /// </summary>
-        /// <param name="dfMesh">DFMesh source object.</param>
         /// <param name="model">Model object.</param>
-        private void LoadVertices(ref DFMesh dfMesh, ref ModelData model)
+        private void LoadVertices(ref ModelData model)
         {
             // Allocate vertex buffer
-            model.Vertices = new VertexPositionNormalTexture[dfMesh.TotalVertices];
+            model.Vertices = new VertexPositionNormalTexture[model.DFMesh.TotalVertices];
 
             // Track min and max vectors for bounding box
             Vector3 min = new Vector3(0, 0, 0);
@@ -279,7 +284,7 @@ namespace XNALibrary
 
             // Loop through all submeshes
             int vertexCount = 0;
-            foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
+            foreach (DFMesh.DFSubMesh dfSubMesh in model.DFMesh.SubMeshes)
             {
                 // Get texture dimensions for this submesh
                 string archivePath = Path.Combine(arena2Path, TextureFile.IndexToFileName(dfSubMesh.TextureArchive));
@@ -325,6 +330,13 @@ namespace XNALibrary
                 }
             }
 
+            // Create VertexBuffer
+            model.VertexBuffer = new VertexBuffer(
+                graphicsDevice,
+                VertexPositionNormalTexture.SizeInBytes * model.DFMesh.TotalVertices,
+                BufferUsage.WriteOnly);
+            model.VertexBuffer.SetData<VertexPositionNormalTexture>(model.Vertices);
+
             // Create bounding box
             model.BoundingBox = new BoundingBox(min, max);
 
@@ -345,31 +357,29 @@ namespace XNALibrary
         /// <summary>
         /// Build indices for this DFMesh.
         /// </summary>
-        /// <param name="dfMesh">DFMesh source object.</param>
         /// <param name="model">Model object.</param>
-        private void LoadIndices(ref DFMesh dfMesh, ref ModelData model)
+        private void LoadIndices(ref ModelData model)
         {
-            // Allocate local submesh buffer
-            model.SubMeshes = new ModelData.SubMeshData[dfMesh.SubMeshes.Length];
+            // Allocate model data submesh buffer
+            model.SubMeshes = new ModelData.SubMeshData[model.DFMesh.SubMeshes.Length];
 
-            // Loop through all submeshes
-            int subMeshCount = 0, vertexCount = 0;
-            foreach (DFMesh.DFSubMesh dfSubMesh in dfMesh.SubMeshes)
+            // Allocate index buffer
+            model.Indices = new short[model.DFMesh.TotalTriangles * 3];
+
+            // Iterate through all submeshes
+            short indexCount = 0;
+            short subMeshCount = 0, vertexCount = 0;
+            foreach (DFMesh.DFSubMesh dfSubMesh in model.DFMesh.SubMeshes)
             {
-                // Set texture indices
-                model.SubMeshes[subMeshCount].TextureArchive = dfSubMesh.TextureArchive;
-                model.SubMeshes[subMeshCount].TextureRecord = dfSubMesh.TextureRecord;
-                model.SubMeshes[subMeshCount].TextureKey = -1;
+                // Set start index and primitive count for this submesh
+                model.SubMeshes[subMeshCount].StartIndex = indexCount;
+                model.SubMeshes[subMeshCount].PrimitiveCount = dfSubMesh.TotalTriangles;
 
-                // Allocate index buffer
-                model.SubMeshes[subMeshCount].Indices = new int[dfSubMesh.TotalTriangles * 3];
-
-                // Loop through all planes in this submesh
-                int indexCount = 0;
+                // Iterate through all planes in this submesh
                 foreach (DFMesh.DFPlane dfPlane in dfSubMesh.Planes)
                 {
                     // Every DFPlane is a triangle fan radiating from point 0
-                    int sharedPoint = vertexCount++;
+                    short sharedPoint = vertexCount++;
 
                     // Index remaining points. There are (plane.Points.Length - 2) triangles in every plane
                     for (int tri = 0; tri < dfPlane.Points.Length - 2; tri++)
@@ -377,9 +387,9 @@ namespace XNALibrary
                         // Store 3 points of current triangle.
                         // The second two indices are swapped so the winding order is correct after
                         // inverting Y and Z axes in LoadVertices().
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = sharedPoint;
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = vertexCount + 1;
-                        model.SubMeshes[subMeshCount].Indices[indexCount++] = vertexCount;
+                        model.Indices[indexCount++] = sharedPoint;
+                        model.Indices[indexCount++] = (short)(vertexCount + 1);
+                        model.Indices[indexCount++] = vertexCount;
 
                         // Increment vertexCount to next point in fan
                         vertexCount++;
@@ -392,6 +402,14 @@ namespace XNALibrary
                 // Increment submesh count
                 subMeshCount++;
             }
+
+            // Create IndexBuffer
+            model.IndexBuffer = new IndexBuffer(
+                graphicsDevice,
+                sizeof(short) * (model.DFMesh.TotalTriangles * 3),
+                BufferUsage.WriteOnly,
+                IndexElementSize.SixteenBits);
+            model.IndexBuffer.SetData<short>(model.Indices);
         }
 
         #endregion

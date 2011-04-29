@@ -814,6 +814,7 @@ namespace DaggerfallConnect.Arena2
             }
 
             // Copy valid mesh data from buffer into mesh record
+            int totalTriangles = 0;
             for (int submesh = 0; submesh < uniquetextureCount; submesh++)
             {
                 // Store texture information
@@ -836,7 +837,13 @@ namespace DaggerfallConnect.Arena2
                         Records[Record].DFMesh.SubMeshes[submesh].Planes[plane].UVGenerationMethod = SubMeshBuffer[submesh].PlaneBuffer[plane].UVGenerationMethod;
                     }
                 }
+
+                // Increment total triangle for this submesh
+                totalTriangles += Records[Record].DFMesh.SubMeshes[submesh].TotalTriangles;
             }
+
+            // Store total triangle across whole mesh
+            Records[Record].DFMesh.TotalTriangles = totalTriangles;
 
             return true;
         }

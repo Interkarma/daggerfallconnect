@@ -77,7 +77,7 @@ namespace DaggerfallModelling
             {
                 ContentViewer.TextureManager.ClearTextures();
                 ContentViewer.TextureManager.ClearAtlases();
-                ContentViewer.ModelManager.ClearModels();
+                ContentViewer.ModelManager.ClearModelData();
             }
 
             // Reset search

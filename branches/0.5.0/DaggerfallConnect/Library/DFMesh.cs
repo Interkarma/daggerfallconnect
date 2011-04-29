@@ -33,6 +33,9 @@ namespace DaggerfallConnect
         /// <summary>Total number of vertices across all submeshes. Helpful for allocating vertex buffers.</summary>
         public int TotalVertices;
 
+        /// <summary>Total number of triangles across all subeshes. Helpful for allocating index buffers.</summary>
+        public int TotalTriangles;
+
         /// <summary>Submesh array. Each submesh contains DFPlane structures grouped by texture.</summary>
         public DFSubMesh[] SubMeshes;
 
@@ -64,7 +67,7 @@ namespace DaggerfallConnect
             /// <summary>Texture record index. Used to determine which texture record (index) to load from archive.</summary>
             public int TextureRecord;
 
-            /// <summary>Total number of distinct triangles in this submesh. Helpful for allocating index buffers.</summary>
+            /// <summary>Total number of triangles in this submesh. Helpful for allocating index buffers.</summary>
             public int TotalTriangles;
 
             /// <summary>Array of faces sharing the same texture.</summary>

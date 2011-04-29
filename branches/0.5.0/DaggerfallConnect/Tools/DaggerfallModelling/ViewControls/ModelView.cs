@@ -51,6 +51,7 @@ namespace DaggerfallModelling.ViewControls
         private Vector3 cameraUpVector = Vector3.Up;
 
         // Movement
+        private const float spinRate = 0.2f;
         private Matrix modelRotation = Matrix.Identity;
         private Matrix modelTranslation = Matrix.Identity;
         private float cameraStep = 0.5f;
@@ -169,8 +170,8 @@ namespace DaggerfallModelling.ViewControls
             if (host.LeftMouseDown)
             {
                 // Adjust model rotation
-                float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * 0.4f);
-                float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * 0.4f);
+                float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * spinRate);
+                float modelPitch = MathHelper.ToRadians((float)host.MousePosDelta.Y * spinRate);
                 Matrix rotation = Matrix.CreateRotationY(modelYaw) * Matrix.CreateRotationX(modelPitch);
                 modelRotation *= rotation;
             }
@@ -245,7 +246,7 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             base.ResumeView();
-            host.ModelManager.CacheModels = false;
+            host.ModelManager.CacheModelData = false;
             UpdateStatusMessage();
             UpdateProjectionMatrix();
             LayoutModel();
@@ -296,6 +297,15 @@ namespace DaggerfallModelling.ViewControls
             // Transform world
             modelEffect.World = modelRotation * modelTranslation;
 
+            // Set vertex buffer
+            host.GraphicsDevice.Vertices[0].SetSource(
+                currentModel.VertexBuffer,
+                0,
+                VertexPositionNormalTexture.SizeInBytes);
+
+            // Set index buffer
+            host.GraphicsDevice.Indices = currentModel.IndexBuffer;
+
             // Test for intersection
             bool insideBoundingSphere;
             int subMeshResult, planeResult;
@@ -307,21 +317,26 @@ namespace DaggerfallModelling.ViewControls
                 out subMeshResult,
                 out planeResult);
 
+            modelEffect.Begin();
+            modelEffect.CurrentTechnique.Passes[0].Begin();
+
             // Draw submeshes
-            foreach (var submesh in currentModel.SubMeshes)
+            foreach (var subMesh in currentModel.SubMeshes)
             {
-                modelEffect.Texture = host.TextureManager.GetTexture(submesh.TextureKey);
+                modelEffect.Texture = host.TextureManager.GetTexture(subMesh.TextureKey);
+                modelEffect.CommitChanges();
 
-                modelEffect.Begin();
-                modelEffect.CurrentTechnique.Passes[0].Begin();
-
-                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                    currentModel.Vertices, 0, currentModel.Vertices.Length,
-                    submesh.Indices, 0, submesh.Indices.Length / 3);
-
-                modelEffect.CurrentTechnique.Passes[0].End();
-                modelEffect.End();
+                host.GraphicsDevice.DrawIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    0,
+                    0,
+                    currentModel.Vertices.Length,
+                    subMesh.StartIndex,
+                    subMesh.PrimitiveCount);
             }
+
+            modelEffect.CurrentTechnique.Passes[0].End();
+            modelEffect.End();
 
             // Only do this when mouse inside bounding sphere
             if (insideBoundingSphere)
@@ -477,7 +492,7 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Load the model
-            currentModel = host.ModelManager.GetModel(id.Value);
+            currentModel = host.ModelManager.GetModelData(id.Value);
 
             // Load texture for each submesh.
             for (int sm = 0; sm < currentModel.SubMeshes.Length; sm++)
@@ -485,8 +500,8 @@ namespace DaggerfallModelling.ViewControls
                 // Load textures
                 currentModel.SubMeshes[sm].TextureKey =
                     host.TextureManager.LoadTexture(
-                    currentModel.SubMeshes[sm].TextureArchive,
-                    currentModel.SubMeshes[sm].TextureRecord);
+                    currentModel.DFMesh.SubMeshes[sm].TextureArchive,
+                    currentModel.DFMesh.SubMeshes[sm].TextureRecord);
             }
 
             // Centre camera and reset model rotation

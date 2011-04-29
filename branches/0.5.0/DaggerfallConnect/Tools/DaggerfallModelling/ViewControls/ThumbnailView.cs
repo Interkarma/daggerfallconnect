@@ -317,7 +317,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Reset layout, status message, and refresh
-            host.ModelManager.CacheModels = false;
+            host.ModelManager.CacheModelData = false;
             thumbScrollVelocity = 0;
             LayoutThumbnails();
             UpdateStatusMessage();
@@ -400,9 +400,14 @@ namespace DaggerfallModelling.ViewControls
                 effect.Begin();
                 effect.CurrentTechnique.Passes[0].Begin();
 
-                host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                    model.Vertices, 0, model.Vertices.Length,
-                    submesh.Indices, 0, submesh.Indices.Length / 3);
+                host.GraphicsDevice.DrawUserIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    model.Vertices,
+                    0,
+                    model.Vertices.Length,
+                    model.Indices,
+                    submesh.StartIndex,
+                    submesh.PrimitiveCount);
 
                 effect.CurrentTechnique.Passes[0].End();
                 effect.End();
@@ -574,7 +579,7 @@ namespace DaggerfallModelling.ViewControls
             if (thumb.model.Vertices == null)
             {
                 // Load model
-                thumb.model = host.ModelManager.GetModel(thumb.key);
+                thumb.model = host.ModelManager.GetModelData(thumb.key);
 
                 // Load texture for each submesh.
                 for (int sm = 0; sm < thumb.model.SubMeshes.Length; sm++)
@@ -582,8 +587,8 @@ namespace DaggerfallModelling.ViewControls
                     // Load textures
                     thumb.model.SubMeshes[sm].TextureKey =
                         host.TextureManager.LoadTexture(
-                        thumb.model.SubMeshes[sm].TextureArchive,
-                        thumb.model.SubMeshes[sm].TextureRecord);
+                        thumb.model.DFMesh.SubMeshes[sm].TextureArchive,
+                        thumb.model.DFMesh.SubMeshes[sm].TextureRecord);
                 }
 
                 // Centre model
@@ -604,7 +609,7 @@ namespace DaggerfallModelling.ViewControls
                 matrix *= Matrix.CreateScale(scale);
 
                 // Apply matrix to model
-                thumb.model = host.ModelManager.TransformModel(ref thumb.model, matrix);
+                thumb.model = host.ModelManager.TransformModelData(ref thumb.model, matrix);
 
                 // Store matrix
                 thumb.matrix = matrix;

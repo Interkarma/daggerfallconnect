@@ -181,8 +181,12 @@ namespace DaggerfallModelling.ViewControls
         private struct BatchItem
         {
             public Matrix ModelTransform;
+            public VertexBuffer VertexBuffer;
+            public IndexBuffer IndexBuffer;
             public VertexPositionNormalTexture[] Vertices;
-            public int[] Indices;
+            public short[] Indices;
+            public int StartIndex;
+            public int PrimitiveCount;
         }
 
         #endregion
@@ -378,13 +382,12 @@ namespace DaggerfallModelling.ViewControls
             // The String.Format here creates nearly all the garbage collections reported.
             // TODO: Implement a garbage-free means of reporting this information.
             string performance = string.Format(
-                "GarbageCollections={0}, VisibleBatches={1}, MaxBatchArrayLength={2}, VisibleTriangles={3}, DrawTime={4}, FPS={5:0.00}",
-                garbageCollections,
+                "VisibleBatches={0}, MaxBatchArrayLength={1}, VisibleTriangles={2}, DrawTime={3}, FPS={4}",
                 visibleBatches,
                 maxBatchArrayLength,
                 visibleTriangles,
-                drawTime,
-                System.Diagnostics.Stopwatch.Frequency / (float)drawTime);
+                drawTime / 1000,
+                System.Diagnostics.Stopwatch.Frequency / drawTime);
             host.StatusMessage = performance;
 #endif
         }
@@ -506,7 +509,7 @@ namespace DaggerfallModelling.ViewControls
             cameraVelocity = Vector3.Zero;
 
             // Resume view
-            host.ModelManager.CacheModels = true;
+            host.ModelManager.CacheModelData = true;
             UpdateProjectionMatrix();
             UpdateStatusMessage();
             host.Refresh();
@@ -676,7 +679,7 @@ namespace DaggerfallModelling.ViewControls
                 }
 
                 // Add the model
-                ModelManager.ModelData model = host.ModelManager.GetModel(modelInfo.ModelId);
+                ModelManager.ModelData model = host.ModelManager.GetModelData(modelInfo.ModelId);
                 BatchModel(ref model, ref modelTransform);
 
                 // Increment index
@@ -717,7 +720,7 @@ namespace DaggerfallModelling.ViewControls
             {
 #if DEBUG
                 // Increment triangle counter
-                visibleTriangles += subMesh.Indices.Length / 3;
+                visibleTriangles += subMesh.PrimitiveCount;
 #endif
                 // Add subMesh to batch
                 if (batches.ContainsKey(subMesh.TextureKey))
@@ -726,8 +729,12 @@ namespace DaggerfallModelling.ViewControls
                     BatchItemArray batchArray = batches[subMesh.TextureKey];
                     int index = batchArray.Length;
                     batchArray.BatchItems[index].ModelTransform = modelTransform;
+                    batchArray.BatchItems[index].VertexBuffer = model.VertexBuffer;
+                    batchArray.BatchItems[index].IndexBuffer = model.IndexBuffer;
                     batchArray.BatchItems[index].Vertices = model.Vertices;
-                    batchArray.BatchItems[index].Indices = subMesh.Indices;
+                    batchArray.BatchItems[index].Indices = model.Indices;
+                    batchArray.BatchItems[index].StartIndex = subMesh.StartIndex;
+                    batchArray.BatchItems[index].PrimitiveCount = subMesh.PrimitiveCount;
                     batchArray.Length++;
                     batches[subMesh.TextureKey] = batchArray;
                 }
@@ -787,7 +794,7 @@ namespace DaggerfallModelling.ViewControls
             foreach (var mi in modelIntersections)
             {
                 // Get model
-                ModelManager.ModelData model = host.ModelManager.GetModel(mi.ModelID.Value);
+                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
 
                 // Test model
                 bool insideBoundingSphere;
@@ -814,7 +821,7 @@ namespace DaggerfallModelling.ViewControls
             if (closestModelIntersection != null)
             {
                 // Draw bounding box to see what has been intersected
-                ModelManager.ModelData model = host.ModelManager.GetModel(closestModelIntersection.ModelID.Value);
+                ModelManager.ModelData model = host.ModelManager.GetModelData(closestModelIntersection.ModelID.Value);
                 DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
 
                 // Store modelid of model under mouse
@@ -961,8 +968,8 @@ namespace DaggerfallModelling.ViewControls
                 if (batchArray.Length == 0)
                     continue;
 
-                // Track max length of batch array
 #if DEBUG
+                // Update max length of batch array
                 if (batchArray.Length > maxBatchArrayLength)
                     maxBatchArrayLength = batchArray.Length;
 #endif
@@ -973,21 +980,38 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].Begin();
 
                 // Iterate batch items
+                BatchItem batchItem;
                 for (int i = 0; i < batchArray.Length; i++)
                 {
-                    modelEffect.World = batchArray.BatchItems[i].ModelTransform;
+                    // Get batch item
+                    batchItem = batchArray.BatchItems[i];
+
+                    // Set vertex buffer
+                    host.GraphicsDevice.Vertices[0].SetSource(
+                        batchItem.VertexBuffer,
+                        0,
+                        VertexPositionNormalTexture.SizeInBytes);
+
+                    // Set index buffer
+                    host.GraphicsDevice.Indices = batchItem.IndexBuffer;
+
+                    modelEffect.World = batchItem.ModelTransform;
                     modelEffect.CommitChanges();
 
-                    host.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList,
-                        batchArray.BatchItems[i].Vertices, 0, batchArray.BatchItems[i].Vertices.Length,
-                        batchArray.BatchItems[i].Indices, 0, batchArray.BatchItems[i].Indices.Length / 3);
+                    host.GraphicsDevice.DrawIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    0,
+                    0,
+                    batchItem.Vertices.Length,
+                    batchItem.StartIndex,
+                    batchItem.PrimitiveCount);
                 }
 
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
 
 #if DEBUG
-                // Update visible batch counter
+                // Update visible batch count
                 visibleBatches++;
 #endif
 
@@ -1396,7 +1420,7 @@ namespace DaggerfallModelling.ViewControls
             Dictionary<int, BatchItemArray> batches;
             GetBatches(out batches);
 
-            // Load model textures
+            // Load block models and textures
             int textureKey;
             Vector3 min, max;
             float minVertical = float.MaxValue, maxVertical = float.MinValue;
@@ -1407,7 +1431,7 @@ namespace DaggerfallModelling.ViewControls
 
                 // Load model resource
                 ModelManager.ModelData model;
-                if (!host.ModelManager.GetModel(info.ModelId, out model))
+                if (!host.ModelManager.GetModelData(info.ModelId, out model))
                     return false;
 
                 // Load texture resources for this model
@@ -1415,8 +1439,8 @@ namespace DaggerfallModelling.ViewControls
                 {
                     // Load texture for this submesh
                     textureKey = host.TextureManager.LoadTexture(
-                        model.SubMeshes[sm].TextureArchive,
-                        model.SubMeshes[sm].TextureRecord);
+                        model.DFMesh.SubMeshes[sm].TextureArchive,
+                        model.DFMesh.SubMeshes[sm].TextureRecord);
 
                     // Store texture key in model
                     model.SubMeshes[sm].TextureKey = textureKey;
@@ -1425,7 +1449,7 @@ namespace DaggerfallModelling.ViewControls
                     if (!batches.ContainsKey(textureKey))
                     {
                         // Create new batch array.
-                        // These arrays are of a fixed length as dynamic
+                        // These arrays are of a fixed length as new
                         // objects create lots of garbage at run-time.
                         // The Length is simply reset and the array reused
                         // each frame.
