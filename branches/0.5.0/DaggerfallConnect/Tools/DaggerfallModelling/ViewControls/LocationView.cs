@@ -47,7 +47,7 @@ namespace DaggerfallModelling.ViewControls
         // Batching
         private const int batchArrayLength = 768;
         private BatchModes batchMode = BatchModes.SingleExteriorBlock;
-        private BatchOptions batchOptions = BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
+        private BatchOptions batchOptions = BatchOptions.RmbSky | BatchOptions.RmbGroundPlane | BatchOptions.RmbGroundFlats;
         private Dictionary<int, BatchItemArray> exteriorBatches = new Dictionary<int, BatchItemArray>();
         private Dictionary<int, BatchItemArray> dungeonBatches = new Dictionary<int, BatchItemArray>();
 
@@ -180,6 +180,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private struct BatchItem
         {
+            public bool Indexed;
             public Matrix ModelTransform;
             public VertexBuffer VertexBuffer;
             public IndexBuffer IndexBuffer;
@@ -329,7 +330,8 @@ namespace DaggerfallModelling.ViewControls
             // Create sky component
             sky = new SkyComponent(host);
             sky.Initialize();
-            sky.Enabled = false;
+            sky.Camera = exteriorFreeCamera;
+            sky.Enabled = true;
         }
 
         /// <summary>
@@ -367,13 +369,12 @@ namespace DaggerfallModelling.ViewControls
 #endif
 
             // Execute pipeline
-            host.GraphicsDevice.Clear(backgroundColor);
-            SetRenderStates();
-            sky.Draw();
+            ClearDevice();
             ClearBatches();
             BatchScene();
-            MouseModelIntersection();
+            SetRenderStates();
             DrawBatches();
+            MouseModelIntersection();
 
 #if DEBUG
             // Get total draw time (will always be at least 1 tick)
@@ -563,6 +564,38 @@ namespace DaggerfallModelling.ViewControls
         #region Rendering Pipeline
 
         /// <summary>
+        /// Clear graphics device buffer.
+        /// </summary>
+        private void ClearDevice()
+        {
+            // All camera mode except free are just cleared
+            if (cameraMode != CameraModes.Free)
+            {
+                host.GraphicsDevice.Clear(backgroundColor);
+                return;
+            }
+
+            // Free camera dungeons are cleared black
+            if (batchMode == BatchModes.SingleDungeonBlock ||
+                batchMode == BatchModes.FullDungeon)
+            {
+                host.GraphicsDevice.Clear(Color.Black);
+                return;
+            }
+
+            // Draw sky if set
+            if (BatchOptions.RmbSky == (batchOptions & BatchOptions.RmbSky))
+            {
+                host.GraphicsDevice.Clear(sky.ClearColor);
+                sky.Draw();
+                return;
+            }
+
+            // Finally, just clear to background
+            host.GraphicsDevice.Clear(backgroundColor);
+        }
+
+        /// <summary>
         /// Clears batch lists. These are rebuilt each scene
         ///  from visible submeshes.
         /// </summary>
@@ -686,18 +719,18 @@ namespace DaggerfallModelling.ViewControls
                 modelIndex++;
             }
 
-            //// Optionally draw gound plane for this block
-            //if (batchMode == BatchModes.SingleExteriorBlock ||
-            //    batchMode == BatchModes.FullExterior &&
-            //    BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
-            //{
-            //    // Translate ground down a few units to reduce
-            //    // z-fighting with other ground-aligned planes
-            //    Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
+            // Optionally batch gound plane for this block
+            if (batchMode == BatchModes.SingleExteriorBlock ||
+                batchMode == BatchModes.FullExterior &&
+                BatchOptions.RmbGroundPlane == (batchOptions & BatchOptions.RmbGroundPlane))
+            {
+                // Translate ground down a few units to reduce
+                // z-fighting with other ground-aligned planes
+                Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
 
-            //    // Draw ground plane
-            //    DrawGroundPlane(ref block, ref groundTransform);
-            //}
+                // Draw ground plane
+                BatchGroundPlane(ref block, ref groundTransform);
+            }
         }
 
         /// <summary>
@@ -722,12 +755,14 @@ namespace DaggerfallModelling.ViewControls
                 // Increment triangle counter
                 visibleTriangles += subMesh.PrimitiveCount;
 #endif
+
                 // Add subMesh to batch
                 if (batches.ContainsKey(subMesh.TextureKey))
                 {
                     // Add reference to vertex and index data to batch
                     BatchItemArray batchArray = batches[subMesh.TextureKey];
                     int index = batchArray.Length;
+                    batchArray.BatchItems[index].Indexed = true;
                     batchArray.BatchItems[index].ModelTransform = modelTransform;
                     batchArray.BatchItems[index].VertexBuffer = model.VertexBuffer;
                     batchArray.BatchItems[index].IndexBuffer = model.IndexBuffer;
@@ -739,40 +774,50 @@ namespace DaggerfallModelling.ViewControls
                     batches[subMesh.TextureKey] = batchArray;
                 }
                 else
-                    throw new Exception("Batch array not found.");
+                    throw new Exception("Model batch array not found.");
             }
         }
 
-        /*
         /// <summary>
-        /// Draw a ground plane.
+        /// Batch ground plane.
         /// </summary>
         /// <param name="block">BlockManager.Block.</param>
         /// <param name="groundTransform">Ground transform.</param>
-        private void DrawGroundPlane(ref BlockManager.Block block, ref Matrix groundTransform)
+        private void BatchGroundPlane(ref BlockManager.BlockData block, ref Matrix groundTransform)
         {
-            // Set world matrix
-            modelEffect.World = groundTransform;
+            // Exit if no ground plane loaded
+            if (block.GroundPlaneVertices == null)
+                return;
 
-            // Set vertex declaration
-            host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
+            // Get batches
+            Dictionary<int, BatchItemArray> batches;
+            GetBatches(out batches);
 
-            // Set terrain texture atlas
-            modelEffect.Texture = host.TextureManager.TerrainAtlas;
+#if DEBUG
+            // Increment triangle counter
+            visibleTriangles += block.GroundPlaneVertices.Length / 3;
+#endif
 
-            // Set clamp mode
-            host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
-            host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
-
-            modelEffect.Begin();
-            modelEffect.CurrentTechnique.Passes[0].Begin();
-
-            host.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, block.GroundPlaneVertices, 0, 512);
-
-            modelEffect.CurrentTechnique.Passes[0].End();
-            modelEffect.End();
+            // Add ground plane to batch
+            if (batches.ContainsKey(host.TextureManager.TerrainAtlasKey))
+            {
+                // Add reference to vertex and index data to batch
+                BatchItemArray batchArray = batches[host.TextureManager.TerrainAtlasKey];
+                int index = batchArray.Length;
+                batchArray.BatchItems[index].Indexed = false;
+                batchArray.BatchItems[index].ModelTransform = groundTransform;
+                batchArray.BatchItems[index].VertexBuffer = block.GroundPlaneVertexBuffer;
+                batchArray.BatchItems[index].IndexBuffer = null;
+                batchArray.BatchItems[index].Vertices = block.GroundPlaneVertices;
+                batchArray.BatchItems[index].Indices = null;
+                batchArray.BatchItems[index].StartIndex = 0;
+                batchArray.BatchItems[index].PrimitiveCount = block.GroundPlaneVertices.Length / 3;
+                batchArray.Length++;
+                batches[host.TextureManager.TerrainAtlasKey] = batchArray;
+            }
+            else
+                throw new Exception("Terrain batch array not found.");
         }
-        */
 
         /// <summary>
         /// Tests mouse ray against model intersections to
@@ -992,19 +1037,32 @@ namespace DaggerfallModelling.ViewControls
                         0,
                         VertexPositionNormalTexture.SizeInBytes);
 
-                    // Set index buffer
-                    host.GraphicsDevice.Indices = batchItem.IndexBuffer;
-
                     modelEffect.World = batchItem.ModelTransform;
                     modelEffect.CommitChanges();
 
-                    host.GraphicsDevice.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    0,
-                    0,
-                    batchItem.Vertices.Length,
-                    batchItem.StartIndex,
-                    batchItem.PrimitiveCount);
+                    // Draw based on indexed flag
+                    if (batchItem.Indexed)
+                    {
+                        // Set index buffer
+                        host.GraphicsDevice.Indices = batchItem.IndexBuffer;
+
+                        // Draw indexed primitives
+                        host.GraphicsDevice.DrawIndexedPrimitives(
+                        PrimitiveType.TriangleList,
+                        0,
+                        0,
+                        batchItem.Vertices.Length,
+                        batchItem.StartIndex,
+                        batchItem.PrimitiveCount);
+                    }
+                    else
+                    {
+                        // Draw primitives
+                        host.GraphicsDevice.DrawPrimitives(
+                            PrimitiveType.TriangleList,
+                            batchItem.StartIndex,
+                            batchItem.PrimitiveCount);
+                    }
                 }
 
                 modelEffect.CurrentTechnique.Passes[0].End();
@@ -1457,6 +1515,18 @@ namespace DaggerfallModelling.ViewControls
                         batchArray.Length = 0;
                         batchArray.BatchItems = new BatchItem[batchArrayLength];
                         batches.Add(textureKey, batchArray);
+                    }
+
+                    // Start a ground plane batch if not present
+                    if (!batches.ContainsKey(host.TextureManager.TerrainAtlasKey))
+                    {
+                        // Create a terrain atlas batch.
+                        // Sized to 64 items as there can only be one
+                        // item per block and never more than 64 blocks.
+                        BatchItemArray batchArray;
+                        batchArray.Length = 0;
+                        batchArray.BatchItems = new BatchItem[64];
+                        batches.Add(host.TextureManager.TerrainAtlasKey, batchArray);
                     }
                 }
 
