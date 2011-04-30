@@ -30,6 +30,8 @@ namespace XNALibrary
     {
         #region Class Variables
 
+        private string arena2Path;
+        private GraphicsDevice graphicsDevice;
         private BlocksFile blocksFile;
         private const float rotationDivisor = 5.68888888888889f;
         private Dictionary<string, BlockData> blockDictionary;
@@ -56,6 +58,9 @@ namespace XNALibrary
 
             /// <summary>Vertices of ground plane.</summary>
             public VertexPositionNormalTexture[] GroundPlaneVertices;
+
+            /// <summary>VertexBuffer of ground plane.</summary>
+            public VertexBuffer GroundPlaneVertexBuffer;
 
             /// <summary>Array of models used to build this block.</summary>
             public List<BlockModel> Models;
@@ -84,6 +89,14 @@ namespace XNALibrary
         #region Public Properties
 
         /// <summary>
+        /// Gets Arena2 path set at construction.
+        /// </summary>
+        public string Arena2Path
+        {
+            get { return arena2Path; }
+        }
+
+        /// <summary>
         /// BlocksFile.
         /// </summary>
         public BlocksFile BlocksFile
@@ -98,9 +111,14 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="arena2Path">Arena2 path.</param>
-        public BlockManager(string arena2Path)
+        /// <param name="device">Graphics Device.</param>
+        /// <param name="arena2Path">Path to Arena2 folder.</param>
+        public BlockManager(GraphicsDevice device, string arena2Path)
         {
+            // Setup
+            graphicsDevice = device;
+            this.arena2Path = arena2Path;
+
             // Load BLOCKS.BSA
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
 
@@ -176,6 +194,13 @@ namespace XNALibrary
                     AddGroundTile(ref textureManager, ref block.GroundPlaneVertices, x, y, tile.TextureRecord, tile.IsRotated, tile.IsFlipped);
                 }
             }
+
+            // Create VertexBuffer
+            block.GroundPlaneVertexBuffer = new VertexBuffer(
+                graphicsDevice,
+                VertexPositionNormalTexture.SizeInBytes * block.GroundPlaneVertices.Length,
+                BufferUsage.WriteOnly);
+            block.GroundPlaneVertexBuffer.SetData<VertexPositionNormalTexture>(block.GroundPlaneVertices);
         }
 
         #endregion

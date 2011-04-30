@@ -122,6 +122,8 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// <param name="device">Graphics Device.</param>
+        /// <param name="arena2Path">Path to Arena2 folder.</param>
         public ModelManager(GraphicsDevice device, string arena2Path)
         {
             // Setup

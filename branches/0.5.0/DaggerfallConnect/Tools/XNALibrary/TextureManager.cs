@@ -59,6 +59,7 @@ namespace XNALibrary
         private Texture2D swampAtlas;
 
         // Texture dictonaries
+        private const int atlasTextureKey = -1000000;
         private Dictionary<int, Texture2D> generalTextureDict;
         private Dictionary<int, Texture2D> winterTextureDict;
 
@@ -100,14 +101,6 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets the GraphicsDevice set at construction.
-        /// </summary>
-        public GraphicsDevice GraphicsDevice
-        {
-            get { return graphicsDevice; }
-        }
-
-        /// <summary>
         /// Gets or sets current climate for swaps. Setting this to 
         ///  None will use default textures assigned to models in ARCH3D.BSA.
         ///  Temperate ground tiles will be used when Climate is None.
@@ -128,11 +121,11 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets terrain atlas texture for current climate type.
+        /// Gets terrain atlas texture key.
         /// </summary>
-        public Texture2D TerrainAtlas
+        public int TerrainAtlasKey
         {
-            get { return GetTerrainAtlas(); }
+            get { return atlasTextureKey; }
         }
 
         /// <summary>
@@ -256,12 +249,17 @@ namespace XNALibrary
 
         /// <summary>
         /// Get texture for current climate, based on key.
-        /// Manager will return NULL if texture does not exist.
+        ///  Use TerrainAtlasKey property for terrain key.
+        ///  Manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>Texture2D.</returns>
         public Texture2D GetTexture(int key)
         {
+            // Return atlas if requested
+            if (key == atlasTextureKey)
+                return GetTerrainAtlas();
+
             // Try to return winter texture when required
             if (this.climateWeather == ClimateWeather.Winter)
             {
@@ -278,6 +276,8 @@ namespace XNALibrary
 
         /// <summary>
         /// Remove cached texture based on key.
+        ///  Cannot remove terrain atlas by key,
+        ///  use ClearAtlases() method instead.
         /// </summary>
         /// <param name="key">Texture key.</param>
         public void RemoveTexture(int key)
@@ -336,7 +336,7 @@ namespace XNALibrary
         /// <returns>Texture key.</returns>
         private int GetTextureKey(ClimateType climateType, ClimateSet climateSet, int record)
         {
-            return 1000000 + ((int)climateType * 1000000) + ((int)climateSet * 1000) + record;
+            return 1000000 + ((int)climateType * 100000) + ((int)climateSet * 1000) + record;
         }
 
         /// <summary>
