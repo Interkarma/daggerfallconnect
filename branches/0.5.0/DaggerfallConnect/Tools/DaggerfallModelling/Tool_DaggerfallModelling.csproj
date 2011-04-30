@@ -206,6 +206,9 @@
     <None Include="Resources\disk.png" />
     <None Include="Resources\application_side_contract.png" />
     <None Include="Resources\application_side_expand.png" />
+    <None Include="Resources\clock.png" />
+    <None Include="Resources\bullet_black.png" />
+    <None Include="Resources\bullet_blue.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
