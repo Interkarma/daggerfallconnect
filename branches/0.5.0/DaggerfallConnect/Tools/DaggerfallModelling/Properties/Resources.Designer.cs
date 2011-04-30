@@ -137,6 +137,20 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap bullet_black {
+            get {
+                object obj = ResourceManager.GetObject("bullet_black", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap bullet_blue {
+            get {
+                object obj = ResourceManager.GetObject("bullet_blue", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap cancel {
             get {
                 object obj = ResourceManager.GetObject("cancel", resourceCulture);
@@ -147,6 +161,13 @@ namespace DaggerfallModelling.Properties {
         internal static System.Drawing.Bitmap CitiesFilter {
             get {
                 object obj = ResourceManager.GetObject("CitiesFilter", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap clock {
+            get {
+                object obj = ResourceManager.GetObject("clock", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -44,6 +44,7 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -52,7 +53,9 @@
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.TimeOfDayPanel = new System.Windows.Forms.Panel();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.SearchLabel = new System.Windows.Forms.Label();
@@ -62,6 +65,9 @@
             this.SearchModelsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchBlocksToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchLocationsToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ToggleSearchPaneToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewThumbsToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -71,6 +77,7 @@
             this.ExportModelToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.TopDownCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.FreeCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.AdjustTimeOfDay = new System.Windows.Forms.ToolStripButton();
             this.ToggleControllerToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
             this.ContentViewer = new DaggerfallModelling.ViewControls.ViewHost();
@@ -85,6 +92,11 @@
             this.ViewPaneToolStrip.SuspendLayout();
             this.ContentPanel.SuspendLayout();
             this.MainStatusStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
+            this.TimeOfDayPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // MainSplitContainer
@@ -107,6 +119,7 @@
             // 
             // MainSplitContainer.Panel2
             // 
+            this.MainSplitContainer.Panel2.Controls.Add(this.TimeOfDayPanel);
             this.MainSplitContainer.Panel2.Controls.Add(this.ViewPaneToolStrip);
             this.MainSplitContainer.Panel2.Controls.Add(this.ContentPanel);
             this.MainSplitContainer.Size = new System.Drawing.Size(1184, 762);
@@ -122,7 +135,7 @@
             this.SearchResultsPanel.Controls.Add(this.SearchResultsTreeView);
             this.SearchResultsPanel.Location = new System.Drawing.Point(-2, 56);
             this.SearchResultsPanel.Name = "SearchResultsPanel";
-            this.SearchResultsPanel.Size = new System.Drawing.Size(322, 334);
+            this.SearchResultsPanel.Size = new System.Drawing.Size(322, 356);
             this.SearchResultsPanel.TabIndex = 4;
             // 
             // SearchResultsTreeView
@@ -135,7 +148,7 @@
             this.SearchResultsTreeView.Location = new System.Drawing.Point(0, 0);
             this.SearchResultsTreeView.Name = "SearchResultsTreeView";
             this.SearchResultsTreeView.SelectedImageIndex = 0;
-            this.SearchResultsTreeView.Size = new System.Drawing.Size(320, 332);
+            this.SearchResultsTreeView.Size = new System.Drawing.Size(320, 354);
             this.SearchResultsTreeView.TabIndex = 2;
             this.SearchResultsTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.SearchResultsTreeView_BeforeExpand);
             this.SearchResultsTreeView.DoubleClick += new System.EventHandler(this.SearchResultsTreeView_DoubleClick);
@@ -186,7 +199,7 @@
             this.LayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.LayoutPanel.Controls.Add(this.AutoMapViewer);
             this.LayoutPanel.Controls.Add(this.AutoMapToolStrip);
-            this.LayoutPanel.Location = new System.Drawing.Point(-2, 392);
+            this.LayoutPanel.Location = new System.Drawing.Point(-2, 414);
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
@@ -258,6 +271,8 @@
             this.TopDownCameraToolStripButton,
             this.FreeCameraToolStripButton,
             this.toolStripSeparator5,
+            this.AdjustTimeOfDay,
+            this.toolStripSeparator9,
             this.ToggleControllerToolStripButton,
             this.toolStripSeparator6});
             this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
@@ -265,6 +280,11 @@
             this.ViewPaneToolStrip.Size = new System.Drawing.Size(852, 25);
             this.ViewPaneToolStrip.TabIndex = 0;
             this.ViewPaneToolStrip.Text = "toolStrip2";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
             // 
             // toolStripSeparator4
             // 
@@ -295,7 +315,7 @@
             this.ContentPanel.Controls.Add(this.ContentViewer);
             this.ContentPanel.Location = new System.Drawing.Point(0, 25);
             this.ContentPanel.Name = "ContentPanel";
-            this.ContentPanel.Size = new System.Drawing.Size(862, 715);
+            this.ContentPanel.Size = new System.Drawing.Size(862, 737);
             this.ContentPanel.TabIndex = 2;
             // 
             // MainStatusStrip
@@ -323,10 +343,42 @@
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
             // 
-            // toolStripSeparator8
+            // TimeOfDayTrackBar
             // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
+            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.Control;
+            this.TimeOfDayTrackBar.LargeChange = 4;
+            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(10, 0);
+            this.TimeOfDayTrackBar.Maximum = 23;
+            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
+            this.TimeOfDayTrackBar.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(45, 712);
+            this.TimeOfDayTrackBar.TabIndex = 3;
+            this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.TimeOfDayTrackBar.Value = 12;
+            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
+            // 
+            // TimeOfDayPanel
+            // 
+            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.TimeOfDayPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.TimeOfDayPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox3);
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox1);
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox2);
+            this.TimeOfDayPanel.Controls.Add(this.TimeOfDayTrackBar);
+            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 25);
+            this.TimeOfDayPanel.Name = "TimeOfDayPanel";
+            this.TimeOfDayPanel.Size = new System.Drawing.Size(45, 714);
+            this.TimeOfDayPanel.TabIndex = 7;
+            this.TimeOfDayPanel.Visible = false;
             // 
             // Arena2PathStatusLabel
             // 
@@ -416,6 +468,39 @@
             this.SearchLocationsToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.SearchLocationsToolStripButton.Text = "Search Locations";
             this.SearchLocationsToolStripButton.Click += new System.EventHandler(this.SearchLocationsToolStripButton_Click);
+            // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBox3.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox3.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
+            this.pictureBox3.Location = new System.Drawing.Point(0, 690);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox3.TabIndex = 6;
+            this.pictureBox3.TabStop = false;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox1.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
+            this.pictureBox1.Location = new System.Drawing.Point(-1, 5);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox1.TabIndex = 4;
+            this.pictureBox1.TabStop = false;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox2.Image = global::DaggerfallModelling.Properties.Resources.bullet_blue;
+            this.pictureBox2.Location = new System.Drawing.Point(-1, 333);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBox2.TabIndex = 5;
+            this.pictureBox2.TabStop = false;
             // 
             // AboutToolStripButton
             // 
@@ -510,6 +595,15 @@
             this.FreeCameraToolStripButton.Text = "Free Camera";
             this.FreeCameraToolStripButton.Click += new System.EventHandler(this.FreeCameraToolStripButton_Click);
             // 
+            // AdjustTimeOfDay
+            // 
+            this.AdjustTimeOfDay.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.AdjustTimeOfDay.Image = global::DaggerfallModelling.Properties.Resources.clock;
+            this.AdjustTimeOfDay.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.AdjustTimeOfDay.Name = "AdjustTimeOfDay";
+            this.AdjustTimeOfDay.Size = new System.Drawing.Size(23, 22);
+            this.AdjustTimeOfDay.Text = "Adjust Time of Day";
+            // 
             // ToggleControllerToolStripButton
             // 
             this.ToggleControllerToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -537,12 +631,14 @@
             // 
             // ContentViewer
             // 
+            this.ContentViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.ContentViewer.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
-            this.ContentViewer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ContentViewer.FilteredModelsArray = null;
             this.ContentViewer.Location = new System.Drawing.Point(0, 0);
             this.ContentViewer.Name = "ContentViewer";
-            this.ContentViewer.Size = new System.Drawing.Size(862, 715);
+            this.ContentViewer.Size = new System.Drawing.Size(862, 713);
             this.ContentViewer.StatusMessage = null;
             this.ContentViewer.TabIndex = 0;
             this.ContentViewer.Text = "ContentViewer";
@@ -584,6 +680,12 @@
             this.ContentPanel.ResumeLayout(false);
             this.MainStatusStrip.ResumeLayout(false);
             this.MainStatusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
+            this.TimeOfDayPanel.ResumeLayout(false);
+            this.TimeOfDayPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -635,6 +737,13 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton ToggleSearchPaneToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.TrackBar TimeOfDayTrackBar;
+        private System.Windows.Forms.ToolStripButton AdjustTimeOfDay;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.Panel TimeOfDayPanel;
+        private System.Windows.Forms.PictureBox pictureBox3;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

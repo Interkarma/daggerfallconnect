@@ -1115,5 +1115,10 @@ namespace DaggerfallModelling
             }
         }
 
+        private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }
