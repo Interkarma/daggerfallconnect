@@ -101,7 +101,6 @@ namespace DaggerfallModelling.ViewControls
         // Performance profiling
         private StringBuilder perfStatusBuilder = new StringBuilder(256);
         private WeakReference gcTracker = new WeakReference(new object());
-        private long drawTime;
         private int visibleTriangles;
         private int visibleBatches;
         private int maxBatchArrayLength;
@@ -365,7 +364,6 @@ namespace DaggerfallModelling.ViewControls
             visibleBatches = 0;
             visibleTriangles = 0;
             maxBatchArrayLength = 0;
-            long startTime = host.Timer.ElapsedTicks;
 #endif
 
             // Execute pipeline
@@ -377,19 +375,16 @@ namespace DaggerfallModelling.ViewControls
             MouseModelIntersection();
 
 #if DEBUG
-            // Get total draw time (will always be at least 1 tick)
-            drawTime = (host.Timer.ElapsedTicks - startTime) + 1;
-
             // The String.Format here creates nearly all the garbage collections reported.
             // TODO: Implement a garbage-free means of reporting this information.
-            string performance = string.Format(
-                "VisibleBatches={0}, MaxBatchArrayLength={1}, VisibleTriangles={2}, DrawTime={3}, FPS={4}",
-                visibleBatches,
-                maxBatchArrayLength,
-                visibleTriangles,
-                drawTime / 1000,
-                System.Diagnostics.Stopwatch.Frequency / drawTime);
-            host.StatusMessage = performance;
+            //string performance = string.Format(
+            //    "VisibleBatches={0}, MaxBatchArrayLength={1}, VisibleTriangles={2}, DrawTime={3}ms, FPS={4:0.00}",
+            //    visibleBatches,
+            //    maxBatchArrayLength,
+            //    visibleTriangles,
+            //    drawTime,
+            //    host.FPS);
+            //host.StatusMessage = performance;
 #endif
         }
 
@@ -583,7 +578,7 @@ namespace DaggerfallModelling.ViewControls
                 return;
             }
 
-            // Draw sky if set
+            // Draw sky enabled
             if (BatchOptions.RmbSky == (batchOptions & BatchOptions.RmbSky))
             {
                 host.GraphicsDevice.Clear(sky.ClearColor);
@@ -1615,8 +1610,8 @@ namespace DaggerfallModelling.ViewControls
             dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
 
             // Update
-            exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
-            dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+            exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+            dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
         }
 
         /// <summary>
@@ -1647,8 +1642,8 @@ namespace DaggerfallModelling.ViewControls
             dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
 
             // Update
-            exteriorFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
-            dungeonFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+            exteriorFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+            dungeonFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
         }
 
         /// <summary>
@@ -1675,11 +1670,11 @@ namespace DaggerfallModelling.ViewControls
                 {
                     case BatchModes.SingleExteriorBlock:
                     case BatchModes.FullExterior:
-                        exteriorFreeCamera.Update(flags, host.ElapsedGameTime);
+                        exteriorFreeCamera.Update(flags, host.ElapsedTime);
                         break;
                     case BatchModes.SingleDungeonBlock:
                     case BatchModes.FullDungeon:
-                        dungeonFreeCamera.Update(flags, host.ElapsedGameTime);
+                        dungeonFreeCamera.Update(flags, host.ElapsedTime);
                         break;
 
                 }
@@ -1694,11 +1689,11 @@ namespace DaggerfallModelling.ViewControls
                 {
                     case BatchModes.SingleExteriorBlock:
                     case BatchModes.FullExterior:
-                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
                         break;
                     case BatchModes.SingleDungeonBlock:
                     case BatchModes.FullDungeon:
-                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedGameTime);
+                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
                         break;
                 }
             }

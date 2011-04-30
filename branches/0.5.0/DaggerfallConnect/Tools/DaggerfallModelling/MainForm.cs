@@ -127,7 +127,7 @@ namespace DaggerfallModelling
             //UpdateActiveCameraMode();
 
             // Show thumbnails view
-            ContentViewer.ShowThumbnailsView();
+            //ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -569,7 +569,7 @@ namespace DaggerfallModelling
             SearchResultsTreeView.Visible = false;
 
             // Halt content animation
-            ContentViewer.EnableAnimTimer(false);
+            ContentViewer.EnableUpdates(false);
 
             // Drop in searching image
             PictureBox pb = new PictureBox();
@@ -600,7 +600,7 @@ namespace DaggerfallModelling
             SearchResultsPanel.Controls.Remove(pb);
 
             // Resume content animation
-            ContentViewer.EnableAnimTimer(true);
+            ContentViewer.EnableUpdates(true);
 
             // Set focus to results tree
             SearchResultsTreeView.Focus();

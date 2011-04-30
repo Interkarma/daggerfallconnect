@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -56,12 +57,18 @@ namespace DaggerfallModelling.ViewControls
         private Vector2 mouseVelocity;
 
         // Timing
+        private bool update = false;
         private Stopwatch stopwatch = Stopwatch.StartNew();
-        private Timer updateTimer = new Timer();
-        private readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
-        private readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 120);
-        private TimeSpan accumulatedTime;
         private TimeSpan lastTime;
+        private TimeSpan elapsedTime;
+        //private readonly TimeSpan TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 60);
+        //private readonly TimeSpan MaxElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
+        //private TimeSpan accumulatedTime;
+
+        // FPS
+        private int frameCount = 0;
+        private long timeSinceLastFPSUpdate = 0;
+        private int fps = 0;
 
         // XNA
         private SpriteBatch spriteBatch;
@@ -206,7 +213,7 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets total elapsed time in timer ticks.
+        /// Gets engine timer.
         /// </summary>
         public Stopwatch Timer
         {
@@ -214,11 +221,19 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets accumulated game time in seconds.
+        /// Gets elapsed time last frame.
         /// </summary>
-        public TimeSpan ElapsedGameTime
+        public TimeSpan ElapsedTime
         {
-            get { return accumulatedTime; }
+            get { return elapsedTime; }
+        }
+
+        /// <summary>
+        /// Gets frames-per-second.
+        /// </summary>
+        public float FPS
+        {
+            get { return fps; }
         }
 
         /// <summary>
@@ -450,61 +465,28 @@ namespace DaggerfallModelling.ViewControls
         /// GraphicsDevice reset.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
+        /// <param name="e">EventArgs.</param>
         private void GraphicsDevice_DeviceReset(object sender, EventArgs e)
         {
         }
 
         /// <summary>
-        /// Ticks to update views.
+        /// Tick while idle.
         /// </summary>
         /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void UpdateTimer_Tick(object sender, EventArgs e)
+        /// <param name="e">EventArgs.</param>
+        void TickWhileIdle(object sender, EventArgs e)
         {
-            // Measure time
-            TimeSpan currentTime = stopwatch.Elapsed;
-            TimeSpan elapsedTime = currentTime - lastTime;
-            lastTime = currentTime;
-            if (elapsedTime > MaxElapsedTime)
-                elapsedTime = MaxElapsedTime;
-
-            // Check to see if update needed
-            bool updated = false;
-            accumulatedTime += elapsedTime;
-            while (accumulatedTime >= TargetElapsedTime)
+            NativeMethods.Message message;
+            while (!NativeMethods.PeekMessage(out message, IntPtr.Zero, 0, 0, 0))
             {
-                // Tick current view
-                if (isReady && viewMode != ViewModes.None)
-                    viewClients[viewMode].Tick();
-
-                // Update control
-                Update();
-                accumulatedTime -= TargetElapsedTime;
-                updated = true;
-            }
-
-            // Redraw when updated
-            if (updated)
-            {
-                this.Refresh();
+                Tick(sender, e);
             }
         }
 
         #endregion
 
         #region Overrides
-
-        public override void Refresh()
-        {
-            // Draw form directly rather than hand to event queue
-            string beginDrawError = BeginDraw();
-            if (string.IsNullOrEmpty(beginDrawError))
-            {
-                Draw();
-                EndDraw();
-            }
-        }
 
         /// <summary>
         /// Resize event.
@@ -674,11 +656,11 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnVisibleChanged(e);
 
-            // Start and stop anim timer based on visible flag
+            // Start and stop updates based on visible flag
             if (this.Visible)
-                updateTimer.Enabled = true;
+                update = true;
             else
-                updateTimer.Enabled = false;
+                update = false;
         }
 
         /// <summary>
@@ -722,17 +704,17 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Enable or disable animation timer.
+        /// Enable or disable updates.
         /// </summary>
         /// <param name="suspend">True to suspend, false to resume.</param>
-        public void EnableAnimTimer(bool enable)
+        public void EnableUpdates(bool enable)
         {
             // Exit if control not ready
             if (!isReady)
                 return;
 
             // Suspend and resume timer
-            updateTimer.Enabled = enable;
+            update = enable;
         }
 
         #endregion
@@ -972,11 +954,9 @@ namespace DaggerfallModelling.ViewControls
                 return false;
             }
 
-            // Start update timer with short interval so we update frequently
-            updateTimer.Interval = (int)TargetElapsedTime.TotalMilliseconds;
-            updateTimer.Enabled = true;
-            updateTimer.Tick += new EventHandler(UpdateTimer_Tick);
-            updateTimer.Start();
+            // Hook idle event to run as fast as possible
+            Application.Idle += TickWhileIdle;
+            update = true;
 
             // Bind views
             BindViewClient(ViewModes.ThumbnailView, new ThumbnailView(this));
@@ -991,6 +971,58 @@ namespace DaggerfallModelling.ViewControls
             isReady = true;
 
             return true;
+        }
+
+        /// <summary>
+        /// Tick to update views.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        private void Tick(object sender, EventArgs e)
+        {
+            // Measure time
+            TimeSpan currentTime = stopwatch.Elapsed;
+            elapsedTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            // Tick current view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].Tick();
+
+            // Redraw
+            CustomRefresh();
+
+            // Calculate frames per second
+            frameCount++;
+            timeSinceLastFPSUpdate += elapsedTime.Milliseconds;
+            if (timeSinceLastFPSUpdate > 1000)
+            {
+                fps = frameCount;
+                frameCount = 0;
+                timeSinceLastFPSUpdate -= 1000;
+            }
+
+#if DEBUG
+            // Show timing status
+            StatusMessage = string.Format(
+            "TickTime={0}ms, FPS={1}",
+            elapsedTime.Milliseconds,
+            fps);
+#endif
+        }
+
+        /// <summary>
+        /// Redraw form.
+        /// </summary>
+        public void CustomRefresh()
+        {
+            // Draw form directly rather than hand to event queue
+            string beginDrawError = BeginDraw();
+            if (string.IsNullOrEmpty(beginDrawError))
+            {
+                Draw();
+                EndDraw();
+            }
         }
 
         /// <summary>
@@ -1079,5 +1111,30 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
     }
+
+    #region Native Methods
+
+    /// <summary>
+    /// Native methods.
+    /// </summary>
+    static class NativeMethods
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Message
+        {
+            public IntPtr hWnd;
+            public uint Msg;
+            public IntPtr wParam;
+            public IntPtr lParam;
+            public uint Time;
+            public System.Drawing.Point Point;
+        }
+
+        [DllImport("User32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool PeekMessage(out Message message, IntPtr hWnd, uint filterMin, uint filterMax, uint flags);
+    }
+
+    #endregion
 
 }

@@ -227,11 +227,11 @@ namespace XNALibrary
         /// Called when the camera should poll input methods and update.
         /// </summary>
         /// <param name="flags">Update flags.</param>
-        /// <param name="gameTime">Game time.</param>
-        public void Update(UpdateFlags flags, TimeSpan gameTime)
+        /// <param name="elapsedTime">Elapsed time last frame.</param>
+        public void Update(UpdateFlags flags, TimeSpan elapsedTime)
         {
-            // Get time delta
-            float timeDelta = (float)gameTime.TotalSeconds;
+            // Calculate time delta
+            float timeDelta = (float)elapsedTime.TotalSeconds;
 
             // Init movement and rotation
             movement = Vector3.Zero;
