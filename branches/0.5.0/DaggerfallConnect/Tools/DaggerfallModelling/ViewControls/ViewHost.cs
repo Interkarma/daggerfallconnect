@@ -963,7 +963,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 textureManager = new TextureManager(GraphicsDevice, arena2Path);
                 modelManager = new ModelManager(GraphicsDevice, arena2Path);
-                blockManager = new BlockManager(arena2Path);
+                blockManager = new BlockManager(GraphicsDevice, arena2Path);
                 mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
             }
             catch (Exception e)
