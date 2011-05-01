@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{10771391-7160-4460-B456-F87461D4A2AD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DaggerfallConnect</RootNamespace>
+    <AssemblyName>DaggerfallConnect</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+    <SccProjectName>Svn</SccProjectName>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccProvider>SubversionScc</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>DaggerfallConnect.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>DaggerfallConnect.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Arena2\Arch3dFile.cs" />
+    <Compile Include="Arena2\BlocksFile.cs" />
+    <Compile Include="Arena2\BsaFile.cs" />
+    <Compile Include="Arena2\CifRciFile.cs" />
+    <Compile Include="Arena2\ImgFile.cs" />
+    <Compile Include="Arena2\MapsFile.cs" />
+    <Compile Include="Arena2\PakFile.cs" />
+    <Compile Include="Arena2\SkyFile.cs" />
+    <Compile Include="Arena2\TextureFile.cs" />
+    <Compile Include="Arena2\WoodsFile.cs" />
+    <Compile Include="DFBitmap.cs" />
+    <Compile Include="DFBlock.cs" />
+    <Compile Include="DFImageFile.cs" />
+    <Compile Include="DFLocation.cs" />
+    <Compile Include="Utility\DFManualImage.cs" />
+    <Compile Include="DFMesh.cs" />
+    <Compile Include="DFPalette.cs" />
+    <Compile Include="DFRegion.cs" />
+    <Compile Include="ImageFileReader.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\FaceUVTool.cs" />
+    <Compile Include="Utility\FileProxy.cs" />
+    <Compile Include="Utility\Vector3.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License\DaggerfallConnect.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
