@@ -92,6 +92,9 @@ namespace XNALibrary
         /// </summary>
         public struct BlockFlat
         {
+            /// <summary>Type of block this flat is inside.</summary>
+            public DFBlock.BlockTypes BlockType;
+
             /// <summary>Index of texture archive.</summary>
             public int TextureArchive;
 
@@ -100,6 +103,9 @@ namespace XNALibrary
 
             /// <summary>Texture key.</summary>
             public int TextureKey;
+
+            /// <summary>Flat origin.</summary>
+            public Vector3 Origin;
 
             /// <summary>Position in block space.</summary>
             public Vector3 Position;
@@ -336,6 +342,7 @@ namespace XNALibrary
             {
                 // Create stub of billboard info
                 BlockFlat flatInfo = new BlockFlat();
+                flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                 flatInfo.TextureArchive = obj.TextureArchive;
                 flatInfo.TextureRecord = obj.TextureRecord;
                 flatInfo.TextureKey = -1;
@@ -361,7 +368,7 @@ namespace XNALibrary
             Vector3 blockMax = new Vector3(2048, 2048, 0);
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
-            // Create empty model info list. This will grow as needed
+            // Create empty model and flat info lists. These will grow as needed.
             block.Models = new List<BlockModel>();
             block.Flats = new List<BlockFlat>();
 
@@ -407,8 +414,22 @@ namespace XNALibrary
                             block.Models.Add(modelInfo);
                             break;
 
+                        case DFBlock.RdbResourceTypes.Flat:
+                            // Create stub of billboard info
+                            BlockFlat flatInfo = new BlockFlat();
+                            flatInfo.BlockType = DFBlock.BlockTypes.Rdb;
+                            flatInfo.TextureArchive = obj.Resources.FlatResource.TextureArchive;
+                            flatInfo.TextureRecord = obj.Resources.FlatResource.TextureRecord;
+                            flatInfo.TextureKey = -1;
+                            flatInfo.Origin = Vector3.Zero;
+                            flatInfo.Position.X = obj.XPos;
+                            flatInfo.Position.Y = -obj.YPos;
+                            flatInfo.Position.Z = -obj.ZPos;
+                            block.Flats.Add(flatInfo);
+                            break;
+
                         default:
-                            // Only drawing models for now
+                            // Only drawing models and flats for now
                             break;
                     }
                 }

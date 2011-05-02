@@ -219,8 +219,8 @@ namespace DaggerfallModelling.ViewComponents
         /// <param name="position">Position.</param>
         /// <param name="size">Size.</param>
         /// <param name="textureKey">Texture key.</param>
-        /// <param name="blockMatrix">Matrix of parent block.</param>
-        public void AddToBatch(Vector3 position, Vector2 size, int textureKey, Matrix blockMatrix)
+        /// <param name="blockTransform">Matrix of parent block.</param>
+        public void AddToBatch(Vector3 origin, Vector3 position, Vector2 size, int textureKey, Matrix blockTransform)
         {
             // Create billboard matrix
             Matrix constrainedBillboard = Matrix.CreateConstrainedBillboard(
@@ -230,15 +230,16 @@ namespace DaggerfallModelling.ViewComponents
                 null,
                 null);
 
-            // Create flat matrix
+            // Create flat transform
             Matrix flatTransform =
                 Matrix.CreateScale(size.X, size.Y, 1f) *
-                constrainedBillboard *
-                blockMatrix;
+                Matrix.CreateTranslation(origin) *
+                constrainedBillboard * 
+                blockTransform;
 
             // Calc distance between batch and camera
             float distance = Vector3.Distance(
-                Vector3.Transform(position, blockMatrix),
+                Vector3.Transform(position, blockTransform),
                 Camera.Position);
 
             // Add to batch
@@ -344,27 +345,27 @@ namespace DaggerfallModelling.ViewComponents
         private void BuildBillboard()
         {
             // Set dimensions of billboard 
-            const float w = 1;
-            const float h = 1;
+            const float w = 0.5f;
+            const float h = 0.5f;
 
             // Create vertex array
             billboardVertices = new VertexPositionNormalTexture[4];
             billboardVertices[0] = new VertexPositionNormalTexture(
-                new Vector3(-w, h, -w),
+                new Vector3(-w, h, 0),
                 new Vector3(0, 0, 0),
-                new Vector2(1f, 0));
+                new Vector2(1, 0));
             billboardVertices[1] = new VertexPositionNormalTexture(
-                new Vector3(w, h, -w),
+                new Vector3(w, h, 0),
                 new Vector3(0, 0, 0),
                 new Vector2(0, 0));
             billboardVertices[2] = new VertexPositionNormalTexture(
-                new Vector3(-w, -h, -w),
+                new Vector3(-w, -h, 0),
                 new Vector3(0, 0, 0),
-                new Vector2(1f, 1f));
+                new Vector2(1, 1));
             billboardVertices[3] = new VertexPositionNormalTexture(
-                new Vector3(w, -h, -w),
+                new Vector3(w, -h, 0),
                 new Vector3(0, 0, 0),
-                new Vector2(0, 1f));
+                new Vector2(0, 1));
 
             // Create index array
             billboardIndices = new short[6]

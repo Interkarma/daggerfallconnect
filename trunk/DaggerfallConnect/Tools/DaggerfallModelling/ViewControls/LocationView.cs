@@ -44,6 +44,9 @@ namespace DaggerfallModelling.ViewControls
         private int exteriorLayoutCount = 0;
         private int dungeonLayoutCount = 0;
 
+        // Ground height
+        private int groundHeight = -7;
+
         // Batching
         private const int batchArrayLength = 768;
         private BatchModes batchMode = BatchModes.SingleExteriorBlock;        
@@ -728,23 +731,23 @@ namespace DaggerfallModelling.ViewControls
                 modelIndex++;
             }
 
+            // Batch misc flats
+            if (cameraMode == CameraModes.Free &&
+                BatchOptions.MiscFlats == (batchOptions & BatchOptions.MiscFlats))
+            {
+                BatchFlats(ref block, blockTransform);
+            }
+
             // Optional exterior batching
             if (batchMode == BatchModes.SingleExteriorBlock ||
                 batchMode == BatchModes.FullExterior)
             {
-                // Batch misc flats
-                if (cameraMode == CameraModes.Free &&
-                    BatchOptions.MiscFlats == (batchOptions & BatchOptions.MiscFlats))
-                {
-                    BatchFlats(ref block, blockTransform);
-                }
-
                 // Batch ground plane
                 if (BatchOptions.GroundPlane == (batchOptions & BatchOptions.GroundPlane))
                 {
                     // Translate ground down a few units to reduce
                     // z-fighting with other ground-aligned planes
-                    Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, -7, 0);
+                    Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, groundHeight, 0);
 
                     // Draw ground plane
                     BatchGroundPlane(ref block, ref groundTransform);
@@ -807,17 +810,22 @@ namespace DaggerfallModelling.ViewControls
             BoundingSphere flatBounds;
             foreach (var flat in block.Flats)
             {
-                // Create transformed flat sphere
+                // Create transformed bounding sphere
                 flatTransform = Matrix.CreateTranslation(flat.Position) * blockTransform;
                 flatBounds.Center = Vector3.Transform(flat.BoundingSphere.Center, flatTransform);
                 flatBounds.Radius = flat.BoundingSphere.Radius;
 
-                // Test flat bounds against camera frustum
+                // TEST: Draw bounds
+                //renderableBoundingSphere.Color = Color.Red;
+                //renderableBoundingSphere.Draw(flatBounds, ActiveCamera.View, ActiveCamera.Projection, Matrix.Identity);
+
+                // Test bounds against camera frustum
                 if (!viewFrustum.Intersects(flatBounds))
                     continue;
 
                 // Add to batch
                 billboardManager.AddToBatch(
+                    flat.Origin,
                     flat.Position,
                     flat.Size,
                     flat.TextureKey,
@@ -1610,8 +1618,8 @@ namespace DaggerfallModelling.ViewControls
                 textureKey = host.TextureManager.LoadTexture(
                     info.TextureArchive,
                     info.TextureRecord,
-                    TextureManager.TextureCreateFlags.PreMultiplyAlpha |
-                    TextureManager.TextureCreateFlags.Dilate);
+                    TextureManager.TextureCreateFlags.Dilate |
+                    TextureManager.TextureCreateFlags.PreMultiplyAlpha);
 
                 // Get dimensions and scale of this texture image
                 // We do this as TextureManager may have just pulled texture key from cache.
@@ -1623,30 +1631,34 @@ namespace DaggerfallModelling.ViewControls
                 // Store texture key in flat
                 info.TextureKey = textureKey;
 
-                // Calc final texture size
-                // Do not scale lights (210)
-                if (info.TextureArchive == 999)
+                info.Size.X = size.Width;
+                info.Size.Y = size.Height;
+
+                // Apply scale
+                if (info.BlockType == DFBlock.BlockTypes.Rdb && info.TextureArchive > 499)
                 {
+                    // Foliage (TEXTURE.500 and up) do not seem to use scaling
+                    // in dungeons. Disable scaling for now.
                     info.Size.X = size.Width;
                     info.Size.Y = size.Height;
                 }
                 else
                 {
-                    float xScale = (float)scale.Width / 256.0f;
-                    float yScale = (float)scale.Height / 256.0f;
-                    float xChange = size.Width * xScale;
-                    float yChange = size.Height * yScale;
+                    // Scale billboard
+                    int xChange = (int)(size.Width * (scale.Width / 256.0f));
+                    int yChange = (int)(size.Height * (scale.Height / 256.0f));
                     info.Size.X = size.Width + xChange;
                     info.Size.Y = size.Height + yChange;
                 }
 
-                // Set position of flat so axis is middle bottom
-                info.Position.Y = info.Size.Y;
+                // Set origin of outdoor flats to centre-bottom
+                if (info.BlockType == DFBlock.BlockTypes.Rmb)
+                {
+                    info.Origin.Y = groundHeight + info.Size.Y / 2;
+                }
 
                 // Set bounding sphere
-                info.BoundingSphere.Center.X = info.Size.X / 2;
-                info.BoundingSphere.Center.Y = info.Size.Y / 2;
-                info.BoundingSphere.Center.Z = 0f;
+                info.BoundingSphere.Center = info.Origin;
                 if (info.Size.X > info.Size.Y)
                     info.BoundingSphere.Radius = info.Size.X / 2;
                 else
@@ -1883,6 +1895,18 @@ namespace DaggerfallModelling.ViewControls
         {
             // Apply mode
             batchMode = mode;
+
+            // Set billboard camera
+            if (batchMode == BatchModes.SingleExteriorBlock ||
+                batchMode == BatchModes.FullExterior)
+            {
+                billboardManager.Camera = exteriorFreeCamera;
+            }
+            else if (batchMode == BatchModes.SingleDungeonBlock ||
+                batchMode == BatchModes.FullDungeon)
+            {
+                billboardManager.Camera = dungeonFreeCamera;
+            }
         }
 
         #endregion
