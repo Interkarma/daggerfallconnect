@@ -139,6 +139,8 @@ namespace XNALibrary
 
         /// <summary>
         /// Get model data.
+        ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
+        ///  flag is set when loading textures with TextureManager.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <returns>Model object.</returns>
@@ -152,6 +154,8 @@ namespace XNALibrary
 
         /// <summary>
         /// Get model data.
+        ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
+        ///  flag is set when loading textures with TextureManager.
         /// </summary>
         /// <param name="key">ID of model.</param>
         /// <param name="model">ModelData out.</param>

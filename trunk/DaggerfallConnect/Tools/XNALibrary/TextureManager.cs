@@ -34,6 +34,7 @@ namespace XNALibrary
     /// <summary>
     /// Helper class to load and store Daggerfall textures for XNA. Enables climate substitutions
     ///  (Daggerfall swaps textures based on climate type) and texture atlasing for ground tiles.
+    ///  Provides some loading and pre-processing options. See TextureCreateFlags for more details.
     /// </summary>
     public class TextureManager
     {
@@ -60,7 +61,6 @@ namespace XNALibrary
 
         // Texture dictionaries
         private const int atlasTextureKey = -1000000;
-        private const int billboardTextureKey = -1000001;
         private Dictionary<int, Texture2D> generalTextureDict;
         private Dictionary<int, Texture2D> winterTextureDict;
 
@@ -71,6 +71,55 @@ namespace XNALibrary
         #endregion
 
         #region Class Structures
+
+        /// <summary>
+        /// Flags to modify how texture is created.
+        /// </summary>
+        [Flags]
+        public enum TextureCreateFlags
+        {
+            /// <summary>
+            /// No flags set.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Attempts to process texture into current Climate and
+            ///  Weather. TextureManager will atempt to ignore invalid
+            ///  climate swaps.
+            /// </summary>
+            ApplyClimate = 1,
+
+            /// <summary>
+            /// Ensures texture will be POW2 by extending right and
+            ///  bottom dimensions to nearest POW2 boundary. Texture
+            ///  will remain at top-left of total area. It is the
+            ///  responsibility of the caller to ensure UVs are
+            ///  modified to correctly address the POW2 texture.
+            ///  </summary>
+            PowerOfTwo = 2,
+
+            /// <summary>
+            /// Blends colour into neighbouring alpha pixels to help
+            ///  create softer borders. Most useful when loading
+            ///  billboard textures. Also extends image dimensions
+            ///  by a couple of pixels around each edge so images do
+            ///  not appear to be cut off at the edges.
+            /// </summary>
+            Dilate = 4,
+
+            /// <summary>
+            /// Pre-multiplies alpha with colour channels. It is the
+            ///  responsibility of the caller to ensure blend functions
+            ///  are set to use pre-multiplied textures.
+            /// </summary>
+            PreMultiplyAlpha = 8,
+
+            /// <summary>
+            /// Creates a chain of mipmaps for this texture.
+            /// </summary>
+            MipMaps = 16,
+        }
 
         /// <summary>
         /// Parameters of climate atlas during build.
@@ -103,9 +152,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets current climate for swaps. Setting this to 
-        ///  None will use default textures assigned to models in ARCH3D.BSA.
-        ///  Temperate ground tiles will be used when Climate is None.
+        /// Gets or sets current climate for swaps.
         /// </summary>
         public ClimateType Climate
         {
@@ -169,106 +216,34 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
-        /// Gets rectangle of specific subtexture inside terrain atlas.
-        ///  Returns error subtexture on invalid key.
-        /// </summary>
-        /// <param name="record">Record index.</param>
-        /// <returns>RectangleF of subtexture.</returns>
-        public RectangleF GetTerrainSubTextureRect(int record)
-        {
-            // Get the subtexture rectangle
-            int key = GetAtlasTextureKey(ClimateSet.Exterior_Terrain, climateWeather, record);
-            if (!terrainAtlasDict.ContainsKey(key))
-                return terrainAtlasDict[0];
-            else
-                return terrainAtlasDict[key];
-        }
-
-        /// <summary>
-        /// Loads a texture based on indices. Only first frame of animated textures
-        ///  will be loaded, as animated textures are not supported at this time.
-        ///  If a ClimateType is set, and the specified texture archive is climate-
-        ///  specific, the appropriate climate and weather texture will be loaded instead.
-        ///  The key will be the same no matter the climate or weather, allowing you to
-        ///  perform swaps without needing to rebuild texture keys on model submeshes.
-        ///  Textures loaded without climate processing will not be given mipmaps and
-        ///  will not be forced to POW2 dimensions.
+        /// Loads a texture from archive and record index. Animated textures are
+        ///  not supported at this time and only first frame will be loaded.
+        ///  When using climate swaps the key returned will be stable. This means
+        ///  you can store this key with your mesh/scene and TextureManager will
+        ///  return the correct climate and weather variant for that key when you
+        ///  call GetTexture(key) during rendering.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
-        /// <param name="allowClimate">True to allow climate processing.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
         /// <returns>Texture key.</returns>
-        public int LoadTexture(int archive, int record, bool allowClimate)
+        public int LoadTexture(int archive, int record, TextureCreateFlags flags)
         {
-            // Load without climate processing
-            int key;
-            if (!allowClimate)
+            // Load based on flags
+            if (TextureCreateFlags.ApplyClimate == (flags & TextureCreateFlags.ApplyClimate) &&
+                climateType != ClimateType.None)
             {
-                key = GetTextureKey(archive, record);
-                if (generalTextureDict.ContainsKey(key))
-                {
-                    return key;
-                }
-                else
-                {
-                    LoadTexture(key, archive, record, false, false);
-                    return key;
-                }
-            }
-
-            // Get the base set this archive belongs to regardless of climate
-            bool supportsWinter, supportsRain;
-            ClimateSet climateSet = GetClimateSet(archive, out supportsWinter, out supportsRain);
-
-            // Load non climate aware textures, or no climate type specified
-            if (this.climateType == ClimateType.None || climateSet == ClimateSet.None)
-            {
-                key = GetTextureKey(archive, record);
-                if (generalTextureDict.ContainsKey(key))
-                {
-                    return key;
-                }
-                else
-                {
-                    LoadTexture(key, archive, record, false, true);
-                    return key;
-                }
-            }
-
-            // Check if key already exists
-            key = GetTextureKey(climateType, climateSet, record);
-            if (this.climateWeather == ClimateWeather.Winter)
-            {
-                if (winterTextureDict.ContainsKey(key))
-                    return key;
+                return LoadTextureWithClimate(archive, record, flags);
             }
             else
             {
-                if (generalTextureDict.ContainsKey(key))
-                    return key;
+                return LoadTextureNoClimate(archive, record, flags);
             }
-
-            // Swap sets are missing a winter file in certain climates.
-            if (climateType == ClimateType.Desert || climateType == ClimateType.Swamp)
-            {
-                switch ((int)climateSet)
-                {
-                    case 9:
-                    case 35:
-                        supportsWinter = false;
-                        break;
-                }
-            }
-
-            // Load climate aware texture
-            int newArchive = (int)climateType + (int)climateSet;
-            LoadTexture(key, newArchive, record, supportsWinter, true);
-            return key;
         }
 
         /// <summary>
-        /// Get texture for current climate, based on key.
-        ///  Use TerrainAtlasKey property for terrain key.
+        /// Gets texture by key.
+        ///  Use static TerrainAtlasKey property for terrain key.
         ///  Manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="key">Texture key.</param>
@@ -291,6 +266,22 @@ namespace XNALibrary
                 return null;
             else
                 return generalTextureDict[key];
+        }
+
+        /// <summary>
+        /// Gets rectangle of specific subtexture inside terrain atlas.
+        ///  Returns error subtexture on invalid key.
+        /// </summary>
+        /// <param name="record">Record index.</param>
+        /// <returns>RectangleF of subtexture.</returns>
+        public RectangleF GetTerrainSubTextureRect(int record)
+        {
+            // Get the subtexture rectangle
+            int key = GetAtlasTextureKey(ClimateSet.Exterior_Terrain, climateWeather, record);
+            if (!terrainAtlasDict.ContainsKey(key))
+                return terrainAtlasDict[0];
+            else
+                return terrainAtlasDict[key];
         }
 
         /// <summary>
@@ -336,7 +327,7 @@ namespace XNALibrary
         #region Private Methods
 
         /// <summary>
-        /// Gets unique key for a non climate aware texture.
+        /// Gets unique key for a non-climate-aware texture.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
@@ -347,7 +338,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets unique key for a climate aware texture.
+        /// Gets unique key for a climate-aware texture.
         /// </summary>
         /// <param name="climateType">Climate type.</param>
         /// <param name="climateSet">Climate set.</param>
@@ -359,7 +350,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets unique key for a atlas textures.
+        /// Gets unique key for atlas sub-textures.
         /// </summary>
         /// <param name="set">Climate set.</param>
         /// <param name="weather">Climate weather.</param>
@@ -371,45 +362,147 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Loads both normal and winter textures for the specified archive.
-        ///  Must always specify base archive index, never winter or rain indices.
+        /// Load a texture without climate processing.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        /// <returns>Texture key.</returns>
+        private int LoadTextureNoClimate(int archive, int record, TextureCreateFlags flags)
+        {
+            int key = GetTextureKey(archive, record);
+            if (generalTextureDict.ContainsKey(key))
+                return key;
+            else
+                CreateTexture(key, archive, record, false, flags);
+
+            return key;
+        }
+
+        /// <summary>
+        /// Load a texture with climate processing.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        /// <returns>Texture key.</returns>
+        private int LoadTextureWithClimate(int archive, int record, TextureCreateFlags flags)
+        {
+            // Get the base set this archive belongs to regardless of climate
+            bool supportsWinter, supportsRain;
+            ClimateSet climateSet = GetClimateSet(archive, out supportsWinter, out supportsRain);
+
+            // Load non-climate-aware textures without climate processing
+            if (ClimateSet.None == climateSet)
+            {
+                return LoadTextureNoClimate(archive, record, flags);
+            }
+
+            // Handle missing Swamp textures
+            if (climateType == ClimateType.Swamp)
+            {
+                switch (climateSet)
+                {
+                    case ClimateSet.Interior_TempleInt:
+                    case ClimateSet.Interior_MarbleFloors:
+                        return LoadTextureNoClimate(archive, record, flags);
+                }
+            }
+
+            // Check if key already exists
+            int key = GetTextureKey(climateType, climateSet, record);
+            if (this.climateWeather == ClimateWeather.Winter)
+            {
+                if (winterTextureDict.ContainsKey(key))
+                    return key;
+            }
+            else
+            {
+                if (generalTextureDict.ContainsKey(key))
+                    return key;
+            }
+
+            // Handle specific climate sets with missing winter textures
+            if (climateType == ClimateType.Desert || climateType == ClimateType.Swamp)
+            {
+                switch (climateSet)
+                {
+                    case ClimateSet.Exterior_Castle:
+                    case ClimateSet.Exterior_MagesGuild:
+                        supportsWinter = false;
+                        break;
+                }
+            }
+
+            // Load climate-aware texture
+            int newArchive = (int)climateType + (int)climateSet;
+            CreateTexture(key, newArchive, record, supportsWinter, flags);
+            return key;
+        }
+
+        /// <summary>
+        /// Creates texture for the specified archive and record, then
+        ///  adds to dictionary against key. Will attempt to load a
+        ///  winter variant if specified.
         /// </summary>
         /// <param name="key">Key to associate with texture.</param>
         /// <param name="archive">Archive index to load.</param>
         /// <param name="record">Record index to load.</param>
-        /// /// <param name="createMipMaps">True to create mip-maps for this texture.</param>
-        private void LoadTexture(int key, int archive, int record, bool supportsWinter, bool createMipMaps)
+        /// <param name="supportsWinter">True to load winter set (archive+1).</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        private void CreateTexture(int key, int archive, int record, bool supportsWinter, TextureCreateFlags flags)
         {
             // Get normal texture in ARGB format
             textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
             DFBitmap normalBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
 
-            // Get winter texture in ARGB format
-            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
-            DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
+            // Perform optional image processing
+            ProcessDFBitmap(ref normalBitmap, flags);
 
-            // Create XNA textures
-            generalTextureDict.Add(key, CreateTexture(ref normalBitmap, createMipMaps));
+            // Create XNA texture
+            generalTextureDict.Add(key, CreateTexture2D(ref normalBitmap, flags));
+
+            // Load winter texture
             if (supportsWinter)
-                winterTextureDict.Add(key, CreateTexture(ref winterBitmap, createMipMaps));
+            {
+                // Get winter texture in ARGB format
+                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
+                DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.ARGB);
+
+                // Perform optional image processing
+                ProcessDFBitmap(ref normalBitmap, flags);
+                
+                // Create XNA texture
+                winterTextureDict.Add(key, CreateTexture2D(ref winterBitmap, flags));
+            }
         }
 
         /// <summary>
         /// Creates Texture2D from DFBitmap.
         /// </summary>
         /// <param name="dfBitmap">DFBitmap source. Must be in ARGB format.</param>
-        /// <param name="createMipMaps">True to create mip-maps for this texture.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
         /// <returns>Texture2D.</returns>
-        private Texture2D CreateTexture(ref DFBitmap dfBitmap, bool createMipMaps)
+        private Texture2D CreateTexture2D(ref DFBitmap dfBitmap, TextureCreateFlags flags)
         {
-            Texture2D texture;
-            if (createMipMaps)
+            // Get dimensions of new texture
+            int width, height;
+            if (TextureCreateFlags.PowerOfTwo == (flags & TextureCreateFlags.PowerOfTwo))
             {
-                // Get width and height as power of 2
-                int width = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Width)) ? dfBitmap.Width : PowerOfTwo.NextPowerOfTwo(dfBitmap.Width);
-                int height = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Height)) ? dfBitmap.Height : PowerOfTwo.NextPowerOfTwo(dfBitmap.Height);
+                width = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Width)) ? dfBitmap.Width : PowerOfTwo.NextPowerOfTwo(dfBitmap.Width);
+                height = (PowerOfTwo.IsPowerOfTwo(dfBitmap.Height)) ? dfBitmap.Height : PowerOfTwo.NextPowerOfTwo(dfBitmap.Height);
+            }
+            else
+            {
+                width = dfBitmap.Width;
+                height = dfBitmap.Height;
+            }
 
-                // Create XNA texture
+            // Create new texture
+            Texture2D texture;
+            if (TextureCreateFlags.MipMaps == (flags & TextureCreateFlags.MipMaps))
+            {
+                // Create XNA texture with mipmaps
                 texture = new Texture2D(
                     graphicsDevice,
                     width,
@@ -420,7 +513,7 @@ namespace XNALibrary
             }
             else
             {
-                // Create XNA texture
+                // Create XNA texture without mipmaps
                 texture = new Texture2D(
                     graphicsDevice,
                     dfBitmap.Width,
@@ -459,6 +552,133 @@ namespace XNALibrary
                     return swampAtlas;
                 default:
                     return temperateAtlas;
+            }
+        }
+
+        /// <summary>
+        /// Performs optional processing to DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        private void ProcessDFBitmap(ref DFBitmap dfBitmap, TextureCreateFlags flags)
+        {
+            // Dilate
+            if (TextureCreateFlags.Dilate == (flags & TextureCreateFlags.Dilate))
+                DilateDFBitmap(ref dfBitmap);
+
+            // Pre-multiply alpha
+            if (TextureCreateFlags.PreMultiplyAlpha == (flags & TextureCreateFlags.PreMultiplyAlpha))
+                PreMultiplyAlphaDFBitmap(ref dfBitmap);
+        }
+
+        /// <summary>
+        /// Pre-multiply bitmap alpha.
+        /// </summary>
+        /// <param name="dfBitmap">FBitmap.</param>
+        private void PreMultiplyAlphaDFBitmap(ref DFBitmap dfBitmap)
+        {
+            // Format must be ARGB
+            if (dfBitmap.Format != DFBitmap.Formats.ARGB)
+                throw new Exception("DFBitmap not ARGB.");
+
+            // Constants
+            const int formatWidth = 4;
+
+            // Pre-multiply alpha for each pixel
+            int pos;
+            float multiplier;
+            for (int y = 0; y < dfBitmap.Height; y++)
+            {
+                pos = y * dfBitmap.Stride;
+                for (int x = 0; x < dfBitmap.Width; x++)
+                {
+                    multiplier = dfBitmap.Data[pos + 3] / 256f;
+                    dfBitmap.Data[pos] = (byte)(dfBitmap.Data[pos] * multiplier);
+                    dfBitmap.Data[pos + 1] = (byte)(dfBitmap.Data[pos + 1] * multiplier);
+                    dfBitmap.Data[pos + 2] = (byte)(dfBitmap.Data[pos + 2] * multiplier);
+
+                    pos += formatWidth;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dilate bitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        private void DilateDFBitmap(ref DFBitmap dfBitmap)
+        {
+            // Format must be ARGB
+            if (dfBitmap.Format != DFBitmap.Formats.ARGB)
+                throw new Exception("DFBitmap not ARGB.");
+
+            // Constants
+            const int formatWidth = 4;
+            const int paddingPixels = 1;
+
+            // Create larger bitmap to receive dilated image
+            DFBitmap dstBitmap = new DFBitmap();
+            dstBitmap.Format = dfBitmap.Format;
+            dstBitmap.Width = dfBitmap.Width + (paddingPixels * 2);
+            dstBitmap.Height = dfBitmap.Height + (paddingPixels * 2);
+            dstBitmap.Stride = dstBitmap.Width * formatWidth;
+            dstBitmap.Data = new byte[dstBitmap.Stride * dstBitmap.Height];
+
+            // Process image
+            int srcPos, dstPos;
+            for (int y = 0; y < dfBitmap.Height; y++)
+            {
+                srcPos = y * dfBitmap.Stride;
+                dstPos = (y * dstBitmap.Stride) + (paddingPixels * dstBitmap.Stride) + (paddingPixels * formatWidth);
+                for (int x = 0; x < dfBitmap.Width; x++)
+                {
+                    // Copy pixel to top, bottom, left, right
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - formatWidth);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + formatWidth);
+
+                    // Copy pixel to four corners
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride - formatWidth);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride + formatWidth);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride - formatWidth);
+                    TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride + formatWidth);
+
+                    // Copy central colour pixel
+                    dstBitmap.Data[dstPos] = dfBitmap.Data[srcPos];
+                    dstBitmap.Data[dstPos + 1] = dfBitmap.Data[srcPos + 1];
+                    dstBitmap.Data[dstPos + 2] = dfBitmap.Data[srcPos + 2];
+                    dstBitmap.Data[dstPos + 3] = dfBitmap.Data[srcPos + 3];
+
+                    srcPos += formatWidth;
+                    dstPos += formatWidth;
+                }
+            }
+
+            // Assign processed image
+            dfBitmap = dstBitmap;
+        }
+
+        /// <summary>
+        /// Tests a pixel for transparancy and clones colour information.
+        /// </summary>
+        /// <param name="srcBuffer">Source buffer.</param>
+        /// <param name="dstBuffer">Destination buffer.</param>
+        /// <param name="srcPos">Source position.</param>
+        /// <param name="dstPos">Destination position.</param>
+        private void TestCopyPixel(ref byte[] srcBuffer, ref byte[] dstBuffer, int srcPos, int dstPos)
+        {
+            // Do nothing if source pixel is transparant
+            if (srcBuffer[srcPos + 3] == 0)
+                return;
+
+            // Copy source colour if destination pixel is transparant
+            if (dstBuffer[dstPos + 3] == 0)
+            {
+                dstBuffer[dstPos] = srcBuffer[srcPos];
+                dstBuffer[dstPos + 1] = srcBuffer[srcPos + 1];
+                dstBuffer[dstPos + 2] = srcBuffer[srcPos + 2];
+                dstBuffer[dstPos + 3] = 1;
             }
         }
 

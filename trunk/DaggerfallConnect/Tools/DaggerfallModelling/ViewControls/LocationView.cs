@@ -1552,7 +1552,9 @@ namespace DaggerfallModelling.ViewControls
                     textureKey = host.TextureManager.LoadTexture(
                         model.DFMesh.SubMeshes[sm].TextureArchive,
                         model.DFMesh.SubMeshes[sm].TextureRecord,
-                        true);
+                        TextureManager.TextureCreateFlags.ApplyClimate |
+                        TextureManager.TextureCreateFlags.MipMaps |
+                        TextureManager.TextureCreateFlags.PowerOfTwo);
 
                     // Store texture key in model
                     model.SubMeshes[sm].TextureKey = textureKey;
@@ -1608,7 +1610,8 @@ namespace DaggerfallModelling.ViewControls
                 textureKey = host.TextureManager.LoadTexture(
                     info.TextureArchive,
                     info.TextureRecord,
-                    false);
+                    TextureManager.TextureCreateFlags.PreMultiplyAlpha |
+                    TextureManager.TextureCreateFlags.Dilate);
 
                 // Get dimensions and scale of this texture image
                 // We do this as TextureManager may have just pulled texture key from cache.

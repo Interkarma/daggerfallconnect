@@ -271,7 +271,7 @@ namespace DaggerfallModelling.ViewComponents
             host.GraphicsDevice.RenderState.AlphaBlendEnable = true;
             host.GraphicsDevice.RenderState.AlphaTestEnable = false;
             host.GraphicsDevice.RenderState.CullMode = CullMode.None;
-            host.GraphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            host.GraphicsDevice.RenderState.SourceBlend = Blend.One;
             host.GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 
             // Set sampler state

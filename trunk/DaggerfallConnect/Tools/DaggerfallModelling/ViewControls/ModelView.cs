@@ -502,7 +502,9 @@ namespace DaggerfallModelling.ViewControls
                     host.TextureManager.LoadTexture(
                     currentModel.DFMesh.SubMeshes[sm].TextureArchive,
                     currentModel.DFMesh.SubMeshes[sm].TextureRecord,
-                    true);
+                    TextureManager.TextureCreateFlags.ApplyClimate |
+                    TextureManager.TextureCreateFlags.MipMaps |
+                    TextureManager.TextureCreateFlags.PowerOfTwo);
             }
 
             // Centre camera and reset model rotation

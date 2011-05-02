@@ -589,7 +589,8 @@ namespace DaggerfallModelling.ViewControls
                         host.TextureManager.LoadTexture(
                         thumb.model.DFMesh.SubMeshes[sm].TextureArchive,
                         thumb.model.DFMesh.SubMeshes[sm].TextureRecord,
-                        false);
+                        TextureManager.TextureCreateFlags.MipMaps |
+                        TextureManager.TextureCreateFlags.PowerOfTwo);
                 }
 
                 // Centre model
