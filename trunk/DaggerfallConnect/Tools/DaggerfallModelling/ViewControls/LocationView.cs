@@ -34,24 +34,22 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
-        // Layout
+        // Scene
         private const float rmbBlockSide = 4096.0f;
         private const float rdbBlockSide = 2048.0f;
         private BlockPosition[] exteriorLayout = new BlockPosition[64];
         private BlockPosition[] dungeonLayout = new BlockPosition[32];
-        private Dictionary<int, int> exteriorLayoutDict = new Dictionary<int,int>();
-        private Dictionary<int, int> dungeonLayoutDict =  new Dictionary<int,int>();
         private int exteriorLayoutCount = 0;
         private int dungeonLayoutCount = 0;
 
-        // Ground height
-        private int groundHeight = -7;
+        // Scene block lookup
+        private Dictionary<int, int> exteriorLayoutDict = new Dictionary<int, int>();
+        private Dictionary<int, int> dungeonLayoutDict = new Dictionary<int, int>();
 
         // Batching
-        private const int batchArrayLength = 768;
-        private BatchModes batchMode = BatchModes.SingleExteriorBlock;        
-        private Dictionary<int, BatchItemArray> exteriorBatches = new Dictionary<int, BatchItemArray>();
-        private Dictionary<int, BatchItemArray> dungeonBatches = new Dictionary<int, BatchItemArray>();
+        private const int batchArrayLength = 1024;
+        private BatchModes batchMode = BatchModes.Exterior;
+        private Batches batches = new Batches();
 
         // Batch options
         private BatchOptions batchOptions =
@@ -62,7 +60,11 @@ namespace DaggerfallModelling.ViewControls
         private SkyComponent skyManager;
         private BillboardComponent billboardManager;
 
+        // Ground height
+        private int groundHeight = -7;
+
         // Location
+        private DFLocation? currentLocation = null;
         private string currentBlockName = string.Empty;
         private int currentLatitude = -1;
         private int currentLongitude = -1;
@@ -120,24 +122,20 @@ namespace DaggerfallModelling.ViewControls
         #region Class Structures
 
         /// <summary>
-        /// Specifies which layout data should be rendered.
+        /// Specifies which scene layout data should be batched for rendering.
         /// </summary>
         public enum BatchModes
         {
-            /// <summary>Render single exterior block only.</summary>
-            SingleExteriorBlock,
-            /// <summary>Render single dungeon block only.</summary>
-            SingleDungeonBlock,
-            /// <summary>Render full exterior location.</summary>
-            FullExterior,
-            /// <summary>Render full dungeon location.</summary>
-            FullDungeon,
-            /// <summary>Render interior of specified location.</summary>
+            /// <summary>Render exterior.</summary>
+            Exterior,
+            /// <summary>Render dungeon.</summary>
+            Dungeon,
+            /// <summary>Render interior.</summary>
             Interior,
         }
 
         /// <summary>
-        /// Describes optional rendering features. Options can be combined.
+        /// Flags for optional data to be batched for rendering.
         /// </summary>
         [Flags]
         public enum BatchOptions
@@ -159,31 +157,27 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Describes how a block is positioned in world space.
+        /// Contains batches of visible items for renderer.
         /// </summary>
-        private struct BlockPosition
+        private struct Batches
         {
-            public string name;
-            public Vector3 position;
-            public BlockManager.BlockData block;
+            public Dictionary<int, BatchModelArray> Models;
         }
 
         /// <summary>
-        /// Stores a fixes array of submeshes which is allocated
+        /// Stores a fixed array of submeshes which is allocated
         ///  once to minimise garbage collections later.
         /// </summary>
-        private struct BatchItemArray
+        private struct BatchModelArray
         {
             public int Length;
-            public BatchItem[] BatchItems;
+            public BatchModelItem[] BatchItems;
         }
 
         /// <summary>
-        /// Represents a visible submesh. These batches are grouped by
-        ///  texture while walking the scene then all executed at once.
-        ///  This reduces the number of texture changes and begin-end blocks.
+        /// Represents a visible submesh.
         /// </summary>
-        private struct BatchItem
+        private struct BatchModelItem
         {
             public bool Indexed;
             public Matrix ModelTransform;
@@ -193,6 +187,16 @@ namespace DaggerfallModelling.ViewControls
             public short[] Indices;
             public int StartIndex;
             public int PrimitiveCount;
+        }
+
+        /// <summary>
+        /// Describes how a block is positioned in world space.
+        /// </summary>
+        private struct BlockPosition
+        {
+            public string name;
+            public Vector3 position;
+            public BlockManager.BlockData block;
         }
 
         #endregion
@@ -505,15 +509,10 @@ namespace DaggerfallModelling.ViewControls
             // Climate swaps in dungeons now implemented yet.
             // Set climate type manually for now to ensure
             // dungeons do not use climate swaps.
-            if (batchMode == BatchModes.SingleExteriorBlock ||
-                batchMode == BatchModes.FullExterior)
-            {
+            if (batchMode == BatchModes.Exterior)
                 host.TextureManager.Climate = base.Climate;
-            }
             else
-            {
                 host.TextureManager.Climate = DFLocation.ClimateType.None;
-            }
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -585,8 +584,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Free camera dungeons are cleared black
-            if (batchMode == BatchModes.SingleDungeonBlock ||
-                batchMode == BatchModes.FullDungeon)
+            if (batchMode == BatchModes.Dungeon)
             {
                 host.GraphicsDevice.Clear(Color.Black);
                 return;
@@ -605,23 +603,19 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Clears batch lists. These are rebuilt each scene
-        ///  from visible submeshes.
+        /// Clears batches. These are rebuild every frame from
+        ///  visible objects.
         /// </summary>
         private void ClearBatches()
         {
-            // Get batches
-            Dictionary<int, BatchItemArray> batches;
-            GetBatches(out batches);
-
             // Clear each batch list
-            List<int> keys = new List<int>(batches.Keys);
+            List<int> keys = new List<int>(batches.Models.Keys);
             foreach (int key in keys)
             {
                 // Zero out length of each array
-                BatchItemArray batchArray = batches[key];
+                BatchModelArray batchArray = batches.Models[key];
                 batchArray.Length = 0;
-                batches[key] = batchArray;
+                batches.Models[key] = batchArray;
             }
 
             // Clear billboard batch
@@ -739,8 +733,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Optional exterior batching
-            if (batchMode == BatchModes.SingleExteriorBlock ||
-                batchMode == BatchModes.FullExterior)
+            if (batchMode == BatchModes.Exterior)
             {
                 // Batch ground plane
                 if (BatchOptions.GroundPlane == (batchOptions & BatchOptions.GroundPlane))
@@ -766,10 +759,6 @@ namespace DaggerfallModelling.ViewControls
             if (model.Vertices == null)
                 return;
 
-            // Get batches
-            Dictionary<int, BatchItemArray> batches;
-            GetBatches(out batches);
-
             // Batch submeshes
             foreach (var subMesh in model.SubMeshes)
             {
@@ -779,10 +768,10 @@ namespace DaggerfallModelling.ViewControls
 #endif
 
                 // Add subMesh to batch
-                if (batches.ContainsKey(subMesh.TextureKey))
+                if (batches.Models.ContainsKey(subMesh.TextureKey))
                 {
                     // Add reference to vertex and index data to batch
-                    BatchItemArray batchArray = batches[subMesh.TextureKey];
+                    BatchModelArray batchArray = batches.Models[subMesh.TextureKey];
                     int index = batchArray.Length;
                     batchArray.BatchItems[index].Indexed = true;
                     batchArray.BatchItems[index].ModelTransform = modelTransform;
@@ -793,7 +782,7 @@ namespace DaggerfallModelling.ViewControls
                     batchArray.BatchItems[index].StartIndex = subMesh.StartIndex;
                     batchArray.BatchItems[index].PrimitiveCount = subMesh.PrimitiveCount;
                     batchArray.Length++;
-                    batches[subMesh.TextureKey] = batchArray;
+                    batches.Models[subMesh.TextureKey] = batchArray;
                 }
             }
         }
@@ -844,20 +833,16 @@ namespace DaggerfallModelling.ViewControls
             if (block.GroundPlaneVertices == null)
                 return;
 
-            // Get batches
-            Dictionary<int, BatchItemArray> batches;
-            GetBatches(out batches);
-
 #if DEBUG
             // Increment triangle counter
             visibleTriangles += block.GroundPlaneVertices.Length / 3;
 #endif
 
-            // Add ground plane to batch
-            if (batches.ContainsKey(TextureManager.TerrainAtlasKey))
+            // Add ground plane to model batch
+            if (batches.Models.ContainsKey(TextureManager.TerrainAtlasKey))
             {
                 // Add reference to vertex and index data to batch
-                BatchItemArray batchArray = batches[TextureManager.TerrainAtlasKey];
+                BatchModelArray batchArray = batches.Models[TextureManager.TerrainAtlasKey];
                 int index = batchArray.Length;
                 batchArray.BatchItems[index].Indexed = false;
                 batchArray.BatchItems[index].ModelTransform = groundTransform;
@@ -868,7 +853,7 @@ namespace DaggerfallModelling.ViewControls
                 batchArray.BatchItems[index].StartIndex = 0;
                 batchArray.BatchItems[index].PrimitiveCount = block.GroundPlaneVertices.Length / 3;
                 batchArray.Length++;
-                batches[TextureManager.TerrainAtlasKey] = batchArray;
+                batches.Models[TextureManager.TerrainAtlasKey] = batchArray;
             }
         }
 
@@ -1042,10 +1027,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void DrawBatches()
         {
-            // Get batches
-            Dictionary<int, BatchItemArray> batches;
-            GetBatches(out batches);
-
             // Set vertex declaration
             host.GraphicsDevice.VertexDeclaration = modelVertexDeclaration;
 
@@ -1058,9 +1039,9 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
             // Iterate batch lists
-            foreach (var item in batches)
+            foreach (var item in batches.Models)
             {
-                BatchItemArray batchArray = item.Value;
+                BatchModelArray batchArray = item.Value;
 
                 // Do nothing if batch empty
                 if (batchArray.Length == 0)
@@ -1078,7 +1059,7 @@ namespace DaggerfallModelling.ViewControls
                 modelEffect.CurrentTechnique.Passes[0].Begin();
 
                 // Iterate batch items
-                BatchItem batchItem;
+                BatchModelItem batchItem;
                 for (int i = 0; i < batchArray.Length; i++)
                 {
                     // Get batch item
@@ -1154,6 +1135,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set climate
             Climate = climate;
+
+            // Reset batches
+            batches.Models = new Dictionary<int, BatchModelArray>();
             
             // Build single-block exterior layout
             BuildExteriorLayout(ref blockName);
@@ -1163,6 +1147,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Store block name
             currentBlockName = blockName;
+
+            // Clear location
+            currentLocation = null;
 
             // Init camera
             cameraVelocity = Vector3.Zero;
@@ -1183,6 +1170,9 @@ namespace DaggerfallModelling.ViewControls
             // Disable climate for dungeon blocks
             Climate = DFLocation.ClimateType.None;
 
+            // Reset batches
+            batches.Models = new Dictionary<int, BatchModelArray>();
+
             // Build single-block layout
             BuildDungeonLayout(ref blockName);
 
@@ -1191,6 +1181,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Store block name
             currentBlockName = blockName;
+
+            // Clear location
+            currentLocation = null;
 
             // Init camera
             cameraVelocity = Vector3.Zero;
@@ -1212,6 +1205,9 @@ namespace DaggerfallModelling.ViewControls
             // Set climate
             Climate = dfLocation.Climate;
 
+            // Reset batches
+            batches.Models = new Dictionary<int, BatchModelArray>();
+
             // Build layout
             BuildExteriorLayout(ref dfLocation);
 
@@ -1225,6 +1221,9 @@ namespace DaggerfallModelling.ViewControls
             // Store location coordinates
             currentLatitude = (int)dfLocation.MapTableData.Latitude;
             currentLongitude = (int)dfLocation.MapTableData.Longitude;
+
+            // Store location
+            currentLocation = dfLocation;
 
             // Init camera
             cameraVelocity = Vector3.Zero;
@@ -1260,9 +1259,6 @@ namespace DaggerfallModelling.ViewControls
             exteriorLayout[0] = blockPosition;
             exteriorLayoutCount = 1;
 
-            // Clear batches dict
-            exteriorBatches.Clear();
-
             // Add to layout dictionary
             exteriorLayoutDict.Clear();
             exteriorLayoutDict.Add(key, 0);
@@ -1296,9 +1292,6 @@ namespace DaggerfallModelling.ViewControls
             dungeonLayout[0] = blockPosition;
             dungeonLayoutCount = 1;
 
-            // Clear batches dict
-            dungeonBatches.Clear();
-
             // Add to layout dictionary
             dungeonLayoutDict.Clear();
             dungeonLayoutDict.Add(key, 0);
@@ -1327,9 +1320,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Reset layout dictionary
             exteriorLayoutDict.Clear();
-
-            // Clear batches dict
-            exteriorBatches.Clear();
 
             // Create exterior layout
             exteriorLayoutCount = 0;
@@ -1386,9 +1376,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Reset layout dictionary
             dungeonLayoutDict.Clear();
-
-            // Clear batches dict
-            dungeonBatches.Clear();
 
             // Create dungeon layout
             dungeonLayoutCount = 0;
@@ -1460,16 +1447,14 @@ namespace DaggerfallModelling.ViewControls
             // Get layout information
             switch (batchMode)
             {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
+                case BatchModes.Exterior:
                     if (exteriorLayoutCount > 0)
                     {
                         layout = exteriorLayout;
                         count = exteriorLayoutCount;
                     }
                     break;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
+                case BatchModes.Dungeon:
                     if (dungeonLayoutCount > 0)
                     {
                         layout = dungeonLayout;
@@ -1488,39 +1473,14 @@ namespace DaggerfallModelling.ViewControls
             // Get layout dictionary
             switch (batchMode)
             {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
+                case BatchModes.Exterior:
                     layoutDict = exteriorLayoutDict;
                     break;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
+                case BatchModes.Dungeon:
                     layoutDict = dungeonLayoutDict;
                     break;
                 default:
                     layoutDict = new Dictionary<int, int>();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Gets appropriate batch dictionary based on batch mode.
-        /// </summary>
-        /// <param name="batches">Batch dictionary output.</param>
-        private void GetBatches(out Dictionary<int, BatchItemArray> batches)
-        {
-            // Get layout dictionary
-            switch (batchMode)
-            {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
-                    batches = exteriorBatches;
-                    break;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
-                    batches = dungeonBatches;
-                    break;
-                default:
-                    batches = new Dictionary<int, BatchItemArray>();
                     break;
             }
         }
@@ -1535,10 +1495,6 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="block">BlockManager.Block.</param>
         private bool UpdateBlock(ref BlockManager.BlockData block)
         {
-            // Get batches
-            Dictionary<int, BatchItemArray> batches;
-            GetBatches(out batches);
-
             // Load block models
             int textureKey;
             Vector3 min, max;
@@ -1568,29 +1524,29 @@ namespace DaggerfallModelling.ViewControls
                     model.SubMeshes[sm].TextureKey = textureKey;
 
                     // Start a new batch if this is a texture we haven't seen before
-                    if (!batches.ContainsKey(textureKey))
+                    if (!batches.Models.ContainsKey(textureKey))
                     {
                         // Create new batch array.
                         // These arrays are of a fixed length as new
                         // objects create lots of garbage at run-time.
                         // The Length is simply reset and the array reused
                         // each frame.
-                        BatchItemArray batchArray;
+                        BatchModelArray batchArray;
                         batchArray.Length = 0;
-                        batchArray.BatchItems = new BatchItem[batchArrayLength];
-                        batches.Add(textureKey, batchArray);
+                        batchArray.BatchItems = new BatchModelItem[batchArrayLength];
+                        batches.Models.Add(textureKey, batchArray);
                     }
 
                     // Start a ground plane batch if not present
-                    if (!batches.ContainsKey(TextureManager.TerrainAtlasKey))
+                    if (!batches.Models.ContainsKey(TextureManager.TerrainAtlasKey))
                     {
                         // Create a terrain atlas batch.
                         // Sized to 64 items as there can only be one
                         // item per block and never more than 64 blocks.
-                        BatchItemArray batchArray;
+                        BatchModelArray batchArray;
                         batchArray.Length = 0;
-                        batchArray.BatchItems = new BatchItem[64];
-                        batches.Add(TextureManager.TerrainAtlasKey, batchArray);
+                        batchArray.BatchItems = new BatchModelItem[64];
+                        batches.Models.Add(TextureManager.TerrainAtlasKey, batchArray);
                     }
                 }
 
@@ -1613,6 +1569,16 @@ namespace DaggerfallModelling.ViewControls
             {
                 // Get flat info
                 BlockManager.BlockFlat info = block.Flats[i];
+
+                // Set climate ground flats archive if this is a scenery flat
+                if (info.FlatType == BlockManager.FlatType.Scenery)
+                {
+                    // Just use temperate (504) if no location set
+                    if (currentLocation == null)
+                        info.TextureArchive = 504;
+                    else
+                        info.TextureArchive = currentLocation.Value.GroundFlatsArchive;
+                }
 
                 // Load texture for this flat
                 textureKey = host.TextureManager.LoadTexture(
@@ -1678,8 +1644,7 @@ namespace DaggerfallModelling.ViewControls
             block.BoundingBox.Max.Y = maxVertical;
 
             // Update dungeon camera vertical limits
-            if (batchMode == BatchModes.SingleDungeonBlock ||
-                batchMode == BatchModes.FullDungeon)
+            if (batchMode == BatchModes.Dungeon)
             {
                 UpdateDungeonFreeCameraBounds(block.BoundingBox);
             }
@@ -1702,11 +1667,9 @@ namespace DaggerfallModelling.ViewControls
         {
             switch (batchMode)
             {
-                case BatchModes.SingleExteriorBlock:
-                case BatchModes.FullExterior:
+                case BatchModes.Exterior:
                     return (cameraMode == CameraModes.Free) ? exteriorFreeCamera : exteriorTopDownCamera;
-                case BatchModes.SingleDungeonBlock:
-                case BatchModes.FullDungeon:
+                case BatchModes.Dungeon:
                 default:
                     return (cameraMode == CameraModes.Free) ? dungeonFreeCamera : dungeonTopDownCamera;
             }
@@ -1797,12 +1760,10 @@ namespace DaggerfallModelling.ViewControls
                 // Update based on batch mode
                 switch (batchMode)
                 {
-                    case BatchModes.SingleExteriorBlock:
-                    case BatchModes.FullExterior:
+                    case BatchModes.Exterior:
                         exteriorFreeCamera.Update(flags, host.ElapsedTime);
                         break;
-                    case BatchModes.SingleDungeonBlock:
-                    case BatchModes.FullDungeon:
+                    case BatchModes.Dungeon:
                         dungeonFreeCamera.Update(flags, host.ElapsedTime);
                         break;
 
@@ -1816,12 +1777,10 @@ namespace DaggerfallModelling.ViewControls
                 // Update based on batch mode
                 switch (batchMode)
                 {
-                    case BatchModes.SingleExteriorBlock:
-                    case BatchModes.FullExterior:
+                    case BatchModes.Exterior:
                         exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
                         break;
-                    case BatchModes.SingleDungeonBlock:
-                    case BatchModes.FullDungeon:
+                    case BatchModes.Dungeon:
                         dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
                         break;
                 }
@@ -1897,16 +1856,10 @@ namespace DaggerfallModelling.ViewControls
             batchMode = mode;
 
             // Set billboard camera
-            if (batchMode == BatchModes.SingleExteriorBlock ||
-                batchMode == BatchModes.FullExterior)
-            {
+            if (batchMode == BatchModes.Exterior)
                 billboardManager.Camera = exteriorFreeCamera;
-            }
-            else if (batchMode == BatchModes.SingleDungeonBlock ||
-                batchMode == BatchModes.FullDungeon)
-            {
+            else if (batchMode == BatchModes.Dungeon)
                 billboardManager.Camera = dungeonFreeCamera;
-            }
         }
 
         #endregion

@@ -92,6 +92,9 @@ namespace XNALibrary
         /// </summary>
         public struct BlockFlat
         {
+            /// <summary>Type of flat.</summary>
+            public FlatType FlatType;
+
             /// <summary>Type of block this flat is inside.</summary>
             public DFBlock.BlockTypes BlockType;
 
@@ -115,6 +118,23 @@ namespace XNALibrary
 
             /// <summary>Bounding sphere containing flat.</summary>
             public BoundingSphere BoundingSphere;
+        }
+
+        /// <summary>
+        /// Type of flat.
+        /// </summary>
+        public enum FlatType
+        {
+            /// <summary>Decorative flats. Not climate-specific.</summary>
+            Decorative,
+            /// <summary>Non-player characters, such as quest givers and shop keepers.</summary>
+            NPC,
+            /// <summary>Flat is also light-source.</summary>
+            Light,
+            /// <summary>Editor flats, such as markers for quests, random monters, and treasure.</summary>
+            Editor,
+            /// <summary>Scenery, such as trees and rocks in exterior blocks. Climate-specific.</summary>
+            Scenery,
         }
 
         #endregion
@@ -340,8 +360,10 @@ namespace XNALibrary
             // Iterate through all misc flat records
             foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.DFBlock.RmbBlock.MiscFlatObjectRecords)
             {
-                // Create stub of billboard info
+                // Create stub of billboard info.
+                // Just setting all flats to decorative for now.
                 BlockFlat flatInfo = new BlockFlat();
+                flatInfo.FlatType = FlatType.Decorative;
                 flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                 flatInfo.TextureArchive = obj.TextureArchive;
                 flatInfo.TextureRecord = obj.TextureRecord;
@@ -350,6 +372,36 @@ namespace XNALibrary
                 flatInfo.Position.Y = -obj.YPos;
                 flatInfo.Position.Z = -4096 + -obj.ZPos;
                 block.Flats.Add(flatInfo);
+            }
+
+            // Add block scenery
+            for (int y = 0; y < 16; y++)
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    // Get scenery item
+                    DFBlock.RmbGroundScenery scenery =
+                        block.DFBlock.RmbBlock.FldHeader.GroundData.GroundScenery[x, y];
+
+                    // Ignore 0 as this appears to be a marker/waypoint of some kind.
+                    if (scenery.TextureRecord > 0)
+                    {
+                        // Create stub of billboard info.
+                        // The correct archive must be set later based on climate.
+                        // This cannot be set here as a block is not climate specific.
+                        // The same block might be used across several climates.
+                        BlockFlat flatInfo = new BlockFlat();
+                        flatInfo.FlatType = FlatType.Scenery;
+                        flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
+                        flatInfo.TextureArchive = -1;
+                        flatInfo.TextureRecord = scenery.TextureRecord;
+                        flatInfo.TextureKey = -1;
+                        flatInfo.Position.X = x * 256f;
+                        flatInfo.Position.Y = 0f;
+                        flatInfo.Position.Z = -4096 + y * 256f;
+                        block.Flats.Add(flatInfo);
+                    }
+                }
             }
         }
 
@@ -415,8 +467,10 @@ namespace XNALibrary
                             break;
 
                         case DFBlock.RdbResourceTypes.Flat:
-                            // Create stub of billboard info
+                            // Create stub of billboard info.
+                            // Just setting all flats to decorative for now.
                             BlockFlat flatInfo = new BlockFlat();
+                            flatInfo.FlatType = FlatType.Decorative;
                             flatInfo.BlockType = DFBlock.BlockTypes.Rdb;
                             flatInfo.TextureArchive = obj.Resources.FlatResource.TextureArchive;
                             flatInfo.TextureRecord = obj.Resources.FlatResource.TextureRecord;

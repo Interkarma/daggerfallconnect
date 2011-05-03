@@ -773,13 +773,13 @@ namespace DaggerfallModelling.ViewControls
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
                     view.LoadExteriorBlock(name, climate);
-                    view.BatchMode = LocationView.BatchModes.SingleExteriorBlock;
+                    view.BatchMode = LocationView.BatchModes.Exterior;
                 }
                 else if (name.EndsWith(".RDB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
                     view.LoadDungeonBlock(name);
-                    view.BatchMode = LocationView.BatchModes.SingleDungeonBlock;
+                    view.BatchMode = LocationView.BatchModes.Dungeon;
                 }
                 else
                 {
@@ -801,7 +801,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Setup view
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.FullExterior;
+            view.BatchMode = LocationView.BatchModes.Exterior;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -817,7 +817,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Setup view
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.FullDungeon;
+            view.BatchMode = LocationView.BatchModes.Dungeon;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -838,7 +838,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Load exterior
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.FullExterior;
+            view.BatchMode = LocationView.BatchModes.Exterior;
             view.LoadLocation(ref dfLocation);
 
             // Set view mode
@@ -860,7 +860,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Load dungeon
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.FullDungeon;
+            view.BatchMode = LocationView.BatchModes.Dungeon;
             view.LoadLocation(ref dfLocation);
 
             // Set view mode

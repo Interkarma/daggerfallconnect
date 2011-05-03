@@ -566,42 +566,52 @@ namespace DaggerfallConnect.Arena2
                 case 223:
                     dfLocation.Climate = DFLocation.ClimateType.Swamp;
                     dfLocation.GroundFlatsArchive = 502;
+                    dfLocation.SkyArchive = 29;
                     break;
                 case 224:
                     dfLocation.Climate = DFLocation.ClimateType.Desert;
                     dfLocation.GroundFlatsArchive = 503;
+                    dfLocation.SkyArchive = 9;
                     break;
                 case 225:
                     dfLocation.Climate = DFLocation.ClimateType.Desert;
                     dfLocation.GroundFlatsArchive = 503;
+                    dfLocation.SkyArchive = 9;
                     break;
                 case 226:
                     dfLocation.Climate = DFLocation.ClimateType.Mountain;
                     dfLocation.GroundFlatsArchive = 510;
+                    dfLocation.SkyArchive = 1;
                     break;
                 case 227:
                     dfLocation.Climate = DFLocation.ClimateType.Swamp;
                     dfLocation.GroundFlatsArchive = 500;
+                    dfLocation.SkyArchive = 29;
                     break;
                 case 228:
                     dfLocation.Climate = DFLocation.ClimateType.Swamp;
                     dfLocation.GroundFlatsArchive = 502;
+                    dfLocation.SkyArchive = 29;
                     break;
                 case 229:
                     dfLocation.Climate = DFLocation.ClimateType.Desert;
-                    dfLocation.GroundFlatsArchive = 503;
+                    dfLocation.GroundFlatsArchive = 501;
+                    dfLocation.SkyArchive = 25;
                     break;
                 case 230:
                     dfLocation.Climate = DFLocation.ClimateType.Mountain;
                     dfLocation.GroundFlatsArchive = 504;
+                    dfLocation.SkyArchive = 17;
                     break;
                 case 231:
                     dfLocation.Climate = DFLocation.ClimateType.Temperate;
-                    dfLocation.GroundFlatsArchive = 508;
+                    dfLocation.GroundFlatsArchive = 504;
+                    dfLocation.SkyArchive = 17;
                     break;
                 case 232:
                     dfLocation.Climate = DFLocation.ClimateType.Temperate;
                     dfLocation.GroundFlatsArchive = 508;
+                    dfLocation.SkyArchive = 17;
                     break;
                 default:
                     throw new Exception("Unknown climate type encountered.");

@@ -52,9 +52,14 @@ namespace DaggerfallConnect
         public ClimateType Climate;
 
         /// <summary>
-        /// Archive to use for ground flats populating this location
+        /// Archive to use for ground flats populating this location.
         /// </summary>
         public int GroundFlatsArchive;
+
+        /// <summary>
+        /// Archive to use for the sky behind this location.
+        /// </summary>
+        public int SkyArchive;
 
         /// <summary>
         /// Political alignment of this location (equal to region index + 128).
