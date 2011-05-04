@@ -278,6 +278,14 @@ namespace DaggerfallModelling.ViewControls
             get { return GetActiveCamera(); }
         }
 
+        /// <summary>
+        /// Gets sky manager.
+        /// </summary>
+        public SkyComponent SkyManager
+        {
+            get { return skyManager; }
+        }
+
         #endregion
 
         #region Constructors
@@ -386,12 +394,15 @@ namespace DaggerfallModelling.ViewControls
 
             // Execute pipeline
             ClearDevice();
-            ClearBatches();
-            BatchScene();
-            SetRenderStates();
-            DrawBatches();
-            MouseModelIntersection();
-            DrawBillboards();
+            if (batches.Models != null)
+            {
+                ClearBatches();
+                BatchScene();
+                SetRenderStates();
+                DrawBatches();
+                MouseModelIntersection();
+                DrawBillboards();
+            }
 
 #if DEBUG
             // The String.Format here creates nearly all the garbage collections reported.
@@ -576,7 +587,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void ClearDevice()
         {
-            // All camera mode except free are just cleared
+            // All camera modes but free are just cleared
             if (cameraMode != CameraModes.Free)
             {
                 host.GraphicsDevice.Clear(backgroundColor);
@@ -598,7 +609,7 @@ namespace DaggerfallModelling.ViewControls
                 return;
             }
 
-            // Finally, just clear to background
+            // If all else fails just clear
             host.GraphicsDevice.Clear(backgroundColor);
         }
 
@@ -1151,6 +1162,9 @@ namespace DaggerfallModelling.ViewControls
             // Clear location
             currentLocation = null;
 
+            // Set default sky
+            skyManager.SkyIndex = SkyComponent.DefaultSkyIndex;
+
             // Init camera
             cameraVelocity = Vector3.Zero;
             InitCameraPosition();
@@ -1184,6 +1198,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Clear location
             currentLocation = null;
+
+            // Set default sky
+            skyManager.SkyIndex = SkyComponent.DefaultSkyIndex;
 
             // Init camera
             cameraVelocity = Vector3.Zero;
@@ -1224,6 +1241,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Store location
             currentLocation = dfLocation;
+
+            // Set climate sky
+            skyManager.SkyIndex = dfLocation.SkyArchive;
 
             // Init camera
             cameraVelocity = Vector3.Zero;

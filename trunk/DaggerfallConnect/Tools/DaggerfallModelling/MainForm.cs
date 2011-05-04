@@ -1117,7 +1117,24 @@ namespace DaggerfallModelling
 
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
         {
+            if (!ContentViewer.IsReady)
+                return;
 
+            // Set new value
+            ContentViewer.LocationView.SkyManager.SkyFrame = TimeOfDayTrackBar.Value;
+        }
+
+        private void AdjustSkyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!ContentViewer.IsReady)
+                return;
+
+            // Get current value
+            TimeOfDayTrackBar.Value = ContentViewer.LocationView.SkyManager.SkyFrame;
+
+            // Toggle panel and menu check state
+            TimeOfDayPanel.Visible = !TimeOfDayPanel.Visible;
+            AdjustSkyToolStripMenuItem.Checked = TimeOfDayPanel.Visible;
         }
 
     }

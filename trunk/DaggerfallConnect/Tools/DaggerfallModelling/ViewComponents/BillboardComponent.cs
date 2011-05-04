@@ -64,8 +64,8 @@ namespace DaggerfallModelling.ViewComponents
         #region SubClasses
 
         /// <summary>
-        /// Describes a model that has intersected with a ray.
-        ///  Used when sorting intersections for face-accurate picking.
+        /// Describes a batched billboard for rendering.
+        ///  Used when sorting billboards for correct draw order..
         /// </summary>
         private class BatchFlat : IComparable<BatchFlat>
         {

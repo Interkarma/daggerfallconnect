@@ -78,7 +78,7 @@
             this.mousePickingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controllerPickingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            this.adjustSkyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AdjustSkyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ContentPanel = new System.Windows.Forms.Panel();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
@@ -86,6 +86,8 @@
             this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
             this.ContentViewer = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainSplitContainer.Panel1.SuspendLayout();
@@ -126,7 +128,6 @@
             // 
             // MainSplitContainer.Panel2
             // 
-            this.MainSplitContainer.Panel2.Controls.Add(this.TimeOfDayPanel);
             this.MainSplitContainer.Panel2.Controls.Add(this.ViewPaneToolStrip);
             this.MainSplitContainer.Panel2.Controls.Add(this.ContentPanel);
             this.MainSplitContainer.Size = new System.Drawing.Size(1184, 762);
@@ -335,26 +336,28 @@
             // 
             // TimeOfDayPanel
             // 
-            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeOfDayPanel.BackColor = System.Drawing.SystemColors.Control;
             this.TimeOfDayPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TimeOfDayPanel.Controls.Add(this.label2);
+            this.TimeOfDayPanel.Controls.Add(this.label1);
             this.TimeOfDayPanel.Controls.Add(this.pictureBox3);
             this.TimeOfDayPanel.Controls.Add(this.pictureBox1);
             this.TimeOfDayPanel.Controls.Add(this.pictureBox2);
             this.TimeOfDayPanel.Controls.Add(this.TimeOfDayTrackBar);
-            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 25);
+            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 658);
             this.TimeOfDayPanel.Name = "TimeOfDayPanel";
-            this.TimeOfDayPanel.Size = new System.Drawing.Size(45, 714);
+            this.TimeOfDayPanel.Size = new System.Drawing.Size(852, 55);
             this.TimeOfDayPanel.TabIndex = 7;
             this.TimeOfDayPanel.Visible = false;
             // 
             // pictureBox3
             // 
-            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox3.BackColor = System.Drawing.SystemColors.Control;
             this.pictureBox3.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
-            this.pictureBox3.Location = new System.Drawing.Point(0, 690);
+            this.pictureBox3.Location = new System.Drawing.Point(831, 29);
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.Size = new System.Drawing.Size(16, 16);
             this.pictureBox3.TabIndex = 6;
@@ -364,7 +367,7 @@
             // 
             this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
             this.pictureBox1.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
-            this.pictureBox1.Location = new System.Drawing.Point(-1, 5);
+            this.pictureBox1.Location = new System.Drawing.Point(3, 29);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(16, 16);
             this.pictureBox1.TabIndex = 4;
@@ -372,10 +375,10 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox2.Image = global::DaggerfallModelling.Properties.Resources.bullet_blue;
-            this.pictureBox2.Location = new System.Drawing.Point(-1, 348);
+            this.pictureBox2.Image = global::DaggerfallModelling.Properties.Resources.bullet_orange;
+            this.pictureBox2.Location = new System.Drawing.Point(417, 29);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(16, 16);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
@@ -384,15 +387,13 @@
             // 
             // TimeOfDayTrackBar
             // 
-            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.Control;
+            this.TimeOfDayTrackBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.TimeOfDayTrackBar.LargeChange = 4;
-            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(10, 0);
+            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(0, 0);
             this.TimeOfDayTrackBar.Maximum = 63;
             this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(45, 712);
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(850, 45);
             this.TimeOfDayTrackBar.TabIndex = 3;
             this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.TimeOfDayTrackBar.Value = 30;
@@ -547,7 +548,7 @@
             this.mousePickingToolStripMenuItem,
             this.controllerPickingToolStripMenuItem,
             this.toolStripSeparator10,
-            this.adjustSkyToolStripMenuItem});
+            this.AdjustSkyToolStripMenuItem});
             this.OptionsDropDownButton.Image = global::DaggerfallModelling.Properties.Resources.cog;
             this.OptionsDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.OptionsDropDownButton.Name = "OptionsDropDownButton";
@@ -614,12 +615,13 @@
             this.toolStripSeparator10.Name = "toolStripSeparator10";
             this.toolStripSeparator10.Size = new System.Drawing.Size(166, 6);
             // 
-            // adjustSkyToolStripMenuItem
+            // AdjustSkyToolStripMenuItem
             // 
-            this.adjustSkyToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.clock;
-            this.adjustSkyToolStripMenuItem.Name = "adjustSkyToolStripMenuItem";
-            this.adjustSkyToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
-            this.adjustSkyToolStripMenuItem.Text = "Adjust Sky";
+            this.AdjustSkyToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.clock;
+            this.AdjustSkyToolStripMenuItem.Name = "AdjustSkyToolStripMenuItem";
+            this.AdjustSkyToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+            this.AdjustSkyToolStripMenuItem.Text = "Adjust Sky";
+            this.AdjustSkyToolStripMenuItem.Click += new System.EventHandler(this.AdjustSkyToolStripMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
@@ -632,6 +634,7 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.ContentPanel.BackColor = System.Drawing.Color.Gray;
+            this.ContentPanel.Controls.Add(this.TimeOfDayPanel);
             this.ContentPanel.Controls.Add(this.ContentViewer);
             this.ContentPanel.Location = new System.Drawing.Point(0, 25);
             this.ContentPanel.Name = "ContentPanel";
@@ -680,6 +683,25 @@
             this.MainTips.InitialDelay = 500;
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(23, 31);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(23, 13);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "AM";
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(804, 31);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(23, 13);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "PM";
             // 
             // AutoMapViewer
             // 
@@ -813,11 +835,13 @@
         private System.Windows.Forms.ToolStripMenuItem groundPlaneExteriorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miscFlatsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
-        private System.Windows.Forms.ToolStripMenuItem adjustSkyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AdjustSkyToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem mousePickingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem controllerPickingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editorFlatsToolStripMenuItem;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
     }
 }
 

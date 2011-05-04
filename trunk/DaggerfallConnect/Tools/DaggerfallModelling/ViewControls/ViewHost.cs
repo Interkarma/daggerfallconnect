@@ -325,6 +325,14 @@ namespace DaggerfallModelling.ViewControls
             get { return (isReady) ? (ModelView)viewClients[ViewModes.ModelView] : null; }
         }
 
+        /// <summary>
+        /// Gets location view or NULL if not ready.
+        /// </summary>
+        public LocationView LocationView
+        {
+            get { return (isReady) ? (LocationView)viewClients[ViewModes.LocationView] : null; }
+        }
+
         #endregion
 
         #region Constructors

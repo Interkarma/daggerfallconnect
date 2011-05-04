@@ -256,6 +256,14 @@ namespace XNALibrary
             block.GroundPlaneVertexBuffer.SetData<VertexPositionNormalTexture>(block.GroundPlaneVertices);
         }
 
+        /// <summary>
+        /// Clears all cached blocks.
+        /// </summary>
+        public void ClearBlocks()
+        {
+            blockDictionary.Clear();
+        }
+
         #endregion
 
         #region Content Loading Methods

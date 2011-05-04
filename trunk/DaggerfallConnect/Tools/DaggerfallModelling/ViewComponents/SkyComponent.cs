@@ -41,14 +41,18 @@ namespace DaggerfallModelling.ViewComponents
         private Texture2D eastTexture;
         private XNAColor clearColor;
 
+        // Sky animation
+        private const int defaultSkyIndex = 9;
+        private const int defaultSkyFrame = 22;
+        private VertexPositionNormalTexture[] skyVertices;
+        private short[] skyIndices;
+        private int skyIndex = defaultSkyIndex;
+        private int skyFrame = defaultSkyFrame;
+
         // XNA
         private BasicEffect skyEffect;
         private VertexDeclaration skyVertexDeclaration;
         private Camera camera;
-
-        // Sky
-        private VertexPositionNormalTexture[] skyVertices;
-        private short[] skyIndices;
 
         #endregion
 
@@ -69,6 +73,45 @@ namespace DaggerfallModelling.ViewComponents
         {
             get { return camera; }
             set { camera = value; }
+        }
+
+        /// <summary>
+        /// Gets default sky index.
+        /// </summary>
+        static public int DefaultSkyIndex
+        {
+            get { return defaultSkyIndex; }
+        }
+
+        /// <summary>
+        /// Gets default sky frame.
+        /// </summary>
+        static public int DefaultSkyFrame
+        {
+            get { return defaultSkyFrame; }
+        }
+
+        /// <summary>
+        /// Gets or sets sky index. For example 9 will
+        ///  load "SKY09.DAT". Valid range is 0-31.
+        ///  All other values are ignored.
+        /// </summary>
+        public int SkyIndex
+        {
+            get { return skyIndex; }
+            set { SetSkyIndex(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets sky frame.
+        ///  0-31 is midnight to midday (morning).
+        ///  32-63 is midday to midnight (afternoon).
+        ///  All other values are ignored.
+        /// </summary>
+        public int SkyFrame
+        {
+            get { return skyFrame; }
+            set { SetSkyFrame(value); }
         }
 
         #endregion
@@ -103,17 +146,12 @@ namespace DaggerfallModelling.ViewComponents
             skyEffect.AmbientLightColor = new Vector3(1f, 1f, 1f);
             skyEffect.View = Matrix.CreateLookAt(Vector3.Zero, Vector3.Forward, Vector3.Up);
 
-            // Build sky
+            // Build sky quad
             BuildSky();
 
-            // TEST: Load a sample sky file
-            skyFile = new SkyFile(
-                Path.Combine(host.Arena2Path, "SKY09.DAT"),
-                FileUsage.UseDisk,
-                true);
-
-            // TEST: Load a sample sky
-            LoadTextures();
+            // Set default index and frame
+            SetSkyIndex(defaultSkyIndex);
+            SetSkyFrame(defaultSkyFrame);
         }
 
         /// <summary>
@@ -183,7 +221,7 @@ namespace DaggerfallModelling.ViewComponents
             host.GraphicsDevice.RenderState.DepthBufferEnable = false;
             host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
             host.GraphicsDevice.RenderState.AlphaTestEnable = false;
-            host.GraphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+            host.GraphicsDevice.RenderState.CullMode = CullMode.None;
 
             // Set sampler state
             host.GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
@@ -273,17 +311,66 @@ namespace DaggerfallModelling.ViewComponents
         }
 
         /// <summary>
+        /// Set texture set of current sky.
+        /// </summary>
+        /// <param name="skyIndex">Index.</param>
+        private void SetSkyIndex(int skyIndex)
+        {
+            // Validate
+            if (skyIndex < 0 || skyIndex > 31)
+                return;
+
+            // Store new value
+            this.skyIndex = skyIndex;
+
+            // Load a sample sky file
+            string filename = string.Format("SKY{0:00}.DAT", skyIndex);
+            skyFile = new SkyFile(
+                Path.Combine(host.Arena2Path, filename),
+                FileUsage.UseDisk,
+                true);
+
+            // Update textures
+            UpdateTextures();
+        }
+
+        /// <summary>
+        /// Set frame of sky to draw.
+        /// </summary>
+        /// <param name="skyFrame">Frame.</param>
+        private void SetSkyFrame(int skyFrame)
+        {
+            // Validate
+            if (skyFrame < 0 || skyFrame > 63)
+                return;
+
+            // Store new value
+            this.skyFrame = skyFrame;
+
+            // Update textures
+            UpdateTextures();
+        }
+
+        /// <summary>
         /// Loads textures for current time of day.
         ///  Will exchange east and west and reverse animation for afternoon times.
         /// </summary>
-        private void LoadTextures()
+        private void UpdateTextures()
         {
-            int index = 22;
-
             // Get images for both sides of sky
-            skyFile.Palette = skyFile.GetDFPalette(index);
-            DFBitmap west = skyFile.GetBitmapFormat(0, index, 0, DFBitmap.Formats.ARGB);
-            DFBitmap east = skyFile.GetBitmapFormat(1, index, 0, DFBitmap.Formats.ARGB);
+            DFBitmap west, east;
+            if (skyFrame < 32)
+            {
+                skyFile.Palette = skyFile.GetDFPalette(skyFrame);
+                west = skyFile.GetBitmapFormat(0, skyFrame, 0, DFBitmap.Formats.ARGB);
+                east = skyFile.GetBitmapFormat(1, skyFrame, 0, DFBitmap.Formats.ARGB);
+            }
+            else
+            {
+                skyFile.Palette = skyFile.GetDFPalette(64 - skyFrame);
+                east = skyFile.GetBitmapFormat(0, 64 - skyFrame, 0, DFBitmap.Formats.ARGB);
+                west = skyFile.GetBitmapFormat(1, 64 - skyFrame, 0, DFBitmap.Formats.ARGB);
+            }
 
             // Create textures
             westTexture = new Texture2D(host.GraphicsDevice, west.Width, west.Height, 1, TextureUsage.None, SurfaceFormat.Color);
