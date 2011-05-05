@@ -26,8 +26,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Explore a location from a single block to full cities and dungeons.
     ///  This view takes a DFBlock or DFLocation to build scene layout.
-    ///  Loading is separated by block/location and exterior/dungeon methods so it is
-    ///  possible to keep load times to a minimum.
+    ///  Provides scene culling, state batching, picking, and collisions.
     /// </summary>
     public class LocationView : ViewBase
     {
@@ -100,12 +99,17 @@ namespace DaggerfallModelling.ViewControls
         // Ray testing
         private const int defaultIntersectionCapacity = 35;
         private uint? mouseOverModel = null;
-        private List<ModelIntersection> modelIntersections;
-        private RenderableBoundingBox renderableBoundingBox;
-        private RenderableBoundingSphere renderableBoundingSphere;
+        private List<ModelIntersection> modelPointerIntersections;
+
+        // Collision testing
+        private List<ModelIntersection> modelCameraIntersections;
 
         // Line drawing
         VertexPositionColor[] planeLines = new VertexPositionColor[64];
+
+        // Bounding volume drawing
+        private RenderableBoundingBox renderableBoundingBox;
+        private RenderableBoundingSphere renderableBoundingSphere;
         
 #if DEBUG
         // Performance profiling
@@ -204,8 +208,9 @@ namespace DaggerfallModelling.ViewControls
         #region SubClasses
 
         /// <summary>
-        /// Describes a model that has intersected with a ray.
-        ///  Used when sorting intersections for face-accurate picking.
+        /// Describes a model that has intersected with something.
+        ///  Used when sorting intersections for face-accurate picking
+        ///  and collision tests.
         /// </summary>
         private class ModelIntersection : IComparable<ModelIntersection>
         {
@@ -301,13 +306,14 @@ namespace DaggerfallModelling.ViewControls
             renderableBoundingBox = new RenderableBoundingBox(host.GraphicsDevice);
             renderableBoundingSphere = new RenderableBoundingSphere(host.GraphicsDevice);
 
-            // Create model intersections list
-            modelIntersections = new List<ModelIntersection>();
+            // Create model intersections lists
+            modelPointerIntersections = new List<ModelIntersection>();
+            modelCameraIntersections = new List<ModelIntersection>();
         }
 
         #endregion
 
-        #region Overrides
+        #region Abstract Overrides
 
         /// <summary>
         /// Called by host when view should initialise.
@@ -365,6 +371,12 @@ namespace DaggerfallModelling.ViewControls
             // Update cameras
             UpdateCameras();
 
+            // Test camera collision
+            WorldCameraIntersectionTest();
+
+            // Apply camera changes
+            ActiveCamera.ApplyChanges();
+
             // Update components
             skyManager.Update();
             billboardManager.Update();
@@ -392,28 +404,34 @@ namespace DaggerfallModelling.ViewControls
             maxBatchArrayLength = 0;
 #endif
 
-            // Execute pipeline
+            // Clear device
             ClearDevice();
+
+            // Draw world geometry
             if (batches.Models != null)
             {
                 ClearBatches();
                 BatchScene();
                 SetRenderStates();
                 DrawBatches();
-                MouseModelIntersection();
-                DrawBillboards();
             }
+
+            // Test pointer intersection
+            ModelPointerIntersectionTest();
+
+            // Draw billboards
+            DrawBillboards();
 
 #if DEBUG
             // The String.Format here creates nearly all the garbage collections reported.
             // TODO: Implement a garbage-free means of reporting this information.
-            long drawTime = host.Timer.ElapsedMilliseconds - startTime;
-            string performance = string.Format(
-                "MaxBillboardBatchLength={0}, DrawTime={1}ms, FPS={2:0.00}",
-                billboardManager.MaxBatchLength,
-                drawTime,
-                host.FPS);
-            host.StatusMessage = performance;
+            //long drawTime = host.Timer.ElapsedMilliseconds - startTime;
+            //string performance = string.Format(
+            //    "MaxBillboardBatchLength={0}, DrawTime={1}ms, FPS={2:0.00}",
+            //    billboardManager.MaxBatchLength,
+            //    drawTime,
+            //    host.FPS);
+            //host.StatusMessage = performance;
 #endif
         }
 
@@ -426,6 +444,10 @@ namespace DaggerfallModelling.ViewControls
             UpdateProjectionMatrix();
             host.Refresh();
         }
+
+        #endregion
+
+        #region Overrides
 
         /// <summary>
         /// Called when view should track mouse movement.
@@ -575,7 +597,8 @@ namespace DaggerfallModelling.ViewControls
             Vector3 pos = ActiveCamera.Position;
             pos.X = foundBlock.position.X + foundBlock.block.BoundingBox.Max.X / 2;
             pos.Z = foundBlock.position.Z + foundBlock.block.BoundingBox.Min.Z / 2;
-            ActiveCamera.Position = pos;
+            ActiveCamera.NextPosition = pos;
+            ActiveCamera.ApplyChanges();
         }
 
         #endregion
@@ -649,9 +672,9 @@ namespace DaggerfallModelling.ViewControls
             // Update view frustum
             viewFrustum.Matrix = ActiveCamera.BoundingFrustumMatrix;
 
-            // Reset model intersections list
-            modelIntersections.Clear();
-            modelIntersections.Capacity = defaultIntersectionCapacity;
+            // Reset model intersection lists
+            modelPointerIntersections.Clear();
+            modelPointerIntersections.Capacity = defaultIntersectionCapacity;
 
             // Step through block layout
             float? intersectDistance;
@@ -690,9 +713,9 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Step through a block to find visible models.
+        /// Step through block to find visible models.
         /// </summary>
-        /// <param name="block">BlockManager.Block</param>
+        /// <param name="block">BlockManager.Block.</param>
         /// <param name="blockTransform">Block transform.</param>
         /// <param name="mouseInBlock">True if mouse ray in block bounds.</param>
         private void BatchBlock(ref BlockManager.BlockData block, ref Matrix blockTransform, bool mouseInBlock)
@@ -724,7 +747,7 @@ namespace DaggerfallModelling.ViewControls
                             intersectDistance,
                             modelInfo.ModelId,
                             modelTransform);
-                        modelIntersections.Add(mi);
+                        modelPointerIntersections.Add(mi);
                     }
                 }
 
@@ -865,61 +888,6 @@ namespace DaggerfallModelling.ViewControls
                 batchArray.BatchItems[index].PrimitiveCount = block.GroundPlaneVertices.Length / 3;
                 batchArray.Length++;
                 batches.Models[TextureManager.TerrainAtlasKey] = batchArray;
-            }
-        }
-
-        /// <summary>
-        /// Tests mouse ray against model intersections to
-        ///  determine actual intersection at face level.
-        /// </summary>
-        private void MouseModelIntersection()
-        {
-            // Nothing to do if no intersections
-            if (modelIntersections.Count == 0)
-                return;
-
-            // Sort intersections by distance
-            modelIntersections.Sort();
-
-            // Iterate intersections
-            float? intersection = null;
-            float? closestIntersection = null;
-            ModelIntersection closestModelIntersection = null;
-            foreach (var mi in modelIntersections)
-            {
-                // Get model
-                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
-
-                // Test model
-                bool insideBoundingSphere;
-                int subMeshResult, planeResult;
-                intersection = Intersection.RayIntersectsDFMesh(
-                    host.MouseRay,
-                    mi.Matrix,
-                    ref model,
-                    out insideBoundingSphere,
-                    out subMeshResult,
-                    out planeResult);
-
-                if (intersection != null)
-                {
-                    if (closestIntersection == null || intersection < closestIntersection)
-                    {
-                        closestIntersection = intersection;
-                        closestModelIntersection = mi;
-                    }
-                }
-            }
-
-            // Draw bounding mesh on closest model
-            if (closestModelIntersection != null)
-            {
-                // Draw bounding box to see what has been intersected
-                ModelManager.ModelData model = host.ModelManager.GetModelData(closestModelIntersection.ModelID.Value);
-                DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
-
-                // Store modelid of model under mouse
-                mouseOverModel = closestModelIntersection.ModelID;
             }
         }
 
@@ -1131,6 +1099,149 @@ namespace DaggerfallModelling.ViewControls
 
         #endregion
 
+        #region Intersection Tests
+
+        /// <summary>
+        /// Tests pointer against model intersections to
+        ///  determine actual intersection at face level.
+        /// </summary>
+        private void ModelPointerIntersectionTest()
+        {
+            // Nothing to do if no intersections
+            if (modelPointerIntersections.Count == 0)
+                return;
+
+            // Sort intersections by distance
+            modelPointerIntersections.Sort();
+
+            // Iterate intersections
+            float? intersection = null;
+            float? closestIntersection = null;
+            ModelIntersection closestModelIntersection = null;
+            foreach (var mi in modelPointerIntersections)
+            {
+                // Get model
+                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
+
+                // Test model
+                bool insideBoundingSphere;
+                int subMeshResult, planeResult;
+                intersection = Intersection.RayIntersectsDFMesh(
+                    host.MouseRay,
+                    mi.Matrix,
+                    ref model,
+                    out insideBoundingSphere,
+                    out subMeshResult,
+                    out planeResult);
+
+                if (intersection != null)
+                {
+                    if (closestIntersection == null || intersection < closestIntersection)
+                    {
+                        closestIntersection = intersection;
+                        closestModelIntersection = mi;
+                    }
+                }
+            }
+
+            // Draw bounding mesh on closest model
+            if (closestModelIntersection != null)
+            {
+                // Draw bounding box to see what has been intersected
+                ModelManager.ModelData model = host.ModelManager.GetModelData(closestModelIntersection.ModelID.Value);
+                DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
+
+                // Store modelid of model under mouse
+                mouseOverModel = closestModelIntersection.ModelID;
+            }
+        }
+
+        /// <summary>
+        /// Step through blocks to find camera-block intersections.
+        /// </summary>
+        private void WorldCameraIntersectionTest()
+        {
+            // Get batch layout data            
+            int count;
+            BlockPosition[] layout;
+            GetLayoutArray(out layout, out count);
+            if (layout == null)
+                return;
+
+            // Reset camera intersection lists
+            modelCameraIntersections.Clear();
+            modelCameraIntersections.Capacity = defaultIntersectionCapacity;
+
+            // Step through block layout
+            Matrix blockTransform;
+            BoundingBox blockBounds;
+            for (int i = 0; i < count; i++)
+            {
+                // Create transformed block bounding box
+                blockTransform = Matrix.CreateTranslation(layout[i].position);
+                blockBounds.Min = Vector3.Transform(layout[i].block.BoundingBox.Min, blockTransform);
+                blockBounds.Max = Vector3.Transform(layout[i].block.BoundingBox.Max, blockTransform);
+
+                // Test camera against block bounds.
+                if (blockBounds.Intersects(ActiveCamera.CollisionBounds))
+                    BlockCameraIntersectionTest(ref layout[i].block, ref blockTransform);
+            }
+        }
+
+        /// <summary>
+        /// Step through block to find camera-model intersections.
+        /// </summary>
+        /// <param name="block">BlockManager.Block</param>
+        /// <param name="blockTransform">Block transform.</param>
+        private void BlockCameraIntersectionTest(ref BlockManager.BlockData block, ref Matrix blockTransform)
+        {
+            // Iterate each model in this block
+            Matrix modelTransform;
+            BoundingSphere cameraBounds = ActiveCamera.CollisionBounds;
+            BoundingSphere modelBounds;
+            float intersectDistance;
+            foreach (var modelInfo in block.Models)
+            {
+                // Create transformed model bounding sphere
+                modelTransform = modelInfo.Matrix * blockTransform;
+                modelBounds.Center = Vector3.Transform(modelInfo.BoundingSphere.Center, modelTransform);
+                modelBounds.Radius = modelInfo.BoundingSphere.Radius;
+
+                // Test if camera collides with model sphere
+                if (modelBounds.Intersects(cameraBounds))
+                {
+                    // Get distance between camera and model spheres
+                    intersectDistance = Vector3.Distance(cameraBounds.Center, modelBounds.Center);
+
+                    // Add to intersection list
+                    ModelIntersection mi = new ModelIntersection(
+                        intersectDistance,
+                        modelInfo.ModelId,
+                        modelTransform);
+                    modelCameraIntersections.Add(mi);
+                }
+            }
+        }
+
+        /*
+        /// <summary>
+        /// Determine camera-model intersection at face level.
+        /// </summary>
+        private void ModelCameraIntersectionTest()
+        {
+            // Nothing to do if no intersections
+            if (modelCameraIntersections.Count == 0)
+                return;
+
+            // Sort intersections by distance
+            modelCameraIntersections.Sort();
+
+            // TODO: Iterate intersections
+        }
+        */
+
+        #endregion
+
         #region Map Loading
 
         /// <summary>
@@ -1287,8 +1398,8 @@ namespace DaggerfallModelling.ViewControls
             BoundingBox bounds = blockPosition.block.BoundingBox;
             bounds.Min.Y = cameraFloorHeight;
             bounds.Max.Y = cameraCeilingHeight;
-            exteriorTopDownCamera.Bounds = bounds;
-            exteriorFreeCamera.Bounds = bounds;
+            exteriorTopDownCamera.MovementBounds = bounds;
+            exteriorFreeCamera.MovementBounds = bounds;
         }
 
         /// <summary>
@@ -1319,7 +1430,7 @@ namespace DaggerfallModelling.ViewControls
             // Set top down bounds to have a higher ceiling
             BoundingBox topDownBounds = blockPosition.block.BoundingBox;
             topDownBounds.Max.Y = cameraCeilingHeight;
-            dungeonTopDownCamera.Bounds = topDownBounds;
+            dungeonTopDownCamera.MovementBounds = topDownBounds;
 
             // Set initial free camera bounds
             SetDungeonFreeCameraBounds(blockPosition.block.BoundingBox);
@@ -1381,8 +1492,8 @@ namespace DaggerfallModelling.ViewControls
             // Set bounds
             bounds.Min.Y = cameraFloorHeight;
             bounds.Max.Y = cameraCeilingHeight;
-            exteriorTopDownCamera.Bounds = bounds;
-            exteriorFreeCamera.Bounds = bounds;
+            exteriorTopDownCamera.MovementBounds = bounds;
+            exteriorFreeCamera.MovementBounds = bounds;
         }
 
         /// <summary>
@@ -1436,7 +1547,7 @@ namespace DaggerfallModelling.ViewControls
             // Set top down bounds to have a higher ceiling
             BoundingBox topDownBounds = bounds;
             topDownBounds.Max.Y = cameraCeilingHeight;
-            dungeonTopDownCamera.Bounds = topDownBounds;
+            dungeonTopDownCamera.MovementBounds = topDownBounds;
 
             // Set initial free camera bounds
             SetDungeonFreeCameraBounds(bounds);
@@ -1657,7 +1768,11 @@ namespace DaggerfallModelling.ViewControls
             // Ensure vertical limits are not still at test values.
             // This can happen when a block has zero models.
             if (minVertical == float.MaxValue) minVertical = 0;
-            if (maxVertical == float.MinValue) maxVertical = 256f;
+            if (maxVertical == float.MinValue) maxVertical = 2048f;
+
+            // Ensure block is always of minimum height.
+            // This prevents tall trees from being improperly culled.
+            if (maxVertical < 2048f) maxVertical = 2048f;
 
             // Update block vertical bounds
             block.BoundingBox.Min.Y = minVertical;
@@ -1735,19 +1850,19 @@ namespace DaggerfallModelling.ViewControls
             exteriorFreeCamera.ResetReference();
             dungeonFreeCamera.ResetReference();
 
-            // Set exterior position
+            // Set position
             Vector3 exteriorPos = new Vector3(
-                exteriorFreeCamera.Bounds.Max.X / 2,
+                exteriorFreeCamera.MovementBounds.Max.X / 2,
                 cameraFloorHeight,
-                exteriorFreeCamera.Bounds.Max.Z);
-            exteriorFreeCamera.Position = exteriorPos;
+                exteriorFreeCamera.MovementBounds.Max.Z);
+            exteriorFreeCamera.NextPosition = exteriorPos;
 
             // Set dungeon free camera position
             Vector3 dungeonPos = new Vector3(
-                dungeonFreeCamera.Bounds.Min.X + (dungeonFreeCamera.Bounds.Max.X - dungeonFreeCamera.Bounds.Min.X) / 2,
+                dungeonFreeCamera.MovementBounds.Min.X + (dungeonFreeCamera.MovementBounds.Max.X - dungeonFreeCamera.MovementBounds.Min.X) / 2,
                 1024f,
-                dungeonFreeCamera.Bounds.Max.Z);
-            dungeonFreeCamera.Position = dungeonPos;
+                dungeonFreeCamera.MovementBounds.Max.Z);
+            dungeonFreeCamera.NextPosition = dungeonPos;
 
             // Set reference
             exteriorFreeCamera.Reference = new Vector3(0f, 0f, -1f);
@@ -1820,7 +1935,7 @@ namespace DaggerfallModelling.ViewControls
             bounds.Max.Y += cameraDungeonFreedom;
             bounds.Min.Z -= cameraDungeonFreedom;
             bounds.Max.Z += cameraDungeonFreedom;
-            dungeonFreeCamera.Bounds = bounds;
+            dungeonFreeCamera.MovementBounds = bounds;
         }
 
         /// <summary>
@@ -1830,14 +1945,14 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="bounds">BoundingBox.</param>
         private void UpdateDungeonFreeCameraBounds(BoundingBox bounds)
         {
-            BoundingBox newBounds = dungeonFreeCamera.Bounds;
+            BoundingBox newBounds = dungeonFreeCamera.MovementBounds;
 
             if (bounds.Min.Y < newBounds.Min.Y)
                 newBounds.Min.Y = bounds.Min.Y - cameraDungeonFreedom;
             if (bounds.Max.Y > newBounds.Max.Y)
                 newBounds.Max.Y = bounds.Max.Y + cameraDungeonFreedom;
 
-            dungeonFreeCamera.Bounds = newBounds;
+            dungeonFreeCamera.MovementBounds = newBounds;
         }
 
         #endregion

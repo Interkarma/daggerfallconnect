@@ -46,8 +46,12 @@ namespace XNALibrary
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
-        private BoundingBox cameraBounds = new BoundingBox();
-        private Vector3 cameraPosition = new Vector3(0, 64f, 0);
+        private const float headHeight = 64f;
+        private BoundingBox cameraMovementBounds = new BoundingBox();
+        private BoundingSphere cameraCollisionBounds = new BoundingSphere(Vector3.Zero, headHeight);
+        private Vector3 cameraPosition = new Vector3(0, headHeight, 0);
+        private Vector3 cameraPreviousPosition = new Vector3(0, headHeight, 0);
+        private Vector3 cameraNextPosition = new Vector3(0, headHeight, 0);
         private Vector3 cameraReference = Vector3.Forward;
         private Vector3 cameraUpVector = Vector3.Up;
         private Vector3 cameraTransformedReference;
@@ -80,12 +84,24 @@ namespace XNALibrary
         #region Public Properties
 
         /// <summary>
-        /// Gets or sets camera bounds.
+        /// Gets or sets camera movement bounds.
         /// </summary>
-        public BoundingBox Bounds
+        public BoundingBox MovementBounds
         {
-            get { return cameraBounds; }
-            set { cameraBounds = value; EnforceBounds(); }
+            get { return cameraMovementBounds; }
+            set { cameraMovementBounds = value; }
+        }
+
+        /// <summary>
+        /// Gets collision volume of camera.
+        /// </summary>
+        public BoundingSphere CollisionBounds
+        {
+            get
+            {
+                cameraCollisionBounds.Center = cameraPosition;
+                return cameraCollisionBounds;
+            }
         }
 
         /// <summary>
@@ -116,12 +132,35 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets camera position.
+        /// Gets camera position. Camera position
+        ///  can be changed using NextPosition, which is
+        ///  applied every time ApplyChanges() is called.
         /// </summary>
         public Vector3 Position
         {
             get { return cameraPosition; }
-            set { cameraPosition = value; EnforceBounds(); }
+        }
+
+        /// <summary>
+        /// Geta previous camera position.
+        /// </summary>
+        public Vector3 PreviousPosition
+        {
+            get { return cameraPreviousPosition; }
+        }
+
+        /// <summary>
+        /// Gets or sets next camera position, which
+        ///  is applied when ApplyChanges() is called.
+        /// </summary>
+        public Vector3 NextPosition
+        {
+            get { return cameraNextPosition; }
+            set
+            {
+                cameraNextPosition = value;
+                EnforceBounds();
+            }
         }
 
         /// <summary>
@@ -225,10 +264,11 @@ namespace XNALibrary
         /// <param name="Z">Z amount.</param>
         public void Translate(float X, float Y, float Z)
         {
-            cameraPosition.X += X;
-            cameraPosition.Y += Y;
-            cameraPosition.Z += Z;
+            cameraNextPosition.X = cameraPosition.X + X;
+            cameraNextPosition.Y = cameraPosition.Y + Y;
+            cameraNextPosition.Z = cameraPosition.Z + Z;
             EnforceBounds();
+            ApplyChanges();
         }
 
         /// <summary>
@@ -263,7 +303,7 @@ namespace XNALibrary
                 if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
                     movement.X += moveRate * timeDelta;
 
-                // Double movement if shift is down
+                // Multiply movement if shift is down
                 if (ks.IsKeyDown(Keys.LeftShift) || ks.IsKeyDown(Keys.RightShift))
                 {
                     movement *= movementShiftKeyMultiplier;
@@ -303,18 +343,18 @@ namespace XNALibrary
             }
 
             // Controller input
-            if ((flags & UpdateFlags.Controller) == UpdateFlags.Keyboard)
+            if ((flags & UpdateFlags.Controller) == UpdateFlags.Controller)
             {
                 GamePadState cs = GamePad.GetState(0);
             }
 
-            // Limit yaw
+            // Fix yaw
             if (cameraYaw > 360)
                 cameraYaw -= 360;
             else if (cameraYaw < 0)
                 cameraYaw += 360;
 
-            // Limit pitch
+            // Fix pitch
             if (cameraPitch > 89)
                 cameraPitch = 89;
             if (cameraPitch < -89)
@@ -328,9 +368,20 @@ namespace XNALibrary
             if (movement != Vector3.Zero)
             {
                 Vector3.Transform(ref movement, ref rotation, out movement);
-                cameraPosition += movement;
+                cameraNextPosition = cameraPosition + movement;
                 EnforceBounds();
             }
+        }
+
+        /// <summary>
+        /// Apply pending changes to camera movement and rotation.
+        ///  Updates View matrix.
+        /// </summary>
+        public void ApplyChanges()
+        {
+            // Update position
+            cameraPreviousPosition = cameraPosition;
+            cameraPosition = cameraNextPosition;
             
             // Transform camera
             Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
@@ -341,18 +392,20 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Centres camera within X-Z bounds, with a specified height.
+        /// Centres camera within X-Z bounds, with a variable height.
         /// </summary>
         public void CentreInBounds(float height)
         {
-            cameraPosition = new Vector3(
-                    cameraBounds.Min.X + (cameraBounds.Max.X - cameraBounds.Min.X) / 2,
+            cameraNextPosition = new Vector3(
+                    cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2,
                     height,
-                    cameraBounds.Min.Z + (cameraBounds.Max.Z - cameraBounds.Min.Z) / 2);
+                    cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2);
+            ApplyChanges();
         }
 
         /// <summary>
-        /// Sets new aspect ratio and recreates projection matrix.
+        /// Sets new aspect ratio.
+        ///  Updates Projections matrix.
         /// </summary>
         /// <param name="aspectRatio">New aspect ratio.</param>
         public void SetAspectRatio(float aspectRatio)
@@ -373,13 +426,13 @@ namespace XNALibrary
         /// </summary>
         private void EnforceBounds()
         {
-            // Keep camera position within defined bounds
-            if (cameraPosition.X < cameraBounds.Min.X) cameraPosition.X = cameraBounds.Min.X;
-            if (cameraPosition.Y < cameraBounds.Min.Y) cameraPosition.Y = cameraBounds.Min.Y;
-            if (cameraPosition.Z < cameraBounds.Min.Z) cameraPosition.Z = cameraBounds.Min.Z;
-            if (cameraPosition.X > cameraBounds.Max.X) cameraPosition.X = cameraBounds.Max.X;
-            if (cameraPosition.Y > cameraBounds.Max.Y) cameraPosition.Y = cameraBounds.Max.Y;
-            if (cameraPosition.Z > cameraBounds.Max.Z) cameraPosition.Z = cameraBounds.Max.Z;
+            // Keep camera position within defined movement bounds
+            if (cameraNextPosition.X < cameraMovementBounds.Min.X) cameraNextPosition.X = cameraMovementBounds.Min.X;
+            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y) cameraNextPosition.Y = cameraMovementBounds.Min.Y;
+            if (cameraNextPosition.Z < cameraMovementBounds.Min.Z) cameraNextPosition.Z = cameraMovementBounds.Min.Z;
+            if (cameraNextPosition.X > cameraMovementBounds.Max.X) cameraNextPosition.X = cameraMovementBounds.Max.X;
+            if (cameraNextPosition.Y > cameraMovementBounds.Max.Y) cameraNextPosition.Y = cameraMovementBounds.Max.Y;
+            if (cameraNextPosition.Z > cameraMovementBounds.Max.Z) cameraNextPosition.Z = cameraMovementBounds.Max.Z;
         }
 
         #endregion

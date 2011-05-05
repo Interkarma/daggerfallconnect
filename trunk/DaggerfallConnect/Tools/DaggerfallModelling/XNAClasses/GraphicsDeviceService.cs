@@ -60,6 +60,8 @@ namespace WinFormsGraphicsDevice
             parameters.EnableAutoDepthStencil = true;
             parameters.AutoDepthStencilFormat = DepthFormat.Depth24;
 
+            parameters.PresentationInterval = PresentInterval.One;
+
             graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter,
                                                 DeviceType.Hardware,
                                                 windowHandle,

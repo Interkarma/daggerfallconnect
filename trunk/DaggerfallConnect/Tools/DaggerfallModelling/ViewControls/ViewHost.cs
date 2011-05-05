@@ -676,8 +676,8 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnKeyDown(e);
 
-            // Swap between view modes on space
-            if (e.KeyCode == System.Windows.Forms.Keys.Space)
+            // Swap between view modes on backspace
+            if (e.KeyCode == System.Windows.Forms.Keys.Back)
             {
                 SwapViewModes();
             }
@@ -996,11 +996,9 @@ namespace DaggerfallModelling.ViewControls
             // The following attempts to ensure a minimum of 60 fps which
             // smooths out movement on these short frames.
             // The bug has been reproduced and shown to be improved with
-            // this workaround. Other systems that wait for vertical sync
-            // correctly should never trigger this code.
-            if (elapsedTime.Milliseconds < 10)
+            // this workaround.
+            while (elapsedTime.Milliseconds < 16)
             {
-                System.Threading.Thread.Sleep(16 - elapsedTime.Milliseconds);
                 currentTime = stopwatch.Elapsed;
                 elapsedTime = currentTime - lastTime;
             }
@@ -1027,10 +1025,10 @@ namespace DaggerfallModelling.ViewControls
 
 #if DEBUG
             // Show timing status
-            //StatusMessage = string.Format(
-            //"TickTime={0:000}ms, FPS={1:000}",
-            //elapsedTime.Milliseconds,
-            //fps);
+            StatusMessage = string.Format(
+            "TickTime={0:000}ms, FPS={1:000}",
+            elapsedTime.Milliseconds,
+            fps);
 #endif
         }
 
