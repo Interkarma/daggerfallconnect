@@ -93,9 +93,9 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets collision volume of camera.
+        /// Gets bounds of camera.
         /// </summary>
-        public BoundingSphere CollisionBounds
+        public BoundingSphere BoundingSphere
         {
             get
             {

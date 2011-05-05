@@ -96,12 +96,11 @@ namespace DaggerfallModelling.ViewControls
         private float cameraStep = 5.0f;
         private float wheelStep = 100.0f;
 
-        // Ray testing
+        // Intersection and collision
+        private Intersection intersection = new Intersection();
         private const int defaultIntersectionCapacity = 35;
         private uint? mouseOverModel = null;
         private List<ModelIntersection> modelPointerIntersections;
-
-        // Collision testing
         private List<ModelIntersection> modelCameraIntersections;
 
         // Line drawing
@@ -368,8 +367,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Update()
         {
-            // Update cameras
-            UpdateCameras();
+            // Update camera
+            UpdateCamera();
 
             // Test camera collision
             WorldCameraIntersectionTest();
@@ -420,7 +419,7 @@ namespace DaggerfallModelling.ViewControls
             ModelPointerIntersectionTest();
 
             // Draw billboards
-            DrawBillboards();
+            billboardManager.Draw();
 
 #if DEBUG
             // The String.Format here creates nearly all the garbage collections reported.
@@ -915,7 +914,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 foreach (var plane in subMesh.Planes)
                 {
-                    DrawNativeFace(color, plane.Points, ref matrix);
+                    DrawNativeFace(color, plane.Points, matrix);
                 }
             }
         }
@@ -926,7 +925,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="color">Line color.</param>
         /// <param name="points">DFMesh.DFPoint.</param>
         /// <param name="matrix">Matrix.</param>
-        private void DrawNativeFace(Color color, DFMesh.DFPoint[] points, ref Matrix matrix)
+        private void DrawNativeFace(Color color, DFMesh.DFPoint[] points, Matrix matrix)
         {
             // Build line primitives for this face
             int lineCount = 0;
@@ -1089,14 +1088,6 @@ namespace DaggerfallModelling.ViewControls
             }
         }
 
-        /// <summary>
-        /// Draw billboards.
-        /// </summary>
-        private void DrawBillboards()
-        {
-            billboardManager.Draw();
-        }
-
         #endregion
 
         #region Intersection Tests
@@ -1183,9 +1174,13 @@ namespace DaggerfallModelling.ViewControls
                 blockBounds.Max = Vector3.Transform(layout[i].block.BoundingBox.Max, blockTransform);
 
                 // Test camera against block bounds.
-                if (blockBounds.Intersects(ActiveCamera.CollisionBounds))
+                if (blockBounds.Intersects(ActiveCamera.BoundingSphere))
                     BlockCameraIntersectionTest(ref layout[i].block, ref blockTransform);
             }
+
+            // We now have a list of all model bounds that intersect
+            // with camera bounds. Test these models for face intersections.
+            ModelCameraIntersectionTest();
         }
 
         /// <summary>
@@ -1197,7 +1192,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Iterate each model in this block
             Matrix modelTransform;
-            BoundingSphere cameraBounds = ActiveCamera.CollisionBounds;
+            BoundingSphere cameraBounds = ActiveCamera.BoundingSphere;
             BoundingSphere modelBounds;
             float intersectDistance;
             foreach (var modelInfo in block.Models)
@@ -1223,7 +1218,6 @@ namespace DaggerfallModelling.ViewControls
             }
         }
 
-        /*
         /// <summary>
         /// Determine camera-model intersection at face level.
         /// </summary>
@@ -1236,9 +1230,25 @@ namespace DaggerfallModelling.ViewControls
             // Sort intersections by distance
             modelCameraIntersections.Sort();
 
-            // TODO: Iterate intersections
+            // Iterate intersections
+            Intersection.CollisionResult result;
+            foreach (var mi in modelCameraIntersections)
+            {
+                // Get model
+                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
+
+                // Test intersection
+                result = intersection.SphereIntersectDFMesh(
+                    ActiveCamera.BoundingSphere,
+                    mi.Matrix,
+                    ref model);
+
+                // TODO: Modify camera position on intersection
+                if (result.Hit)
+                {
+                }
+            }
         }
-        */
 
         #endregion
 
@@ -1874,9 +1884,9 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Conditionally updates cameras.
+        /// Conditionally updates active camera.
         /// </summary>
-        private void UpdateCameras()
+        private void UpdateCamera()
         {
             // Update based on camera mode
             if (CameraMode == CameraModes.Free)

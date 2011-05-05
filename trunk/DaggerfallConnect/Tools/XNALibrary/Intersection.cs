@@ -23,21 +23,343 @@ namespace XNALibrary
     /// </summary>
     public class Intersection
     {
-        #region Model Intersections
+        #region Class Variables
+
+        private Vector3[] verts = new Vector3[3];
+        private Vector3[] edgeNormals = new Vector3[3];
+        private Vector3 faceNormal = Vector3.Zero;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public Intersection()
+        {
+        }
+
+        #endregion
+
+        #region Sphere-Model Intersections
+
+        /// <summary>
+        /// Tests if a sphere intersects DFMesh geometry.
+        /// </summary>
+        /// <param name="sphere">BoundingSphere to test.</param>
+        /// <param name="modelTransform">World space transform.</param>
+        /// <param name="model">ModelManager.ModelData.</param>
+        /// <returns>CollisionResult.</returns>
+        public CollisionResult SphereIntersectDFMesh(BoundingSphere sphere,
+                                        Matrix modelTransform,
+                                        ref ModelManager.ModelData model)
+        {
+            // Transform sphere back to object space
+            Matrix inverseTransform = Matrix.Invert(modelTransform);
+            sphere.Center = Vector3.Transform(sphere.Center, inverseTransform);
+
+            // Test each submesh
+            CollisionResult result = CollisionResult.Nothing;
+            Vector3 normal, vertex1, vertex2, vertex3;
+            int subMeshIndex = 0;
+            foreach (var subMesh in model.DFMesh.SubMeshes)
+            {
+                // Test each plane of this submesh
+                int planeIndex = 0;
+                foreach (var plane in subMesh.Planes)
+                {
+                    // Get plane normal (all points in plane have same normal)
+                    normal.X = plane.Points[0].NX;
+                    normal.Y = -plane.Points[0].NY;
+                    normal.Z = -plane.Points[0].NZ;
+
+                    // Get shared point (vertex1)
+                    vertex1.X = plane.Points[0].X;
+                    vertex1.Y = -plane.Points[0].Y;
+                    vertex1.Z = -plane.Points[0].Z;
+
+                    // Walk through triangle fan
+                    for (int p = 0; p < plane.Points.Length - 2; p++)
+                    {
+                        // Get second point (vertex2)
+                        vertex2.X = plane.Points[p + 1].X;
+                        vertex2.Y = -plane.Points[p + 1].Y;
+                        vertex2.Z = -plane.Points[p + 1].Z;
+
+                        // Get third point (vertex3)
+                        vertex3.X = plane.Points[p + 2].X;
+                        vertex3.Y = -plane.Points[p + 2].Y;
+                        vertex3.Z = -plane.Points[p + 2].Z;
+
+                        // Test intersection.
+                        // Changing winding order to suit algorithm.
+                        SetCollisionTriangle(vertex1, vertex3, vertex2, normal);
+                        TestSphereCollision(ref sphere.Center, sphere.Radius, ref result);
+                    }
+
+                    // Increment planeIndex
+                    planeIndex++;
+                }
+
+                // Increment subMeshIndex
+                subMeshIndex++;
+            }
+
+            return result;
+        }
+
+        //-----------------------------------------------------------------------------
+        // Thanks to Gloei (http://glow.inque.org) for the sphere-triangle tutorial.
+        // The following code has been adapated from here:
+        // http://glow.inque.org/stuff/polygonsoup/SphereTriangleIntersection-v1.zip
+        //-----------------------------------------------------------------------------
+
+        /// <summary>
+        /// Stores results of collision tests.
+        /// </summary>
+        public struct CollisionResult
+        {
+            /// <summary>True when intersection valid.</summary>
+            public bool Hit;
+
+            /// <summary>Distance to intersection point squared.</summary>
+            public float DistanceSquared;
+
+            /// <summary>Location of intersection inside triangle.</summary>
+            public Vector3 Location;
+
+            /// <summary>Normal of intersection.</summary>
+            public Vector3 Normal;
+
+            /// <summary>
+            /// No intersection result.
+            /// </summary>
+            /// <returns>CollisionResult.</returns>
+            public static CollisionResult Nothing
+            {
+                get
+                {
+                    CollisionResult res;
+                    res.Hit = false;
+                    res.Location = Vector3.Zero;
+                    res.Normal = Vector3.Zero;
+                    res.DistanceSquared = 0;
+                    return res;
+                }
+            }
+
+            /// <summary>
+            /// Assigns a new result only if intersection is closer than current.
+            /// </summary>
+            /// <param name="result">CollisionResult.</param>
+            public void KeepClosest(CollisionResult result)
+            {
+                if (result.Hit && (!Hit || (result.DistanceSquared < DistanceSquared)))
+                    this = result;
+            }
+        }
+
+        /// <summary>
+        /// Constructs triangle for collision tests.
+        ///  Verts must be in correct winding order.
+        /// </summary>
+        /// <param name="vertex1">Vector3.</param>
+        /// <param name="vertex2">Vector3.</param>
+        /// <param name="vertex3">Vector3.</param>
+		private void SetCollisionTriangle(Vector3 vertex1,
+                                        Vector3 vertex2,
+                                        Vector3 vertex3,
+                                        Vector3 normal)
+		{
+            // Set vertices of collision triangle
+			verts[0] = vertex1;
+			verts[1] = vertex2;
+			verts[2] = vertex3;
+			faceNormal = normal; 
+
+			// Calculate normals for edge planes
+			for (int i = 0; i < 3; i++)
+			{
+				edgeNormals[i] = -Vector3.Cross(verts[(i + 1) % 3] - verts[i], faceNormal);
+				edgeNormals[i].Normalize();
+			}			
+		}
+
+        /// <summary>
+        /// Performs sphere-triangle intersection test.
+        ///  Spheres can only collide with front side of  triangles.
+        ///  The closest possible intersection position is returned,
+        ///  which is always inside the triangle.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="sphereRadius"></param>
+        /// <param name="result"></param>
+        private void TestSphereCollision(ref Vector3 position,
+                                        float sphereRadius,
+                                        ref CollisionResult result)
+        {
+            // Check side of plane
+            float dist;
+            Vector3 v = position - verts[0];
+            Vector3.Dot(ref v, ref faceNormal, out dist);
+
+            // Wrong side of plane
+            if (dist < 0)
+                return;
+
+            // Too far away for intersection
+            if (dist > sphereRadius)
+                return;
+
+            // Test for collision point in triangle
+            Vector3 collisionPoint = position - (dist * faceNormal);
+            if (PointInTriangle(ref collisionPoint))
+            {
+                CollisionResult t;
+                t.Hit = true;
+                t.DistanceSquared = (collisionPoint - position).LengthSquared();
+                t.Normal = faceNormal;
+                t.Location = collisionPoint;
+
+                result.KeepClosest(t);
+                return;
+            }
+
+            // Test edges
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 E = verts[(i + 1) % 3] - verts[i];
+
+                // Position relative to edge start
+                Vector3 H = collisionPoint - verts[i];
+
+                // Distance of P to edge plane
+                float hn = Vector3.Dot(H, edgeNormals[i]);
+
+                // Point is on same side of triangle from the edge plane
+                if (hn < 0.0f)
+                    continue;
+
+                // Too far away from this edge plane
+                if (hn > sphereRadius)
+                    return;
+
+                // Test intersection with polygon edge
+                Vector3 intersectionPoint = new Vector3();
+                if (SpherePartialEdgeCollide(ref position, ref verts[i], ref E, ref intersectionPoint))
+                {
+                    CollisionResult t;
+                    t.Hit = true;
+                    t.DistanceSquared = (intersectionPoint - position).LengthSquared();
+                    t.Normal = faceNormal;
+                    t.Location = intersectionPoint;
+
+                    result.KeepClosest(t);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines if a given point lies on the triangle's plane) and
+        /// if it lies within the triangle's borders.
+        /// Implemented by using the triangle's edge planes.
+        /// </summary>
+        /// <param name="pt">A point on the triangle's plane.</param>
+        /// <returns>True when point pt lies within the triangle.</returns>
+        private bool PointInTriangle(ref Vector3 pt)
+        {
+            Vector3 a = pt - verts[0];
+            Vector3 b = pt - verts[1];
+            Vector3 c = pt - verts[2];
+
+            float v;
+
+            Vector3.Dot(ref a, ref edgeNormals[0], out v);
+            if (v >= 0)
+                return false;
+
+            Vector3.Dot(ref b, ref edgeNormals[1], out v);
+            if (v >= 0)
+                return false;
+
+            Vector3.Dot(ref c, ref edgeNormals[2], out v);
+            if (v >= 0)
+                return false;
+
+            return true;
+        }		
+
+        /// <summary>
+        /// Find the point on line [edgeV0, edgeV0+edgeDir] closest to start.
+        /// </summary>
+        /// <param name="start">Start vector.</param>
+        /// <param name="edgeV0">Edge vector.</param>
+        /// <param name="edgeDir">Edge direction.</param>
+        /// <param name="intersection">Intersection</param>
+        /// <returns></returns>
+        private bool SpherePartialEdgeCollide(ref Vector3 start, ref Vector3 edgeV0, ref Vector3 edgeDir, ref Vector3 intersection)
+        {
+            // From http://softsurfer.com/Archive/algorithm_0102/algorithm_0102.htm
+            // Copyright 2001, softSurfer (www.softsurfer.com)
+            // This code may be freely used and modified for any purpose
+            // providing that this copyright notice is included with it.
+            // SoftSurfer makes no warranty for this code, and cannot be held
+            // liable for any real or imagined damage resulting from its use.
+            // Users of this code must verify correctness for their application.
+
+            Vector3 w = start - edgeV0;
+
+            float c1 = Vector3.Dot(w, edgeDir);
+            if (c1 <= 0)
+            {
+                if ((start - edgeV0).LengthSquared() <= 1)
+                {
+                    intersection = edgeV0;
+                    return true;
+
+                }
+                else
+                    return false;
+            }
+
+            float c2 = Vector3.Dot(edgeDir, edgeDir);
+            if (c2 <= c1)
+            {
+                Vector3 p1 = edgeV0 + edgeDir;
+                if ((start - p1).LengthSquared() <= 1)
+                {
+                    intersection = p1;
+                    return true;
+                }
+                else
+                    return false;
+            }
+
+            float b = c1 / c2;
+
+            intersection = edgeV0 + b * edgeDir;
+
+            float distance = 0;
+            Vector3.DistanceSquared(ref start, ref intersection, out distance);
+
+            return (distance <= 1.0f);
+        }
+
+        #endregion
+
+        #region Ray-Model Intersections
 
         /// <summary>
         /// Tests if ray intersects DFMesh geometry.
-        ///  This method is for testing against native face data only.
-        ///  It should not be used for general picking or collision tests.
-        ///  RayIntersectsModel() is better used for this purpose.
         /// </summary>
-        /// <param name="ray">Ray.</param>
+        /// <param name="ray">Ray in world space.</param>
         /// <param name="modelTransform">World space transform.</param>
         /// <param name="model">ModelManager.Model.</param>
-        /// <param name="insideBoundingSphere">True if ray intersects bounding sphere.</param>
+        /// <param name="insideBoundingSphere">True if ray intersects model bounding sphere.</param>
         /// <param name="subMeshResult">Index of DFSubMesh intersected by ray, or -1 on miss.</param>
         /// <param name="planeResult">Index of DFPlane interested by ray, or -1 on miss.</param>
-        /// <returns>Distance to intersection.</returns>
+        /// <returns>Distance to intersection, or NULL if miss.</returns>
         public static float? RayIntersectsDFMesh(Ray ray,
                                             Matrix modelTransform,
                                             ref ModelManager.ModelData model,
@@ -56,14 +378,14 @@ namespace XNALibrary
             ray.Direction = Vector3.TransformNormal(ray.Direction, inverseTransform);
 
             // Test against bounding sphere
-            if (ray.Intersects(model.BoundingBox) == null)
+            if (ray.Intersects(model.BoundingSphere) == null)
             {
                 // No intersection possible
                 return null;
             }
             else
             {
-                // Ray is inside bounding sphere
+                // Ray is inside model bounding sphere
                 insideBoundingSphere = true;
             }
 
@@ -125,7 +447,7 @@ namespace XNALibrary
                         }
                     }
 
-                    // Increment faceIndex
+                    // Increment planeIndex
                     planeIndex++;
                 }
 
@@ -134,26 +456,6 @@ namespace XNALibrary
             }
 
             return closestIntersection;
-        }
-
-        /// <summary>
-        /// Tests if ray intersects ModelManager.Model geometry.
-        ///  Use this method for all triangle picking and collision tests in a scene.
-        /// </summary>
-        /// <param name="ray">Ray.</param>
-        /// <param name="modelTransform">World space transform.</param>
-        /// <param name="model">ModelManager.Model.</param>
-        /// <param name="subMesh">Index of Model.SubMeshes intersected by ray, or NULL on miss.</param>
-        /// <param name="face">Index of triangle interested by ray, or NULL on miss.</param>
-        public static void RayIntersectsModel(Ray ray,
-                                            Matrix modelTransform,
-                                            ref ModelManager.ModelData model,
-                                            out int? subMeshResult,
-                                            out int? faceResult)
-        {
-            // Reset results
-            subMeshResult = null;
-            faceResult = null;
         }
 
         #endregion
