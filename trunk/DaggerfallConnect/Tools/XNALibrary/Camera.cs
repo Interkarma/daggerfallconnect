@@ -31,8 +31,8 @@ namespace XNALibrary
         // Movement
         private const float keyboardSpinRate = 200.0f;
         private const float mouseSpinRate = 10.0f;
-        private const float moveRate = 1500.0f;
-        private const float movementShiftKeyMultiplier = 4.0f;
+        private const float moveRate = 300;
+        private const float movementShiftKeyMultiplier = 3.0f;
         private const float mouseMoveRate = 100.0f;
         private const float middleButonMoveRate = 100.0f;
 
@@ -46,12 +46,13 @@ namespace XNALibrary
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
-        private const float headHeight = 64f;
-        private BoundingBox cameraMovementBounds = new BoundingBox();
-        private BoundingSphere cameraCollisionBounds = new BoundingSphere(Vector3.Zero, headHeight);
-        private Vector3 cameraPosition = new Vector3(0, headHeight, 0);
-        private Vector3 cameraPreviousPosition = new Vector3(0, headHeight, 0);
-        private Vector3 cameraNextPosition = new Vector3(0, headHeight, 0);
+        private float headHeight = 64f;
+        private float headRadius = 20f;
+        private BoundingBox cameraMovementBounds;
+        private BoundingSphere cameraBoundingSphere;
+        private Vector3 cameraPosition;
+        private Vector3 cameraPreviousPosition;
+        private Vector3 cameraNextPosition;
         private Vector3 cameraReference = Vector3.Forward;
         private Vector3 cameraUpVector = Vector3.Up;
         private Vector3 cameraTransformedReference;
@@ -93,14 +94,36 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets bounds of camera.
+        /// Gets or sets head height for ray tests.
+        /// </summary>
+        public float HeadHeight
+        {
+            get { return headHeight; }
+            set { headHeight = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets head radius for sphere tests.
+        /// </summary>
+        public float HeadRadius
+        {
+            get { return headRadius; }
+            set { headRadius = value; }
+        }
+
+        /// <summary>
+        /// Gets bounds of camera (based on next position).
+        ///  If you want to use another position, construct
+        ///  an alternate BoundingSphere from you desired
+        ///  position and HeadRadius.
         /// </summary>
         public BoundingSphere BoundingSphere
         {
             get
             {
-                cameraCollisionBounds.Center = cameraPosition;
-                return cameraCollisionBounds;
+                cameraBoundingSphere.Center = cameraNextPosition;
+                cameraBoundingSphere.Radius = headRadius;
+                return cameraBoundingSphere;
             }
         }
 
@@ -241,6 +264,11 @@ namespace XNALibrary
         /// </summary>
         public Camera()
         {
+            cameraMovementBounds = new BoundingBox();
+            cameraBoundingSphere = new BoundingSphere();
+            cameraPosition = new Vector3(0, headHeight, 0);
+            cameraNextPosition = cameraPosition;
+            cameraPreviousPosition = cameraPosition;
         }
 
         #endregion
@@ -427,12 +455,23 @@ namespace XNALibrary
         private void EnforceBounds()
         {
             // Keep camera position within defined movement bounds
-            if (cameraNextPosition.X < cameraMovementBounds.Min.X) cameraNextPosition.X = cameraMovementBounds.Min.X;
-            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y) cameraNextPosition.Y = cameraMovementBounds.Min.Y;
-            if (cameraNextPosition.Z < cameraMovementBounds.Min.Z) cameraNextPosition.Z = cameraMovementBounds.Min.Z;
-            if (cameraNextPosition.X > cameraMovementBounds.Max.X) cameraNextPosition.X = cameraMovementBounds.Max.X;
-            if (cameraNextPosition.Y > cameraMovementBounds.Max.Y) cameraNextPosition.Y = cameraMovementBounds.Max.Y;
-            if (cameraNextPosition.Z > cameraMovementBounds.Max.Z) cameraNextPosition.Z = cameraMovementBounds.Max.Z;
+            if (cameraNextPosition.X < cameraMovementBounds.Min.X)
+                cameraNextPosition.X = cameraMovementBounds.Min.X;
+
+            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + headHeight)
+                cameraNextPosition.Y = cameraMovementBounds.Min.Y + headHeight;
+
+            if (cameraNextPosition.Z < cameraMovementBounds.Min.Z)
+                cameraNextPosition.Z = cameraMovementBounds.Min.Z;
+
+            if (cameraNextPosition.X > cameraMovementBounds.Max.X)
+                cameraNextPosition.X = cameraMovementBounds.Max.X;
+
+            if (cameraNextPosition.Y > cameraMovementBounds.Max.Y)
+                cameraNextPosition.Y = cameraMovementBounds.Max.Y;
+
+            if (cameraNextPosition.Z > cameraMovementBounds.Max.Z)
+                cameraNextPosition.Z = cameraMovementBounds.Max.Z;
         }
 
         #endregion

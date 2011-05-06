@@ -60,7 +60,7 @@ namespace DaggerfallModelling.ViewControls
         private BillboardComponent billboardManager;
 
         // Ground height
-        private int groundHeight = -7;
+        private int groundHeight = -1;
 
         // Location
         private DFLocation? currentLocation = null;
@@ -86,7 +86,7 @@ namespace DaggerfallModelling.ViewControls
         private Camera exteriorFreeCamera = new Camera();
         private Camera dungeonTopDownCamera = new Camera();
         private Camera dungeonFreeCamera = new Camera();
-        private static float cameraFloorHeight = 60.0f;
+        private static float cameraFloorHeight = 0.0f;
         private static float cameraCeilingHeight = 10000.0f;
         private static float cameraStartHeight = 6000.0f;
         private static float cameraDungeonFreedom = 1000.0f;
@@ -1230,23 +1230,99 @@ namespace DaggerfallModelling.ViewControls
             // Sort intersections by distance
             modelCameraIntersections.Sort();
 
+            // Get active camera
+            Camera camera = ActiveCamera;
+
             // Iterate intersections
-            Intersection.CollisionResult result;
+            float? distance;
+            Vector3 step;
+            int subMeshResult, planeResult;
+            Intersection.CollisionResult sphereResult;
+            Ray downRay, motionRay;
             foreach (var mi in modelCameraIntersections)
             {
                 // Get model
                 ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
 
-                // Test intersection
-                result = intersection.SphereIntersectDFMesh(
-                    ActiveCamera.BoundingSphere,
+                // Get motion ray
+                step = camera.NextPosition - camera.Position;
+                motionRay.Position = camera.Position;
+                motionRay.Direction = Vector3.Normalize(step);
+                distance = Intersection.RayIntersectsDFMesh(
+                    motionRay,
+                    mi.Matrix,
+                    ref model,
+                    out subMeshResult,
+                    out planeResult);
+
+                // Ensure camera does not move beyond obstacle
+                if (distance != null)
+                {
+                    // If distance to move is greater than distance to collision
+                    // then something is in the way.
+                    float totalDistance = Vector3.Distance(Vector3.Zero, step);
+                    float validDistance = distance.Value - camera.HeadRadius / 2;
+                    if (totalDistance > validDistance)
+                    {
+                        // Move valid amount along movement vector
+                        Matrix m = Matrix.CreateTranslation(motionRay.Direction * validDistance);
+                        camera.NextPosition = Vector3.Transform(camera.Position, m);
+                    }
+
+                    // Test sphere intersection
+                    sphereResult = intersection.SphereIntersectDFMesh(
+                        camera.BoundingSphere.Center,
+                        camera.BoundingSphere.Radius,
+                        mi.Matrix,
+                        ref model);
+
+                    // Fine-tune next camera position using sphere intersection
+                    if (sphereResult.Hit)
+                    {
+                        distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
+                        float difference = camera.HeadRadius - distance.Value;
+                        Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.Matrix);
+                        Matrix m = Matrix.CreateTranslation(normal * difference);
+                        camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
+                    }
+                }
+
+                // Test down ray
+                downRay.Position = camera.NextPosition;
+                downRay.Direction = Vector3.Down;
+                distance = Intersection.RayIntersectsDFMesh(
+                    downRay,
+                    mi.Matrix,
+                    ref model,
+                    out subMeshResult,
+                    out planeResult);
+
+                // Ensure camera is always at head height
+                if (distance != null && distance < camera.HeadHeight)
+                {
+                    Vector3 nextPosition = camera.NextPosition;
+                    nextPosition.Y += camera.HeadHeight - distance.Value;
+                    camera.NextPosition = nextPosition;
+                }
+
+                /*
+                // Test sphere
+                sphereResult = intersection.SphereIntersectDFMesh(
+                    camera.BoundingSphere.Center,
+                    camera.BoundingSphere.Radius,
                     mi.Matrix,
                     ref model);
 
-                // TODO: Modify camera position on intersection
-                if (result.Hit)
+                // Modify next camera position on intersection
+                if (sphereResult.Hit)
                 {
+                    distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
+                    float difference = camera.BoundingSphere.Radius - distance.Value;
+                    Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.Matrix);
+                    Matrix m = Matrix.CreateTranslation(normal * difference);
+                    camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
                 }
+                */
             }
         }
 
@@ -1758,10 +1834,11 @@ namespace DaggerfallModelling.ViewControls
                     info.Size.Y = size.Height + yChange;
                 }
 
-                // Set origin of outdoor flats to centre-bottom
+                // Set origin of outdoor flats to centre-bottom.
+                // Sink them just a little so they don't look too floaty.
                 if (info.BlockType == DFBlock.BlockTypes.Rmb)
                 {
-                    info.Origin.Y = groundHeight + info.Size.Y / 2;
+                    info.Origin.Y = (groundHeight + info.Size.Y / 2) - 4;
                 }
 
                 // Set bounding sphere

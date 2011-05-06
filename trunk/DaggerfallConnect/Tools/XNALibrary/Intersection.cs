@@ -47,17 +47,19 @@ namespace XNALibrary
         /// <summary>
         /// Tests if a sphere intersects DFMesh geometry.
         /// </summary>
-        /// <param name="sphere">BoundingSphere to test.</param>
+        /// <param name="position">Position in world space.</param>
+        /// <param name="radius">Radius of sphere.</param>
         /// <param name="modelTransform">World space transform.</param>
         /// <param name="model">ModelManager.ModelData.</param>
         /// <returns>CollisionResult.</returns>
-        public CollisionResult SphereIntersectDFMesh(BoundingSphere sphere,
+        public CollisionResult SphereIntersectDFMesh(Vector3 position,
+                                        float radius,
                                         Matrix modelTransform,
                                         ref ModelManager.ModelData model)
         {
-            // Transform sphere back to object space
+            // Transform sphere position back to object space
             Matrix inverseTransform = Matrix.Invert(modelTransform);
-            sphere.Center = Vector3.Transform(sphere.Center, inverseTransform);
+            position = Vector3.Transform(position, inverseTransform);
 
             // Test each submesh
             CollisionResult result = CollisionResult.Nothing;
@@ -95,7 +97,7 @@ namespace XNALibrary
                         // Test intersection.
                         // Changing winding order to suit algorithm.
                         SetCollisionTriangle(vertex1, vertex3, vertex2, normal);
-                        TestSphereCollision(ref sphere.Center, sphere.Radius, ref result);
+                        TestSphereCollision(ref position, radius, ref result);
                     }
 
                     // Increment planeIndex
@@ -351,7 +353,104 @@ namespace XNALibrary
         #region Ray-Model Intersections
 
         /// <summary>
-        /// Tests if ray intersects DFMesh geometry.
+        /// Tests if ray intersects DFMesh geometry. Does not perform
+        ///  bounding sphere test. Use this method for local collisions
+        ///  where non-bounding objects have already been eliminated.
+        /// </summary>
+        /// <param name="ray">Ray in world space.</param>
+        /// <param name="modelTransform">World space transform.</param>
+        /// <param name="model">ModelManager.Model.</param>
+        /// <param name="subMeshResult">Index of DFSubMesh intersected by ray, or -1 on miss.</param>
+        /// <param name="planeResult">Index of DFPlane interested by ray, or -1 on miss.</param>
+        /// <returns>Distance to intersection, or NULL if miss.</returns>
+        public static float? RayIntersectsDFMesh(Ray ray,
+                                            Matrix modelTransform,
+                                            ref ModelManager.ModelData model,
+                                            out int subMeshResult,
+                                            out int planeResult)
+        {
+            // Reset results
+            subMeshResult = -1;
+            planeResult = -1;
+
+            // Transform ray back to object space
+            Matrix inverseTransform = Matrix.Invert(modelTransform);
+            ray.Position = Vector3.Transform(ray.Position, inverseTransform);
+            ray.Direction = Vector3.TransformNormal(ray.Direction, inverseTransform);
+
+            // Test each submesh
+            float dot;
+            float? intersection = null;
+            float? closestIntersection = null;
+            Vector3 normal, vertex1, vertex2, vertex3;
+            int subMeshIndex = 0;
+            foreach (var subMesh in model.DFMesh.SubMeshes)
+            {
+                // Test each plane of this submesh
+                int planeIndex = 0;
+                foreach (var plane in subMesh.Planes)
+                {
+                    // Get plane normal (all points in plane have same normal)
+                    normal.X = plane.Points[0].NX;
+                    normal.Y = -plane.Points[0].NY;
+                    normal.Z = -plane.Points[0].NZ;
+
+                    // Cull planes facing away from ray
+                    dot = Vector3.Dot(normal, ray.Direction);
+                    if (dot > 0f)
+                    {
+                        planeIndex++;
+                        continue;
+                    }
+
+                    // Get shared point (vertex1)
+                    vertex1.X = plane.Points[0].X;
+                    vertex1.Y = -plane.Points[0].Y;
+                    vertex1.Z = -plane.Points[0].Z;
+
+                    // Walk through triangle fan
+                    for (int p = 0; p < plane.Points.Length - 2; p++)
+                    {
+                        // Get second point (vertex2)
+                        vertex2.X = plane.Points[p + 1].X;
+                        vertex2.Y = -plane.Points[p + 1].Y;
+                        vertex2.Z = -plane.Points[p + 1].Z;
+
+                        // Get third point (vertex3)
+                        vertex3.X = plane.Points[p + 2].X;
+                        vertex3.Y = -plane.Points[p + 2].Y;
+                        vertex3.Z = -plane.Points[p + 2].Z;
+
+                        // Test intersection
+                        RayIntersectsTriangle(ref ray, ref vertex1, ref vertex2, ref vertex3, out intersection);
+                        if (intersection != null)
+                        {
+                            // Test for closest intersection so far
+                            if (closestIntersection == null || intersection < closestIntersection)
+                            {
+                                // Update closest intersection
+                                closestIntersection = intersection;
+                                subMeshResult = subMeshIndex;
+                                planeResult = planeIndex;
+                            }
+                        }
+                    }
+
+                    // Increment planeIndex
+                    planeIndex++;
+                }
+
+                // Increment subMeshIndex
+                subMeshIndex++;
+            }
+
+            return closestIntersection;
+        }
+
+        /// <summary>
+        /// Tests if ray intersects DFMesh geometry. Performs bounding sphere
+        ///  test first. Use this method for model picking from an
+        ///  unprojected ray.
         /// </summary>
         /// <param name="ray">Ray in world space.</param>
         /// <param name="modelTransform">World space transform.</param>
