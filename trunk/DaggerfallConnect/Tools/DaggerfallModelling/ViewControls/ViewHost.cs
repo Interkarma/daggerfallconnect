@@ -20,7 +20,7 @@ using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-using DaggerfallModelling.ViewComponents;
+using DaggerfallModelling.Engine;
 #endregion
 
 namespace DaggerfallModelling.ViewControls

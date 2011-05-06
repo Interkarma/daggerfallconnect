@@ -17,7 +17,7 @@ using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-using DaggerfallModelling.ViewComponents;
+using DaggerfallModelling.Engine;
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -56,8 +56,9 @@ namespace DaggerfallModelling.ViewControls
             BatchOptions.MiscFlats | BatchOptions.MousePicking;
 
         // Components
-        private SkyComponent skyManager;
-        private BillboardComponent billboardManager;
+        private Collision collisionManager;
+        private Sky skyManager;
+        private Billboards billboardManager;
 
         // Ground height
         private int groundHeight = -1;
@@ -79,7 +80,6 @@ namespace DaggerfallModelling.ViewControls
         private VertexDeclaration lineVertexDeclaration;
         private BasicEffect lineEffect;
         private BasicEffect modelEffect;
-        private BoundingFrustum viewFrustum;
 
         // Cameras
         private Camera exteriorTopDownCamera = new Camera();
@@ -96,29 +96,12 @@ namespace DaggerfallModelling.ViewControls
         private float cameraStep = 5.0f;
         private float wheelStep = 100.0f;
 
-        // Intersection and collision
-        private Intersection intersection = new Intersection();
-        private const int defaultIntersectionCapacity = 35;
-        private uint? mouseOverModel = null;
-        private List<ModelIntersection> modelPointerIntersections;
-        private List<ModelIntersection> modelCameraIntersections;
-
         // Line drawing
         VertexPositionColor[] planeLines = new VertexPositionColor[64];
 
         // Bounding volume drawing
         private RenderableBoundingBox renderableBoundingBox;
         private RenderableBoundingSphere renderableBoundingSphere;
-        
-#if DEBUG
-        // Performance profiling
-        private StringBuilder perfStatusBuilder = new StringBuilder(256);
-        private WeakReference gcTracker = new WeakReference(new object());
-        private int visibleTriangles;
-        private int visibleBatches;
-        private int maxBatchArrayLength;
-        private int garbageCollections = 0;
-#endif
 
         #endregion
 
@@ -195,70 +178,11 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Describes how a block is positioned in world space.
         /// </summary>
-        private struct BlockPosition
+        public struct BlockPosition
         {
             public string name;
             public Vector3 position;
             public BlockManager.BlockData block;
-        }
-
-        #endregion
-
-        #region SubClasses
-
-        /// <summary>
-        /// Describes a model that has intersected with something.
-        ///  Used when sorting intersections for face-accurate picking
-        ///  and collision tests.
-        /// </summary>
-        private class ModelIntersection : IComparable<ModelIntersection>
-        {
-            // Variables
-            private float? distance;
-            private uint? modelId;
-            private Matrix matrix;
-
-            // Properties
-            public float? Distance
-            {
-                get { return distance; }
-                set { distance = value; }
-            }
-            public uint? ModelID
-            {
-                get { return modelId; }
-                set { modelId = value; }
-            }
-            public Matrix Matrix
-            {
-                get { return matrix; }
-                set { matrix = value; }
-            }
-
-            // Constructors
-            public ModelIntersection()
-            {
-                this.distance = null;
-                this.modelId = null;
-                this.matrix = Matrix.Identity;
-            }
-            public ModelIntersection(float? distance, uint? modelId, Matrix matrix)
-            {
-                this.distance = distance;
-                this.modelId = modelId;
-                this.matrix = matrix;
-            }
-
-            // IComparable
-            public int CompareTo(ModelIntersection other)
-            {
-                int returnValue = -1;
-                if (other.Distance < this.Distance)
-                    returnValue = 1;
-                else if (other.Distance == this.Distance)
-                    returnValue = 0;
-                return returnValue;
-            }
         }
 
         #endregion
@@ -285,7 +209,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets sky manager.
         /// </summary>
-        public SkyComponent SkyManager
+        public Sky SkyManager
         {
             get { return skyManager; }
         }
@@ -300,14 +224,10 @@ namespace DaggerfallModelling.ViewControls
         public LocationView(ViewHost host)
             : base(host)
         {
-            // Start in normal camera mode
+            // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
             renderableBoundingBox = new RenderableBoundingBox(host.GraphicsDevice);
             renderableBoundingSphere = new RenderableBoundingSphere(host.GraphicsDevice);
-
-            // Create model intersections lists
-            modelPointerIntersections = new List<ModelIntersection>();
-            modelCameraIntersections = new List<ModelIntersection>();
         }
 
         #endregion
@@ -346,17 +266,20 @@ namespace DaggerfallModelling.ViewControls
             // Setup camera projection matrices
             UpdateProjectionMatrix();
 
-            // Create view frustum
-            viewFrustum = new BoundingFrustum(Matrix.Identity);
+            // Create collision component
+            collisionManager = new Collision(host);
+            collisionManager.Initialize();
+            collisionManager.Camera = exteriorFreeCamera;
+            collisionManager.Enabled = true;
 
             // Create sky component
-            skyManager = new SkyComponent(host);
+            skyManager = new Sky(host);
             skyManager.Initialize();
             skyManager.Camera = exteriorFreeCamera;
             skyManager.Enabled = true;
 
             // Create billboard component
-            billboardManager = new BillboardComponent(host);
+            billboardManager = new Billboards(host);
             billboardManager.Initialize();
             billboardManager.Camera = exteriorFreeCamera;
             billboardManager.Enabled = true;
@@ -367,11 +290,18 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Update()
         {
+            // Get current layout array
+            int count;
+            BlockPosition[] layout;
+            GetLayoutArray(out layout, out count);
+
             // Update camera
             UpdateCamera();
 
-            // Test camera collision
-            WorldCameraIntersectionTest();
+            // Handle intersections and collision response
+            collisionManager.Camera = ActiveCamera;
+            collisionManager.SetLayout(layout, count);
+            collisionManager.Update();
 
             // Apply camera changes
             ActiveCamera.ApplyChanges();
@@ -379,15 +309,6 @@ namespace DaggerfallModelling.ViewControls
             // Update components
             skyManager.Update();
             billboardManager.Update();
-
-#if DEBUG
-            // Track garbage collections
-            if (!gcTracker.IsAlive)
-            {
-                garbageCollections++;
-                gcTracker = new WeakReference(new object());
-            }
-#endif
         }
 
         /// <summary>
@@ -395,14 +316,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Draw()
         {
-#if DEBUG
-            // Reset performance metrics
-            long startTime = host.Timer.ElapsedMilliseconds;
-            visibleBatches = 0;
-            visibleTriangles = 0;
-            maxBatchArrayLength = 0;
-#endif
-
             // Clear device
             ClearDevice();
 
@@ -415,23 +328,17 @@ namespace DaggerfallModelling.ViewControls
                 DrawBatches();
             }
 
-            // Test pointer intersection
-            ModelPointerIntersectionTest();
+            // Highlight model under mouse
+            if (collisionManager.PointerOverModel != null &&
+                cameraVelocity == Vector3.Zero &&
+                host.MouseInClientArea)
+            {
+                ModelManager.ModelData model = host.ModelManager.GetModelData(collisionManager.PointerOverModel.Value);
+                DrawNativeMesh(Color.Gold, ref model, collisionManager.PointerOverModelMatrix);
+            }
 
             // Draw billboards
             billboardManager.Draw();
-
-#if DEBUG
-            // The String.Format here creates nearly all the garbage collections reported.
-            // TODO: Implement a garbage-free means of reporting this information.
-            //long drawTime = host.Timer.ElapsedMilliseconds - startTime;
-            //string performance = string.Format(
-            //    "MaxBillboardBatchLength={0}, DrawTime={1}ms, FPS={2:0.00}",
-            //    billboardManager.MaxBatchLength,
-            //    drawTime,
-            //    host.FPS);
-            //host.StatusMessage = performance;
-#endif
         }
 
         /// <summary>
@@ -526,10 +433,10 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
-            if (mouseOverModel != null)
-            {
-                host.ShowModelView(mouseOverModel.Value, Climate);
-            }
+            //if (mouseOverModel != null)
+            //{
+            //    host.ShowModelView(mouseOverModel.Value, Climate);
+            //}
         }
 
         /// <summary>
@@ -656,8 +563,8 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Step through scene elements testing intersections
-        ///  and batching visible triangles.
+        /// Step through scene batching visible triangles
+        ///  and testing mouse ray intersections.
         /// </summary>
         private void BatchScene()
         {
@@ -667,17 +574,8 @@ namespace DaggerfallModelling.ViewControls
             GetLayoutArray(out layout, out count);
             if (layout == null)
                 return;
-            
-            // Update view frustum
-            viewFrustum.Matrix = ActiveCamera.BoundingFrustumMatrix;
-
-            // Reset model intersection lists
-            modelPointerIntersections.Clear();
-            modelPointerIntersections.Capacity = defaultIntersectionCapacity;
 
             // Step through block layout
-            float? intersectDistance;
-            bool mouseInBlock = false;
             Matrix blockTransform;
             BoundingBox blockBounds;
             for (int i = 0; i < count; i++)
@@ -692,22 +590,11 @@ namespace DaggerfallModelling.ViewControls
                 blockBounds.Max = Vector3.Transform(layout[i].block.BoundingBox.Max, blockTransform);
 
                 // Do nothing further if block is not visible
-                if (!viewFrustum.Intersects(blockBounds))
+                if (!ActiveCamera.BoundingFrustum.Intersects(blockBounds))
                     continue;
 
-                // Test mouse ray against block bounds.
-                // Only performed when not auto-scrolling.
-                if (cameraVelocity == Vector3.Zero)
-                {
-                    intersectDistance = host.MouseRay.Intersects(blockBounds);
-                    if (intersectDistance != null)
-                        mouseInBlock = true;
-                    else
-                        mouseInBlock = false;
-                }
-
                 // Batch block
-                BatchBlock(ref layout[i].block, ref blockTransform, mouseInBlock);
+                BatchBlock(ref layout[i].block, ref blockTransform);
             }
         }
 
@@ -716,12 +603,10 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="block">BlockManager.Block.</param>
         /// <param name="blockTransform">Block transform.</param>
-        /// <param name="mouseInBlock">True if mouse ray in block bounds.</param>
-        private void BatchBlock(ref BlockManager.BlockData block, ref Matrix blockTransform, bool mouseInBlock)
+        private void BatchBlock(ref BlockManager.BlockData block, ref Matrix blockTransform)
         {
             // Iterate each model in this block
             int modelIndex = 0;
-            float? intersectDistance;
             Matrix modelTransform;
             BoundingSphere modelBounds;
             foreach (var modelInfo in block.Models)
@@ -732,23 +617,8 @@ namespace DaggerfallModelling.ViewControls
                 modelBounds.Radius = modelInfo.BoundingSphere.Radius;
 
                 // Do nothing further if model not visible
-                if (!viewFrustum.Intersects(modelBounds))
+                if (!ActiveCamera.BoundingFrustum.Intersects(modelBounds))
                     continue;
-
-                // Test mouse ray against model bounds
-                if (mouseInBlock)
-                {
-                    intersectDistance = host.MouseRay.Intersects(modelBounds);
-                    if (intersectDistance != null)
-                    {
-                        // Add to intersection list
-                        ModelIntersection mi = new ModelIntersection(
-                            intersectDistance,
-                            modelInfo.ModelId,
-                            modelTransform);
-                        modelPointerIntersections.Add(mi);
-                    }
-                }
 
                 // Add the model
                 ModelManager.ModelData model = host.ModelManager.GetModelData(modelInfo.ModelId);
@@ -795,11 +665,6 @@ namespace DaggerfallModelling.ViewControls
             // Batch submeshes
             foreach (var subMesh in model.SubMeshes)
             {
-#if DEBUG
-                // Increment triangle counter
-                visibleTriangles += subMesh.PrimitiveCount;
-#endif
-
                 // Add subMesh to batch
                 if (batches.Models.ContainsKey(subMesh.TextureKey))
                 {
@@ -842,7 +707,7 @@ namespace DaggerfallModelling.ViewControls
                 //renderableBoundingSphere.Draw(flatBounds, ActiveCamera.View, ActiveCamera.Projection, Matrix.Identity);
 
                 // Test bounds against camera frustum
-                if (!viewFrustum.Intersects(flatBounds))
+                if (!ActiveCamera.BoundingFrustum.Intersects(flatBounds))
                     continue;
 
                 // Add to batch
@@ -865,11 +730,6 @@ namespace DaggerfallModelling.ViewControls
             // Exit if no ground plane loaded
             if (block.GroundPlaneVertices == null)
                 return;
-
-#if DEBUG
-            // Increment triangle counter
-            visibleTriangles += block.GroundPlaneVertices.Length / 3;
-#endif
 
             // Add ground plane to model batch
             if (batches.Models.ContainsKey(TextureManager.TerrainAtlasKey))
@@ -1025,12 +885,6 @@ namespace DaggerfallModelling.ViewControls
                 if (batchArray.Length == 0)
                     continue;
 
-#if DEBUG
-                // Update max length of batch array
-                if (batchArray.Length > maxBatchArrayLength)
-                    maxBatchArrayLength = batchArray.Length;
-#endif
-
                 modelEffect.Texture = host.TextureManager.GetTexture(item.Key);
 
                 modelEffect.Begin();
@@ -1079,250 +933,6 @@ namespace DaggerfallModelling.ViewControls
 
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
-
-#if DEBUG
-                // Update visible batch count
-                visibleBatches++;
-#endif
-
-            }
-        }
-
-        #endregion
-
-        #region Intersection Tests
-
-        /// <summary>
-        /// Tests pointer against model intersections to
-        ///  determine actual intersection at face level.
-        /// </summary>
-        private void ModelPointerIntersectionTest()
-        {
-            // Nothing to do if no intersections
-            if (modelPointerIntersections.Count == 0)
-                return;
-
-            // Sort intersections by distance
-            modelPointerIntersections.Sort();
-
-            // Iterate intersections
-            float? intersection = null;
-            float? closestIntersection = null;
-            ModelIntersection closestModelIntersection = null;
-            foreach (var mi in modelPointerIntersections)
-            {
-                // Get model
-                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
-
-                // Test model
-                bool insideBoundingSphere;
-                int subMeshResult, planeResult;
-                intersection = Intersection.RayIntersectsDFMesh(
-                    host.MouseRay,
-                    mi.Matrix,
-                    ref model,
-                    out insideBoundingSphere,
-                    out subMeshResult,
-                    out planeResult);
-
-                if (intersection != null)
-                {
-                    if (closestIntersection == null || intersection < closestIntersection)
-                    {
-                        closestIntersection = intersection;
-                        closestModelIntersection = mi;
-                    }
-                }
-            }
-
-            // Draw bounding mesh on closest model
-            if (closestModelIntersection != null)
-            {
-                // Draw bounding box to see what has been intersected
-                ModelManager.ModelData model = host.ModelManager.GetModelData(closestModelIntersection.ModelID.Value);
-                DrawNativeMesh(Color.Gold, ref model, closestModelIntersection.Matrix);
-
-                // Store modelid of model under mouse
-                mouseOverModel = closestModelIntersection.ModelID;
-            }
-        }
-
-        /// <summary>
-        /// Step through blocks to find camera-block intersections.
-        /// </summary>
-        private void WorldCameraIntersectionTest()
-        {
-            // Get batch layout data            
-            int count;
-            BlockPosition[] layout;
-            GetLayoutArray(out layout, out count);
-            if (layout == null)
-                return;
-
-            // Reset camera intersection lists
-            modelCameraIntersections.Clear();
-            modelCameraIntersections.Capacity = defaultIntersectionCapacity;
-
-            // Step through block layout
-            Matrix blockTransform;
-            BoundingBox blockBounds;
-            for (int i = 0; i < count; i++)
-            {
-                // Create transformed block bounding box
-                blockTransform = Matrix.CreateTranslation(layout[i].position);
-                blockBounds.Min = Vector3.Transform(layout[i].block.BoundingBox.Min, blockTransform);
-                blockBounds.Max = Vector3.Transform(layout[i].block.BoundingBox.Max, blockTransform);
-
-                // Test camera against block bounds.
-                if (blockBounds.Intersects(ActiveCamera.BoundingSphere))
-                    BlockCameraIntersectionTest(ref layout[i].block, ref blockTransform);
-            }
-
-            // We now have a list of all model bounds that intersect
-            // with camera bounds. Test these models for face intersections.
-            ModelCameraIntersectionTest();
-        }
-
-        /// <summary>
-        /// Step through block to find camera-model intersections.
-        /// </summary>
-        /// <param name="block">BlockManager.Block</param>
-        /// <param name="blockTransform">Block transform.</param>
-        private void BlockCameraIntersectionTest(ref BlockManager.BlockData block, ref Matrix blockTransform)
-        {
-            // Iterate each model in this block
-            Matrix modelTransform;
-            BoundingSphere cameraBounds = ActiveCamera.BoundingSphere;
-            BoundingSphere modelBounds;
-            float intersectDistance;
-            foreach (var modelInfo in block.Models)
-            {
-                // Create transformed model bounding sphere
-                modelTransform = modelInfo.Matrix * blockTransform;
-                modelBounds.Center = Vector3.Transform(modelInfo.BoundingSphere.Center, modelTransform);
-                modelBounds.Radius = modelInfo.BoundingSphere.Radius;
-
-                // Test if camera collides with model sphere
-                if (modelBounds.Intersects(cameraBounds))
-                {
-                    // Get distance between camera and model spheres
-                    intersectDistance = Vector3.Distance(cameraBounds.Center, modelBounds.Center);
-
-                    // Add to intersection list
-                    ModelIntersection mi = new ModelIntersection(
-                        intersectDistance,
-                        modelInfo.ModelId,
-                        modelTransform);
-                    modelCameraIntersections.Add(mi);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Determine camera-model intersection at face level.
-        /// </summary>
-        private void ModelCameraIntersectionTest()
-        {
-            // Nothing to do if no intersections
-            if (modelCameraIntersections.Count == 0)
-                return;
-
-            // Sort intersections by distance
-            modelCameraIntersections.Sort();
-
-            // Get active camera
-            Camera camera = ActiveCamera;
-
-            // Iterate intersections
-            float? distance;
-            Vector3 step;
-            int subMeshResult, planeResult;
-            Intersection.CollisionResult sphereResult;
-            Ray downRay, motionRay;
-            foreach (var mi in modelCameraIntersections)
-            {
-                // Get model
-                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
-
-                // Get motion ray
-                step = camera.NextPosition - camera.Position;
-                motionRay.Position = camera.Position;
-                motionRay.Direction = Vector3.Normalize(step);
-                distance = Intersection.RayIntersectsDFMesh(
-                    motionRay,
-                    mi.Matrix,
-                    ref model,
-                    out subMeshResult,
-                    out planeResult);
-
-                // Ensure camera does not move beyond obstacle
-                if (distance != null)
-                {
-                    // If distance to move is greater than distance to collision
-                    // then something is in the way.
-                    float totalDistance = Vector3.Distance(Vector3.Zero, step);
-                    float validDistance = distance.Value - camera.HeadRadius / 2;
-                    if (totalDistance > validDistance)
-                    {
-                        // Move valid amount along movement vector
-                        Matrix m = Matrix.CreateTranslation(motionRay.Direction * validDistance);
-                        camera.NextPosition = Vector3.Transform(camera.Position, m);
-                    }
-
-                    // Test sphere intersection
-                    sphereResult = intersection.SphereIntersectDFMesh(
-                        camera.BoundingSphere.Center,
-                        camera.BoundingSphere.Radius,
-                        mi.Matrix,
-                        ref model);
-
-                    // Fine-tune next camera position using sphere intersection
-                    if (sphereResult.Hit)
-                    {
-                        distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
-                        float difference = camera.HeadRadius - distance.Value;
-                        Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.Matrix);
-                        Matrix m = Matrix.CreateTranslation(normal * difference);
-                        camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
-                    }
-                }
-
-                // Test down ray
-                downRay.Position = camera.NextPosition;
-                downRay.Direction = Vector3.Down;
-                distance = Intersection.RayIntersectsDFMesh(
-                    downRay,
-                    mi.Matrix,
-                    ref model,
-                    out subMeshResult,
-                    out planeResult);
-
-                // Ensure camera is always at head height
-                if (distance != null && distance < camera.HeadHeight)
-                {
-                    Vector3 nextPosition = camera.NextPosition;
-                    nextPosition.Y += camera.HeadHeight - distance.Value;
-                    camera.NextPosition = nextPosition;
-                }
-
-                /*
-                // Test sphere
-                sphereResult = intersection.SphereIntersectDFMesh(
-                    camera.BoundingSphere.Center,
-                    camera.BoundingSphere.Radius,
-                    mi.Matrix,
-                    ref model);
-
-                // Modify next camera position on intersection
-                if (sphereResult.Hit)
-                {
-                    distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
-                    float difference = camera.BoundingSphere.Radius - distance.Value;
-                    Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.Matrix);
-                    Matrix m = Matrix.CreateTranslation(normal * difference);
-                    camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
-                }
-                */
             }
         }
 
@@ -1360,7 +970,7 @@ namespace DaggerfallModelling.ViewControls
             currentLocation = null;
 
             // Set default sky
-            skyManager.SkyIndex = SkyComponent.DefaultSkyIndex;
+            skyManager.SkyIndex = Sky.DefaultSkyIndex;
 
             // Init camera
             cameraVelocity = Vector3.Zero;
@@ -1397,7 +1007,7 @@ namespace DaggerfallModelling.ViewControls
             currentLocation = null;
 
             // Set default sky
-            skyManager.SkyIndex = SkyComponent.DefaultSkyIndex;
+            skyManager.SkyIndex = Sky.DefaultSkyIndex;
 
             // Init camera
             cameraVelocity = Vector3.Zero;

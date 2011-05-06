@@ -68,9 +68,10 @@
     <Compile Include="Dialogs\BrowseExportModelDialog.designer.cs">
       <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewComponents\BillboardComponent.cs" />
-    <Compile Include="ViewComponents\ComponentBase.cs" />
-    <Compile Include="ViewComponents\SkyComponent.cs" />
+    <Compile Include="Engine\Billboards.cs" />
+    <Compile Include="Engine\Collision.cs" />
+    <Compile Include="Engine\ComponentBase.cs" />
+    <Compile Include="Engine\Sky.cs" />
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>

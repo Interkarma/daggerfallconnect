@@ -46,8 +46,8 @@ namespace XNALibrary
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
-        private float headHeight = 64f;
-        private float headRadius = 20f;
+        private float eyeHeight = 64f;
+        private float bodyRadius = 20f;
         private BoundingBox cameraMovementBounds;
         private BoundingSphere cameraBoundingSphere;
         private Vector3 cameraPosition;
@@ -61,6 +61,7 @@ namespace XNALibrary
         private float cameraPitch = 0.0f;
         private Vector3 movement = Vector3.Zero;
         private Matrix rotation = Matrix.Identity;
+        private BoundingFrustum viewFrustum;
 
         // Mouse
         private Point lastMousePos = Point.Zero;
@@ -94,35 +95,32 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets head height for ray tests.
+        /// Gets or sets eye height.
         /// </summary>
-        public float HeadHeight
+        public float EyeHeight
         {
-            get { return headHeight; }
-            set { headHeight = value; }
+            get { return eyeHeight; }
+            set { eyeHeight = value; }
         }
 
         /// <summary>
-        /// Gets or sets head radius for sphere tests.
+        /// Gets or sets body radius.
         /// </summary>
-        public float HeadRadius
+        public float BodyRadius
         {
-            get { return headRadius; }
-            set { headRadius = value; }
+            get { return bodyRadius; }
+            set { bodyRadius = value; }
         }
 
         /// <summary>
         /// Gets bounds of camera (based on next position).
-        ///  If you want to use another position, construct
-        ///  an alternate BoundingSphere from you desired
-        ///  position and HeadRadius.
         /// </summary>
         public BoundingSphere BoundingSphere
         {
             get
             {
                 cameraBoundingSphere.Center = cameraNextPosition;
-                cameraBoundingSphere.Radius = headRadius;
+                cameraBoundingSphere.Radius = bodyRadius;
                 return cameraBoundingSphere;
             }
         }
@@ -231,12 +229,11 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets current view*projection matrix for a
-        ///  BoundingFrustum.
+        /// Gets current BoundingFrustum.
         /// </summary>
-        public Matrix BoundingFrustumMatrix
+        public BoundingFrustum BoundingFrustum
         {
-            get { return viewMatrix * projectionMatrix; }
+            get { return viewFrustum; }
         }
 
         /// <summary>
@@ -264,9 +261,10 @@ namespace XNALibrary
         /// </summary>
         public Camera()
         {
+            viewFrustum = new BoundingFrustum(Matrix.Identity);
             cameraMovementBounds = new BoundingBox();
             cameraBoundingSphere = new BoundingSphere();
-            cameraPosition = new Vector3(0, headHeight, 0);
+            cameraPosition = new Vector3(0, eyeHeight, 0);
             cameraNextPosition = cameraPosition;
             cameraPreviousPosition = cameraPosition;
         }
@@ -363,11 +361,11 @@ namespace XNALibrary
                 }
 
                 // Movement with middle-button pressed
-                if (ms.MiddleButton == ButtonState.Pressed)
-                {
-                    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
-                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
-                }
+                //if (ms.MiddleButton == ButtonState.Pressed)
+                //{
+                //    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
+                //    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
+                //}
             }
 
             // Controller input
@@ -417,6 +415,9 @@ namespace XNALibrary
 
             // Update view matrix
             Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
+
+            // Update frustum
+            viewFrustum.Matrix = viewMatrix * projectionMatrix;
         }
 
         /// <summary>
@@ -443,6 +444,9 @@ namespace XNALibrary
                 aspectRatio,
                 nearPlaneDistance,
                 farPlaneDistance);
+
+            // Update frustum
+            viewFrustum.Matrix = viewMatrix * projectionMatrix;
         }
 
         #endregion
@@ -458,8 +462,8 @@ namespace XNALibrary
             if (cameraNextPosition.X < cameraMovementBounds.Min.X)
                 cameraNextPosition.X = cameraMovementBounds.Min.X;
 
-            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + headHeight)
-                cameraNextPosition.Y = cameraMovementBounds.Min.Y + headHeight;
+            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
+                cameraNextPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
 
             if (cameraNextPosition.Z < cameraMovementBounds.Min.Z)
                 cameraNextPosition.Z = cameraMovementBounds.Min.Z;
