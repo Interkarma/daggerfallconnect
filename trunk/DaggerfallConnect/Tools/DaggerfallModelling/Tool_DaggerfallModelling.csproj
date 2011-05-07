@@ -71,6 +71,7 @@
     <Compile Include="Engine\Billboards.cs" />
     <Compile Include="Engine\Collision.cs" />
     <Compile Include="Engine\ComponentBase.cs" />
+    <Compile Include="Engine\Scene.cs" />
     <Compile Include="Engine\Sky.cs" />
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
@@ -220,6 +221,7 @@
     <None Include="Resources\mouse.png" />
     <None Include="Resources\camera.png" />
     <None Include="Resources\bullet_orange.png" />
+    <None Include="Resources\magnifier.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

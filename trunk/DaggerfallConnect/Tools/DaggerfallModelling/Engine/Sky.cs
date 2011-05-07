@@ -52,7 +52,6 @@ namespace DaggerfallModelling.Engine
         // XNA
         private BasicEffect skyEffect;
         private VertexDeclaration skyVertexDeclaration;
-        private Camera camera;
 
         #endregion
 
@@ -64,15 +63,6 @@ namespace DaggerfallModelling.Engine
         public XNAColor ClearColor
         {
             get { return clearColor; }
-        }
-
-        /// <summary>
-        /// Gets or sets camera used when rendering sky.
-        /// </summary>
-        public Camera Camera
-        {
-            get { return camera; }
-            set { camera = value; }
         }
 
         /// <summary>
@@ -217,6 +207,10 @@ namespace DaggerfallModelling.Engine
         /// </summary>
         private void DrawSky()
         {
+            // Cannot draw if camera not set
+            if (camera == null)
+                return;
+
             // Set render states
             host.GraphicsDevice.RenderState.DepthBufferEnable = false;
             host.GraphicsDevice.RenderState.AlphaBlendEnable = false;
@@ -367,9 +361,9 @@ namespace DaggerfallModelling.Engine
             }
             else
             {
-                skyFile.Palette = skyFile.GetDFPalette(64 - skyFrame);
-                east = skyFile.GetBitmapFormat(0, 64 - skyFrame, 0, DFBitmap.Formats.ARGB);
-                west = skyFile.GetBitmapFormat(1, 64 - skyFrame, 0, DFBitmap.Formats.ARGB);
+                skyFile.Palette = skyFile.GetDFPalette(63 - skyFrame);
+                east = skyFile.GetBitmapFormat(0, 63 - skyFrame, 0, DFBitmap.Formats.ARGB);
+                west = skyFile.GetBitmapFormat(1, 63 - skyFrame, 0, DFBitmap.Formats.ARGB);
             }
 
             // Create textures

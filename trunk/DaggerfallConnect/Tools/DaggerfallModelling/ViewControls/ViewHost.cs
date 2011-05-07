@@ -780,14 +780,14 @@ namespace DaggerfallModelling.ViewControls
                 if (name.EndsWith(".RMB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.LoadExteriorBlock(name, climate);
-                    view.BatchMode = LocationView.BatchModes.Exterior;
+                    view.SceneManager.LoadExteriorBlock(name, climate);
+                    view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
                 }
                 else if (name.EndsWith(".RDB"))
                 {
                     LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.LoadDungeonBlock(name);
-                    view.BatchMode = LocationView.BatchModes.Dungeon;
+                    view.SceneManager.LoadDungeonBlock(name);
+                    view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
                 }
                 else
                 {
@@ -809,7 +809,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Setup view
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.Exterior;
+            view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -825,7 +825,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Setup view
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.Dungeon;
+            view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -846,8 +846,8 @@ namespace DaggerfallModelling.ViewControls
 
             // Load exterior
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.Exterior;
-            view.LoadLocation(ref dfLocation);
+            view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
+            view.SceneManager.LoadLocation(ref dfLocation);
 
             // Set view mode
             lastViewMode = viewMode;
@@ -868,8 +868,8 @@ namespace DaggerfallModelling.ViewControls
 
             // Load dungeon
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.BatchMode = LocationView.BatchModes.Dungeon;
-            view.LoadLocation(ref dfLocation);
+            view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
+            view.SceneManager.LoadLocation(ref dfLocation);
 
             // Set view mode
             lastViewMode = viewMode;
@@ -1025,10 +1025,10 @@ namespace DaggerfallModelling.ViewControls
 
 #if DEBUG
             // Show timing status
-            StatusMessage = string.Format(
-            "TickTime={0:000}ms, FPS={1:000}",
-            elapsedTime.Milliseconds,
-            fps);
+            //StatusMessage = string.Format(
+            //"TickTime={0:000}ms, FPS={1:000}",
+            //elapsedTime.Milliseconds,
+            //fps);
 #endif
         }
 

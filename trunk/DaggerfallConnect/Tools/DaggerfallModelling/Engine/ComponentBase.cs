@@ -32,6 +32,7 @@ namespace DaggerfallModelling.Engine
 
         protected ViewHost host = null;
         protected bool enabled = false;
+        protected Camera camera = null;
 
         #endregion
 
@@ -44,6 +45,15 @@ namespace DaggerfallModelling.Engine
         {
             get { return this.enabled; }
             set { this.enabled = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets camera.
+        /// </summary>
+        public Camera Camera
+        {
+            get { return camera; }
+            set { camera = value; }
         }
 
         #endregion

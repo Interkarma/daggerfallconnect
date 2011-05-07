@@ -121,8 +121,8 @@ namespace DaggerfallModelling
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
 
             // TEST: Set a specific view while testing content
-            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
-            //ContentViewer.ShowLocationExterior(dfLocation);
+            //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
+            //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             //UpdateActiveCameraMode();
 

@@ -27,7 +27,7 @@ namespace DaggerfallModelling.Engine
     /// <summary>
     /// Scene intersection tests and collision response.
     /// </summary>
-    class Collision : ComponentBase
+    public class Collision : ComponentBase
     {
         #region Class Variables
 
@@ -43,21 +43,11 @@ namespace DaggerfallModelling.Engine
 
         // Scene
         int sceneLayoutCount = 0;
-        LocationView.BlockPosition[] sceneLayout = null;
-        private Camera camera;
+        Scene.BlockPosition[] sceneLayout = null;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets camera used when rendering billboard.
-        /// </summary>
-        public Camera Camera
-        {
-            get { return camera; }
-            set { camera = value; }
-        }
 
         /// <summary>
         /// Gets ID of model selected by pointer ray.
@@ -190,7 +180,7 @@ namespace DaggerfallModelling.Engine
         /// <param name="layout">Layout array.</param>
         /// <param name="count">Number of valid elements.</param>
         public void SetLayout(
-            LocationView.BlockPosition[] layout,
+            Scene.BlockPosition[] layout,
             int count)
         {
             this.sceneLayoutCount = count;
@@ -454,6 +444,8 @@ namespace DaggerfallModelling.Engine
                     Vector3 nextPosition = camera.NextPosition;
                     nextPosition.Y += camera.EyeHeight - distance.Value;
                     camera.NextPosition = nextPosition;
+
+                    camera.ClearGravity();
                 }
             }
         }

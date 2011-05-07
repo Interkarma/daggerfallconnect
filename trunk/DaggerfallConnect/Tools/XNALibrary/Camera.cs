@@ -28,13 +28,20 @@ namespace XNALibrary
 
         #region Class Variables
 
-        // Movement
-        private const float keyboardSpinRate = 200.0f;
-        private const float mouseSpinRate = 10.0f;
-        private const float moveRate = 300;
-        private const float movementShiftKeyMultiplier = 3.0f;
-        private const float mouseMoveRate = 100.0f;
-        private const float middleButonMoveRate = 100.0f;
+        // Keyboard movement
+        private const float keyboardSpinRate = 200f;
+        private const float keyboardMoveRate = 400f;
+        private const float keyboardShiftKeyMultiplier = 3f;
+
+        // Mouse movement
+        private const float mouseSpinRate = 10f;
+        private const float mouseMoveRate = 100f;
+        private const float middleButonMoveRate = 100f;
+
+        // Controller movement
+        private bool controllerConnected = false;
+        private const float controllerSpinRate = 180f;
+        private const float controllerMoveRate = 1100f;
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -46,7 +53,7 @@ namespace XNALibrary
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
-        private float eyeHeight = 64f;
+        private float eyeHeight = 70f;
         private float bodyRadius = 20f;
         private BoundingBox cameraMovementBounds;
         private BoundingSphere cameraBoundingSphere;
@@ -67,6 +74,10 @@ namespace XNALibrary
         private Point lastMousePos = Point.Zero;
         private Point mousePos = Point.Zero;
         private Point mouseDelta = Point.Zero;
+
+        // Gravity
+        private const float gravityRate = 40f;
+        private float gravityAmount = 0;
 
         #endregion
 
@@ -252,6 +263,14 @@ namespace XNALibrary
             get { return cameraPitch; }
         }
 
+        /// <summary>
+        /// Gets connection state of player 1 controller.
+        /// </summary>
+        public bool ControllerConnected
+        {
+            get { return controllerConnected; }
+        }
+
         #endregion
 
         #region Constructors
@@ -321,18 +340,18 @@ namespace XNALibrary
                 if (ks.IsKeyDown(Keys.E))                               // Look right
                     cameraYaw -= keyboardSpinRate * timeDelta;
                 if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
-                    movement.Z -= moveRate * timeDelta;
+                    movement.Z -= keyboardMoveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
-                    movement.Z += moveRate * timeDelta;
+                    movement.Z += keyboardMoveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.A) || ks.IsKeyDown(Keys.Left))    // Move left
-                    movement.X -= moveRate * timeDelta;
+                    movement.X -= keyboardMoveRate * timeDelta;
                 if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
-                    movement.X += moveRate * timeDelta;
+                    movement.X += keyboardMoveRate * timeDelta;
 
-                // Multiply movement if shift is down
+                // Multiply keyboard movement when shift is down
                 if (ks.IsKeyDown(Keys.LeftShift) || ks.IsKeyDown(Keys.RightShift))
                 {
-                    movement *= movementShiftKeyMultiplier;
+                    movement *= keyboardShiftKeyMultiplier;
                 }
             }
 
@@ -361,18 +380,53 @@ namespace XNALibrary
                 }
 
                 // Movement with middle-button pressed
-                //if (ms.MiddleButton == ButtonState.Pressed)
-                //{
-                //    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
-                //    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
-                //}
+                if (ms.MiddleButton == ButtonState.Pressed)
+                {
+                    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
+                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
+                }
             }
 
             // Controller input
             if ((flags & UpdateFlags.Controller) == UpdateFlags.Controller)
             {
                 GamePadState cs = GamePad.GetState(0);
+                if (cs.IsConnected)
+                {
+                    controllerConnected = true;
+
+                    // Look left and right
+                    if (cs.ThumbSticks.Right.X < 0)
+                        cameraYaw += (controllerSpinRate * -cs.ThumbSticks.Right.X) * timeDelta;
+                    if (cs.ThumbSticks.Right.X > 0)
+                        cameraYaw -= (controllerSpinRate * cs.ThumbSticks.Right.X) * timeDelta;
+
+                    // Look up and down
+                    if (cs.ThumbSticks.Right.Y < 0)
+                        cameraPitch += (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
+                    if (cs.ThumbSticks.Right.Y > 0)
+                        cameraPitch -= (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+
+                    // Move forward and backward
+                    if (cs.ThumbSticks.Left.Y > 0)
+                        movement.Z -= (controllerMoveRate * cs.ThumbSticks.Left.Y) * timeDelta;
+                    if (cs.ThumbSticks.Left.Y < 0)
+                        movement.Z += (controllerMoveRate * -cs.ThumbSticks.Left.Y) * timeDelta;
+
+                    // Move left and right
+                    if (cs.ThumbSticks.Left.X > 0)
+                        movement.X -= (controllerMoveRate * -cs.ThumbSticks.Left.X) * timeDelta;
+                    if (cs.ThumbSticks.Left.X < 0)
+                        movement.X += (controllerMoveRate * cs.ThumbSticks.Left.X) * timeDelta;
+                }
+                else
+                {
+                    controllerConnected = false;
+                }
             }
+
+            // Apply gravity
+            movement.Y -= gravityAmount * timeDelta;
 
             // Fix yaw
             if (cameraYaw > 360)
@@ -449,6 +503,23 @@ namespace XNALibrary
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
         }
 
+        /// <summary>
+        /// Add gravity acceleration to camera.
+        ///  Each subsequent call will make camera fall faster.
+        /// </summary>
+        public void AddGravity()
+        {
+            gravityAmount += gravityRate;
+        }
+
+        /// <summary>
+        /// Clears gravity acceleration.
+        /// </summary>
+        public void ClearGravity()
+        {
+            gravityAmount = 0f;
+        }
+
         #endregion
 
         #region Private Methods
@@ -463,7 +534,10 @@ namespace XNALibrary
                 cameraNextPosition.X = cameraMovementBounds.Min.X;
 
             if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
+            {
+                ClearGravity();
                 cameraNextPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
+            }
 
             if (cameraNextPosition.Z < cameraMovementBounds.Min.Z)
                 cameraNextPosition.Z = cameraMovementBounds.Min.Z;

@@ -33,7 +33,7 @@ namespace DaggerfallModelling.Engine
     ///  These billboards will rotate around Y axis to face camera.
     ///  Origin is always at bottom centre.
     /// </summary>
-    class Billboards : ComponentBase
+    public class Billboards : ComponentBase
     {
 
         #region Class Variables
@@ -41,7 +41,6 @@ namespace DaggerfallModelling.Engine
         // XNA
         private BasicEffect billboardEffect;
         private VertexDeclaration billboardVertexDeclaration;
-        private Camera camera;
 
         // Billboard
         private VertexPositionNormalTexture[] billboardVertices;
@@ -50,11 +49,6 @@ namespace DaggerfallModelling.Engine
         // Batching
         private const int batchArrayLength = 1024;
         private List<BatchFlat> batch = new List<BatchFlat>(batchArrayLength);
-
-#if DEBUG
-        // Performance
-        private int maxBatchLength = 0;
-#endif
 
         #endregion
 
@@ -120,26 +114,6 @@ namespace DaggerfallModelling.Engine
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets camera used when rendering billboard.
-        /// </summary>
-        public Camera Camera
-        {
-            get { return camera; }
-            set { camera = value; }
-        }
-
-#if DEBUG
-        /// <summary>
-        /// Gets max batch length.
-        /// </summary>
-        public int MaxBatchLength
-        {
-            get { return maxBatchLength; }
-        }
-#endif
-
         #endregion
 
         #region Constructors
@@ -186,7 +160,7 @@ namespace DaggerfallModelling.Engine
         /// </summary>
         public override void Draw()
         {
-            if (host.IsReady && this.Enabled)
+            if (host.IsReady && this.Enabled && camera != null)
             {
                 BeginDraw();
                 DrawBatch();
@@ -206,10 +180,6 @@ namespace DaggerfallModelling.Engine
             // Reset batch
             batch.Clear();
             batch.Capacity = batchArrayLength;
-
-#if DEBUG
-            maxBatchLength = 0;
-#endif
         }
 
         /// <summary>
@@ -248,12 +218,6 @@ namespace DaggerfallModelling.Engine
                 textureKey,
                 flatTransform);
             batch.Add(flat);
-
-#if DEBUG
-            // Track max batch length
-            if (batch.Count > maxBatchLength)
-                maxBatchLength = batch.Count;
-#endif
         }
 
         #endregion

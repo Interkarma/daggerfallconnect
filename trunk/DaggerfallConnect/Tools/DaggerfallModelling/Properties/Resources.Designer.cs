@@ -291,6 +291,13 @@ namespace DaggerfallModelling.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap magnifier {
+            get {
+                object obj = ResourceManager.GetObject("magnifier", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap model_find {
             get {
                 object obj = ResourceManager.GetObject("model_find", resourceCulture);

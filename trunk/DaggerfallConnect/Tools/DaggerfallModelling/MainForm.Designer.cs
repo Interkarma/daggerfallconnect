@@ -36,39 +36,53 @@
             this.SearchResultsImageList = new System.Windows.Forms.ImageList(this.components);
             this.SearchPanel = new System.Windows.Forms.Panel();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
-            this.SearchLabel = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
             this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
-            this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.BlockNameToolStripLabel = new System.Windows.Forms.ToolStripLabel();
             this.SearchPaneToolStrip = new System.Windows.Forms.ToolStrip();
-            this.SetArena2ToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.ContentPanel = new System.Windows.Forms.Panel();
+            this.TimeOfDayPanel = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
+            this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.SearchLabel = new System.Windows.Forms.Label();
+            this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.SetArena2ToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchModelsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchBlocksToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.SearchLocationsToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.TimeOfDayPanel = new System.Windows.Forms.Panel();
-            this.pictureBox3 = new System.Windows.Forms.PictureBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
-            this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
+            this.QuickSearchDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
+            this.allModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.allBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exteriorBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dungeonBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.allLocationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ToggleSearchPaneToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewThumbsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewSingleModelToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewBlockToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ViewLocationToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.ExportModelToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.TopDownCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.FreeCameraToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.OptionsDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
             this.skyPlaneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groundPlaneExteriorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,17 +93,18 @@
             this.controllerPickingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.AdjustSkyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.ContentPanel = new System.Windows.Forms.Panel();
-            this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.MainTips = new System.Windows.Forms.ToolTip(this.components);
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
             this.ContentViewer = new DaggerfallModelling.ViewControls.ViewHost();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.citiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dungeonsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.graveyardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.religionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tavernsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.homesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -98,14 +113,14 @@
             this.LayoutPanel.SuspendLayout();
             this.AutoMapToolStrip.SuspendLayout();
             this.SearchPaneToolStrip.SuspendLayout();
+            this.ViewPaneToolStrip.SuspendLayout();
+            this.ContentPanel.SuspendLayout();
             this.TimeOfDayPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
+            this.MainStatusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
-            this.ViewPaneToolStrip.SuspendLayout();
-            this.ContentPanel.SuspendLayout();
-            this.MainStatusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // MainSplitContainer
@@ -199,15 +214,6 @@
             this.SearchTextBox.TabIndex = 1;
             this.SearchTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SearchTextBox_KeyPress);
             // 
-            // SearchLabel
-            // 
-            this.SearchLabel.Image = global::DaggerfallModelling.Properties.Resources.find;
-            this.SearchLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.SearchLabel.Location = new System.Drawing.Point(5, 9);
-            this.SearchLabel.Name = "SearchLabel";
-            this.SearchLabel.Size = new System.Drawing.Size(18, 13);
-            this.SearchLabel.TabIndex = 0;
-            // 
             // LayoutPanel
             // 
             this.LayoutPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
@@ -234,6 +240,210 @@
             this.AutoMapToolStrip.TabIndex = 1;
             this.AutoMapToolStrip.Text = "toolStrip1";
             // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // BlockNameToolStripLabel
+            // 
+            this.BlockNameToolStripLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.BlockNameToolStripLabel.Name = "BlockNameToolStripLabel";
+            this.BlockNameToolStripLabel.Size = new System.Drawing.Size(97, 22);
+            this.BlockNameToolStripLabel.Text = "BlockName [0, 0]";
+            this.BlockNameToolStripLabel.Visible = false;
+            // 
+            // SearchPaneToolStrip
+            // 
+            this.SearchPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SetArena2ToolStripButton,
+            this.toolStripSeparator1,
+            this.SearchModelsToolStripButton,
+            this.SearchBlocksToolStripButton,
+            this.SearchLocationsToolStripButton,
+            this.toolStripSeparator2,
+            this.QuickSearchDropDownButton});
+            this.SearchPaneToolStrip.Location = new System.Drawing.Point(0, 0);
+            this.SearchPaneToolStrip.Name = "SearchPaneToolStrip";
+            this.SearchPaneToolStrip.Size = new System.Drawing.Size(320, 25);
+            this.SearchPaneToolStrip.TabIndex = 0;
+            this.SearchPaneToolStrip.Text = "toolStrip1";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ViewPaneToolStrip
+            // 
+            this.ViewPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.AboutToolStripButton,
+            this.ToggleSearchPaneToolStripButton,
+            this.toolStripSeparator8,
+            this.ViewThumbsToolStripButton,
+            this.ViewSingleModelToolStripButton,
+            this.ViewBlockToolStripButton,
+            this.ViewLocationToolStripButton,
+            this.toolStripSeparator4,
+            this.ExportModelToolStripButton,
+            this.toolStripSeparator7,
+            this.TopDownCameraToolStripButton,
+            this.FreeCameraToolStripButton,
+            this.toolStripSeparator5,
+            this.OptionsDropDownButton,
+            this.toolStripSeparator6});
+            this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
+            this.ViewPaneToolStrip.Name = "ViewPaneToolStrip";
+            this.ViewPaneToolStrip.Size = new System.Drawing.Size(852, 25);
+            this.ViewPaneToolStrip.TabIndex = 0;
+            this.ViewPaneToolStrip.Text = "toolStrip2";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ContentPanel
+            // 
+            this.ContentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.ContentPanel.BackColor = System.Drawing.Color.Gray;
+            this.ContentPanel.Controls.Add(this.TimeOfDayPanel);
+            this.ContentPanel.Controls.Add(this.ContentViewer);
+            this.ContentPanel.Location = new System.Drawing.Point(0, 25);
+            this.ContentPanel.Name = "ContentPanel";
+            this.ContentPanel.Size = new System.Drawing.Size(862, 737);
+            this.ContentPanel.TabIndex = 2;
+            // 
+            // TimeOfDayPanel
+            // 
+            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.TimeOfDayPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.TimeOfDayPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TimeOfDayPanel.Controls.Add(this.label2);
+            this.TimeOfDayPanel.Controls.Add(this.label1);
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox3);
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox1);
+            this.TimeOfDayPanel.Controls.Add(this.pictureBox2);
+            this.TimeOfDayPanel.Controls.Add(this.TimeOfDayTrackBar);
+            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 658);
+            this.TimeOfDayPanel.Name = "TimeOfDayPanel";
+            this.TimeOfDayPanel.Size = new System.Drawing.Size(852, 55);
+            this.TimeOfDayPanel.TabIndex = 7;
+            this.TimeOfDayPanel.Visible = false;
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(804, 31);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(23, 13);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "PM";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(23, 31);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(23, 13);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "AM";
+            // 
+            // TimeOfDayTrackBar
+            // 
+            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.Control;
+            this.TimeOfDayTrackBar.Dock = System.Windows.Forms.DockStyle.Top;
+            this.TimeOfDayTrackBar.LargeChange = 4;
+            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(0, 0);
+            this.TimeOfDayTrackBar.Maximum = 63;
+            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(850, 45);
+            this.TimeOfDayTrackBar.TabIndex = 3;
+            this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.TimeOfDayTrackBar.Value = 30;
+            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            // 
+            // MainStatusStrip
+            // 
+            this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Arena2PathStatusLabel,
+            this.ContentViewStatusLabel,
+            this.toolStripStatusLabel2});
+            this.MainStatusStrip.Location = new System.Drawing.Point(0, 740);
+            this.MainStatusStrip.Name = "MainStatusStrip";
+            this.MainStatusStrip.Size = new System.Drawing.Size(1184, 22);
+            this.MainStatusStrip.TabIndex = 1;
+            this.MainStatusStrip.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(825, 17);
+            this.toolStripStatusLabel2.Spring = true;
+            // 
+            // MainTips
+            // 
+            this.MainTips.AutoPopDelay = 5000;
+            this.MainTips.InitialDelay = 500;
+            this.MainTips.IsBalloon = true;
+            this.MainTips.ReshowDelay = 100;
+            // 
+            // Arena2PathStatusLabel
+            // 
+            this.Arena2PathStatusLabel.AutoSize = false;
+            this.Arena2PathStatusLabel.Image = global::DaggerfallModelling.Properties.Resources.lightbulb;
+            this.Arena2PathStatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.Arena2PathStatusLabel.Name = "Arena2PathStatusLabel";
+            this.Arena2PathStatusLabel.Size = new System.Drawing.Size(328, 17);
+            this.Arena2PathStatusLabel.Text = "Please set your Arena2 folder.";
+            this.Arena2PathStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // ContentViewStatusLabel
+            // 
+            this.ContentViewStatusLabel.Image = global::DaggerfallModelling.Properties.Resources.information;
+            this.ContentViewStatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.ContentViewStatusLabel.Name = "ContentViewStatusLabel";
+            this.ContentViewStatusLabel.Size = new System.Drawing.Size(16, 17);
+            this.ContentViewStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // SearchLabel
+            // 
+            this.SearchLabel.Image = global::DaggerfallModelling.Properties.Resources.find;
+            this.SearchLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.SearchLabel.Location = new System.Drawing.Point(5, 9);
+            this.SearchLabel.Name = "SearchLabel";
+            this.SearchLabel.Size = new System.Drawing.Size(18, 13);
+            this.SearchLabel.TabIndex = 0;
+            // 
             // ExteriorModeToolStripButton
             // 
             this.ExteriorModeToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -256,34 +466,6 @@
             this.DungeonModeToolStripButton.Text = "Dungeon Mode";
             this.DungeonModeToolStripButton.Click += new System.EventHandler(this.DungeonModeToolStripButton_Click);
             // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // BlockNameToolStripLabel
-            // 
-            this.BlockNameToolStripLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.BlockNameToolStripLabel.Name = "BlockNameToolStripLabel";
-            this.BlockNameToolStripLabel.Size = new System.Drawing.Size(97, 22);
-            this.BlockNameToolStripLabel.Text = "BlockName [0, 0]";
-            this.BlockNameToolStripLabel.Visible = false;
-            // 
-            // SearchPaneToolStrip
-            // 
-            this.SearchPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.SetArena2ToolStripButton,
-            this.toolStripSeparator1,
-            this.SearchModelsToolStripButton,
-            this.SearchBlocksToolStripButton,
-            this.SearchLocationsToolStripButton,
-            this.toolStripSeparator2});
-            this.SearchPaneToolStrip.Location = new System.Drawing.Point(0, 0);
-            this.SearchPaneToolStrip.Name = "SearchPaneToolStrip";
-            this.SearchPaneToolStrip.Size = new System.Drawing.Size(320, 25);
-            this.SearchPaneToolStrip.TabIndex = 0;
-            this.SearchPaneToolStrip.Text = "toolStrip1";
-            // 
             // SetArena2ToolStripButton
             // 
             this.SetArena2ToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -293,11 +475,6 @@
             this.SetArena2ToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.SetArena2ToolStripButton.Text = "Set Arena2 Folder";
             this.SetArena2ToolStripButton.Click += new System.EventHandler(this.SetArena2ToolStripButton_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
             // SearchModelsToolStripButton
             // 
@@ -329,99 +506,74 @@
             this.SearchLocationsToolStripButton.Text = "Search Locations";
             this.SearchLocationsToolStripButton.Click += new System.EventHandler(this.SearchLocationsToolStripButton_Click);
             // 
-            // toolStripSeparator2
+            // QuickSearchDropDownButton
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.QuickSearchDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.QuickSearchDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.allModelsToolStripMenuItem,
+            this.toolStripSeparator9,
+            this.allBlocksToolStripMenuItem,
+            this.exteriorBlocksToolStripMenuItem,
+            this.dungeonBlocksToolStripMenuItem,
+            this.toolStripSeparator12,
+            this.allLocationsToolStripMenuItem,
+            this.toolStripSeparator13,
+            this.citiesToolStripMenuItem,
+            this.dungeonsToolStripMenuItem,
+            this.graveyardsToolStripMenuItem,
+            this.homesToolStripMenuItem,
+            this.religionsToolStripMenuItem,
+            this.tavernsToolStripMenuItem});
+            this.QuickSearchDropDownButton.Image = global::DaggerfallModelling.Properties.Resources.magnifier;
+            this.QuickSearchDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.QuickSearchDropDownButton.Name = "QuickSearchDropDownButton";
+            this.QuickSearchDropDownButton.Size = new System.Drawing.Size(29, 22);
+            this.QuickSearchDropDownButton.Text = "Quick Search";
             // 
-            // TimeOfDayPanel
+            // allModelsToolStripMenuItem
             // 
-            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.TimeOfDayPanel.BackColor = System.Drawing.SystemColors.Control;
-            this.TimeOfDayPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.TimeOfDayPanel.Controls.Add(this.label2);
-            this.TimeOfDayPanel.Controls.Add(this.label1);
-            this.TimeOfDayPanel.Controls.Add(this.pictureBox3);
-            this.TimeOfDayPanel.Controls.Add(this.pictureBox1);
-            this.TimeOfDayPanel.Controls.Add(this.pictureBox2);
-            this.TimeOfDayPanel.Controls.Add(this.TimeOfDayTrackBar);
-            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 658);
-            this.TimeOfDayPanel.Name = "TimeOfDayPanel";
-            this.TimeOfDayPanel.Size = new System.Drawing.Size(852, 55);
-            this.TimeOfDayPanel.TabIndex = 7;
-            this.TimeOfDayPanel.Visible = false;
+            this.allModelsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.model_find;
+            this.allModelsToolStripMenuItem.Name = "allModelsToolStripMenuItem";
+            this.allModelsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allModelsToolStripMenuItem.Text = "All Models";
             // 
-            // pictureBox3
+            // toolStripSeparator9
             // 
-            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox3.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox3.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
-            this.pictureBox3.Location = new System.Drawing.Point(831, 29);
-            this.pictureBox3.Name = "pictureBox3";
-            this.pictureBox3.Size = new System.Drawing.Size(16, 16);
-            this.pictureBox3.TabIndex = 6;
-            this.pictureBox3.TabStop = false;
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(157, 6);
             // 
-            // pictureBox1
+            // allBlocksToolStripMenuItem
             // 
-            this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox1.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 29);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(16, 16);
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
+            this.allBlocksToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.block_find;
+            this.allBlocksToolStripMenuItem.Name = "allBlocksToolStripMenuItem";
+            this.allBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allBlocksToolStripMenuItem.Text = "All Blocks";
             // 
-            // pictureBox2
+            // exteriorBlocksToolStripMenuItem
             // 
-            this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox2.Image = global::DaggerfallModelling.Properties.Resources.bullet_orange;
-            this.pictureBox2.Location = new System.Drawing.Point(417, 29);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(16, 16);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.pictureBox2.TabIndex = 5;
-            this.pictureBox2.TabStop = false;
+            this.exteriorBlocksToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.block_find;
+            this.exteriorBlocksToolStripMenuItem.Name = "exteriorBlocksToolStripMenuItem";
+            this.exteriorBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.exteriorBlocksToolStripMenuItem.Text = "Exterior Blocks";
             // 
-            // TimeOfDayTrackBar
+            // dungeonBlocksToolStripMenuItem
             // 
-            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.Control;
-            this.TimeOfDayTrackBar.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TimeOfDayTrackBar.LargeChange = 4;
-            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(0, 0);
-            this.TimeOfDayTrackBar.Maximum = 63;
-            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(850, 45);
-            this.TimeOfDayTrackBar.TabIndex = 3;
-            this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.TimeOfDayTrackBar.Value = 30;
-            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            this.dungeonBlocksToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.block_find;
+            this.dungeonBlocksToolStripMenuItem.Name = "dungeonBlocksToolStripMenuItem";
+            this.dungeonBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.dungeonBlocksToolStripMenuItem.Text = "Dungeon Blocks";
             // 
-            // ViewPaneToolStrip
+            // toolStripSeparator12
             // 
-            this.ViewPaneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AboutToolStripButton,
-            this.ToggleSearchPaneToolStripButton,
-            this.toolStripSeparator8,
-            this.ViewThumbsToolStripButton,
-            this.ViewSingleModelToolStripButton,
-            this.ViewBlockToolStripButton,
-            this.ViewLocationToolStripButton,
-            this.toolStripSeparator4,
-            this.ExportModelToolStripButton,
-            this.toolStripSeparator7,
-            this.TopDownCameraToolStripButton,
-            this.FreeCameraToolStripButton,
-            this.toolStripSeparator5,
-            this.OptionsDropDownButton,
-            this.toolStripSeparator6});
-            this.ViewPaneToolStrip.Location = new System.Drawing.Point(0, 0);
-            this.ViewPaneToolStrip.Name = "ViewPaneToolStrip";
-            this.ViewPaneToolStrip.Size = new System.Drawing.Size(852, 25);
-            this.ViewPaneToolStrip.TabIndex = 0;
-            this.ViewPaneToolStrip.Text = "toolStrip2";
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(157, 6);
+            // 
+            // allLocationsToolStripMenuItem
+            // 
+            this.allLocationsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.location_find;
+            this.allLocationsToolStripMenuItem.Name = "allLocationsToolStripMenuItem";
+            this.allLocationsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allLocationsToolStripMenuItem.Text = "All Locations";
             // 
             // AboutToolStripButton
             // 
@@ -445,11 +597,6 @@
             this.ToggleSearchPaneToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.ToggleSearchPaneToolStripButton.Text = "Toggle Search Pane";
             this.ToggleSearchPaneToolStripButton.Click += new System.EventHandler(this.ToggleSearchPaneToolStripButton_Click);
-            // 
-            // toolStripSeparator8
-            // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(6, 25);
             // 
             // ViewThumbsToolStripButton
             // 
@@ -491,11 +638,6 @@
             this.ViewLocationToolStripButton.Text = "View Location";
             this.ViewLocationToolStripButton.Click += new System.EventHandler(this.ViewLocationToolStripButton_Click);
             // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
             // ExportModelToolStripButton
             // 
             this.ExportModelToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -505,11 +647,6 @@
             this.ExportModelToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.ExportModelToolStripButton.Text = "Export Model";
             this.ExportModelToolStripButton.Click += new System.EventHandler(this.ExportModelToolStripButton_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
             // 
             // TopDownCameraToolStripButton
             // 
@@ -530,11 +667,6 @@
             this.FreeCameraToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.FreeCameraToolStripButton.Text = "Free Camera";
             this.FreeCameraToolStripButton.Click += new System.EventHandler(this.FreeCameraToolStripButton_Click);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
             // OptionsDropDownButton
             // 
@@ -623,85 +755,38 @@
             this.AdjustSkyToolStripMenuItem.Text = "Adjust Sky";
             this.AdjustSkyToolStripMenuItem.Click += new System.EventHandler(this.AdjustSkyToolStripMenuItem_Click);
             // 
-            // toolStripSeparator6
+            // pictureBox3
             // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox3.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox3.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
+            this.pictureBox3.Location = new System.Drawing.Point(831, 29);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox3.TabIndex = 6;
+            this.pictureBox3.TabStop = false;
             // 
-            // ContentPanel
+            // pictureBox1
             // 
-            this.ContentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.ContentPanel.BackColor = System.Drawing.Color.Gray;
-            this.ContentPanel.Controls.Add(this.TimeOfDayPanel);
-            this.ContentPanel.Controls.Add(this.ContentViewer);
-            this.ContentPanel.Location = new System.Drawing.Point(0, 25);
-            this.ContentPanel.Name = "ContentPanel";
-            this.ContentPanel.Size = new System.Drawing.Size(862, 737);
-            this.ContentPanel.TabIndex = 2;
+            this.pictureBox1.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox1.Image = global::DaggerfallModelling.Properties.Resources.bullet_black;
+            this.pictureBox1.Location = new System.Drawing.Point(3, 29);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox1.TabIndex = 4;
+            this.pictureBox1.TabStop = false;
             // 
-            // MainStatusStrip
+            // pictureBox2
             // 
-            this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Arena2PathStatusLabel,
-            this.ContentViewStatusLabel,
-            this.toolStripStatusLabel2});
-            this.MainStatusStrip.Location = new System.Drawing.Point(0, 740);
-            this.MainStatusStrip.Name = "MainStatusStrip";
-            this.MainStatusStrip.Size = new System.Drawing.Size(1184, 22);
-            this.MainStatusStrip.TabIndex = 1;
-            this.MainStatusStrip.Text = "statusStrip1";
-            // 
-            // Arena2PathStatusLabel
-            // 
-            this.Arena2PathStatusLabel.AutoSize = false;
-            this.Arena2PathStatusLabel.Image = global::DaggerfallModelling.Properties.Resources.lightbulb;
-            this.Arena2PathStatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Arena2PathStatusLabel.Name = "Arena2PathStatusLabel";
-            this.Arena2PathStatusLabel.Size = new System.Drawing.Size(328, 17);
-            this.Arena2PathStatusLabel.Text = "Please set your Arena2 folder.";
-            this.Arena2PathStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // ContentViewStatusLabel
-            // 
-            this.ContentViewStatusLabel.Image = global::DaggerfallModelling.Properties.Resources.information;
-            this.ContentViewStatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.ContentViewStatusLabel.Name = "ContentViewStatusLabel";
-            this.ContentViewStatusLabel.Size = new System.Drawing.Size(16, 17);
-            this.ContentViewStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // toolStripStatusLabel2
-            // 
-            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(825, 17);
-            this.toolStripStatusLabel2.Spring = true;
-            // 
-            // MainTips
-            // 
-            this.MainTips.AutoPopDelay = 5000;
-            this.MainTips.InitialDelay = 500;
-            this.MainTips.IsBalloon = true;
-            this.MainTips.ReshowDelay = 100;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(23, 31);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(23, 13);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "AM";
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(804, 31);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(23, 13);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "PM";
+            this.pictureBox2.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
+            this.pictureBox2.Image = global::DaggerfallModelling.Properties.Resources.bullet_orange;
+            this.pictureBox2.Location = new System.Drawing.Point(417, 29);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBox2.TabIndex = 5;
+            this.pictureBox2.TabStop = false;
             // 
             // AutoMapViewer
             // 
@@ -734,6 +819,53 @@
             this.ContentViewer.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
             this.ContentViewer.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(157, 6);
+            // 
+            // citiesToolStripMenuItem
+            // 
+            this.citiesToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.CitiesFilter;
+            this.citiesToolStripMenuItem.Name = "citiesToolStripMenuItem";
+            this.citiesToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.citiesToolStripMenuItem.Text = "Cities";
+            // 
+            // dungeonsToolStripMenuItem
+            // 
+            this.dungeonsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.DungeonsFilter;
+            this.dungeonsToolStripMenuItem.Name = "dungeonsToolStripMenuItem";
+            this.dungeonsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.dungeonsToolStripMenuItem.Text = "Dungeons";
+            // 
+            // graveyardsToolStripMenuItem
+            // 
+            this.graveyardsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.GraveyardsFilter;
+            this.graveyardsToolStripMenuItem.Name = "graveyardsToolStripMenuItem";
+            this.graveyardsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.graveyardsToolStripMenuItem.Text = "Graveyards";
+            // 
+            // religionsToolStripMenuItem
+            // 
+            this.religionsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.ReligionsFilter;
+            this.religionsToolStripMenuItem.Name = "religionsToolStripMenuItem";
+            this.religionsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.religionsToolStripMenuItem.Text = "Religions";
+            // 
+            // tavernsToolStripMenuItem
+            // 
+            this.tavernsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.TavernsFilter;
+            this.tavernsToolStripMenuItem.Name = "tavernsToolStripMenuItem";
+            this.tavernsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.tavernsToolStripMenuItem.Text = "Taverns";
+            // 
+            // homesToolStripMenuItem
+            // 
+            this.homesToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.HomesFilter;
+            this.homesToolStripMenuItem.Name = "homesToolStripMenuItem";
+            this.homesToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.homesToolStripMenuItem.Text = "Homes";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -764,17 +896,17 @@
             this.AutoMapToolStrip.PerformLayout();
             this.SearchPaneToolStrip.ResumeLayout(false);
             this.SearchPaneToolStrip.PerformLayout();
-            this.TimeOfDayPanel.ResumeLayout(false);
-            this.TimeOfDayPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
             this.ViewPaneToolStrip.ResumeLayout(false);
             this.ViewPaneToolStrip.PerformLayout();
             this.ContentPanel.ResumeLayout(false);
+            this.TimeOfDayPanel.ResumeLayout(false);
+            this.TimeOfDayPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
             this.MainStatusStrip.ResumeLayout(false);
             this.MainStatusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -842,6 +974,21 @@
         private System.Windows.Forms.ToolStripMenuItem editorFlatsToolStripMenuItem;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ToolStripDropDownButton QuickSearchDropDownButton;
+        private System.Windows.Forms.ToolStripMenuItem allModelsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem allBlocksToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exteriorBlocksToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dungeonBlocksToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripMenuItem allLocationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem citiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dungeonsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem graveyardsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem homesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem religionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tavernsToolStripMenuItem;
     }
 }
 
