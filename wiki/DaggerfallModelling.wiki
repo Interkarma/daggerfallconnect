@@ -24,7 +24,9 @@ _NOTE:_ Daggerfall Modelling also runs in VMWare Workstation 7.x using the above
  * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=53867a2a-e249-4560-8011-98eb3e799ef2 Microsoft XNA Framework Redistributable 3.1] (Required by all systems).
  * 3D video adapter with Shader Model 2.0 support or higher.
 
-_NOTE:_ It is *very important* Windows XP is using *.NET Framework 2.0 Service Pack 2* or higher. Previous versions of .NET Framework 2.0 contain bugs that will affect Daggerfall Modelling. You can obtain the latest version of .NET using Microsoft Update, or at minimum by installing the version linked above.
+_NOTE #1:_ It is *very important* Windows XP is using *.NET Framework 2.0 Service Pack 2* or higher. Previous versions of .NET Framework 2.0 contain bugs that will affect Daggerfall Modelling. You can obtain the latest version of .NET using Microsoft Update, or at minimum by installing the version linked above.
+
+_NOTE #2:_ If you have a later version of the XNA Framework installed (e.g. 4.0) it is still necessary to install the XNA Framework 3.1 if you do not have it already. This is because new major versions of the XNA Framework do not include previous major versions. They are designed to be installed side-by-side.
 
 Windows Vista and Windows 7 already contain the appropriate .NET Framework 2.0, and it is only necessary to install the XNA Framework Redistributable 3.1 linked above.
 
