@@ -222,6 +222,7 @@
     <None Include="Resources\camera.png" />
     <None Include="Resources\bullet_orange.png" />
     <None Include="Resources\magnifier.png" />
+    <None Include="Resources\wrench.png" />
     <Content Include="thumbnail_background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

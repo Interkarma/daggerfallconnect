@@ -66,6 +66,7 @@
     <Compile Include="DFRegion.cs" />
     <Compile Include="ImageFileReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\DFModTool.cs" />
     <Compile Include="Utility\FaceUVTool.cs" />
     <Compile Include="Utility\FileProxy.cs" />
     <Compile Include="Utility\Vector3.cs" />

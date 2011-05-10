@@ -81,7 +81,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Possible mesh versions enumeration.
         /// </summary>
-        private enum MeshVersions
+        internal enum MeshVersions
         {
             Unknown,
             Version25,
@@ -92,7 +92,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Represents ARCH3D.BSA file header.
         /// </summary>
-        private struct FileHeader
+        internal struct FileHeader
         {
             public long Position;
             public String Version;
@@ -115,7 +115,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Header to unknown object data.
         /// </summary>
-        private struct ObjectDataHeader
+        internal struct ObjectDataHeader
         {
             public Int32[] Numbers;
             public Int16 SubRecordCount;
@@ -125,7 +125,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// A single mesh record.
         /// </summary>
-        private struct MeshRecord
+        internal struct MeshRecord
         {
             public UInt32 ObjectId;
             public MeshVersions Version;
@@ -138,7 +138,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Native plane (face) header.
         /// </summary>
-        private struct PlaneHeader
+        internal struct PlaneHeader
         {
             public long Position;
             public Byte PlanePointCount;
@@ -150,7 +150,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// A texture index.
         /// </summary>
-        private struct TextureIndex
+        internal struct TextureIndex
         {
             public int Archive;
             public int Record;
@@ -159,7 +159,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Native mesh.
         /// </summary>
-        private struct PureMesh
+        internal struct PureMesh
         {
             public TextureIndex[] UniqueTextures;
             public PurePlane[] Planes;
@@ -168,7 +168,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// A single native plane (face).
         /// </summary>
-        private struct PurePlane
+        internal struct PurePlane
         {
             public PlaneHeader Header;
             public TextureIndex TextureIndex;
@@ -217,6 +217,18 @@ namespace DaggerfallConnect.Arena2
         public Arch3dFile(string FilePath, FileUsage Usage, bool ReadOnly)
         {
             Load(FilePath, Usage, ReadOnly);
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        /// <summary>
+        /// Gets mesh record array.
+        /// </summary>
+        internal MeshRecord[] MeshRecords
+        {
+            get { return Records; }
         }
 
         #endregion

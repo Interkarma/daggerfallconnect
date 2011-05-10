@@ -51,12 +51,12 @@ namespace DaggerfallConnect.Utility
         private bool IsReadOnly;
 
         /// <summary>
-        /// Stream to file when using FileUsage.useDisk.
+        /// Stream to file when using FileUsage.UseDisk.
         /// </summary>
         private FileStream FileStream;
 
         /// <summary>
-        /// Byte array when using FileUsage.useMemory.
+        /// Byte array when using FileUsage.UseMemory.
         /// </summary>
         private byte[] FileBuffer;
 
@@ -174,6 +174,14 @@ namespace DaggerfallConnect.Utility
         public Exception LastException
         {
             get { return MyLastException; }
+        }
+
+        /// <summary>
+        /// Gets byte array when using FileUsage.UseMemory.
+        /// </summary>
+        public byte[] Buffer
+        {
+            get { return FileBuffer; }
         }
 
         #endregion

@@ -608,6 +608,9 @@ namespace DaggerfallConnect
         /// </summary>
         public struct RdbBlockDesc
         {
+            /// <summary>Position in stream to find this data.</summary>
+            internal long Position;
+
             /// <summary>RDB block header.</summary>
             internal RdbBlockHeader Header;
 

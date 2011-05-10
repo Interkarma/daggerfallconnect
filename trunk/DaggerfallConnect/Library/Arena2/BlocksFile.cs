@@ -41,7 +41,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Array of decomposed block records.
         /// </summary>
-        private BlockRecord[] Blocks;
+        internal BlockRecord[] Blocks;
 
         /// <summary>
         /// Name to index lookup dictionary.
@@ -55,7 +55,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Represents a single block record.
         /// </summary>
-        private struct BlockRecord
+        internal struct BlockRecord
         {
             public string Name;
             public FileProxy MemoryFile;
@@ -783,6 +783,7 @@ namespace DaggerfallConnect.Arena2
         private void ReadRdbHeader(ref BinaryReader Reader, int Block)
         {
             // Read header
+            Blocks[Block].DFBlock.RdbBlock.Position = Reader.BaseStream.Position;
             Blocks[Block].DFBlock.RdbBlock.Header.Unknown1 = Reader.ReadUInt32();
             Blocks[Block].DFBlock.RdbBlock.Header.Width = Reader.ReadUInt32();
             Blocks[Block].DFBlock.RdbBlock.Header.Height = Reader.ReadUInt32();

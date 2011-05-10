@@ -341,8 +341,20 @@ namespace DaggerfallModelling.ViewControls
             // Only do this when mouse inside bounding sphere
             if (insideBoundingSphere)
             {
-                //renderableBounds.Draw(currentModel.BoundingBox, viewMatrix, projectionMatrix, modelEffect.World);
-                DrawNativeFace(Color.White, subMeshResult, planeResult, modelEffect.World);
+                if (subMeshResult != -1)
+                {
+                    DrawNativeFace(Color.White, subMeshResult, planeResult, modelEffect.World);
+
+                    uint id = currentModel.DFMesh.ObjectId;
+                    int index = host.ModelManager.Arch3dFile.GetRecordIndex(id);
+
+                    host.StatusMessage = string.Format(
+                        "ModelIndex={0}, ModelID={1}, TextureArchive={2}, TextureRecord={3}",
+                        index,
+                        id,
+                        currentModel.DFMesh.SubMeshes[subMeshResult].TextureArchive,
+                        currentModel.DFMesh.SubMeshes[subMeshResult].TextureRecord);
+                }
             }
         }
 
