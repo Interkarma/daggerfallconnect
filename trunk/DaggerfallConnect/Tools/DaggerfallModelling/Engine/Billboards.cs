@@ -59,7 +59,7 @@ namespace DaggerfallModelling.Engine
 
         /// <summary>
         /// Describes a batched billboard for rendering.
-        ///  Used when sorting billboards for correct draw order..
+        ///  Used when sorting billboards for correct draw order.
         /// </summary>
         private class BatchFlat : IComparable<BatchFlat>
         {

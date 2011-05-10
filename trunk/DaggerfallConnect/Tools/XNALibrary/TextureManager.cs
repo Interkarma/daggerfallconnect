@@ -94,8 +94,9 @@ namespace XNALibrary
             /// Ensures texture will be POW2 by extending right and
             ///  bottom dimensions to nearest POW2 boundary. Texture
             ///  will remain at top-left of total area. It is the
-            ///  responsibility of the caller to ensure UVs are
-            ///  modified to correctly address the POW2 texture.
+            ///  responsibility of the caller to ensure model UVs are
+            ///  modified to correctly address valid space in the
+            ///  POW2 texture.
             ///  </summary>
             PowerOfTwo = 2,
 
@@ -110,8 +111,8 @@ namespace XNALibrary
 
             /// <summary>
             /// Pre-multiplies alpha with colour channels. It is the
-            ///  responsibility of the caller to ensure blend functions
-            ///  are set to use pre-multiplied textures.
+            ///  responsibility of the caller to ensure renderer blend
+            ///  states are set to use pre-multiplied textures.
             /// </summary>
             PreMultiplyAlpha = 8,
 

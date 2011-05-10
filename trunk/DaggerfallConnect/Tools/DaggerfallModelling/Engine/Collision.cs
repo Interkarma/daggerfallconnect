@@ -38,8 +38,7 @@ namespace DaggerfallModelling.Engine
         private List<ModelIntersection> cameraModelIntersections;
 
         // Picking
-        private uint? pointerOverModel = null;
-        private Matrix pointerOverModelMatrix = Matrix.Identity;
+        private ModelIntersection pointerOverModel = null;
 
         // Scene
         int sceneLayoutCount = 0;
@@ -52,17 +51,9 @@ namespace DaggerfallModelling.Engine
         /// <summary>
         /// Gets ID of model selected by pointer ray.
         /// </summary>
-        public uint? PointerOverModel
+        public ModelIntersection PointerOverModel
         {
             get { return pointerOverModel; }
-        }
-
-        /// <summary>
-        /// Gets world transform of model selected by pointer ray.
-        /// </summary>
-        public Matrix PointerOverModelMatrix
-        {
-            get { return pointerOverModelMatrix; }
         }
 
         #endregion
@@ -74,12 +65,14 @@ namespace DaggerfallModelling.Engine
         ///  Used when sorting intersections for face-accurate picking
         ///  and collision tests.
         /// </summary>
-        private class ModelIntersection : IComparable<ModelIntersection>
+        public class ModelIntersection : IComparable<ModelIntersection>
         {
             // Variables
             private float? distance;
             private uint? modelId;
-            private Matrix matrix;
+            private Matrix blockMatrix;
+            private Matrix modelMatrix;
+            private BlockManager.BlockModel? blockModel;
 
             // Properties
             public float? Distance
@@ -92,24 +85,43 @@ namespace DaggerfallModelling.Engine
                 get { return modelId; }
                 set { modelId = value; }
             }
-            public Matrix Matrix
+            public Matrix BlockMatrix
             {
-                get { return matrix; }
-                set { matrix = value; }
+                get { return blockMatrix; }
+                set { blockMatrix = value; }
+            }
+            public Matrix ModelMatrix
+            {
+                get { return modelMatrix; }
+                set { modelMatrix = value; }
+            }
+            public BlockManager.BlockModel? BlockModel
+            {
+                get { return blockModel; }
+                set { blockModel = value; }
             }
 
             // Constructors
             public ModelIntersection()
             {
+                this.blockModel = null;
                 this.distance = null;
                 this.modelId = null;
-                this.matrix = Matrix.Identity;
+                this.blockMatrix = Matrix.Identity;
+                this.modelMatrix = Matrix.Identity;
             }
-            public ModelIntersection(float? distance, uint? modelId, Matrix matrix)
+            public ModelIntersection(
+                BlockManager.BlockModel? blockModel,
+                float? distance,
+                uint? modelId,
+                Matrix blockMatrix,
+                Matrix modelMatrix)
             {
+                this.blockModel = blockModel;
                 this.distance = distance;
                 this.modelId = modelId;
-                this.matrix = matrix;
+                this.blockMatrix = blockMatrix;
+                this.modelMatrix = modelMatrix;
             }
 
             // IComparable
@@ -275,8 +287,10 @@ namespace DaggerfallModelling.Engine
                     {
                         // Add to pointer-model intersection list
                         ModelIntersection mi = new ModelIntersection(
+                            modelInfo,
                             intersectDistance,
                             modelInfo.ModelId,
+                            blockTransform,
                             modelTransform);
                         pointerModelIntersections.Add(mi);
                     }
@@ -293,8 +307,10 @@ namespace DaggerfallModelling.Engine
 
                         // Add to camera-model intersection list
                         ModelIntersection mi = new ModelIntersection(
+                            null,
                             intersectDistance,
                             modelInfo.ModelId,
+                            blockTransform,
                             modelTransform);
                         cameraModelIntersections.Add(mi);
                     }
@@ -333,7 +349,7 @@ namespace DaggerfallModelling.Engine
                 int subMeshResult, planeResult;
                 intersection = Intersection.RayIntersectsDFMesh(
                     host.MouseRay,
-                    mi.Matrix,
+                    mi.ModelMatrix,
                     ref model,
                     out insideBoundingSphere,
                     out subMeshResult,
@@ -349,17 +365,11 @@ namespace DaggerfallModelling.Engine
                 }
             }
 
-            // Store model ID and matrix of model under mouse
+            // Store closest intersection
             if (closestModelIntersection != null)
-            {
-                pointerOverModel = closestModelIntersection.ModelID;
-                pointerOverModelMatrix = closestModelIntersection.Matrix;
-            }
+                pointerOverModel = closestModelIntersection;
             else
-            {
                 pointerOverModel = null;
-                pointerOverModelMatrix = Matrix.Identity;
-            }
         }
 
         /// <summary>
@@ -391,7 +401,7 @@ namespace DaggerfallModelling.Engine
                 motionRay.Direction = Vector3.Normalize(step);
                 distance = Intersection.RayIntersectsDFMesh(
                     motionRay,
-                    mi.Matrix,
+                    mi.ModelMatrix,
                     ref model,
                     out subMeshResult,
                     out planeResult);
@@ -414,7 +424,7 @@ namespace DaggerfallModelling.Engine
                     sphereResult = intersection.SphereIntersectDFMesh(
                         camera.BoundingSphere.Center,
                         camera.BoundingSphere.Radius,
-                        mi.Matrix,
+                        mi.ModelMatrix,
                         ref model);
 
                     // Refine next camera position using sphere intersection
@@ -422,7 +432,7 @@ namespace DaggerfallModelling.Engine
                     {
                         distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
                         float difference = camera.BodyRadius - distance.Value;
-                        Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.Matrix);
+                        Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.ModelMatrix);
                         Matrix m = Matrix.CreateTranslation(normal * difference);
                         camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
                     }
@@ -433,7 +443,7 @@ namespace DaggerfallModelling.Engine
                 downRay.Direction = Vector3.Down;
                 distance = Intersection.RayIntersectsDFMesh(
                     downRay,
-                    mi.Matrix,
+                    mi.ModelMatrix,
                     ref model,
                     out subMeshResult,
                     out planeResult);

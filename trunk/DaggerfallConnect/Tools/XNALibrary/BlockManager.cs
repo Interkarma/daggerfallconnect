@@ -77,6 +77,9 @@ namespace XNALibrary
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
 
+            /// <summary>True if this model is a door which can open and close.</summary>
+            public bool IsMovingDoor;
+
             /// <summary>Local transform to model and bounding volume.</summary>
             public Matrix Matrix;
 
@@ -268,6 +271,11 @@ namespace XNALibrary
 
         #region Content Loading Methods
 
+        /// <summary>
+        /// Loads block content.
+        /// </summary>
+        /// <param name="name">Name of block.</param>
+        /// <returns>BlockData.</returns>
         private BlockData LoadBlockData(string name)
         {
             // Get block data
@@ -298,6 +306,13 @@ namespace XNALibrary
             return block;
         }
 
+        /// <summary>
+        /// Stubs RMB block layout with coarse bounding volumes
+        ///  and links to resources. Raises update flag so this
+        ///  information can be loaded properly when convenient to
+        ///  the application.
+        /// </summary>
+        /// <param name="block">BlockData.</param>
         private void StubRmbBlockLayout(ref BlockData block)
         {
             // Create bounding box for this block.
@@ -413,6 +428,13 @@ namespace XNALibrary
             }
         }
 
+        /// <summary>
+        /// Stubs RDB block layout with coarse bounding volumes
+        ///  and links to resources. Raises update flag so this
+        ///  information can be loaded properly when convenient to
+        ///  the application.
+        /// </summary>
+        /// <param name="block"></param>
         private void StubRdbBlockLayout(ref BlockData block)
         {
             float degreesX, degreesY, degreesZ;
@@ -451,6 +473,7 @@ namespace XNALibrary
                         case DFBlock.RdbResourceTypes.Model:
                             // Get model reference index, then id, and finally index
                             int modelReference = obj.Resources.ModelResource.ModelIndex;
+                            string desc = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].Description;
                             uint modelId = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
 
                             // Get rotation matrix for each axis
@@ -471,6 +494,7 @@ namespace XNALibrary
                             BlockModel modelInfo = new BlockModel();
                             modelInfo.ModelId = modelId;
                             modelInfo.Matrix = rotation * translation;
+                            modelInfo.IsMovingDoor = (desc == "DOR") ? true : false;
                             block.Models.Add(modelInfo);
                             break;
 

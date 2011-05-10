@@ -294,7 +294,7 @@ namespace DaggerfallModelling.Engine
         }
 
         /// <summary>
-        /// Determines if specified scene option flags are been set.
+        /// Determines if specified scene option flags are set.
         /// </summary>
         /// <param name="flags">SceneOptionFlags.</param>
         /// <returns>True if flags set.</returns>
@@ -769,8 +769,7 @@ namespace DaggerfallModelling.Engine
         }
 
         /// <summary>
-        /// Step through scene batching visible triangles
-        ///  and testing mouse ray intersections.
+        /// Step through scene batching visible triangles.
         /// </summary>
         private void BuildBatches()
         {
@@ -847,11 +846,11 @@ namespace DaggerfallModelling.Engine
                 // Batch ground plane
                 if (HasSceneOptionFlags(SceneOptionFlags.GroundPlane))
                 {
-                    // Translate ground down a few units to reduce
-                    // z-fighting with other ground-aligned planes
+                    // Translate ground down to reduce z-fighting
+                    // with other ground-aligned planes
                     Matrix groundTransform = blockTransform * Matrix.CreateTranslation(0, groundHeight, 0);
 
-                    // Draw ground plane
+                    // Batch ground plane
                     BatchGroundPlane(ref block, ref groundTransform);
                 }
             }
@@ -907,10 +906,6 @@ namespace DaggerfallModelling.Engine
                 flatTransform = Matrix.CreateTranslation(flat.Position) * blockTransform;
                 flatBounds.Center = Vector3.Transform(flat.BoundingSphere.Center, flatTransform);
                 flatBounds.Radius = flat.BoundingSphere.Radius;
-
-                // TEST: Draw bounds
-                //renderableBoundingSphere.Color = Color.Red;
-                //renderableBoundingSphere.Draw(flatBounds, ActiveCamera.View, ActiveCamera.Projection, Matrix.Identity);
 
                 // Test bounds against camera frustum
                 if (!camera.BoundingFrustum.Intersects(flatBounds))

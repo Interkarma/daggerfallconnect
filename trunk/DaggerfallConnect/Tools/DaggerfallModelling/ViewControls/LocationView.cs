@@ -232,8 +232,10 @@ namespace DaggerfallModelling.ViewControls
                 cameraVelocity == Vector3.Zero &&
                 host.MouseInClientArea)
             {
-                ModelManager.ModelData model = host.ModelManager.GetModelData(collisionManager.PointerOverModel.Value);
-                DrawNativeMesh(Color.Gold, ref model, collisionManager.PointerOverModelMatrix);
+                Collision.ModelIntersection mi = collisionManager.PointerOverModel;
+                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
+                Color color = (mi.BlockModel.Value.IsMovingDoor) ? Color.Red : Color.Gold;
+                DrawNativeMesh(color, ref model, mi.ModelMatrix);
             }
 
             // Draw billboards
@@ -338,7 +340,7 @@ namespace DaggerfallModelling.ViewControls
         {
             if (collisionManager.PointerOverModel != null)
             {
-                host.ShowModelView(collisionManager.PointerOverModel, Climate);
+                host.ShowModelView(collisionManager.PointerOverModel.ModelID, Climate);
             }
         }
 
