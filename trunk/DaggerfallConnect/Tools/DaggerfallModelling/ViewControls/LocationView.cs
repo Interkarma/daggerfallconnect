@@ -44,6 +44,9 @@ namespace DaggerfallModelling.ViewControls
 
         // Appearance
         private Color backgroundColor = Color.LightGray;
+        private Color modelHighlightColor = Color.Gold;
+        private Color doorHighlightColor = Color.Red;
+        private Color actionHighlightColor = Color.CornflowerBlue;
 
         // XNA
         private VertexDeclaration modelVertexDeclaration;
@@ -213,7 +216,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Just clear device if no models batched.
             // This prevents other scene elements being drawn
-            // before environment.
+            // without an environment.
             if (sceneManager.ModelBatchCount == 0)
             {
                 host.GraphicsDevice.Clear(backgroundColor);
@@ -227,16 +230,8 @@ namespace DaggerfallModelling.ViewControls
             SetRenderStates();
             DrawBatches();
 
-            // Highlight model under mouse
-            if (collisionManager.PointerOverModel != null &&
-                cameraVelocity == Vector3.Zero &&
-                host.MouseInClientArea)
-            {
-                Collision.ModelIntersection mi = collisionManager.PointerOverModel;
-                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
-                Color color = (mi.BlockModel.Value.IsMovingDoor) ? Color.Red : Color.Gold;
-                DrawNativeMesh(color, ref model, mi.ModelMatrix);
-            }
+            // Highlight model under pointer
+            HighlightModelUnderPointer();
 
             // Draw billboards
             billboardManager.Draw();
@@ -634,6 +629,84 @@ namespace DaggerfallModelling.ViewControls
 
                 modelEffect.CurrentTechnique.Passes[0].End();
                 modelEffect.End();
+            }
+        }
+
+        /// <summary>
+        /// Highlights model under pointer.
+        ///  Can differentiate between model types enough to
+        ///  recognise doors, switches, etc.
+        /// </summary>
+        private void HighlightModelUnderPointer()
+        {
+            // Highlight model under mouse/controller
+            if (collisionManager.PointerOverModel != null &&
+                cameraVelocity == Vector3.Zero &&
+                host.MouseInClientArea)
+            {
+                Collision.ModelIntersection mi = collisionManager.PointerOverModel;
+                ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
+                
+                // Highlight action models
+                if (mi.BlockModel.HasActionRecord)
+                {
+                    HighlightActionChain(ref mi, ref model);
+                }
+                else
+                {
+                    // Highlight model based on description
+                    switch (mi.BlockModel.Description)
+                    {
+                        case "DOR":     // Door
+                            DrawNativeMesh(doorHighlightColor, ref model, mi.ModelMatrix);
+                            break;
+                        default:
+                            DrawNativeMesh(modelHighlightColor, ref model, mi.ModelMatrix);
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Highlights a chain of models linked together by action records.
+        ///  Only specific action-enabled models are supported as many actions
+        ///  (e.g. casting a spell on the player) have no meaning here.
+        /// </summary>
+        private void HighlightActionChain(ref Collision.ModelIntersection mi, ref ModelManager.ModelData model)
+        {
+            // Reject model if it does not have an action record
+            // or is a child action of another record. Just draw
+            // normal highlight instead.
+            if (!mi.BlockModel.HasActionRecord ||
+                mi.BlockModel.RdbObject.Resources.ModelResource.ActionResource.ParentObjectIndex != -1)
+            {
+                DrawNativeMesh(modelHighlightColor, ref model, mi.ModelMatrix);
+                return;
+            }
+
+            // Highlight parent object selected in scene
+            DrawNativeMesh(actionHighlightColor, ref model, mi.ModelMatrix);
+
+            // Find and highlight any child objects
+            int key = mi.BlockModel.TargetObjectKey;
+            BlockManager.BlockData block = mi.BlockModel.Parent;
+            ModelManager.ModelData childModel;
+            while (key > 0)
+            {
+                // Check key exists
+                if (!block.ModelLookup.ContainsKey(key))
+                    break;
+
+                // Get index in model list
+                int index = block.ModelLookup[key];
+
+                // Highlight this model
+                childModel = host.ModelManager.GetModelData(block.Models[index].ModelId);
+                DrawNativeMesh(actionHighlightColor, ref childModel, block.Models[index].Matrix * mi.BlockMatrix);
+
+                // Get next key
+                key = block.Models[index].TargetObjectKey;
             }
         }
 

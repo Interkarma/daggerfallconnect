@@ -892,37 +892,23 @@ namespace DaggerfallConnect.Arena2
             // Go to root of object linked list
             Reader.BaseStream.Position = ObjectRoot.RootOffset;
 
-            // Read objects in list
+            // Iterate through RDB objects linked list to build managed
+            // array and collect baseline information about all objects.
             int index = 0;
             while (true)
             {
                 // Read object data
+                ObjectRoot.RdbObjects[index].This = (Int32)Reader.BaseStream.Position;
                 ObjectRoot.RdbObjects[index].Next = Reader.ReadInt32();
                 ObjectRoot.RdbObjects[index].Previous = Reader.ReadInt32();
+                ObjectRoot.RdbObjects[index].Index = index;
                 ObjectRoot.RdbObjects[index].XPos = Reader.ReadInt32();
                 ObjectRoot.RdbObjects[index].YPos = Reader.ReadInt32();
                 ObjectRoot.RdbObjects[index].ZPos = Reader.ReadInt32();
                 ObjectRoot.RdbObjects[index].Type = (DFBlock.RdbResourceTypes)Reader.ReadByte();
                 ObjectRoot.RdbObjects[index].ResourceOffset = Reader.ReadUInt32();
-
-                // Read resource-specific data
-                switch (ObjectRoot.RdbObjects[index].Type)
-                {
-                    case DFBlock.RdbResourceTypes.Model:
-                        ReadRdbModelResource(ref Reader, ref ObjectRoot.RdbObjects[index]);
-                        break;
-
-                    case DFBlock.RdbResourceTypes.Flat:
-                        ReadRdbFlatResource(ref Reader, ref ObjectRoot.RdbObjects[index]);
-                        break;
-
-                    case DFBlock.RdbResourceTypes.Light:
-                        ReadRdbLightResource(ref Reader, ref ObjectRoot.RdbObjects[index]);
-                        break;
-
-                    default:
-                        throw (new Exception("Unknown RDB resource type encountered."));
-                }
+                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.ParentObjectIndex = -1;
+                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.TargetObjectIndex = -1;
 
                 // Exit if finished
                 if (ObjectRoot.RdbObjects[index].Next < 0)
@@ -934,9 +920,32 @@ namespace DaggerfallConnect.Arena2
                 // Increment index
                 index++;
             }
+
+            // Iterate through managed array to read specific resources for each object
+            for (int i = 0; i < ObjectRoot.RdbObjects.Length; i++)
+            {
+                // Read resource-specific data
+                switch (ObjectRoot.RdbObjects[i].Type)
+                {
+                    case DFBlock.RdbResourceTypes.Model:
+                        ReadRdbModelResource(ref Reader, ref ObjectRoot.RdbObjects[i], ObjectRoot.RdbObjects);
+                        break;
+
+                    case DFBlock.RdbResourceTypes.Flat:
+                        ReadRdbFlatResource(ref Reader, ref ObjectRoot.RdbObjects[i]);
+                        break;
+
+                    case DFBlock.RdbResourceTypes.Light:
+                        ReadRdbLightResource(ref Reader, ref ObjectRoot.RdbObjects[i]);
+                        break;
+
+                    default:
+                        throw (new Exception("Unknown RDB resource type encountered."));
+                }
+            }
         }
 
-        private void ReadRdbModelResource(ref BinaryReader Reader, ref DFBlock.RdbObject RdbObject)
+        private void ReadRdbModelResource(ref BinaryReader Reader, ref DFBlock.RdbObject RdbObject, DFBlock.RdbObject[] RdbObjects)
         {
             // Go to resource offset
             Reader.BaseStream.Position = RdbObject.ResourceOffset;
@@ -952,10 +961,10 @@ namespace DaggerfallConnect.Arena2
 
             // Read action data
             if (RdbObject.Resources.ModelResource.ActionOffset > 0)
-                ReadRdbModelActionRecords(ref Reader, ref RdbObject);
+                ReadRdbModelActionRecords(ref Reader, ref RdbObject, RdbObjects);
         }
 
-        private void ReadRdbModelActionRecords(ref BinaryReader Reader, ref DFBlock.RdbObject RdbObject)
+        private void ReadRdbModelActionRecords(ref BinaryReader Reader, ref DFBlock.RdbObject RdbObject, DFBlock.RdbObject[] RdbObjects)
         {
             // Go to action offset
             Reader.BaseStream.Position = RdbObject.Resources.ModelResource.ActionOffset;
@@ -966,6 +975,25 @@ namespace DaggerfallConnect.Arena2
             RdbObject.Resources.ModelResource.ActionResource.Magnitude = Reader.ReadUInt16();
             RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset = Reader.ReadInt32();
             RdbObject.Resources.ModelResource.ActionResource.ActionType = (DFBlock.RdbActionType)Reader.ReadByte();
+
+            // Exit if no action target
+            if (RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset < 0)
+                return;
+
+            // Find index of action offset in object array
+            int index = 0;
+            foreach (DFBlock.RdbObject obj in RdbObjects)
+            {
+                if (obj.This ==
+                    RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset)
+                {
+                    // Set target and and parent indices
+                    RdbObject.Resources.ModelResource.ActionResource.TargetObjectIndex = index;
+                    RdbObjects[index].Resources.ModelResource.ActionResource.ParentObjectIndex = RdbObject.Index;
+                    break;
+                }
+                index++;
+            }
         }
 
         private void ReadRdbFlatResource(ref BinaryReader Reader, ref DFBlock.RdbObject RdbObject)

@@ -710,11 +710,17 @@ namespace DaggerfallConnect
         /// </summary>
         public struct RdbObject
         {
+            /// <summary>Offset of this object from start of RDB record. Not required unless you are extending the block reader.</summary>
+            internal Int32 This;
+
             /// <summary>Offset to next object from start of RDB record. Not required unless you are extending the block reader.</summary>
             internal Int32 Next;
 
             /// <summary>Offset to previous object from start of RDB record. Not required unless you are extending the block reader.</summary>
             internal Int32 Previous;
+
+            /// <summary>Index of this object in the objects array.</summary>
+            public int Index;
 
             /// <summary>X position in 3D space.</summary>
             public Int32 XPos;
@@ -839,9 +845,22 @@ namespace DaggerfallConnect
 
             /// <summary>
             /// Offset from the start of RDB record to an object that is the target of this
-            ///  action. This allows actions to chained together.
+            ///  action. This allows actions to be chained together.
             /// </summary>
-            public Int32 TargetObjectOffset;
+            internal Int32 TargetObjectOffset;
+
+            /// <summary>
+            /// Index of model in RdbObject array that is the parent of this
+            ///  action. This allows action records to be chained backwards
+            ///  to the root action record.
+            /// </summary>
+            public int ParentObjectIndex;
+
+            /// <summary>
+            /// Index of model in RdbObject array that is the target of this
+            ///  action. This allows actions to be chained forwards.
+            /// </summary>
+            public Int32 TargetObjectIndex;
 
             /// <summary>The type of action to perform.</summary>
             public RdbActionType ActionType;

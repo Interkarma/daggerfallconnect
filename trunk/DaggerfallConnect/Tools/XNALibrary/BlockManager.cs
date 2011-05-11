@@ -45,7 +45,7 @@ namespace XNALibrary
         ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
         ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
-        public struct BlockData
+        public class BlockData
         {
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
@@ -62,23 +62,32 @@ namespace XNALibrary
             /// <summary>VertexBuffer of ground plane.</summary>
             public VertexBuffer GroundPlaneVertexBuffer;
 
-            /// <summary>Array of models used to build this block.</summary>
+            /// <summary>List of models used to build this block.</summary>
             public List<BlockModel> Models;
 
-            /// <summary>Array of flats (billboards) populating block.</summary>
+            /// <summary>Dictionary of keys used to lookup models in block.</summary>
+            public Dictionary<int, int> ModelLookup;
+
+            /// <summary>List of flats (billboards) populating block.</summary>
             public List<BlockFlat> Flats;
         }
 
         /// <summary>
         /// Describes a model contained within a block.
         /// </summary>
-        public struct BlockModel
+        public class BlockModel
         {
+            /// <summary>Parent object.</summary>
+            public BlockData Parent;
+
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
 
-            /// <summary>True if this model is a door which can open and close.</summary>
-            public bool IsMovingDoor;
+            /// <summary>Three-character description of this model.</summary>
+            public string Description;
+
+            /// <summary>Copy of RdbObject data.</summary>
+            public DFBlock.RdbObject RdbObject;
 
             /// <summary>Local transform to model and bounding volume.</summary>
             public Matrix Matrix;
@@ -88,12 +97,21 @@ namespace XNALibrary
 
             /// <summary>Bounding sphere containing mesh data.</summary>
             public BoundingSphere BoundingSphere;
+
+            /// <summary>True if this model has an action record offset.</summary>
+            public bool HasActionRecord;
+
+            /// <summary>Key of this object.</summary>
+            public int ObjectKey;
+
+            /// <summary>Key to target object for chained action records.</summary>
+            public int TargetObjectKey;
         }
 
         /// <summary>
         /// Describes a flat object (billboard) contained within the block.
         /// </summary>
-        public struct BlockFlat
+        public class BlockFlat
         {
             /// <summary>Type of flat.</summary>
             public FlatType FlatType;
@@ -328,6 +346,7 @@ namespace XNALibrary
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
             block.Models = new List<BlockModel>(block.DFBlock.RmbBlock.SubRecords.Length);
+            block.ModelLookup = null;
             block.Flats = new List<BlockFlat>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
 
             // Iterate through all subrecords
@@ -356,6 +375,7 @@ namespace XNALibrary
 
                     // Create stub of model info
                     BlockModel modelInfo = new BlockModel();
+                    modelInfo.Parent = block;
                     modelInfo.ModelId = obj.ModelIdNum;
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
                     block.Models.Add(modelInfo);
@@ -375,6 +395,7 @@ namespace XNALibrary
 
                 // Create stub of model info
                 BlockModel modelInfo = new BlockModel();
+                modelInfo.Parent = block;
                 modelInfo.ModelId = obj.ModelIdNum;
                 modelInfo.Matrix = recordMatrix;
                 block.Models.Add(modelInfo);
@@ -452,17 +473,19 @@ namespace XNALibrary
 
             // Create empty model and flat info lists. These will grow as needed.
             block.Models = new List<BlockModel>();
+            block.ModelLookup = new Dictionary<int, int>();
             block.Flats = new List<BlockFlat>();
 
             // Iterate through object groups
-            foreach (DFBlock.RdbObjectRoot group in block.DFBlock.RdbBlock.ObjectRootList)
+            int grpIndex = 0, lstIndex = 0;
+            foreach (var group in block.DFBlock.RdbBlock.ObjectRootList)
             {
                 // Skip empty object groups
                 if (null == group.RdbObjects)
                     continue;
 
                 // Iterate through objects in this group
-                foreach (DFBlock.RdbObject obj in group.RdbObjects)
+                foreach (var obj in group.RdbObjects)
                 {
                     // Create translation matrix
                     translation = Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
@@ -492,10 +515,41 @@ namespace XNALibrary
 
                             // Create stub of model info
                             BlockModel modelInfo = new BlockModel();
+                            modelInfo.Parent = block;
                             modelInfo.ModelId = modelId;
                             modelInfo.Matrix = rotation * translation;
-                            modelInfo.IsMovingDoor = (desc == "DOR") ? true : false;
+                            modelInfo.Description = desc;
+                            modelInfo.RdbObject = obj;
+
+                            // Create key for this object.
+                            // This is only for chained action records to
+                            // reference each other. Only stable within
+                            // group but action records do not reference
+                            // outside of their own group so this acceptible.
+                            modelInfo.ObjectKey = grpIndex * 1000 + obj.Index;
+
+                            // Check action record
+                            if (DFBlock.RdbActionType.None ==
+                                obj.Resources.ModelResource.ActionResource.ActionType)
+                            {
+                                // No action record, no target
+                                modelInfo.HasActionRecord = false;
+                                modelInfo.TargetObjectKey = -1;
+                            }
+                            else
+                            {
+                                // Has action record, may have a target
+                                modelInfo.HasActionRecord = true;
+                                int targetIndex = obj.Resources.ModelResource.ActionResource.TargetObjectIndex;
+                                if (targetIndex > 0)
+                                    modelInfo.TargetObjectKey = grpIndex * 1000 + targetIndex;
+                                else
+                                    modelInfo.TargetObjectKey = -1;
+                            }
+
+                            // Add stub
                             block.Models.Add(modelInfo);
+                            block.ModelLookup.Add(modelInfo.ObjectKey, lstIndex++);
                             break;
 
                         case DFBlock.RdbResourceTypes.Flat:
@@ -519,6 +573,9 @@ namespace XNALibrary
                             break;
                     }
                 }
+
+                // Increment group index
+                grpIndex++;
             }
         }
 
