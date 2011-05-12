@@ -648,14 +648,14 @@ namespace DaggerfallModelling.ViewControls
                 ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
                 
                 // Highlight action models
-                if (mi.BlockModel.HasActionRecord)
+                if (mi.BlockModel.Value.HasActionRecord)
                 {
                     HighlightActionChain(ref mi, ref model);
                 }
                 else
                 {
                     // Highlight model based on description
-                    switch (mi.BlockModel.Description)
+                    switch (mi.BlockModel.Value.Description)
                     {
                         case "DOR":     // Door
                             DrawNativeMesh(doorHighlightColor, ref model, mi.ModelMatrix);
@@ -678,8 +678,8 @@ namespace DaggerfallModelling.ViewControls
             // Reject model if it does not have an action record
             // or is a child action of another record. Just draw
             // normal highlight instead.
-            if (!mi.BlockModel.HasActionRecord ||
-                mi.BlockModel.RdbObject.Resources.ModelResource.ActionResource.ParentObjectIndex != -1)
+            if (!mi.BlockModel.Value.HasActionRecord ||
+                mi.BlockModel.Value.RdbObject.Resources.ModelResource.ActionResource.ParentObjectIndex != -1)
             {
                 DrawNativeMesh(modelHighlightColor, ref model, mi.ModelMatrix);
                 return;
@@ -689,8 +689,8 @@ namespace DaggerfallModelling.ViewControls
             DrawNativeMesh(actionHighlightColor, ref model, mi.ModelMatrix);
 
             // Find and highlight any child objects
-            int key = mi.BlockModel.TargetObjectKey;
-            BlockManager.BlockData block = mi.BlockModel.Parent;
+            int key = mi.BlockModel.Value.ActionRecord.NextObjectKey;
+            BlockManager.BlockData block = mi.BlockModel.Value.Parent;
             ModelManager.ModelData childModel;
             while (key > 0)
             {
@@ -706,7 +706,7 @@ namespace DaggerfallModelling.ViewControls
                 DrawNativeMesh(actionHighlightColor, ref childModel, block.Models[index].Matrix * mi.BlockMatrix);
 
                 // Get next key
-                key = block.Models[index].TargetObjectKey;
+                key = block.Models[index].ActionRecord.NextObjectKey;
             }
         }
 

@@ -54,7 +54,7 @@ namespace XNALibrary
 
         // Camera
         private float eyeHeight = 70f;
-        private float bodyRadius = 20f;
+        private float bodyRadius = 24f;
         private BoundingBox cameraMovementBounds;
         private BoundingSphere cameraBoundingSphere;
         private Vector3 cameraPosition;

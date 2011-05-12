@@ -45,7 +45,7 @@ namespace XNALibrary
         ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
         ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
-        public class BlockData
+        public struct BlockData
         {
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
@@ -65,7 +65,10 @@ namespace XNALibrary
             /// <summary>List of models used to build this block.</summary>
             public List<BlockModel> Models;
 
-            /// <summary>Dictionary of keys used to lookup models in block.</summary>
+            /// <summary>
+            /// Dictionary of keys used to lookup models in block.
+            ///  Primarily used to chain action records together.
+            /// </summary>
             public Dictionary<int, int> ModelLookup;
 
             /// <summary>List of flats (billboards) populating block.</summary>
@@ -75,7 +78,7 @@ namespace XNALibrary
         /// <summary>
         /// Describes a model contained within a block.
         /// </summary>
-        public class BlockModel
+        public struct BlockModel
         {
             /// <summary>Parent object.</summary>
             public BlockData Parent;
@@ -98,20 +101,20 @@ namespace XNALibrary
             /// <summary>Bounding sphere containing mesh data.</summary>
             public BoundingSphere BoundingSphere;
 
-            /// <summary>True if this model has an action record offset.</summary>
-            public bool HasActionRecord;
-
             /// <summary>Key of this object.</summary>
             public int ObjectKey;
 
-            /// <summary>Key to target object for chained action records.</summary>
-            public int TargetObjectKey;
+            /// <summary>True if this model has an action record offset.</summary>
+            public bool HasActionRecord;
+
+            /// <summary>Action record assigned to this object.</summary>
+            public ActionRecord ActionRecord;
         }
 
         /// <summary>
         /// Describes a flat object (billboard) contained within the block.
         /// </summary>
-        public class BlockFlat
+        public struct BlockFlat
         {
             /// <summary>Type of flat.</summary>
             public FlatType FlatType;
@@ -156,6 +159,77 @@ namespace XNALibrary
             Editor,
             /// <summary>Scenery, such as trees and rocks in exterior blocks. Climate-specific.</summary>
             Scenery,
+        }
+
+        /// <summary>
+        /// Represents an action record attached to a model.
+        ///  Only rotations and translations are supported at this time.
+        /// </summary>
+        public struct ActionRecord
+        {
+            /// <summary>
+            /// The rotation to perform around each axis, in radians.
+            /// </summary>
+            public Vector3 Rotation;
+
+            /// <summary>
+            /// The amount of rotation that has been performed so far, in radians.
+            /// </summary>
+            public Vector3 RotationAmount;
+
+            /// <summary>
+            /// The translation to perform on each axis.
+            /// </summary>
+            public Vector3 Translation;
+
+            /// <summary>
+            /// The amount of translation that has been performed so far.
+            /// </summary>
+            public Vector3 TranslationAmount;
+
+            /// <summary>
+            /// The matrix representing the current state of this action.
+            /// </summary>
+            public Matrix Matrix;
+
+            /// <summary>
+            /// Start time for the action.
+            /// </summary>
+            public TimeSpan StartTime;
+
+            /// <summary>
+            /// Time in milliseconds for the actions to complete.
+            /// </summary>
+            public long ActionTime;
+
+            /// <summary>
+            /// The state this action is in.
+            /// </summary>
+            public ActionState ActionState;
+
+            /// <summary>
+            /// Key to next object for chained action records.
+            ///  Or -1 when no further objects.
+            /// </summary>
+            public int NextObjectKey;
+        }
+
+        /// <summary>
+        /// State of an action.
+        /// </summary>
+        public enum ActionState
+        {
+            /// <summary>The action is in the starting position.</summary>
+            Start,
+
+            /// <summary>The action is running forwards (start to end).</summary>
+            RunningForwards,
+
+            /// <summary>The action is running backwards (end to start).</summary>
+            RunningBackwards,
+
+            /// <summary>The action is in the end position.</summary>
+            End,
         }
 
         #endregion
@@ -458,9 +532,7 @@ namespace XNALibrary
         /// <param name="block"></param>
         private void StubRdbBlockLayout(ref BlockData block)
         {
-            float degreesX, degreesY, degreesZ;
-            Matrix rotationX, rotationY, rotationZ;
-            Matrix rotation, translation;
+            Matrix translation;
 
             // Create bounding box for this block.
             // All dungeon blocks are initialised to 2048x2048x2048.
@@ -477,7 +549,7 @@ namespace XNALibrary
             block.Flats = new List<BlockFlat>();
 
             // Iterate through object groups
-            int grpIndex = 0, lstIndex = 0;
+            int groupIndex = 0, listIndex = 0;
             foreach (var group in block.DFBlock.RdbBlock.ObjectRootList)
             {
                 // Skip empty object groups
@@ -494,62 +566,7 @@ namespace XNALibrary
                     switch (obj.Type)
                     {
                         case DFBlock.RdbResourceTypes.Model:
-                            // Get model reference index, then id, and finally index
-                            int modelReference = obj.Resources.ModelResource.ModelIndex;
-                            string desc = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].Description;
-                            uint modelId = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
-
-                            // Get rotation matrix for each axis
-                            degreesX = obj.Resources.ModelResource.XRotation / rotationDivisor;
-                            degreesY = obj.Resources.ModelResource.YRotation / rotationDivisor;
-                            degreesZ = -obj.Resources.ModelResource.ZRotation / rotationDivisor;
-                            rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
-                            rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
-                            rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
-
-                            // Create final rotation matrix
-                            rotation = Matrix.Identity;
-                            rotation *= rotationY;
-                            rotation *= rotationX;
-                            rotation *= rotationZ;
-
-                            // Create stub of model info
-                            BlockModel modelInfo = new BlockModel();
-                            modelInfo.Parent = block;
-                            modelInfo.ModelId = modelId;
-                            modelInfo.Matrix = rotation * translation;
-                            modelInfo.Description = desc;
-                            modelInfo.RdbObject = obj;
-
-                            // Create key for this object.
-                            // This is only for chained action records to
-                            // reference each other. Only stable within
-                            // group but action records do not reference
-                            // outside of their own group so this acceptible.
-                            modelInfo.ObjectKey = grpIndex * 1000 + obj.Index;
-
-                            // Check action record
-                            if (DFBlock.RdbActionType.None ==
-                                obj.Resources.ModelResource.ActionResource.ActionType)
-                            {
-                                // No action record, no target
-                                modelInfo.HasActionRecord = false;
-                                modelInfo.TargetObjectKey = -1;
-                            }
-                            else
-                            {
-                                // Has action record, may have a target
-                                modelInfo.HasActionRecord = true;
-                                int targetIndex = obj.Resources.ModelResource.ActionResource.TargetObjectIndex;
-                                if (targetIndex > 0)
-                                    modelInfo.TargetObjectKey = grpIndex * 1000 + targetIndex;
-                                else
-                                    modelInfo.TargetObjectKey = -1;
-                            }
-
-                            // Add stub
-                            block.Models.Add(modelInfo);
-                            block.ModelLookup.Add(modelInfo.ObjectKey, lstIndex++);
+                            StubRDBModel(obj, ref block, ref translation, groupIndex, listIndex++);
                             break;
 
                         case DFBlock.RdbResourceTypes.Flat:
@@ -575,8 +592,99 @@ namespace XNALibrary
                 }
 
                 // Increment group index
-                grpIndex++;
+                groupIndex++;
             }
+        }
+
+        /// <summary>
+        /// Stubs RDB model which is a little more involved than RMB models.
+        ///  Creates action records from block data and for doors.
+        ///  Does not load model geometry or textures.
+        /// </summary>
+        /// <param name="obj">DFBlock.RdbObject.</param>
+        /// <param name="block">BlockData.</param>
+        /// <param name="translation">Translation matrix.</param>
+        /// <param name="grpIndex">Group index.</param>
+        /// <param name="lstIndex">List index.</param>
+        private void StubRDBModel(
+            DFBlock.RdbObject obj,
+            ref BlockData block,
+            ref Matrix translation,
+            int groupIndex,
+            int listIndex)
+        {
+            float degreesX, degreesY, degreesZ;
+            Matrix rotationX, rotationY, rotationZ;
+            Matrix rotation;
+
+            // Get model reference index, then id, and finally index
+            int modelReference = obj.Resources.ModelResource.ModelIndex;
+            string desc = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].Description;
+            uint modelId = block.DFBlock.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
+
+            // Get rotation matrix for each axis
+            degreesX = obj.Resources.ModelResource.XRotation / rotationDivisor;
+            degreesY = obj.Resources.ModelResource.YRotation / rotationDivisor;
+            degreesZ = -obj.Resources.ModelResource.ZRotation / rotationDivisor;
+            rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
+            rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
+            rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
+
+            // Create final rotation matrix
+            rotation = Matrix.Identity;
+            rotation *= rotationY;
+            rotation *= rotationX;
+            rotation *= rotationZ;
+
+            // Create stub of model info
+            BlockModel modelInfo = new BlockModel();
+            modelInfo.Parent = block;
+            modelInfo.ModelId = modelId;
+            modelInfo.Matrix = rotation * translation;
+            modelInfo.Description = desc;
+            modelInfo.RdbObject = obj;
+
+            // Create key for this object.
+            // This is only for chained action records to
+            // reference each other. Only stable within
+            // group but action records do not reference
+            // outside of their own group so this acceptible.
+            modelInfo.ObjectKey = groupIndex * 1000 + obj.Index;
+
+            // Check action record
+            if (DFBlock.RdbActionType.None ==
+                obj.Resources.ModelResource.ActionResource.ActionType)
+            {
+                // No action record, no target
+                modelInfo.HasActionRecord = false;
+                modelInfo.ActionRecord.NextObjectKey = -1;
+            }
+            else
+            {
+                // Has action record, may have a target
+                modelInfo.HasActionRecord = true;
+                int targetIndex = obj.Resources.ModelResource.ActionResource.TargetObjectIndex;
+                if (targetIndex > 0)
+                    modelInfo.ActionRecord.NextObjectKey = groupIndex * 1000 + targetIndex;
+                else
+                    modelInfo.ActionRecord.NextObjectKey = -1;
+
+                // Create action record
+                CreateRDBActionRecord(ref obj, ref modelInfo);
+            }
+
+            // Add stub
+            block.Models.Add(modelInfo);
+            block.ModelLookup.Add(modelInfo.ObjectKey, listIndex);
+        }
+
+        /// <summary>
+        /// Creates action record for model.
+        /// </summary>
+        /// <param name="obj">DFBlock.RdbObject.</param>
+        /// <param name="modelInfo">BlockModel.</param>
+        private void CreateRDBActionRecord(ref DFBlock.RdbObject obj, ref BlockModel modelInfo)
+        {
         }
 
         #endregion
