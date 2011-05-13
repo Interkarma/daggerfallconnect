@@ -340,6 +340,20 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Called when a key is pressed.
+        /// </summary>
+        /// <param name="e">KeyEventArgs.</param>
+        public override void OnKeyDown(KeyEventArgs e)
+        {
+            // Run action record when user hits activate key
+            if (e.KeyCode == Keys.R ||
+                e.KeyCode == Keys.Enter)
+            {
+                RunActionRecord();
+            }
+        }
+
+        /// <summary>
         /// Called when the view is resumed after being inactive.
         ///  Allows view to perform any layout or other requirements before redraw.
         /// </summary>
@@ -675,6 +689,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         private void HighlightActionChain(ref Collision.ModelIntersection mi, ref ModelManager.ModelData model)
         {
+            /*
             // Reject model if it does not have an action record
             // or is a child action of another record. Just draw
             // normal highlight instead.
@@ -690,7 +705,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Find and highlight any child objects
             int key = mi.BlockModel.Value.ActionRecord.NextObjectKey;
-            BlockManager.BlockData block = mi.BlockModel.Value.Parent;
+            BlockManager.BlockData block = host.BlockManager.LoadBlock(mi.BlockModel.Value.ParentIndex);
             ModelManager.ModelData childModel;
             while (key > 0)
             {
@@ -708,6 +723,7 @@ namespace DaggerfallModelling.ViewControls
                 // Get next key
                 key = block.Models[index].ActionRecord.NextObjectKey;
             }
+            */
         }
 
         #endregion
@@ -721,6 +737,40 @@ namespace DaggerfallModelling.ViewControls
         {
             // Set the message
             host.StatusMessage = currentStatus;
+        }
+
+        /// <summary>
+        /// Executes the action record of a parent action.
+        /// </summary>
+        private void RunActionRecord()
+        {
+            // Exit if nothing under pointer
+            if (collisionManager.PointerOverModel == null)
+                return;
+
+            // Exit if no action or not a parent action
+            if (!collisionManager.PointerOverModel.BlockModel.Value.HasActionRecord ||
+                collisionManager.PointerOverModel.BlockModel.Value.RdbObject.Resources.ModelResource.ActionResource.PreviousObjectIndex != -1)
+            {
+                return;
+            }
+
+            // TEST: Run action directly to end state
+
+            // Get block layout coordinates
+            //BlockManager.BlockModel blockModel = collisionManager.PointerOverModel.BlockModel.Value;
+            
+            //BlockManager.BlockData block = host.BlockManager.LoadBlock(
+            //    collisionManager.PointerOverModel.BlockModel.Value.ParentIndex);
+
+            // Exit if block not updated
+            //if (block.UpdateRequired)
+            //    return;
+
+            // Get model
+            //int key = collisionManager.PointerOverModel.BlockModel.Value.ObjectKey;
+            //int index = block.ModelLookup[key];
+            //BlockManager.BlockModel model = block.Models[index];
         }
 
         #endregion

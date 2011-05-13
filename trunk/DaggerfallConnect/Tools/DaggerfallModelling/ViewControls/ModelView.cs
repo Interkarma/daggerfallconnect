@@ -84,6 +84,8 @@ namespace DaggerfallModelling.ViewControls
         public ModelView(ViewHost host)
             : base(host)
         {
+            currentModel = new ModelManager.ModelData();
+
             // Start in normal camera mode
             CameraMode = CameraModes.None;
             renderableBounds = new RenderableBoundingBox(host.GraphicsDevice);

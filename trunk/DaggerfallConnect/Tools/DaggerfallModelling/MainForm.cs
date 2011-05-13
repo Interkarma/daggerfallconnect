@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DaggerfallModelling.ViewControls;
+using XNALibrary;
 #endregion
 
 namespace DaggerfallModelling

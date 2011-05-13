@@ -247,6 +247,9 @@ namespace DaggerfallConnect.Arena2
             // Set record type
             Blocks[Block].DFBlock.Type = GetBlockType(Block);
 
+            // Set self index
+            Blocks[Block].DFBlock.Index = Block;
+
             // Read record
             if (!Read(Block))
             {
@@ -907,8 +910,8 @@ namespace DaggerfallConnect.Arena2
                 ObjectRoot.RdbObjects[index].ZPos = Reader.ReadInt32();
                 ObjectRoot.RdbObjects[index].Type = (DFBlock.RdbResourceTypes)Reader.ReadByte();
                 ObjectRoot.RdbObjects[index].ResourceOffset = Reader.ReadUInt32();
-                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.ParentObjectIndex = -1;
-                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.TargetObjectIndex = -1;
+                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.PreviousObjectIndex = -1;
+                ObjectRoot.RdbObjects[index].Resources.ModelResource.ActionResource.NextObjectIndex = -1;
 
                 // Exit if finished
                 if (ObjectRoot.RdbObjects[index].Next < 0)
@@ -973,11 +976,11 @@ namespace DaggerfallConnect.Arena2
             RdbObject.Resources.ModelResource.ActionResource.Axis = (DFBlock.RdbActionAxes)Reader.ReadByte();
             RdbObject.Resources.ModelResource.ActionResource.Duration = Reader.ReadUInt16();
             RdbObject.Resources.ModelResource.ActionResource.Magnitude = Reader.ReadUInt16();
-            RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset = Reader.ReadInt32();
+            RdbObject.Resources.ModelResource.ActionResource.NextObjectOffset = Reader.ReadInt32();
             RdbObject.Resources.ModelResource.ActionResource.ActionType = (DFBlock.RdbActionType)Reader.ReadByte();
 
             // Exit if no action target
-            if (RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset < 0)
+            if (RdbObject.Resources.ModelResource.ActionResource.NextObjectOffset < 0)
                 return;
 
             // Find index of action offset in object array
@@ -985,11 +988,11 @@ namespace DaggerfallConnect.Arena2
             foreach (DFBlock.RdbObject obj in RdbObjects)
             {
                 if (obj.This ==
-                    RdbObject.Resources.ModelResource.ActionResource.TargetObjectOffset)
+                    RdbObject.Resources.ModelResource.ActionResource.NextObjectOffset)
                 {
                     // Set target and and parent indices
-                    RdbObject.Resources.ModelResource.ActionResource.TargetObjectIndex = index;
-                    RdbObjects[index].Resources.ModelResource.ActionResource.ParentObjectIndex = RdbObject.Index;
+                    RdbObject.Resources.ModelResource.ActionResource.NextObjectIndex = index;
+                    RdbObjects[index].Resources.ModelResource.ActionResource.PreviousObjectIndex = RdbObject.Index;
                     break;
                 }
                 index++;

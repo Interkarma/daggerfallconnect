@@ -24,7 +24,12 @@ namespace DaggerfallConnect
         #region Structure Variables
 
         /// <summary>
-        /// Name of the block.
+        /// Index of the block in BLOCKS.BSA.
+        /// </summary>
+        public int Index;
+
+        /// <summary>
+        /// Name of the block in BLOCKS.BSA.
         /// </summary>
         public string Name;
 
@@ -240,7 +245,9 @@ namespace DaggerfallConnect
         #region RMB Resources
 
         /// <summary>
-        /// An RMB subrecord has a repeating set of data. The first set is for the exterior of the block (e.g. a tavern exterior) the second is for the interior (e.g. the walls, tables, and chairs inside the tavern).
+        /// An RMB subrecord has a repeating set of data.
+        ///  The first set is for the exterior of the block (e.g. a tavern exterior).
+        ///  The second is for the interior (e.g. the walls, tables, and chairs inside the tavern).
         /// </summary>
         public struct RmbSubRecord
         {
@@ -261,7 +268,8 @@ namespace DaggerfallConnect
         }
 
         /// <summary>
-        /// Defines block resources stored in this subrecord. Check header for how many resources of any type are to be found in this definition.
+        /// Defines block resources stored in this subrecord.
+        ///  Check header for how many resources of any type are to be found in this definition.
         /// </summary>
         public struct RmbBlockData
         {
@@ -844,23 +852,24 @@ namespace DaggerfallConnect
             public UInt16 Magnitude;
 
             /// <summary>
-            /// Offset from the start of RDB record to an object that is the target of this
-            ///  action. This allows actions to be chained together.
+            /// Offset from start of RDB record to an object that should be activated
+            ///  directly after this object. This allows actions to be chained together.
             /// </summary>
-            internal Int32 TargetObjectOffset;
+            internal Int32 NextObjectOffset;
 
             /// <summary>
-            /// Index of model in RdbObject array that is the parent of this
-            ///  action. This allows action records to be chained backwards
-            ///  to the root action record.
+            /// Index of previous model in RdbObject array that linked to this model
+            ///  in an action chain. This allows action records to be chained
+            ///  backwards to the root action.
             /// </summary>
-            public int ParentObjectIndex;
+            public int PreviousObjectIndex;
 
             /// <summary>
-            /// Index of model in RdbObject array that is the target of this
-            ///  action. This allows actions to be chained forwards.
+            /// Index of model in RdbObject array that should be activated
+            ///  directly after this object. This allows actions to be chained
+            ///  forwards through multiple objects.
             /// </summary>
-            public Int32 TargetObjectIndex;
+            public Int32 NextObjectIndex;
 
             /// <summary>The type of action to perform.</summary>
             public RdbActionType ActionType;

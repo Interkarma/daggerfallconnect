@@ -128,6 +128,12 @@ namespace XNALibrary
         /// <param name="worldMatrix">World Matrix.</param>
         public void Draw(Matrix viewMatrix, Matrix projectionMatrix, Matrix worldMatrix)
         {
+            // Set render states
+            graphicsDevice.RenderState.DepthBufferEnable = true;
+            graphicsDevice.RenderState.AlphaBlendEnable = false;
+            graphicsDevice.RenderState.AlphaTestEnable = false;
+            graphicsDevice.RenderState.CullMode = CullMode.CullCounterClockwiseFace;
+
             // Set vertex declaration
             graphicsDevice.VertexDeclaration = lineVertexDeclaration;
 

@@ -22,7 +22,7 @@ namespace XNALibrary
     /// <summary>
     /// Helper class to load and store Daggerfall models for XNA. Does not load textures, but does calc UV coordinates.
     ///  This is to allow developers to apply their own texture logic independent of model loading.
-    ///  Model data is stored as vertex and index arrays, and as vertex and index buffers. Use whichever suits
+    ///  Model data is stored as vertex and index arrays and as vertex and index buffers. Use whichever suits
     ///  your application best. The original geometry is also stored if needed.
     /// </summary>
     public class ModelManager
@@ -41,9 +41,9 @@ namespace XNALibrary
         #region Class Structures
 
         /// <summary>
-        /// Defines mesh data and bounding box.
+        /// Defines mesh data.
         /// </summary>
-        public struct ModelData
+        public class ModelData
         {
             /// <summary>Native geometry as read from ARCH3D.BSA.</summary>
             public DFMesh DFMesh;
@@ -130,6 +130,7 @@ namespace XNALibrary
             // Setup
             graphicsDevice = device;
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
+            arch3dFile.AutoDiscard = true;
             this.arena2Path = arena2Path;
             modelDataDict = new Dictionary<uint, ModelData>();
         }
@@ -143,13 +144,13 @@ namespace XNALibrary
         ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
         ///  flag is set when loading textures with TextureManager.
         /// </summary>
-        /// <param name="key">ID of model.</param>
+        /// <param name="id">ID of model.</param>
         /// <returns>Model object.</returns>
-        public ModelData GetModelData(uint key)
+        public ModelData GetModelData(uint id)
         {
             // Load model data
             ModelData modelData;
-            LoadModelData(key, out modelData);
+            LoadModelData(id, out modelData);
             return modelData;
         }
 
@@ -158,42 +159,42 @@ namespace XNALibrary
         ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
         ///  flag is set when loading textures with TextureManager.
         /// </summary>
-        /// <param name="key">ID of model.</param>
+        /// <param name="id">ID of model.</param>
         /// <param name="model">ModelData out.</param>
         /// <returns>True if successful.</returns>
-        public bool GetModelData(uint key, out ModelData modelData)
+        public bool GetModelData(uint id, out ModelData modelData)
         {
             // Load model data
-            return LoadModelData(key, out modelData);
+            return LoadModelData(id, out modelData);
         }
 
         /// <summary>
-        /// Set model data. Use a unique key to store as different model data
-        ///  or existing key to overwrite model data.
+        /// Set model data. Use a unique id to store as different model data
+        ///  or existing id to overwrite model data.
         /// </summary>
-        /// <param name="key">ID of model.</param>
+        /// <param name="id">ID of model.</param>
         /// <param name="model">Model object.</param>
-        public void SetModelData(uint key, ref ModelData modelData)
+        public void SetModelData(uint id, ref ModelData modelData)
         {
             // Do nothing if not caching models
             if (!cacheModelData)
                 return;
 
             // Add or overwrite cache
-            if (modelDataDict.ContainsKey(key))
-                modelDataDict[key] = modelData;
+            if (modelDataDict.ContainsKey(id))
+                modelDataDict[id] = modelData;
             else
-                modelDataDict.Add(key, modelData);
+                modelDataDict.Add(id, modelData);
         }
 
         /// <summary>
         /// Removes model data from cache.
         /// </summary>
-        /// <param name="key">ID of model.</param>
-        public void RemoveModelData(uint key)
+        /// <param name="id">ID of model.</param>
+        public void RemoveModelData(uint id)
         {
-            if (cacheModelData && modelDataDict.ContainsKey(key))
-                modelDataDict.Remove(key);
+            if (cacheModelData && modelDataDict.ContainsKey(id))
+                modelDataDict.Remove(id);
         }
 
         /// <summary>
@@ -229,6 +230,9 @@ namespace XNALibrary
             transformedModelData.BoundingBox.Min = Vector3.Transform(transformedModelData.BoundingBox.Min, matrix);
             transformedModelData.BoundingBox.Max = Vector3.Transform(transformedModelData.BoundingBox.Max, matrix);
 
+            // Transform bounding sphere
+            transformedModelData.BoundingSphere.Center = Vector3.Transform(transformedModelData.BoundingSphere.Center, matrix);
+
             return transformedModelData;
         }
 
@@ -239,15 +243,15 @@ namespace XNALibrary
         /// <summary>
         /// Loads model data from DFMesh.
         /// </summary>
-        /// <param name="key">Key of source mesh.</param>
+        /// <param name="id">Key of source mesh.</param>
         /// <param name="model">ModelData out.</param>
         /// <returns>True if successful.</returns>
-        private bool LoadModelData(uint key, out ModelData model)
+        private bool LoadModelData(uint id, out ModelData model)
         {
             // Return from cache if present
-            if (cacheModelData && modelDataDict.ContainsKey(key))
+            if (cacheModelData && modelDataDict.ContainsKey(id))
             {
-                model = modelDataDict[key];
+                model = modelDataDict[id];
                 return true;
             }
 
@@ -255,7 +259,7 @@ namespace XNALibrary
             model = new ModelData();
 
             // Find mesh index
-            int index = arch3dFile.GetRecordIndex(key);
+            int index = arch3dFile.GetRecordIndex(id);
             if (index == -1)
                 return false;
 
@@ -271,7 +275,7 @@ namespace XNALibrary
 
             // Add to cache
             if (cacheModelData)
-                modelDataDict.Add(key, model);
+                modelDataDict.Add(id, model);
 
             return true;
         }

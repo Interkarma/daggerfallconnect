@@ -203,6 +203,17 @@ namespace DaggerfallModelling.Engine
             get { return batches; }
         }
 
+        public BlockPosition[] Layout
+        {
+            get
+            {
+                int count;
+                BlockPosition[] layout;
+                GetLayoutArray(out layout, out count);
+                return layout;
+            }
+        }
+
         /// <summary>
         /// Gets layout count.
         /// </summary>
@@ -502,6 +513,37 @@ namespace DaggerfallModelling.Engine
             // Init camera
             //cameraVelocity = Vector3.Zero;
             InitCameraPosition();
+        }
+
+        /// <summary>
+        /// Gets specific block from scene layout data.
+        /// </summary>
+        /// <param name="X">X position of block in layout grid.</param>
+        /// <param name="Y">Y position of block in layout grid.</param>
+        /// <param name="blockPosition">BlockPosition scene data.</param>
+        /// <returns>True if successful.</returns>
+        public bool GetSceneBlock(int X, int Y, out BlockPosition blockPosition)
+        {
+            // Get layout
+            int count;
+            BlockPosition[] layout;
+            GetLayoutArray(out layout, out count);
+
+            // Get layout dictionary
+            Dictionary<int, int> layoutDict;
+            GetLayoutDict(out layoutDict);
+
+            // Get block key
+            int key = GetBlockKey(X, Y);
+            if (!layoutDict.ContainsKey(key))
+            {
+                blockPosition = new BlockPosition();
+                return false;
+            }
+
+            // Get scene block
+            blockPosition = layout[layoutDict[key]];
+            return false;
         }
 
         #endregion
@@ -968,7 +1010,7 @@ namespace DaggerfallModelling.Engine
             for (int i = 0; i < block.Models.Count; i++)
             {
                 // Get model info
-                BlockManager.BlockModel info = block.Models[i];
+                BlockManager.ModelData info = block.Models[i];
 
                 // Load model resource
                 ModelManager.ModelData model;
@@ -1034,7 +1076,7 @@ namespace DaggerfallModelling.Engine
             for (int i = 0; i < block.Flats.Count; i++)
             {
                 // Get flat info
-                BlockManager.BlockFlat info = block.Flats[i];
+                BlockManager.FlatData info = block.Flats[i];
 
                 // Set climate ground flats archive if this is a scenery flat
                 if (info.FlatType == BlockManager.FlatType.Scenery)

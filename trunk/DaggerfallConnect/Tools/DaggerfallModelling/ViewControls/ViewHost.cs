@@ -587,7 +587,6 @@ namespace DaggerfallModelling.ViewControls
             base.OnMouseUp(e);
 
             // Store button state
-            
             switch (e.Button)
             {
                 case MouseButtons.Left:
@@ -616,6 +615,10 @@ namespace DaggerfallModelling.ViewControls
             {
                 SwapViewModes();
             }
+
+            // Send to view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].OnMouseClick(e);
         }
 
         /// <summary>
@@ -654,21 +657,6 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Visible state of control has changed.
-        /// </summary>
-        /// <param name="e">EventArgs</param>
-        protected override void OnVisibleChanged(EventArgs e)
-        {
-            base.OnVisibleChanged(e);
-
-            // Start and stop updates based on visible flag
-            if (this.Visible)
-                update = true;
-            else
-                update = false;
-        }
-
-        /// <summary>
         /// Key down.
         /// </summary>
         /// <param name="e"></param>
@@ -681,6 +669,25 @@ namespace DaggerfallModelling.ViewControls
             {
                 SwapViewModes();
             }
+
+            // Send to view
+            if (isReady && viewMode != ViewModes.None)
+                viewClients[viewMode].OnKeyDown(e);
+        }
+
+        /// <summary>
+        /// Visible state of control has changed.
+        /// </summary>
+        /// <param name="e">EventArgs</param>
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+
+            // Start and stop updates based on visible flag
+            if (this.Visible)
+                update = true;
+            else
+                update = false;
         }
 
         #endregion

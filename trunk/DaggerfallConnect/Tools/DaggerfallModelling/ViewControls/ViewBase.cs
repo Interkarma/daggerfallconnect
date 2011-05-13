@@ -109,7 +109,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Called when view should track mouse movement.
         /// </summary>
-        /// <param name="e">MouseEventArgs</param>
+        /// <param name="e">MouseEventArgs.</param>
         public virtual void OnMouseMove(MouseEventArgs e)
         {
         }
@@ -117,16 +117,16 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Called when the mouse wheel is scrolled.
         /// </summary>
-        /// <param name="e">MouseEventArgs</param>
+        /// <param name="e">MouseEventArgs.</param>
         public virtual void OnMouseWheel(MouseEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called when a mouse button is pressed.
+        /// Called when mouse is clicked.
         /// </summary>
-        /// <param name="e">MouseEventArgs</param>
-        public virtual void OnMouseDown(MouseEventArgs e)
+        /// <param name="e">MouseEventArgs.</param>
+        public virtual void OnMouseClick(MouseEventArgs e)
         {
         }
 
@@ -139,10 +139,26 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Called when a mouse button is pressed.
+        /// </summary>
+        /// <param name="e">MouseEventArgs.</param>
+        public virtual void OnMouseDown(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
         /// Called when a mouse button is released.
         /// </summary>
-        /// <param name="e">MouseEventArgs</param>
+        /// <param name="e">MouseEventArgs.</param>
         public virtual void OnMouseUp(MouseEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when a key is pressed.
+        /// </summary>
+        /// <param name="e">KeyEventArgs.</param>
+        public virtual void OnKeyDown(KeyEventArgs e)
         {
         }
 

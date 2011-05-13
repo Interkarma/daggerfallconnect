@@ -63,7 +63,7 @@ namespace XNALibrary
             public VertexBuffer GroundPlaneVertexBuffer;
 
             /// <summary>List of models used to build this block.</summary>
-            public List<BlockModel> Models;
+            public List<ModelData> Models;
 
             /// <summary>
             /// Dictionary of keys used to lookup models in block.
@@ -72,16 +72,16 @@ namespace XNALibrary
             public Dictionary<int, int> ModelLookup;
 
             /// <summary>List of flats (billboards) populating block.</summary>
-            public List<BlockFlat> Flats;
+            public List<FlatData> Flats;
         }
 
         /// <summary>
         /// Describes a model contained within a block.
         /// </summary>
-        public struct BlockModel
+        public struct ModelData
         {
-            /// <summary>Parent object.</summary>
-            public BlockData Parent;
+            /// <summary>Key to parent block in scene layout.</summary>
+            public int BlockSceneKey;
 
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
@@ -114,7 +114,7 @@ namespace XNALibrary
         /// <summary>
         /// Describes a flat object (billboard) contained within the block.
         /// </summary>
-        public struct BlockFlat
+        public struct FlatData
         {
             /// <summary>Type of flat.</summary>
             public FlatType FlatType;
@@ -168,12 +168,12 @@ namespace XNALibrary
         public struct ActionRecord
         {
             /// <summary>
-            /// The rotation to perform around each axis, in radians.
+            /// The rotation to perform around each axis, in degrees.
             /// </summary>
             public Vector3 Rotation;
 
             /// <summary>
-            /// The amount of rotation that has been performed so far, in radians.
+            /// The amount of rotation that has been performed so far, in degrees.
             /// </summary>
             public Vector3 RotationAmount;
 
@@ -193,14 +193,15 @@ namespace XNALibrary
             public Matrix Matrix;
 
             /// <summary>
-            /// Start time for the action.
+            /// Start time for the action in milliseconds.
             /// </summary>
-            public TimeSpan StartTime;
+            public long StartTime;
 
             /// <summary>
-            /// Time in milliseconds for the actions to complete.
+            /// Total elapsed time in milliseconds 
+            ///  for object to reach final state.
             /// </summary>
-            public long ActionTime;
+            public long Duration;
 
             /// <summary>
             /// The state this action is in.
@@ -419,9 +420,9 @@ namespace XNALibrary
             // Create model info list with a starting capacity equal to subrecord count.
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
-            block.Models = new List<BlockModel>(block.DFBlock.RmbBlock.SubRecords.Length);
+            block.Models = new List<ModelData>(block.DFBlock.RmbBlock.SubRecords.Length);
             block.ModelLookup = null;
-            block.Flats = new List<BlockFlat>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
+            block.Flats = new List<FlatData>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
 
             // Iterate through all subrecords
             float degrees;
@@ -448,8 +449,8 @@ namespace XNALibrary
                     objMatrix *= translation;
 
                     // Create stub of model info
-                    BlockModel modelInfo = new BlockModel();
-                    modelInfo.Parent = block;
+                    ModelData modelInfo = new ModelData();
+                    modelInfo.BlockSceneKey = -1;
                     modelInfo.ModelId = obj.ModelIdNum;
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
                     block.Models.Add(modelInfo);
@@ -468,8 +469,8 @@ namespace XNALibrary
                 recordMatrix *= translation;
 
                 // Create stub of model info
-                BlockModel modelInfo = new BlockModel();
-                modelInfo.Parent = block;
+                ModelData modelInfo = new ModelData();
+                modelInfo.BlockSceneKey = -1;
                 modelInfo.ModelId = obj.ModelIdNum;
                 modelInfo.Matrix = recordMatrix;
                 block.Models.Add(modelInfo);
@@ -480,7 +481,7 @@ namespace XNALibrary
             {
                 // Create stub of billboard info.
                 // Just setting all flats to decorative for now.
-                BlockFlat flatInfo = new BlockFlat();
+                FlatData flatInfo = new FlatData();
                 flatInfo.FlatType = FlatType.Decorative;
                 flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                 flatInfo.TextureArchive = obj.TextureArchive;
@@ -508,7 +509,7 @@ namespace XNALibrary
                         // The correct archive must be set later based on climate.
                         // This cannot be set here as a block is not climate specific.
                         // The same block might be used across several climates.
-                        BlockFlat flatInfo = new BlockFlat();
+                        FlatData flatInfo = new FlatData();
                         flatInfo.FlatType = FlatType.Scenery;
                         flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                         flatInfo.TextureArchive = -1;
@@ -544,9 +545,9 @@ namespace XNALibrary
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
             // Create empty model and flat info lists. These will grow as needed.
-            block.Models = new List<BlockModel>();
+            block.Models = new List<ModelData>();
             block.ModelLookup = new Dictionary<int, int>();
-            block.Flats = new List<BlockFlat>();
+            block.Flats = new List<FlatData>();
 
             // Iterate through object groups
             int groupIndex = 0, listIndex = 0;
@@ -572,7 +573,7 @@ namespace XNALibrary
                         case DFBlock.RdbResourceTypes.Flat:
                             // Create stub of billboard info.
                             // Just setting all flats to decorative for now.
-                            BlockFlat flatInfo = new BlockFlat();
+                            FlatData flatInfo = new FlatData();
                             flatInfo.FlatType = FlatType.Decorative;
                             flatInfo.BlockType = DFBlock.BlockTypes.Rdb;
                             flatInfo.TextureArchive = obj.Resources.FlatResource.TextureArchive;
@@ -637,8 +638,8 @@ namespace XNALibrary
             rotation *= rotationZ;
 
             // Create stub of model info
-            BlockModel modelInfo = new BlockModel();
-            modelInfo.Parent = block;
+            ModelData modelInfo = new ModelData();
+            modelInfo.BlockSceneKey = -1;
             modelInfo.ModelId = modelId;
             modelInfo.Matrix = rotation * translation;
             modelInfo.Description = desc;
@@ -662,18 +663,21 @@ namespace XNALibrary
             else
             {
                 // Has action record, may have a target
+                // (i.e. next model in chain).
                 modelInfo.HasActionRecord = true;
-                int targetIndex = obj.Resources.ModelResource.ActionResource.TargetObjectIndex;
+                int targetIndex = obj.Resources.ModelResource.ActionResource.NextObjectIndex;
                 if (targetIndex > 0)
                     modelInfo.ActionRecord.NextObjectKey = groupIndex * 1000 + targetIndex;
                 else
                     modelInfo.ActionRecord.NextObjectKey = -1;
 
-                // Create action record
-                CreateRDBActionRecord(ref obj, ref modelInfo);
+                // Create action record for this model
+                CreateRDBActionRecord(
+                    ref obj.Resources.ModelResource.ActionResource,
+                    ref modelInfo);
             }
 
-            // Add stub
+            // Add model stub and lookup
             block.Models.Add(modelInfo);
             block.ModelLookup.Add(modelInfo.ObjectKey, listIndex);
         }
@@ -683,8 +687,70 @@ namespace XNALibrary
         /// </summary>
         /// <param name="obj">DFBlock.RdbObject.</param>
         /// <param name="modelInfo">BlockModel.</param>
-        private void CreateRDBActionRecord(ref DFBlock.RdbObject obj, ref BlockModel modelInfo)
+        private void CreateRDBActionRecord(ref DFBlock.RdbActionResource resource, ref ModelData modelInfo)
         {
+            // Create action record for this model from Daggerfall's action record.
+            // Only rotation and translation are supported at this time.
+            switch (resource.ActionType)
+            {
+                case DFBlock.RdbActionType.Rotation:
+                    modelInfo.ActionRecord.Rotation = GetActionVector(ref resource);
+                    modelInfo.ActionRecord.Rotation.X /= rotationDivisor;
+                    modelInfo.ActionRecord.Rotation.Y /= rotationDivisor;
+                    modelInfo.ActionRecord.Rotation.Z /= rotationDivisor;
+                    break;
+
+                case DFBlock.RdbActionType.Translation:
+                    modelInfo.ActionRecord.Translation = GetActionVector(ref resource);
+                    break;
+
+                default:
+                    // Unsupported action record
+                    return;
+            }
+
+            // Set duration
+            modelInfo.ActionRecord.Duration = resource.Duration;
+        }
+
+        /// <summary>
+        /// Constructs a Vector3 from magnitude and direction
+        ///  in RDB action resource.
+        /// </summary>
+        /// <param name="resource">DFBlock.RdbActionResource</param>
+        /// <returns>Vector3.</returns>
+        private Vector3 GetActionVector(ref DFBlock.RdbActionResource resource)
+        {
+            Vector3 vector = Vector3.Zero;
+            float magnitude = resource.Magnitude;
+            switch (resource.Axis)
+            {
+                case DFBlock.RdbActionAxes.NegativeX:
+                    vector.X = -magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.NegativeY:
+                    vector.Y = -magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.NegativeZ:
+                    vector.Z = -magnitude;
+                    break;
+
+                case DFBlock.RdbActionAxes.PositiveX:
+                    vector.X = magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.PositiveY:
+                    vector.Y = magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.PositiveZ:
+                    vector.Z = magnitude;
+                    break;
+
+                default:
+                    magnitude = 0f;
+                    break;
+            }
+
+            return vector;
         }
 
         #endregion

@@ -576,7 +576,7 @@ namespace DaggerfallModelling.ViewControls
             int thumbHeight = thumbBackgroundTexture.Height;
 
             // Get model
-            if (thumb.model.Vertices == null)
+            if (thumb.model == null)
             {
                 // Load model
                 thumb.model = host.ModelManager.GetModelData(thumb.key);
