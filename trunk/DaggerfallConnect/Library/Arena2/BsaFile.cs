@@ -164,6 +164,27 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Finds index of a named record.
+        /// </summary>
+        /// <param name="Name">Name to search for.</param>
+        /// <returns>Index of name, or -1 if not found.</returns>
+        public int GetRecordIndex(string Name)
+        {
+            // Validate
+            if (Header.DirectoryType != DirectoryTypes.NameRecord)
+                return -1;
+
+            // Search for name
+            for (int i = 0; i < Header.DirectoryCount; i++)
+            {
+                if (NameRecordDirectory[i].RecordName == Name)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
         /// Gets length of a record in bytes.
         /// </summary>
         /// <param name="Record">Index of record.</param>

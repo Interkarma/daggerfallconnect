@@ -454,8 +454,6 @@ namespace DaggerfallModelling.Engine
                     Vector3 nextPosition = camera.NextPosition;
                     nextPosition.Y += camera.EyeHeight - distance.Value;
                     camera.NextPosition = nextPosition;
-
-                    camera.ClearGravity();
                 }
             }
         }

@@ -140,6 +140,20 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
+        /// Gets flag stating if model is present in cache.
+        /// </summary>
+        /// <param name="id">ID of model</param>
+        /// <returns>True if model is present in cache.</returns>
+        public bool ContainsModel(uint id)
+        {
+            // Return from cache if present
+            if (cacheModelData && modelDataDict.ContainsKey(id))
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
         /// Get model data.
         ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
         ///  flag is set when loading textures with TextureManager.

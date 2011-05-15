@@ -22,9 +22,9 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class to load and store Daggerfall RMB and RDB blocks. This class will stub model id
-    ///  and bounding boxes, but does not load model data or textures. All blocks are cached to
-    ///  minimise reloading data.
+    /// Helper class to load and store Daggerfall RMB and RDB blocks for XNA.
+    ///  This class will stub model id and bounding boxes, but does not load
+    ///  model data or textures. All blocks are cached to minimise reloading data.
     /// </summary>
     public class BlockManager
     {
@@ -270,6 +270,7 @@ namespace XNALibrary
 
             // Load BLOCKS.BSA
             blocksFile = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
+            blocksFile.AutoDiscard = true;
 
             // Create block dictionary 
             blockDictionary = new Dictionary<string, BlockData>();

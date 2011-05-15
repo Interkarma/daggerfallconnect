@@ -10,7 +10,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
 using System.Threading;
 using System.IO;
 using Microsoft.Xna.Framework;
@@ -26,7 +25,8 @@ namespace XNALibrary
 
     /// <summary>
     /// Parent class of a scene node. Provides hierarchy, visibility,
-    ///  containment, distance sorting, actions, and a transformation matrix.
+    ///  containment, distance sorting, actions, effect,
+    ///  and a transformation matrix.
     /// </summary>
     public class SceneNode :
         IComparable<SceneNode>,
@@ -39,6 +39,8 @@ namespace XNALibrary
         private bool visible;
         private float? distance;
         private BoundingSphere bounds;
+        private bool drawBounds;
+        private Color drawBoundsColor;
         private Matrix matrix;
         private ActionData action;
         private SceneNode parent;
@@ -115,6 +117,9 @@ namespace XNALibrary
             /// <summary>Action is running backwards (end to start).</summary>
             RunningBackwards,
 
+            /// <summary>Action is applied continuously without end.</summary>
+            Continuous,
+
             /// <summary>Action is in the end position.</summary>
             End,
         }
@@ -159,6 +164,24 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets or sets flag to draw node bounding volume.
+        /// </summary>
+        public bool DrawBounds
+        {
+            get { return drawBounds; }
+            set { drawBounds = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets colour used to draw bounding volume.
+        /// </summary>
+        public Color DrawBoundsColor
+        {
+            get { return drawBoundsColor; }
+            set { drawBoundsColor = value; }
+        }
+
+        /// <summary>
         /// Gets or sets transformation matrix.
         /// </summary>
         public Matrix Matrix
@@ -185,11 +208,29 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets children nodes.
+        /// Gets child nodes.
         /// </summary>
         public List<SceneNode> Children
         {
             get { return children; }
+        }
+
+        #endregion
+
+        #region Static Properties
+
+        /// <summary>
+        /// Provides a unique ID for scene nodes by
+        ///  incrementing a static value.
+        /// </summary>
+        private static uint IDCounter = 0;
+
+        /// <summary>
+        /// Gets next ID.
+        /// </summary>
+        public static uint NextID
+        {
+            get { return IDCounter++; }
         }
 
         #endregion
@@ -201,9 +242,11 @@ namespace XNALibrary
         /// </summary>
         public SceneNode()
         {
-            this.id = SceneManager.NextID;
-            this.visible = false;
+            this.id = SceneNode.NextID;
+            this.visible = true;
             this.distance = null;
+            this.drawBounds = false;
+            this.drawBoundsColor = Color.White;
             this.matrix = Matrix.Identity;
             this.parent = null;
             this.children = new List<SceneNode>();
@@ -229,6 +272,7 @@ namespace XNALibrary
 
             node.parent = this;
             this.children.Add(node);
+            this.PopBounds(node);
         }
 
         /// <summary>
@@ -254,10 +298,12 @@ namespace XNALibrary
         /// <param name="node">Start node.</param>
         private void PopBounds(SceneNode node)
         {
-            this.bounds = BoundingSphere.CreateMerged(
-                this.bounds, node.bounds);
             if (node.parent != null)
+            {
+                node.parent.bounds = BoundingSphere.CreateMerged(
+                    node.parent.bounds, node.bounds);
                 PopBounds(node.parent);
+            }
         }
 
         #endregion

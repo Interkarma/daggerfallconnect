@@ -43,6 +43,10 @@ namespace XNALibrary
         private const float controllerSpinRate = 180f;
         private const float controllerMoveRate = 1100f;
 
+        // Look options
+        private bool invertMouseLookY = false;
+        private bool invertControllerLookY = true;
+
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
         private float farPlaneDistance = 50000.0f;
@@ -74,10 +78,6 @@ namespace XNALibrary
         private Point lastMousePos = Point.Zero;
         private Point mousePos = Point.Zero;
         private Point mouseDelta = Point.Zero;
-
-        // Gravity
-        private const float gravityRate = 40f;
-        private float gravityAmount = 0;
 
         #endregion
 
@@ -271,6 +271,24 @@ namespace XNALibrary
             get { return controllerConnected; }
         }
 
+        /// <summary>
+        /// Gets or sets flag to invert mouse look.
+        /// </summary>
+        public bool InvertMouseLook
+        {
+            get { return invertMouseLookY; }
+            set { invertMouseLookY = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets flag to invert controller look.
+        /// </summary>
+        public bool InvertControllerLook
+        {
+            get { return invertControllerLookY; }
+            set { invertControllerLookY = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -320,7 +338,7 @@ namespace XNALibrary
         /// Called when the camera should poll input methods and update.
         /// </summary>
         /// <param name="flags">Update flags.</param>
-        /// <param name="elapsedTime">Elapsed time last frame.</param>
+        /// <param name="elapsedTime">Elapsed time since last frame.</param>
         public void Update(UpdateFlags flags, TimeSpan elapsedTime)
         {
             // Calculate time delta
@@ -370,7 +388,7 @@ namespace XNALibrary
                 if (ms.LeftButton == ButtonState.Pressed)
                 {
                     cameraYaw -= (mouseDelta.X * mouseSpinRate) * timeDelta;
-                    cameraPitch -= (mouseDelta.Y * mouseSpinRate) * timeDelta;
+                    cameraPitch -= ((invertMouseLookY) ? -mouseDelta.Y : mouseDelta.Y) * mouseSpinRate * timeDelta;
                 }
 
                 // Movement with right-button pressed
@@ -402,10 +420,20 @@ namespace XNALibrary
                         cameraYaw -= (controllerSpinRate * cs.ThumbSticks.Right.X) * timeDelta;
 
                     // Look up and down
-                    if (cs.ThumbSticks.Right.Y < 0)
-                        cameraPitch += (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
-                    if (cs.ThumbSticks.Right.Y > 0)
-                        cameraPitch -= (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+                    if (invertControllerLookY)
+                    {
+                        if (cs.ThumbSticks.Right.Y < 0)
+                            cameraPitch += (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
+                        if (cs.ThumbSticks.Right.Y > 0)
+                            cameraPitch -= (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+                    }
+                    else
+                    {
+                        if (cs.ThumbSticks.Right.Y < 0)
+                            cameraPitch -= (controllerSpinRate * -cs.ThumbSticks.Right.Y)  * timeDelta;
+                        if (cs.ThumbSticks.Right.Y > 0)
+                            cameraPitch += (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+                    }
 
                     // Move forward and backward
                     if (cs.ThumbSticks.Left.Y > 0)
@@ -424,9 +452,6 @@ namespace XNALibrary
                     controllerConnected = false;
                 }
             }
-
-            // Apply gravity
-            movement.Y -= gravityAmount * timeDelta;
 
             // Fix yaw
             if (cameraYaw > 360)
@@ -503,23 +528,6 @@ namespace XNALibrary
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
         }
 
-        /// <summary>
-        /// Add gravity acceleration to camera.
-        ///  Each subsequent call will make camera fall faster.
-        /// </summary>
-        public void AddGravity()
-        {
-            gravityAmount += gravityRate;
-        }
-
-        /// <summary>
-        /// Clears gravity acceleration.
-        /// </summary>
-        public void ClearGravity()
-        {
-            gravityAmount = 0f;
-        }
-
         #endregion
 
         #region Private Methods
@@ -534,10 +542,7 @@ namespace XNALibrary
                 cameraNextPosition.X = cameraMovementBounds.Min.X;
 
             if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
-            {
-                ClearGravity();
                 cameraNextPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
-            }
 
             if (cameraNextPosition.Z < cameraMovementBounds.Min.Z)
                 cameraNextPosition.Z = cameraMovementBounds.Min.Z;

@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallModelling", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial_XNASeries_1", "Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj", "{33DE3ACC-24A5-44D9-8D56-A41467677882}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial_XNASeries_2", "Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj", "{8C26858F-F54E-41EE-AFC9-78B404F57298}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -159,6 +161,22 @@ Global
 		{05A03F15-D8FE-4479-A940-4A1A0BEFBDFC}.Release|Any CPU.ActiveCfg = Release|x86
 		{05A03F15-D8FE-4479-A940-4A1A0BEFBDFC}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{05A03F15-D8FE-4479-A940-4A1A0BEFBDFC}.Release|x86.ActiveCfg = Release|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Debug|x86.ActiveCfg = Debug|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Debug|x86.Build.0 = Debug|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Release|Any CPU.ActiveCfg = Release|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Release|Mixed Platforms.Build.0 = Release|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Release|x86.ActiveCfg = Release|x86
+		{8C26858F-F54E-41EE-AFC9-78B404F57298}.Release|x86.Build.0 = Release|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Debug|x86.ActiveCfg = Debug|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Release|Any CPU.ActiveCfg = Release|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{FC64D76E-DFC7-47C0-B20A-6E6B68907692}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
