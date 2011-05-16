@@ -84,7 +84,7 @@ namespace XNALibrary
         #region Class Structures
 
         [Flags]
-        public enum UpdateFlags
+        public enum InputFlags
         {
             None = 0,
             Keyboard = 1,
@@ -339,7 +339,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="flags">Update flags.</param>
         /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public void Update(UpdateFlags flags, TimeSpan elapsedTime)
+        public void Update(InputFlags flags, TimeSpan elapsedTime)
         {
             // Calculate time delta
             float timeDelta = (float)elapsedTime.TotalSeconds;
@@ -349,7 +349,7 @@ namespace XNALibrary
             rotation = Matrix.Identity;
 
             // Keyboard input
-            if ((flags & UpdateFlags.Keyboard) == UpdateFlags.Keyboard)
+            if ((flags & InputFlags.Keyboard) == InputFlags.Keyboard)
             {
                 // Get movement
                 KeyboardState ks = Keyboard.GetState();
@@ -374,7 +374,7 @@ namespace XNALibrary
             }
 
             // Mouse input
-            if ((flags & UpdateFlags.Mouse) == UpdateFlags.Mouse)
+            if ((flags & InputFlags.Mouse) == InputFlags.Mouse)
             {
                 // Update mouse state
                 MouseState ms = Mouse.GetState();
@@ -406,7 +406,7 @@ namespace XNALibrary
             }
 
             // Controller input
-            if ((flags & UpdateFlags.Controller) == UpdateFlags.Controller)
+            if ((flags & InputFlags.Controller) == InputFlags.Controller)
             {
                 GamePadState cs = GamePad.GetState(0);
                 if (cs.IsConnected)

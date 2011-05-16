@@ -25,8 +25,7 @@ namespace XNALibrary
 
     /// <summary>
     /// Parent class of a scene node. Provides hierarchy, visibility,
-    ///  containment, distance sorting, actions, effect,
-    ///  and a transformation matrix.
+    ///  containment, distance sorting, actions, and a transformation matrix.
     /// </summary>
     public class SceneNode :
         IComparable<SceneNode>,
@@ -38,11 +37,13 @@ namespace XNALibrary
         private uint id;
         private bool visible;
         private float? distance;
-        private BoundingSphere bounds;
+        private BoundingSphere localBounds;
+        private BoundingSphere transformedBounds;
         private bool drawBounds;
         private Color drawBoundsColor;
         private Matrix matrix;
         private ActionData action;
+        private object tag;
         private SceneNode parent;
         private List<SceneNode> children;
 
@@ -155,16 +156,27 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets bounding volume.
+        /// Gets or sets bounding volume in model space.
         /// </summary>
-        public BoundingSphere Bounds
+        public BoundingSphere LocalBounds
         {
-            get { return bounds; }
-            set { bounds = value; }
+            get { return localBounds; }
+            set { localBounds = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets transformed and merged bounding volume.
+        ///  Call Update() in SceneManager to transform bounds.
+        /// </summary>
+        public BoundingSphere TransformedBounds
+        {
+            get { return transformedBounds; }
+            set { transformedBounds = value; }
         }
 
         /// <summary>
         /// Gets or sets flag to draw node bounding volume.
+        ///  Call DrawBounds() in SceneManager to draw bounds.
         /// </summary>
         public bool DrawBounds
         {
@@ -174,6 +186,7 @@ namespace XNALibrary
 
         /// <summary>
         /// Gets or sets colour used to draw bounding volume.
+        ///  Call DrawBounds() in SceneManager to draw bounds.
         /// </summary>
         public Color DrawBoundsColor
         {
@@ -191,12 +204,21 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets action.
+        /// Gets or sets action data.
         /// </summary>
         public ActionData Action
         {
             get { return action; }
             set { action = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets custom tag.
+        /// </summary>
+        public object Tag
+        {
+            get { return tag; }
+            set { tag = value; }
         }
 
         /// <summary>
@@ -260,6 +282,7 @@ namespace XNALibrary
         /// Adds a new child node.
         ///  If child node already has a parent it will
         ///  be detached from current parent first.
+        ///  Cannot make node a parent of itself.
         /// </summary>
         /// <param name="node">SceneNode.</param>
         public void Add(SceneNode node)
@@ -272,7 +295,6 @@ namespace XNALibrary
 
             node.parent = this;
             this.children.Add(node);
-            this.PopBounds(node);
         }
 
         /// <summary>
@@ -285,24 +307,6 @@ namespace XNALibrary
                 this.Children.Contains(node))
             {
                 this.Children.Remove(node);
-            }
-        }
-
-        #endregion
-
-        #region Private methods
-
-        /// <summary>
-        /// Pop bounding volume back up hierarchy.
-        /// </summary>
-        /// <param name="node">Start node.</param>
-        private void PopBounds(SceneNode node)
-        {
-            if (node.parent != null)
-            {
-                node.parent.bounds = BoundingSphere.CreateMerged(
-                    node.parent.bounds, node.bounds);
-                PopBounds(node.parent);
             }
         }
 
@@ -391,7 +395,7 @@ namespace XNALibrary
             : base()
         {
             this.model = model;
-            this.Bounds = model.BoundingSphere;
+            this.LocalBounds = model.BoundingSphere;
         }
     }
 

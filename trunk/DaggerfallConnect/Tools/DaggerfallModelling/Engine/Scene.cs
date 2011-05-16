@@ -354,14 +354,14 @@ namespace DaggerfallModelling.Engine
             if (view.CameraMode == ViewBase.CameraModes.Free)
             {
                 // Set input flags
-                Camera.UpdateFlags flags = Camera.UpdateFlags.Controller;
+                Camera.InputFlags flags = Camera.InputFlags.Controller;
                 if (host.Focused)
                 {
-                    flags |= Camera.UpdateFlags.Keyboard;
+                    flags |= Camera.InputFlags.Keyboard;
                 }
                 if (host.MouseInClientArea)
                 {
-                    flags |= Camera.UpdateFlags.Mouse;
+                    flags |= Camera.InputFlags.Mouse;
                 }
 
                 // Update based on batch mode
@@ -385,10 +385,10 @@ namespace DaggerfallModelling.Engine
                 switch (batchMode)
                 {
                     case BatchModes.Exterior:
-                        exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+                        exteriorTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
                         break;
                     case BatchModes.Dungeon:
-                        dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+                        dungeonTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
                         break;
                 }
             }
@@ -1215,8 +1215,8 @@ namespace DaggerfallModelling.Engine
             dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
 
             // Update
-            exteriorTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
-            dungeonTopDownCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+            exteriorTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            dungeonTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
         }
 
         /// <summary>
@@ -1247,8 +1247,8 @@ namespace DaggerfallModelling.Engine
             dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
 
             // Update
-            exteriorFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
-            dungeonFreeCamera.Update(Camera.UpdateFlags.None, host.ElapsedTime);
+            exteriorFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            dungeonFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
         }
 
         /// <summary>

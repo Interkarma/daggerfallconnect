@@ -22,7 +22,7 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class for loading Daggerfall environments for XNA.
+    /// Helper class for rendering Daggerfall environments with XNA.
     ///  Provides basic resource loading, scene graph, and rendering
     ///  using BasicEffect. For more advanced scene management and effects
     ///  override or reimplement as needed.
@@ -41,10 +41,13 @@ namespace XNALibrary
         private SceneNode root;
 
         // Camera
-        Camera.UpdateFlags cameraUpdateFlags;
+        Camera.InputFlags cameraInputFlags;
 
         // Batches
         private Dictionary<int, List<BatchItem>> batches;
+
+        // Bounds
+        private RenderableBoundingSphere renderableBounds;
 
         // XNA
         private Color backgroundColor;
@@ -91,12 +94,12 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets camera update flags.
+        /// Gets or sets camera input flags.
         /// </summary>
-        public Camera.UpdateFlags CameraUpdateFlags
+        public Camera.InputFlags CameraInputFlags
         {
-            get { return cameraUpdateFlags; }
-            set { cameraUpdateFlags = value; }
+            get { return cameraInputFlags; }
+            set { cameraInputFlags = value; }
         }
 
         /// <summary>
@@ -163,7 +166,10 @@ namespace XNALibrary
             backgroundColor = Color.CornflowerBlue;
 
             // Set default camera update flags
-            cameraUpdateFlags = Camera.UpdateFlags.None;
+            cameraInputFlags = Camera.InputFlags.None;
+
+            // Setup renderable bounds
+            renderableBounds = new RenderableBoundingSphere(graphicsDevice);
         }
 
         #endregion
@@ -181,24 +187,36 @@ namespace XNALibrary
         /// Prepare scene for rendering.
         ///  Progresses actions.
         ///  Performs visibility testing.
-        ///  Batches visible triangles by texture.
+        ///  Batches visible geometry by texture.
         /// </summary>
         /// <param name="elapsedTime">Elapsed time since last frame.</param>
         public override void Update(TimeSpan elapsedTime)
         {
+            // Clear batches from previous frame
             ClearBatches();
-            camera.Update(cameraUpdateFlags, elapsedTime);
+
+            // Update camera with input flags
+            camera.Update(cameraInputFlags, elapsedTime);
+
+            // Update animation and bounds
             UpdateNode(root, Matrix.Identity);
+
+            // Batch visible geometry
+            BatchNode(root, Matrix.Identity);
+
+            // Apply camera changes
             camera.ApplyChanges();
         }
 
         /// <summary>
         /// Render scene with BasicEffect.
         /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public override void Draw(TimeSpan elapsedTime)
+        public override void Draw()
         {
+            // Draw background
             DrawBackground();
+
+            // Draw visible geometry
             DrawBatches();
         }
 
@@ -236,6 +254,16 @@ namespace XNALibrary
                     (float)graphicsDevice.Viewport.Width / 
                     (float)graphicsDevice.Viewport.Height);
             }
+        }
+
+        /// <summary>
+        /// Renders bounding volumes for any node with
+        ///  flag set to draw bounds. This involves
+        ///  another pass over the scene.
+        /// </summary>
+        public void DrawBounds()
+        {
+            DrawNodeBounds(root);
         }
 
         #endregion
@@ -315,6 +343,38 @@ namespace XNALibrary
         #region Updating
 
         /// <summary>
+        /// Start node.
+        /// </summary>
+        /// <param name="node">SceneNode.</param>
+        /// <param name="matrix">Cumulative Matrix.</param>
+        /// <returns>Transformed and merged BoundingSphere.</returns>
+        private BoundingSphere UpdateNode(SceneNode node, Matrix matrix)
+        {
+            // Transform bounds
+            BoundingSphere bounds = node.LocalBounds;
+            bounds.Center = Vector3.Transform(bounds.Center, node.Matrix * matrix);
+
+            // Update child nodes
+            foreach (SceneNode child in node.Children)
+            {
+                bounds = BoundingSphere.CreateMerged(
+                    bounds,
+                    UpdateNode(child, node.Matrix * matrix));
+            }
+
+            // Store transformed bounds
+            node.TransformedBounds = bounds;
+
+            // TODO: Run actions
+
+            return bounds;
+        }
+
+        #endregion
+
+        #region Batching
+
+        /// <summary>
         /// Clears any batched data from previous frame.
         /// </summary>
         private void ClearBatches()
@@ -322,54 +382,6 @@ namespace XNALibrary
             foreach (var batch in batches)
             {
                 batch.Value.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Recursively updates scene and batches visible submeshes.
-        /// </summary>
-        /// <param name="node">Start node.</param>
-        /// <param name="matrix">Cumulative matrix.</param>
-        private void UpdateNode(SceneNode node, Matrix matrix)
-        {
-            // Do nothing if not visible
-            if (!node.Visible)
-                return;
-
-            // Update children of this node
-            foreach (SceneNode child in node.Children)
-            {
-                UpdateNode(child, child.Matrix * matrix);
-            }
-
-            // TODO: Intersection and collision
-
-            // Test bounds against camera frustum
-            if (!camera.BoundingFrustum.Intersects(node.Bounds))
-                return;
-
-            // Batch model node
-            if (node is ModelNode)
-                BatchModelNode((ModelNode)node, matrix);
-        }
-
-        /// <summary>
-        /// Batch a model node for rendering.
-        /// </summary>
-        private void BatchModelNode(ModelNode node, Matrix matrix)
-        {
-            // Batch submeshes
-            BatchItem batchItem;
-            foreach (var submesh in node.Model.SubMeshes)
-            {
-                batchItem.Indexed = true;
-                batchItem.Matrix = matrix;
-                batchItem.NumVertices = node.Model.Vertices.Length;
-                batchItem.VertexBuffer = node.Model.VertexBuffer;
-                batchItem.IndexBuffer = node.Model.IndexBuffer;
-                batchItem.StartIndex = submesh.StartIndex;
-                batchItem.PrimitiveCount = submesh.PrimitiveCount;
-                AddBatch(submesh.TextureKey, batchItem);
             }
         }
 
@@ -389,6 +401,56 @@ namespace XNALibrary
             batches[textureKey].Add(batchItem);
         }
 
+        /// <summary>
+        /// Recursively walks scene and batches visible submeshes.
+        /// </summary>
+        /// <param name="node">Start node.</param>
+        /// <param name="matrix">Cumulative matrix.</param>
+        private void BatchNode(SceneNode node, Matrix matrix)
+        {
+            // Do nothing if not visible
+            if (!node.Visible)
+                return;
+
+            // Test node bounds against camera frustum
+            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
+                return;
+
+            // Update children of this node
+            foreach (SceneNode child in node.Children)
+            {
+                BatchNode(child, node.Matrix * matrix);
+            }
+
+            // TODO: Pointer intersection test
+
+            // Batch model node
+            if (node is ModelNode)
+                BatchModelNode((ModelNode)node, node.Matrix * matrix);
+        }
+
+        /// <summary>
+        /// Batch a model node for rendering.
+        /// </summary>
+        /// <param name="node">ModelNode.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void BatchModelNode(ModelNode node, Matrix matrix)
+        {
+            // Batch submeshes
+            BatchItem batchItem;
+            foreach (var submesh in node.Model.SubMeshes)
+            {
+                batchItem.Indexed = true;
+                batchItem.Matrix = matrix;
+                batchItem.NumVertices = node.Model.Vertices.Length;
+                batchItem.VertexBuffer = node.Model.VertexBuffer;
+                batchItem.IndexBuffer = node.Model.IndexBuffer;
+                batchItem.StartIndex = submesh.StartIndex;
+                batchItem.PrimitiveCount = submesh.PrimitiveCount;
+                AddBatch(submesh.TextureKey, batchItem);
+            }
+        }
+
         #endregion
 
         #region Rendering
@@ -402,7 +464,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Renders batches of visible triangles.
+        /// Renders batches of visible geometry.
         /// </summary>
         private void DrawBatches()
         {
@@ -468,6 +530,34 @@ namespace XNALibrary
                 // End
                 basicEffect.CurrentTechnique.Passes[0].End();
                 basicEffect.End();
+            }
+        }
+
+        /// <summary>
+        /// Recursively draws node bounds.
+        /// </summary>
+        /// <param name="node">Start node.</param>
+        private void DrawNodeBounds(SceneNode node)
+        {
+            // Test node bounds against camera frustum
+            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
+                return;
+
+            // Draw child bounds
+            foreach (SceneNode child in node.Children)
+            {
+                DrawNodeBounds(child);
+            }
+
+            // Draw node bounds
+            if (node.DrawBounds)
+            {
+                renderableBounds.Color = node.DrawBoundsColor;
+                renderableBounds.Draw(
+                    node.TransformedBounds,
+                    camera.View,
+                    camera.Projection,
+                    Matrix.Identity);
             }
         }
 

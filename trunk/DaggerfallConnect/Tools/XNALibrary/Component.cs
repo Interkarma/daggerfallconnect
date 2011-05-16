@@ -106,8 +106,7 @@ namespace XNALibrary
         /// <summary>
         /// Called when component should redraw.
         /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public abstract void Draw(TimeSpan elapsedTime);
+        public abstract void Draw();
 
         #endregion
     }

@@ -15,7 +15,8 @@ using XNALibrary;
 namespace XNASeries_1
 {
     /// <summary>
-    /// This tutorial shows how to load a single Daggerfall model into a scene.
+    /// This tutorial shows how to use the Daggerfall Connect XNALibrary
+    ///  to load Daggerfall models into a scene and render bounding volumes.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -29,6 +30,14 @@ namespace XNASeries_1
 
         // Scene
         SceneManager sceneManager;
+
+        // Camera
+        Vector3 cameraPos = new Vector3(0, 300, 4000);
+
+        // Options
+        bool drawBounds = true;
+        bool invertMouseLook = false;
+        bool invertControllerLook = true;
 
         /// <summary>
         /// Constructor.
@@ -59,19 +68,18 @@ namespace XNASeries_1
             sceneManager.ModelManager = modelManager;
 
             // Set camera position
-            Vector3 cameraPos = new Vector3(0, 350, 1500);
             sceneManager.Camera.NextPosition = cameraPos;
             sceneManager.Camera.ApplyChanges();
 
             // Set camera updating
-            sceneManager.CameraUpdateFlags =
-                Camera.UpdateFlags.Keyboard |
-                Camera.UpdateFlags.Mouse |
-                Camera.UpdateFlags.Controller;
+            sceneManager.CameraInputFlags =
+                Camera.InputFlags.Keyboard |
+                Camera.InputFlags.Mouse |
+                Camera.InputFlags.Controller;
 
             // Set camera look preferences
-            sceneManager.Camera.InvertMouseLook = false;
-            sceneManager.Camera.InvertControllerLook = true;
+            sceneManager.Camera.InvertMouseLook = invertMouseLook;
+            sceneManager.Camera.InvertControllerLook = invertControllerLook;
 
             base.Initialize();
         }
@@ -82,8 +90,20 @@ namespace XNASeries_1
         /// </summary>
         protected override void LoadContent()
         {
-            // Create simple scene
-            sceneManager.AddModelNode(null, 456);
+            // Set root node to draw bounds
+            sceneManager.Root.Matrix = Matrix.CreateTranslation(0f, 0f, 0f);
+            sceneManager.Root.DrawBounds = drawBounds;
+            sceneManager.Root.DrawBoundsColor = Color.Red;
+
+            // Add a model node
+            ModelNode node1 = sceneManager.AddModelNode(null, 456);
+            node1.Matrix = Matrix.CreateTranslation(1000f, 0f, 0f);
+            node1.DrawBounds = drawBounds;
+
+            // Add a second model node
+            ModelNode node2 = sceneManager.AddModelNode(null, 343);
+            node2.Matrix = Matrix.CreateTranslation(-1000f, 0f, 0f);
+            node2.DrawBounds = drawBounds;
         }
 
         /// <summary>
@@ -110,7 +130,9 @@ namespace XNASeries_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            sceneManager.Draw(gameTime.ElapsedGameTime);
+            sceneManager.Draw();
+            if (drawBounds)
+                sceneManager.DrawBounds();
         }
     }
 }
