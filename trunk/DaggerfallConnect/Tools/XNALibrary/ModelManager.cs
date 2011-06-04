@@ -20,7 +20,7 @@ using DaggerfallConnect.Arena2;
 namespace XNALibrary
 {
     /// <summary>
-    /// Helper class to load and store Daggerfall models for XNA. Does not load textures, but does calc UV coordinates.
+    /// Helper class to load and store Daggerfall models for XNA. Does not load textures but does calc UV coordinates.
     ///  This is to allow developers to apply their own texture logic independent of model loading.
     ///  Model data is stored as vertex and index arrays and as vertex and index buffers. Use whichever suits
     ///  your application best. The original geometry is also stored if needed.

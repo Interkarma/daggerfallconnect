@@ -54,6 +54,13 @@ namespace XNALibrary
         private VertexDeclaration vertexDeclaration;
         private BasicEffect basicEffect;
 
+        // Ground height
+        private int groundHeight = -1;
+
+        // Sub-Components
+        BillboardManager billboardManager;
+        // TODO: Create sky
+
         #endregion
 
         #region Class Structures
@@ -93,6 +100,17 @@ namespace XNALibrary
             get { return basicEffect; }
         }
 
+        public new Camera Camera
+        {
+            get { return camera; }
+            set
+            {
+                camera = value;
+                billboardManager.Camera = value;
+                // TODO: Set sky camera
+            }
+        }
+
         /// <summary>
         /// Gets or sets camera input flags.
         /// </summary>
@@ -116,7 +134,11 @@ namespace XNALibrary
         public TextureManager TextureManager
         {
             get { return textureManager; }
-            set { textureManager = value; }
+            set
+            {
+                textureManager = value;
+                billboardManager.TextureManager = value;
+            }
         }
 
         /// <summary>
@@ -157,11 +179,6 @@ namespace XNALibrary
             // Batching
             batches = new Dictionary<int, List<BatchItem>>();
 
-            // Create default scene
-            root = new SceneNode();
-            CreateDefaultBasicEffect();
-            CreateDefaultSceneCamera();
-
             // Set default background colour
             backgroundColor = Color.CornflowerBlue;
 
@@ -170,6 +187,16 @@ namespace XNALibrary
 
             // Setup renderable bounds
             renderableBounds = new RenderableBoundingSphere(graphicsDevice);
+
+            // Setup components
+            billboardManager = new BillboardManager(graphicsDevice, arena2Path);
+            billboardManager.Initialize();
+            billboardManager.Camera = camera;
+
+            // Create default scene
+            root = new SceneNode();
+            CreateDefaultBasicEffect();
+            CreateDefaultSceneCamera();
         }
 
         #endregion
@@ -188,6 +215,7 @@ namespace XNALibrary
         ///  Progresses actions.
         ///  Performs visibility testing.
         ///  Batches visible geometry by texture.
+        ///  Batches and sorts billboards.
         /// </summary>
         /// <param name="elapsedTime">Elapsed time since last frame.</param>
         public override void Update(TimeSpan elapsedTime)
@@ -198,10 +226,10 @@ namespace XNALibrary
             // Update camera with input flags
             camera.Update(cameraInputFlags, elapsedTime);
 
-            // Update animation and bounds
+            // Update nodes
             UpdateNode(root, Matrix.Identity);
 
-            // Batch visible geometry
+            // Batch visible elements
             BatchNode(root, Matrix.Identity);
 
             // Apply camera changes
@@ -218,6 +246,9 @@ namespace XNALibrary
 
             // Draw visible geometry
             DrawBatches();
+
+            // Draw billboard batch
+            billboardManager.Draw();
         }
 
         #endregion
@@ -229,7 +260,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node to receive model node child.</param>
         /// <param name="id">ModelID to load.</param>
-        /// <returns></returns>
+        /// <returns>ModelNode.</returns>
         public ModelNode AddModelNode(SceneNode parent, uint id)
         {
             // Use root node if no parent specified
@@ -241,6 +272,55 @@ namespace XNALibrary
             parent.Add(node);
 
             return node;
+        }
+
+        /// <summary>
+        /// Adds a billboard node to the scene.
+        /// </summary>
+        /// <param name="parent">Parent node to receive billboard node child.</param>
+        /// <param name="flatItem">BlockManager.FlatItem.</param>
+        /// <returns>BillboardNode.</returns>
+        public BillboardNode AddBillboardNode(SceneNode parent, BlockManager.FlatItem flatItem)
+        {
+            // Use root node if no parent specified
+            if (parent == null)
+                parent = root;
+
+            // Load flat item
+            flatItem = LoadDaggerfallFlat(flatItem);
+
+            // Create billboard node
+            BillboardNode node = new BillboardNode(flatItem);
+            //node.Matrix = Matrix.CreateTranslation(flatItem.Position);
+            node.LocalBounds = flatItem.BoundingSphere;
+            parent.Add(node);
+
+            return node;
+        }
+
+        /// <summary>
+        /// Adds a block node to the scene. 
+        /// </summary>
+        /// <param name="parent">Parent node to receive block node child.</param>
+        /// <param name="name">Name of block.</param>
+        /// <returns>SceneNode.</returns>
+        public SceneNode AddBlockNode(SceneNode parent, string name)
+        {
+            // Use root node if no parent specified
+            if (parent == null)
+                parent = root;
+
+            // Load block
+            BlockManager.BlockData block = LoadDaggerfallBlock(name);
+            switch (block.DFBlock.Type)
+            {
+                case DFBlock.BlockTypes.Rmb:
+                    return BuildRMBNode(parent, ref block);
+                case DFBlock.BlockTypes.Rdb:
+                    return BuildRDBNode(parent, ref block);
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
@@ -292,17 +372,154 @@ namespace XNALibrary
         /// </summary>
         private void CreateDefaultSceneCamera()
         {
-            camera = new Camera();
+            Camera = new Camera();
             UpdateCameraAspectRatio();
-            camera.MovementBounds = new BoundingBox(
+            Camera.MovementBounds = new BoundingBox(
                 new Vector3(float.MinValue, float.MinValue, float.MinValue),
                 new Vector3(float.MaxValue, float.MaxValue, float.MaxValue));
-            camera.ApplyChanges();
+            Camera.ApplyChanges();
+        }
+
+        /// <summary>
+        /// Builds an exterior node with all child nodes.
+        /// </summary>
+        /// <param name="parent">Parent node.</param>
+        /// <param name="block">BlockManager.BlockData.</param>
+        /// <returns>SceneNode.</returns>
+        private SceneNode BuildRMBNode(SceneNode parent, ref BlockManager.BlockData block)
+        {
+            // Create block parent node
+            SceneNode blockNode = new SceneNode();
+
+            // Add ground plane node
+            blockManager.BuildRmbGroundPlane(textureManager, ref block);
+            GroundPlaneNode groundNode = new GroundPlaneNode(
+                block.GroundPlaneVertexBuffer,
+                block.GroundPlaneVertices.Length / 3);
+            blockNode.Add(groundNode);
+
+            // Add model nodes
+            ModelNode modelNode;
+            foreach (var model in block.Models)
+            {
+                modelNode = AddModelNode(blockNode, model.ModelId);
+                modelNode.Matrix = model.Matrix;
+                modelNode.DrawBounds = true;
+            }
+
+            // Add billboard nodes
+            BillboardNode billboardNode;
+            foreach (var flat in block.Flats)
+            {
+                billboardNode = AddBillboardNode(blockNode, flat);
+                billboardNode.Matrix = Matrix.Identity;
+                billboardNode.DrawBounds = true;
+                billboardNode.DrawBoundsColor = Color.Green;
+            }
+
+            // Add block node to scene
+            parent.Add(blockNode);
+
+            return blockNode;
+        }
+
+        /// <summary>
+        /// Builds a dungeon node with all child nodes.
+        /// </summary>
+        /// <param name="parent">Parent node.</param>
+        /// <param name="block">BlockManager.BlockData.</param>
+        /// <returns>SceneNode.</returns>
+        private SceneNode BuildRDBNode(SceneNode parent, ref BlockManager.BlockData block)
+        {
+            return new SceneNode();
         }
 
         #endregion
 
         #region Content Loading
+
+        /// <summary>
+        /// Loads a Daggerfall texture.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="flags">TextureManager.TextureCreateFlags.</param>
+        /// <returns>TextureManager key.</returns>
+        private int LoadDaggerfallTexture(int archive, int record, TextureManager.TextureCreateFlags flags)
+        {
+            // Cannot proceed if TextureManager null
+            if (textureManager == null)
+                throw new Exception("TextureManager is not set.");
+
+            return textureManager.LoadTexture(archive, record, flags);
+        }
+
+        /// <summary>
+        /// Loads a Daggerfall flat (billboard).
+        /// </summary>
+        /// <param name="flatItem">BlockManager.FlatItem.</param>
+        /// <returns>BlockManager.FlatItem.</returns>
+        private BlockManager.FlatItem LoadDaggerfallFlat(BlockManager.FlatItem flatItem)
+        {
+            // Set climate ground flats archive if this is a scenery flat
+            if (flatItem.FlatType == BlockManager.FlatType.Scenery)
+            {
+                // Just use temperate (504) if no location set
+                //if (currentLocation == null)
+                    flatItem.TextureArchive = 504;
+                //else
+                //    info.TextureArchive = currentLocation.Value.GroundFlatsArchive;
+            }
+
+            // Load texture
+            flatItem.TextureKey = LoadDaggerfallTexture(
+                flatItem.TextureArchive,
+                flatItem.TextureRecord,
+                TextureManager.TextureCreateFlags.Dilate |
+                TextureManager.TextureCreateFlags.PreMultiplyAlpha);
+
+            // Get dimensions and scale of this texture image
+            // We do this as TextureManager may have just pulled texture key from cache.
+            // without loading file. We need the following information to create bounds.
+            string path = Path.Combine(arena2Path, TextureFile.IndexToFileName(flatItem.TextureArchive));
+            System.Drawing.Size size = TextureFile.QuickSize(path, flatItem.TextureRecord);
+            System.Drawing.Size scale = TextureFile.QuickScale(path, flatItem.TextureRecord);
+            flatItem.Size.X = size.Width;
+            flatItem.Size.Y = size.Height;
+
+            // Apply scale
+            if (flatItem.BlockType == DFBlock.BlockTypes.Rdb && flatItem.TextureArchive > 499)
+            {
+                // Foliage (TEXTURE.500 and up) do not seem to use scaling
+                // in dungeons. Disable scaling for now.
+                flatItem.Size.X = size.Width;
+                flatItem.Size.Y = size.Height;
+            }
+            else
+            {
+                // Scale billboard
+                int xChange = (int)(size.Width * (scale.Width / 256.0f));
+                int yChange = (int)(size.Height * (scale.Height / 256.0f));
+                flatItem.Size.X = size.Width + xChange;
+                flatItem.Size.Y = size.Height + yChange;
+            }
+
+            // Set origin of outdoor flats to centre-bottom.
+            // Sink them just a little so they don't look too floaty.
+            if (flatItem.BlockType == DFBlock.BlockTypes.Rmb)
+            {
+                flatItem.Origin.Y = (groundHeight + flatItem.Size.Y / 2) - 4;
+            }
+
+            // Set bounding sphere
+            flatItem.BoundingSphere.Center = flatItem.Origin;
+            if (flatItem.Size.X > flatItem.Size.Y)
+                flatItem.BoundingSphere.Radius = flatItem.Size.X / 2;
+            else
+                flatItem.BoundingSphere.Radius = flatItem.Size.Y / 2;
+
+            return flatItem;
+        }
 
         /// <summary>
         /// Loads a Daggerfall model and any textures required.
@@ -311,10 +528,6 @@ namespace XNALibrary
         /// <returns>ModelManager.ModelData.</returns>
         private ModelManager.ModelData LoadDaggerfallModel(uint id)
         {
-            // Cannot proceed if TextureManager null
-            if (textureManager == null)
-                throw new Exception("TextureManager is not set.");
-
             // Cannot proceed if ModelManager null
             if (modelManager == null)
                 throw new Exception("ModelManager is not set.");
@@ -324,18 +537,31 @@ namespace XNALibrary
             for (int i = 0; i < model.SubMeshes.Length; i++)
             {
                 // Load texture
-                int key = textureManager.LoadTexture(
+                model.SubMeshes[i].TextureKey = LoadDaggerfallTexture(
                     model.DFMesh.SubMeshes[i].TextureArchive,
                     model.DFMesh.SubMeshes[i].TextureRecord,
                     TextureManager.TextureCreateFlags.ApplyClimate |
                     TextureManager.TextureCreateFlags.MipMaps |
                     TextureManager.TextureCreateFlags.PowerOfTwo);
-
-                // Set key
-                model.SubMeshes[i].TextureKey = key;
             }
 
             return model;
+        }
+
+        /// <summary>
+        /// Loads a Daggerfall block.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private BlockManager.BlockData LoadDaggerfallBlock(string name)
+        {
+            // Cannot proceed if BlockManager null
+            if (blockManager == null)
+                throw new Exception("BlockManager is not set.");
+
+            BlockManager.BlockData block = blockManager.LoadBlock(name);
+
+            return block;
         }
 
         #endregion
@@ -343,7 +569,7 @@ namespace XNALibrary
         #region Updating
 
         /// <summary>
-        /// Start node.
+        /// Update node.
         /// </summary>
         /// <param name="node">SceneNode.</param>
         /// <param name="matrix">Cumulative Matrix.</param>
@@ -365,6 +591,8 @@ namespace XNALibrary
             // Store transformed bounds
             node.TransformedBounds = bounds;
 
+            // TODO: Get distance to camera
+
             // TODO: Run actions
 
             return bounds;
@@ -379,10 +607,14 @@ namespace XNALibrary
         /// </summary>
         private void ClearBatches()
         {
+            // Clear local batches
             foreach (var batch in batches)
             {
                 batch.Value.Clear();
             }
+
+            // Clear billboard batches
+            billboardManager.ClearBatch();
         }
 
         /// <summary>
@@ -427,6 +659,10 @@ namespace XNALibrary
             // Batch model node
             if (node is ModelNode)
                 BatchModelNode((ModelNode)node, node.Matrix * matrix);
+            else if (node is GroundPlaneNode)
+                BatchGroundPlaneNode((GroundPlaneNode)node, node.Matrix * matrix);
+            else if (node is BillboardNode)
+                BatchBillboardNode((BillboardNode)node, node.Matrix * matrix);
         }
 
         /// <summary>
@@ -449,6 +685,42 @@ namespace XNALibrary
                 batchItem.PrimitiveCount = submesh.PrimitiveCount;
                 AddBatch(submesh.TextureKey, batchItem);
             }
+        }
+
+        /// <summary>
+        /// Batch a ground plane node for rendering.
+        /// </summary>
+        /// <param name="node">GroundPlaneNode.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void BatchGroundPlaneNode(GroundPlaneNode node, Matrix matrix)
+        {
+            // Batch ground plane
+            BatchItem batchItem;
+            batchItem.Indexed = false;
+            batchItem.Matrix = matrix;
+            batchItem.NumVertices = node.PrimitiveCount * 3;
+            batchItem.VertexBuffer = node.VertexBuffer;
+            batchItem.IndexBuffer = null;
+            batchItem.StartIndex = 0;
+            batchItem.PrimitiveCount = node.PrimitiveCount;
+            AddBatch(TextureManager.TerrainAtlasKey, batchItem);
+        }
+
+        /// <summary>
+        /// Batch a billboard node for rendering.
+        /// </summary>
+        /// <param name="node">BillboardNode.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void BatchBillboardNode(BillboardNode node, Matrix matrix)
+        {
+            // Batch billboard
+            BlockManager.FlatItem flat = node.Flat;
+            billboardManager.AddBatch(
+                flat.Origin,
+                flat.Position,
+                flat.Size,
+                flat.TextureKey,
+                matrix);
         }
 
         #endregion
@@ -474,6 +746,10 @@ namespace XNALibrary
             // Update view and projection matrices
             basicEffect.View = camera.View;
             basicEffect.Projection = camera.Projection;
+
+            // Set sampler state
+            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
+            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
 
             // Iterate batches
             foreach (var batch in batches)
@@ -510,12 +786,12 @@ namespace XNALibrary
 
                         // Draw indexed primitives
                         graphicsDevice.DrawIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        0,
-                        0,
-                        batchItem.NumVertices,
-                        batchItem.StartIndex,
-                        batchItem.PrimitiveCount);
+                            PrimitiveType.TriangleList,
+                            0,
+                            0,
+                            batchItem.NumVertices,
+                            batchItem.StartIndex,
+                            batchItem.PrimitiveCount);
                     }
                     else
                     {

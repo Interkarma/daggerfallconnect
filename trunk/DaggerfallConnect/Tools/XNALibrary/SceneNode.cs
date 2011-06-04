@@ -248,9 +248,9 @@ namespace XNALibrary
         private static uint IDCounter = 0;
 
         /// <summary>
-        /// Gets next ID.
+        /// Gets new ID.
         /// </summary>
-        public static uint NextID
+        public static uint NewID
         {
             get { return IDCounter++; }
         }
@@ -264,7 +264,7 @@ namespace XNALibrary
         /// </summary>
         public SceneNode()
         {
-            this.id = SceneNode.NextID;
+            this.id = SceneNode.NewID;
             this.visible = true;
             this.distance = null;
             this.drawBounds = false;
@@ -396,6 +396,81 @@ namespace XNALibrary
         {
             this.model = model;
             this.LocalBounds = model.BoundingSphere;
+        }
+    }
+
+    #endregion
+
+    #region GroundPlaneNode
+
+    /// <summary>
+    /// Scene node for ground plane under an RMB block.
+    /// </summary>
+    public class GroundPlaneNode : SceneNode
+    {
+        // Variables
+        private VertexBuffer vertexBuffer;
+        private int primitiveCount;
+
+        // Properties
+        public VertexBuffer VertexBuffer
+        {
+            get { return vertexBuffer; }
+            set { vertexBuffer = value; }
+        }
+        public int PrimitiveCount
+        {
+            get { return primitiveCount; }
+            set { primitiveCount = value; }
+        }
+
+        // Constructors
+        public GroundPlaneNode()
+            : base()
+        {
+            this.vertexBuffer = null;
+            this.primitiveCount = 0;
+        }
+        public GroundPlaneNode(VertexBuffer vertexBuffer, int primitiveCount)
+            : base()
+        {
+            this.vertexBuffer = vertexBuffer;
+            this.primitiveCount = primitiveCount;
+            base.LocalBounds = new BoundingSphere(
+                new Vector3(2048f, 0f, -2048f),
+                2920f);
+        }
+    }
+
+    #endregion
+
+    #region BillboardNode
+
+    /// <summary>
+    /// Scene node for a billboard.
+    /// </summary>
+    public class BillboardNode : SceneNode
+    {
+        // Variables
+        BlockManager.FlatItem flat;
+
+        // Properties
+        public BlockManager.FlatItem Flat
+        {
+            get { return flat; }
+            set { flat = value; }
+        }
+
+        // Constructors
+        public BillboardNode()
+            : base()
+        {
+            this.flat = new BlockManager.FlatItem();
+        }
+        public BillboardNode(BlockManager.FlatItem flat)
+            : base()
+        {
+            this.flat = flat;
         }
     }
 

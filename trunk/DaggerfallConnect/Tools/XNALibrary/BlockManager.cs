@@ -24,7 +24,7 @@ namespace XNALibrary
     /// <summary>
     /// Helper class to load and store Daggerfall RMB and RDB blocks for XNA.
     ///  This class will stub model id and bounding boxes, but does not load
-    ///  model data or textures. All blocks are cached to minimise reloading data.
+    ///  model data or textures. Block data is cached to minimise reloading data.
     /// </summary>
     public class BlockManager
     {
@@ -63,7 +63,7 @@ namespace XNALibrary
             public VertexBuffer GroundPlaneVertexBuffer;
 
             /// <summary>List of models used to build this block.</summary>
-            public List<ModelData> Models;
+            public List<ModelItem> Models;
 
             /// <summary>
             /// Dictionary of keys used to lookup models in block.
@@ -72,13 +72,13 @@ namespace XNALibrary
             public Dictionary<int, int> ModelLookup;
 
             /// <summary>List of flats (billboards) populating block.</summary>
-            public List<FlatData> Flats;
+            public List<FlatItem> Flats;
         }
 
         /// <summary>
         /// Describes a model contained within a block.
         /// </summary>
-        public struct ModelData
+        public struct ModelItem
         {
             /// <summary>Key to parent block in scene layout.</summary>
             public int BlockSceneKey;
@@ -114,7 +114,7 @@ namespace XNALibrary
         /// <summary>
         /// Describes a flat object (billboard) contained within the block.
         /// </summary>
-        public struct FlatData
+        public struct FlatItem
         {
             /// <summary>Type of flat.</summary>
             public FlatType FlatType;
@@ -421,9 +421,9 @@ namespace XNALibrary
             // Create model info list with a starting capacity equal to subrecord count.
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
-            block.Models = new List<ModelData>(block.DFBlock.RmbBlock.SubRecords.Length);
+            block.Models = new List<ModelItem>(block.DFBlock.RmbBlock.SubRecords.Length);
             block.ModelLookup = null;
-            block.Flats = new List<FlatData>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
+            block.Flats = new List<FlatItem>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
 
             // Iterate through all subrecords
             float degrees;
@@ -450,7 +450,7 @@ namespace XNALibrary
                     objMatrix *= translation;
 
                     // Create stub of model info
-                    ModelData modelInfo = new ModelData();
+                    ModelItem modelInfo = new ModelItem();
                     modelInfo.BlockSceneKey = -1;
                     modelInfo.ModelId = obj.ModelIdNum;
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
@@ -470,7 +470,7 @@ namespace XNALibrary
                 recordMatrix *= translation;
 
                 // Create stub of model info
-                ModelData modelInfo = new ModelData();
+                ModelItem modelInfo = new ModelItem();
                 modelInfo.BlockSceneKey = -1;
                 modelInfo.ModelId = obj.ModelIdNum;
                 modelInfo.Matrix = recordMatrix;
@@ -482,7 +482,7 @@ namespace XNALibrary
             {
                 // Create stub of billboard info.
                 // Just setting all flats to decorative for now.
-                FlatData flatInfo = new FlatData();
+                FlatItem flatInfo = new FlatItem();
                 flatInfo.FlatType = FlatType.Decorative;
                 flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                 flatInfo.TextureArchive = obj.TextureArchive;
@@ -510,7 +510,7 @@ namespace XNALibrary
                         // The correct archive must be set later based on climate.
                         // This cannot be set here as a block is not climate specific.
                         // The same block might be used across several climates.
-                        FlatData flatInfo = new FlatData();
+                        FlatItem flatInfo = new FlatItem();
                         flatInfo.FlatType = FlatType.Scenery;
                         flatInfo.BlockType = DFBlock.BlockTypes.Rmb;
                         flatInfo.TextureArchive = -1;
@@ -546,9 +546,9 @@ namespace XNALibrary
             block.BoundingBox = new BoundingBox(blockMin, blockMax);
 
             // Create empty model and flat info lists. These will grow as needed.
-            block.Models = new List<ModelData>();
+            block.Models = new List<ModelItem>();
             block.ModelLookup = new Dictionary<int, int>();
-            block.Flats = new List<FlatData>();
+            block.Flats = new List<FlatItem>();
 
             // Iterate through object groups
             int groupIndex = 0, listIndex = 0;
@@ -574,7 +574,7 @@ namespace XNALibrary
                         case DFBlock.RdbResourceTypes.Flat:
                             // Create stub of billboard info.
                             // Just setting all flats to decorative for now.
-                            FlatData flatInfo = new FlatData();
+                            FlatItem flatInfo = new FlatItem();
                             flatInfo.FlatType = FlatType.Decorative;
                             flatInfo.BlockType = DFBlock.BlockTypes.Rdb;
                             flatInfo.TextureArchive = obj.Resources.FlatResource.TextureArchive;
@@ -639,7 +639,7 @@ namespace XNALibrary
             rotation *= rotationZ;
 
             // Create stub of model info
-            ModelData modelInfo = new ModelData();
+            ModelItem modelInfo = new ModelItem();
             modelInfo.BlockSceneKey = -1;
             modelInfo.ModelId = modelId;
             modelInfo.Matrix = rotation * translation;
@@ -688,7 +688,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="obj">DFBlock.RdbObject.</param>
         /// <param name="modelInfo">BlockModel.</param>
-        private void CreateRDBActionRecord(ref DFBlock.RdbActionResource resource, ref ModelData modelInfo)
+        private void CreateRDBActionRecord(ref DFBlock.RdbActionResource resource, ref ModelItem modelInfo)
         {
             // Create action record for this model from Daggerfall's action record.
             // Only rotation and translation are supported at this time.

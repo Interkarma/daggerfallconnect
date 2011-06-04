@@ -1010,7 +1010,7 @@ namespace DaggerfallModelling.Engine
             for (int i = 0; i < block.Models.Count; i++)
             {
                 // Get model info
-                BlockManager.ModelData info = block.Models[i];
+                BlockManager.ModelItem info = block.Models[i];
 
                 // Load model resource
                 ModelManager.ModelData model;
@@ -1076,7 +1076,7 @@ namespace DaggerfallModelling.Engine
             for (int i = 0; i < block.Flats.Count; i++)
             {
                 // Get flat info
-                BlockManager.FlatData info = block.Flats[i];
+                BlockManager.FlatItem info = block.Flats[i];
 
                 // Set climate ground flats archive if this is a scenery flat
                 if (info.FlatType == BlockManager.FlatType.Scenery)

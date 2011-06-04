@@ -6,42 +6,44 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Using Statements
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 using DaggerfallConnect;
 using XNALibrary;
-#endregion
 
 namespace XNASeries_2
 {
     /// <summary>
-    /// This tutorial shows how to load a dungeon block scene.
+    /// This tutorial shows how to use the Daggerfall Connect XNALibrary
+    ///  to load an exterior Daggerfall block into a scene with variable
+    ///  climate and weather settings.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         // XNA
-        BasicEffect effect;
-        VertexDeclaration vertexDeclaration;
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
 
         // Daggerfall Connect
         string arena2Path = @"C:\dosgames\dagger\arena2";
         TextureManager textureManager;
         ModelManager modelManager;
+        BlockManager blockManager;
 
         // Scene
-        //SceneManager sceneManager;
+        SceneManager sceneManager;
+
+        // Camera
+        Vector3 cameraPos = new Vector3(2048, 400, 1000);
+
+        // Options
+        bool drawBounds = true;
+        bool invertMouseLook = false;
+        bool invertControllerLook = true;
+
+        // Climate
+        DFLocation.ClimateType climate = DFLocation.ClimateType.Temperate;
+        DFLocation.ClimateWeather weather = DFLocation.ClimateWeather.Normal;
 
         /// <summary>
         /// Constructor.
@@ -50,6 +52,7 @@ namespace XNASeries_2
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            this.IsMouseVisible = true;
         }
 
         /// <summary>
@@ -60,47 +63,37 @@ namespace XNASeries_2
         /// </summary>
         protected override void Initialize()
         {
-            // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(GraphicsDevice, VertexPositionNormalTexture.VertexElements);
-            GraphicsDevice.VertexDeclaration = vertexDeclaration;
-
-            // Initialise effect and camera
-            SetupEffect();
-            SetupCamera();
-
-            // Initialise Daggerfall Connect objects
+            // Create Daggerfall Connect objects
             textureManager = new TextureManager(GraphicsDevice, arena2Path);
             modelManager = new ModelManager(GraphicsDevice, arena2Path);
-            //sceneManager = new SceneManager();
+            blockManager = new BlockManager(GraphicsDevice, arena2Path);
+
+            // Set climate and weather
+            textureManager.Climate = climate;
+            textureManager.Weather = weather;
+
+            // Create scene manager
+            sceneManager = new SceneManager(GraphicsDevice, arena2Path);
+            sceneManager.Initialize();
+            sceneManager.TextureManager = textureManager;
+            sceneManager.ModelManager = modelManager;
+            sceneManager.BlockManager = blockManager;
+
+            // Set camera position
+            sceneManager.Camera.NextPosition = cameraPos;
+            sceneManager.Camera.ApplyChanges();
+
+            // Set camera updating
+            sceneManager.CameraInputFlags =
+                Camera.InputFlags.Keyboard |
+                Camera.InputFlags.Mouse |
+                Camera.InputFlags.Controller;
+
+            // Set camera look preferences
+            sceneManager.Camera.InvertMouseLook = invertMouseLook;
+            sceneManager.Camera.InvertControllerLook = invertControllerLook;
 
             base.Initialize();
-        }
-
-        /// <summary>
-        /// Setup basic effect.
-        /// </summary>
-        private void SetupEffect()
-        {
-            effect = new BasicEffect(GraphicsDevice, null);
-            effect.World = Matrix.Identity;
-            effect.TextureEnabled = true;
-            effect.PreferPerPixelLighting = true;
-            effect.EnableDefaultLighting();
-            effect.AmbientLightColor = new Vector3(0.4f, 0.4f, 0.4f);
-            effect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
-        }
-
-        /// <summary>
-        /// Setup camera.
-        /// </summary>
-        private void SetupCamera()
-        {
-            float aspectRatio = (float)GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height;
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, 1f, 10000f);
-            effect.View = Matrix.CreateLookAt(
-                new Vector3(0, 350, 1500),
-                new Vector3(0, 350, 0),
-                Vector3.Up);
         }
 
         /// <summary>
@@ -109,40 +102,13 @@ namespace XNASeries_2
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            // Set root node to draw bounds
+            sceneManager.Root.Matrix = Matrix.CreateTranslation(0f, 0f, 0f);
+            sceneManager.Root.DrawBounds = drawBounds;
+            sceneManager.Root.DrawBoundsColor = Color.Red;
 
-            // Create scene
-            CreateScene();
-        }
-
-        /// <summary>
-        /// Loads a Daggerfall model into a new scene.
-        /// </summary>
-        private void CreateScene()
-        {
-            /*
-            // Load Daggerfall model
-            ModelManager.ModelData model = modelManager.GetModelData(456);
-
-            // Load texture for each submesh
-            for (int i = 0; i < model.SubMeshes.Length; i++)
-            {
-                // Load texture.
-                // Always set POW2 flag when loading textures for ModelManager.Model.
-                int key = textureManager.LoadTexture(
-                    model.DFMesh.SubMeshes[i].TextureArchive,
-                    model.DFMesh.SubMeshes[i].TextureRecord,
-                    TextureManager.TextureCreateFlags.PowerOfTwo);
-
-                // Set key
-                model.SubMeshes[i].TextureKey = key;
-            }
-
-            // Create scene
-            node = new ModelNode(model);
-            sceneManager.Scene.Add(node);
-            */
+            // Add a block node
+            sceneManager.AddBlockNode(null, "MAGEAA13.RMB");
         }
 
         /// <summary>
@@ -151,7 +117,6 @@ namespace XNASeries_2
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
         }
 
         /// <summary>
@@ -161,13 +126,7 @@ namespace XNASeries_2
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
-            // TODO: Add your update logic here
-
-            base.Update(gameTime);
+            sceneManager.Update(gameTime.ElapsedGameTime);
         }
 
         /// <summary>
@@ -176,35 +135,9 @@ namespace XNASeries_2
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // Begin
-            effect.Begin();
-            effect.CurrentTechnique.Passes[0].Begin();
-
-            /*
-            // Iterate through each submesh
-            foreach (var submesh in node.Model.SubMeshes)
-            {
-                // Set texture for this submesh
-                effect.Texture = textureManager.GetTexture(submesh.TextureKey);
-                effect.CommitChanges();
-
-                // Draw submesh
-                GraphicsDevice.DrawUserIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    node.Model.Vertices,
-                    0,
-                    node.Model.Vertices.Length,
-                    node.Model.Indices,
-                    submesh.StartIndex,
-                    submesh.PrimitiveCount);
-            }
-            */
-
-            // End
-            effect.CurrentTechnique.Passes[0].End();
-            effect.End();
+            sceneManager.Draw();
+            if (drawBounds)
+                sceneManager.DrawBounds();
         }
     }
 }

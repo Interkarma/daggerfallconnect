@@ -72,7 +72,7 @@ namespace DaggerfallModelling.Engine
             private uint? modelId;
             private Matrix blockMatrix;
             private Matrix modelMatrix;
-            private BlockManager.ModelData? blockModel;
+            private BlockManager.ModelItem? blockModel;
 
             // Properties
             public float? Distance
@@ -95,7 +95,7 @@ namespace DaggerfallModelling.Engine
                 get { return modelMatrix; }
                 set { modelMatrix = value; }
             }
-            public BlockManager.ModelData? BlockModel
+            public BlockManager.ModelItem? BlockModel
             {
                 get { return blockModel; }
                 set { blockModel = value; }
@@ -111,7 +111,7 @@ namespace DaggerfallModelling.Engine
                 this.modelMatrix = Matrix.Identity;
             }
             public ModelIntersection(
-                BlockManager.ModelData? blockModel,
+                BlockManager.ModelItem? blockModel,
                 float? distance,
                 uint? modelId,
                 Matrix blockMatrix,
