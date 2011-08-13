@@ -25,7 +25,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// All region names.
         /// </summary>
-        private string[] RegionNames = {
+        private string[] _RegionNames = {
             "Alik'r Desert", "Dragontail Mountains", "Glenpoint Foothills", "Daggerfall Bluffs",
             "Yeorth Burrowland", "Dwynnen", "Ravennian Forest", "Devilrock",
             "Malekna Forest", "Isle of Balfiera", "Bantha", "Dak'fron",
@@ -181,6 +181,14 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Gets all region names as string array.
+        /// </summary>
+        public string[] RegionNames
+        {
+            get { return _RegionNames; }
+        }
+
+        /// <summary>
         /// True when ready to load regions and locations, otherwise false.
         /// </summary>
         public bool Ready
@@ -232,29 +240,20 @@ namespace DaggerfallConnect.Arena2
         /// <returns>Name of the region.</returns>
         public string GetRegionName(int Region)
         {
-            return RegionNames[Region];
-        }
-
-        /// <summary>
-        /// Gets an array of region names.
-        /// </summary>
-        /// <returns>Array of all region names as strings.</returns>
-        public string[] GetAllRegionNames()
-        {
-            return RegionNames;
+            return _RegionNames[Region];
         }
 
         /// <summary>
         /// Gets index of region with specified name. Does not change the currently loaded region.
         /// </summary>
-        /// <param name="Name">Name of region to search for.</param>
+        /// <param name="Name">Name of region.</param>
         /// <returns>Index of found region, or -1 if not found.</returns>
         public int GetRegionIndex(string Name)
         {
             // Search for region name
             for (int i = 0; i < RegionCount; i++)
             {
-                if (RegionNames[i] == Name)
+                if (_RegionNames[i] == Name)
                     return i;
             }
 
@@ -262,7 +261,17 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
-        /// Load a region into memory and decompose it for use.
+        /// Load a region into memory by name and decompose it for use.
+        /// </summary>
+        /// <param name="Name">Name of region.</param>
+        /// <returns>True if successful, otherwise false.</returns>
+        public bool LoadRegion(string Name)
+        {
+            return LoadRegion(GetRegionIndex(Name));
+        }
+
+        /// <summary>
+        /// Load a region into memory by index and decompose it for use.
         /// </summary>
         /// <param name="Region">Index of region to load.</param>
         /// <returns>True if successful, otherwise false.</returns>
@@ -296,7 +305,7 @@ namespace DaggerfallConnect.Arena2
                 return false;
 
             // Set region name
-            Regions[Region].Name = RegionNames[Region];
+            Regions[Region].Name = _RegionNames[Region];
 
             // Read region
             if (!ReadRegion(Region))
@@ -489,7 +498,7 @@ namespace DaggerfallConnect.Arena2
             try
             {
                 // Store region name
-                Regions[Region].DFRegion.Name = RegionNames[Region];
+                Regions[Region].DFRegion.Name = _RegionNames[Region];
 
                 // Read map names
                 BinaryReader reader = Regions[Region].MapNames.GetReader();

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7E721B19-62EE-4C6F-BCE8-A8A973662D19}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -95,15 +95,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Dialogs\AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\BrowseArena2Folder.resx">
       <DependentUpon>BrowseArena2Folder.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\BrowseExportModelDialog.resx">
       <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
