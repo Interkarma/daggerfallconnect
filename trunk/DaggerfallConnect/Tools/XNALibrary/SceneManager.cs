@@ -291,7 +291,6 @@ namespace XNALibrary
 
             // Create billboard node
             BillboardNode node = new BillboardNode(flatItem);
-            //node.Matrix = Matrix.CreateTranslation(flatItem.Position);
             node.LocalBounds = flatItem.BoundingSphere;
             parent.Add(node);
 
@@ -512,7 +511,9 @@ namespace XNALibrary
             }
 
             // Set bounding sphere
-            flatItem.BoundingSphere.Center = flatItem.Origin;
+            flatItem.BoundingSphere.Center.X = flatItem.Position.X;
+            flatItem.BoundingSphere.Center.Y = flatItem.Origin.Y;
+            flatItem.BoundingSphere.Center.Z = flatItem.Position.Z;
             if (flatItem.Size.X > flatItem.Size.Y)
                 flatItem.BoundingSphere.Radius = flatItem.Size.X / 2;
             else
