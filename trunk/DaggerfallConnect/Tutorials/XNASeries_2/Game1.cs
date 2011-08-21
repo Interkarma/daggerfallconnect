@@ -30,6 +30,10 @@ namespace XNASeries_2
         ModelManager modelManager;
         BlockManager blockManager;
 
+        // Content
+        //string blockName = "MAGEAA13.RMB";          // Exterior block
+        string blockName = "S0000100.RDB";        // Dungeon block
+
         // Scene
         SceneManager sceneManager;
 
@@ -108,7 +112,7 @@ namespace XNASeries_2
             sceneManager.Root.DrawBoundsColor = Color.Red;
 
             // Add a block node
-            sceneManager.AddBlockNode(null, "MAGEAA13.RMB");
+            sceneManager.AddBlockNode(null, blockName);
         }
 
         /// <summary>

@@ -430,7 +430,32 @@ namespace XNALibrary
         /// <returns>SceneNode.</returns>
         private SceneNode BuildRDBNode(SceneNode parent, ref BlockManager.BlockData block)
         {
-            return new SceneNode();
+            // Create block parent node
+            SceneNode blockNode = new SceneNode();
+
+            // Add model nodes
+            ModelNode modelNode;
+            foreach (var model in block.Models)
+            {
+                modelNode = AddModelNode(blockNode, model.ModelId);
+                modelNode.Matrix = model.Matrix;
+                modelNode.DrawBounds = true;
+            }
+
+            // Add billboard nodes
+            BillboardNode billboardNode;
+            foreach (var flat in block.Flats)
+            {
+                billboardNode = AddBillboardNode(blockNode, flat);
+                billboardNode.Matrix = Matrix.Identity;
+                billboardNode.DrawBounds = true;
+                billboardNode.DrawBoundsColor = Color.Green;
+            }
+
+            // Add block node to scene
+            parent.Add(blockNode);
+
+            return blockNode;
         }
 
         #endregion
@@ -511,9 +536,9 @@ namespace XNALibrary
             }
 
             // Set bounding sphere
-            flatItem.BoundingSphere.Center.X = flatItem.Position.X;
-            flatItem.BoundingSphere.Center.Y = flatItem.Origin.Y;
-            flatItem.BoundingSphere.Center.Z = flatItem.Position.Z;
+            flatItem.BoundingSphere.Center.X = flatItem.Origin.X + flatItem.Position.X;
+            flatItem.BoundingSphere.Center.Y = flatItem.Origin.Y + flatItem.Position.Y;
+            flatItem.BoundingSphere.Center.Z = flatItem.Origin.Z + flatItem.Position.Z;
             if (flatItem.Size.X > flatItem.Size.Y)
                 flatItem.BoundingSphere.Radius = flatItem.Size.X / 2;
             else
