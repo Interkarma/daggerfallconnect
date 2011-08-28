@@ -20,7 +20,6 @@ using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
-using DaggerfallModelling.Engine;
 #endregion
 
 namespace DaggerfallModelling.ViewControls
@@ -38,7 +37,7 @@ namespace DaggerfallModelling.ViewControls
         private bool isReady = false;
         private string arena2Path = string.Empty;
 
-        // Managers
+        // XNALibrary Managers
         private TextureManager textureManager;
         private ModelManager modelManager;
         private BlockManager blockManager;
@@ -110,6 +109,8 @@ namespace DaggerfallModelling.ViewControls
             BlockView,
             /// <summary>Viewing a location.</summary>
             LocationView,
+            /// <summary>Viewing a dungeon.</summary>
+            DungeonView,
         }
 
         #endregion
@@ -784,59 +785,14 @@ namespace DaggerfallModelling.ViewControls
             if (!string.IsNullOrEmpty(name))
             {
                 name = name.ToUpper();
-                if (name.EndsWith(".RMB"))
-                {
-                    LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.SceneManager.LoadExteriorBlock(name, climate);
-                    view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
-                }
-                else if (name.EndsWith(".RDB"))
-                {
-                    LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                    view.SceneManager.LoadDungeonBlock(name);
-                    view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
-                }
-                else
-                {
-                    throw new Exception("Not a valid block name.");
-                }
+                LocationView view = (LocationView)viewClients[ViewModes.BlockView];
+                view.Scene.ResetScene();
+                view.Scene.AddBlockNode(null, name);
             }
 
             // Set view mode
             lastViewMode = viewMode;
             viewMode = ViewModes.BlockView;
-            viewClients[viewMode].ResumeView();
-            RaiseViewModeChangedEvent();
-        }
-
-        /// <summary>
-        /// Shows whatever exterior layout is currently loaded.
-        /// </summary>
-        public void ShowLocationExterior()
-        {
-            // Setup view
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
-
-            // Set view mode
-            lastViewMode = viewMode;
-            viewMode = ViewModes.LocationView;
-            viewClients[viewMode].ResumeView();
-            RaiseViewModeChangedEvent();
-        }
-
-        /// <summary>
-        /// Shows whatever dungeon layout is currently loaded.
-        /// </summary>
-        public void ShowLocationDungeon()
-        {
-            // Setup view
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
-
-            // Set view mode
-            lastViewMode = viewMode;
-            viewMode = ViewModes.LocationView;
             viewClients[viewMode].ResumeView();
             RaiseViewModeChangedEvent();
         }
@@ -853,8 +809,8 @@ namespace DaggerfallModelling.ViewControls
 
             // Load exterior
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
-            view.SceneManager.LoadLocation(ref dfLocation);
+            //view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
+            //view.SceneManager.LoadLocation(ref dfLocation);
 
             // Set view mode
             lastViewMode = viewMode;
@@ -875,8 +831,40 @@ namespace DaggerfallModelling.ViewControls
 
             // Load dungeon
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
-            view.SceneManager.LoadLocation(ref dfLocation);
+            //view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
+            //view.SceneManager.LoadLocation(ref dfLocation);
+
+            // Set view mode
+            lastViewMode = viewMode;
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
+        }
+
+        /// <summary>
+        /// Shows whatever exterior layout is currently loaded.
+        /// </summary>
+        public void ShowLocationExterior()
+        {
+            // Setup view
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            //view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
+
+            // Set view mode
+            lastViewMode = viewMode;
+            viewMode = ViewModes.LocationView;
+            viewClients[viewMode].ResumeView();
+            RaiseViewModeChangedEvent();
+        }
+
+        /// <summary>
+        /// Shows whatever dungeon layout is currently loaded.
+        /// </summary>
+        public void ShowLocationDungeon()
+        {
+            // Setup view
+            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+            //view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -896,7 +884,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Move to block
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.MoveToBlock(x, z);
+            //view.MoveToBlock(x, z);
         }
 
         /// <summary>
@@ -911,6 +899,7 @@ namespace DaggerfallModelling.ViewControls
             viewClients[ViewModes.ModelView].ResetView();
             viewClients[ViewModes.BlockView].ResetView();
             viewClients[ViewModes.LocationView].ResetView();
+            viewClients[ViewModes.DungeonView].ResetView();
         }
 
         #endregion
@@ -975,6 +964,7 @@ namespace DaggerfallModelling.ViewControls
             BindViewClient(ViewModes.ModelView, new ModelView(this));
             BindViewClient(ViewModes.BlockView, new LocationView(this));
             BindViewClient(ViewModes.LocationView, new LocationView(this));
+            BindViewClient(ViewModes.DungeonView, new LocationView(this));
 
             // Load fonts
             arialSmallFont = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\ArialSmall");
@@ -1093,6 +1083,7 @@ namespace DaggerfallModelling.ViewControls
             viewClients[ViewModes.ModelView].FilteredModelsChanged();
             viewClients[ViewModes.BlockView].FilteredModelsChanged();
             viewClients[ViewModes.LocationView].FilteredModelsChanged();
+            viewClients[ViewModes.DungeonView].FilteredModelsChanged();
         }
 
         /// <summary>

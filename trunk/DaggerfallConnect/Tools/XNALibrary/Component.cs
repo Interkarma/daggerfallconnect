@@ -22,16 +22,14 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Base class for drawable view components.
+    /// Base class for components that plug into renderer.
     /// </summary>
     public abstract class Component
     {
         #region Class Variables
 
-        protected string arena2Path;
-        protected GraphicsDevice graphicsDevice = null;
-        protected bool enabled = true;
-        protected Camera camera = null;
+        private bool enabled = true;
+        private GraphicsDevice graphicsDevice;
 
         #endregion
 
@@ -47,25 +45,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets camera.
-        /// </summary>
-        public Camera Camera
-        {
-            get { return camera; }
-            set { camera = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets Arena2 path.
-        /// </summary>
-        public string Arena2Path
-        {
-            get { return arena2Path; }
-            set { arena2Path = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets GraphicsDevice.
+        /// Gets or set graphics device.
         /// </summary>
         public GraphicsDevice GraphicsDevice
         {
@@ -80,12 +60,10 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="device">Graphics Device.</param>
-        /// <param name="arena2Path">Path to Arena2 folder.</param>
-        public Component(GraphicsDevice graphicsDevice, string arena2Path)
+        /// <param name="graphicsDevice">Graphics device used in rendering.</param>
+        public Component(GraphicsDevice graphicsDevice)
         {
             this.graphicsDevice = graphicsDevice;
-            this.arena2Path = arena2Path;
         }
 
         #endregion
@@ -93,20 +71,10 @@ namespace XNALibrary
         #region Public Abstract Methods
 
         /// <summary>
-        /// Called when component must initialise.
-        /// </summary>
-        public abstract void Initialize();
-
-        /// <summary>
-        /// Called when component should update animation.
-        /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public abstract void Update(TimeSpan elapsedTime);
-
-        /// <summary>
         /// Called when component should redraw.
         /// </summary>
-        public abstract void Draw();
+        /// <param name="camera">Camera looking into scene.</param>
+        public abstract void Draw(Camera camera);
 
         #endregion
     }

@@ -33,7 +33,7 @@ namespace DaggerfallModelling.Engine
     ///  These billboards will rotate around Y axis to face camera.
     ///  Origin is always at bottom centre.
     /// </summary>
-    public class Billboards : ComponentBase
+    public class BillboardsOld : ComponentBaseOld
     {
 
         #region Class Variables
@@ -121,7 +121,7 @@ namespace DaggerfallModelling.Engine
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Billboards(ViewHost host)
+        public BillboardsOld(ViewHost host)
             : base(host)
         {
         }

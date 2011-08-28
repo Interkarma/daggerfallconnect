@@ -23,13 +23,12 @@ namespace XNASeries_1
         // XNA
         GraphicsDeviceManager graphics;
 
-        // Daggerfall Connect
-        string arena2Path = @"C:\dosgames\dagger\arena2";
-        TextureManager textureManager;
-        ModelManager modelManager;
+        // XNALibrary
+        Renderer renderer;
+        Input input;
 
-        // Scene
-        SceneManager sceneManager;
+        // Daggerfall path
+        string arena2Path = @"C:\dosgames\dagger\arena2";
 
         // Camera
         Vector3 cameraPos = new Vector3(0, 300, 4000);
@@ -57,29 +56,17 @@ namespace XNASeries_1
         /// </summary>
         protected override void Initialize()
         {
-            // Create Daggerfall Connect objects
-            textureManager = new TextureManager(GraphicsDevice, arena2Path);
-            modelManager = new ModelManager(GraphicsDevice, arena2Path);
+            // Create renderer
+            renderer = new Renderer(GraphicsDevice);
+            renderer.Scene.TextureManager = new TextureManager(GraphicsDevice, arena2Path);
+            renderer.Scene.ModelManager = new ModelManager(GraphicsDevice, arena2Path);
+            renderer.Camera.Position = cameraPos;
 
-            // Create scene manager
-            sceneManager = new SceneManager(GraphicsDevice, arena2Path);
-            sceneManager.Initialize();
-            sceneManager.TextureManager = textureManager;
-            sceneManager.ModelManager = modelManager;
-
-            // Set camera position
-            sceneManager.Camera.NextPosition = cameraPos;
-            sceneManager.Camera.ApplyChanges();
-
-            // Set camera updating
-            sceneManager.CameraInputFlags =
-                Camera.InputFlags.Keyboard |
-                Camera.InputFlags.Mouse |
-                Camera.InputFlags.Controller;
-
-            // Set camera look preferences
-            sceneManager.Camera.InvertMouseLook = invertMouseLook;
-            sceneManager.Camera.InvertControllerLook = invertControllerLook;
+            // Create input
+            input = new Input();
+            input.ActiveDevices = Input.DeviceFlags.All;
+            input.InvertMouseLook = invertMouseLook;
+            input.InvertControllerLook = invertControllerLook;
 
             base.Initialize();
         }
@@ -91,17 +78,16 @@ namespace XNASeries_1
         protected override void LoadContent()
         {
             // Set root node to draw bounds
-            sceneManager.Root.Matrix = Matrix.CreateTranslation(0f, 0f, 0f);
-            sceneManager.Root.DrawBounds = drawBounds;
-            sceneManager.Root.DrawBoundsColor = Color.Red;
+            renderer.Scene.Root.DrawBounds = drawBounds;
+            renderer.Scene.Root.DrawBoundsColor = Color.Red;
 
             // Add a model node
-            ModelNode node1 = sceneManager.AddModelNode(null, 456);
+            ModelNode node1 = renderer.Scene.AddModelNode(null, 456);
             node1.Matrix = Matrix.CreateTranslation(1000f, 0f, 0f);
             node1.DrawBounds = drawBounds;
 
             // Add a second model node
-            ModelNode node2 = sceneManager.AddModelNode(null, 343);
+            ModelNode node2 = renderer.Scene.AddModelNode(null, 343);
             node2.Matrix = Matrix.CreateTranslation(-1000f, 0f, 0f);
             node2.DrawBounds = drawBounds;
         }
@@ -121,7 +107,12 @@ namespace XNASeries_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            sceneManager.Update(gameTime.ElapsedGameTime);
+            // Update input
+            input.Update(gameTime.ElapsedGameTime);
+            input.Apply(renderer.Camera);
+
+            // Update scene
+            renderer.Scene.Update(gameTime.ElapsedGameTime);
         }
 
         /// <summary>
@@ -130,9 +121,10 @@ namespace XNASeries_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            sceneManager.Draw();
+            // Draw scene
+            renderer.Draw();
             if (drawBounds)
-                sceneManager.DrawBounds();
+                renderer.DrawBounds();
         }
     }
 }

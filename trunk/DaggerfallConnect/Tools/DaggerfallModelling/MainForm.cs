@@ -42,8 +42,8 @@ namespace DaggerfallModelling
         // Searching
         private int minSearchLength = 2;
         private bool searchModels = false;
-        private bool searchBlocks = false;
-        private bool searchLocations = true;
+        private bool searchBlocks = true;
+        private bool searchLocations = false;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -1122,7 +1122,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set new value
-            ContentViewer.LocationView.SkyManager.SkyFrame = TimeOfDayTrackBar.Value;
+            //ContentViewer.LocationView.SkyManager.SkyFrame = TimeOfDayTrackBar.Value;
         }
 
         private void AdjustSkyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1131,7 +1131,7 @@ namespace DaggerfallModelling
                 return;
 
             // Get current value
-            TimeOfDayTrackBar.Value = ContentViewer.LocationView.SkyManager.SkyFrame;
+            //TimeOfDayTrackBar.Value = ContentViewer.LocationView.SkyManager.SkyFrame;
 
             // Toggle panel and menu check state
             TimeOfDayPanel.Visible = !TimeOfDayPanel.Visible;

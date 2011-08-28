@@ -21,31 +21,12 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Camera class.
+    /// Camera class providing position and
     /// </summary>
     public class Camera
     {
 
         #region Class Variables
-
-        // Keyboard movement
-        private const float keyboardSpinRate = 200f;
-        private const float keyboardMoveRate = 400f;
-        private const float keyboardShiftKeyMultiplier = 3f;
-
-        // Mouse movement
-        private const float mouseSpinRate = 10f;
-        private const float mouseMoveRate = 100f;
-        private const float middleButonMoveRate = 100f;
-
-        // Controller movement
-        private bool controllerConnected = false;
-        private const float controllerSpinRate = 180f;
-        private const float controllerMoveRate = 1100f;
-
-        // Look options
-        private bool invertMouseLookY = false;
-        private bool invertControllerLookY = true;
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -59,42 +40,20 @@ namespace XNALibrary
         // Camera
         private float eyeHeight = 70f;
         private float bodyRadius = 24f;
+        private float cameraYaw = 0.0f;
+        private float cameraPitch = 0.0f;
         private BoundingBox cameraMovementBounds;
         private BoundingSphere cameraBoundingSphere;
         private Vector3 cameraPosition;
-        private Vector3 cameraPreviousPosition;
-        private Vector3 cameraNextPosition;
         private Vector3 cameraReference = Vector3.Forward;
         private Vector3 cameraUpVector = Vector3.Up;
         private Vector3 cameraTransformedReference;
         private Vector3 cameraTarget;
-        private float cameraYaw = 0.0f;
-        private float cameraPitch = 0.0f;
-        private Vector3 movement = Vector3.Zero;
-        private Matrix rotation = Matrix.Identity;
         private BoundingFrustum viewFrustum;
 
-        // Mouse
-        private Point lastMousePos = Point.Zero;
-        private Point mousePos = Point.Zero;
-        private Point mouseDelta = Point.Zero;
-
         #endregion
 
-        #region Class Structures
-
-        [Flags]
-        public enum InputFlags
-        {
-            None = 0,
-            Keyboard = 1,
-            Mouse = 2,
-            Controller = 4,
-        }
-
-        #endregion
-
-        #region Public Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets camera movement bounds.
@@ -124,13 +83,13 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets bounds of camera (based on next position).
+        /// Gets bounds of camera.
         /// </summary>
         public BoundingSphere BoundingSphere
         {
             get
             {
-                cameraBoundingSphere.Center = cameraNextPosition;
+                cameraBoundingSphere.Center = cameraPosition;
                 cameraBoundingSphere.Radius = bodyRadius;
                 return cameraBoundingSphere;
             }
@@ -164,35 +123,12 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets camera position. Camera position
-        ///  can be changed using NextPosition, which is
-        ///  applied every time ApplyChanges() is called.
+        /// Gets or sets camera position.
         /// </summary>
         public Vector3 Position
         {
             get { return cameraPosition; }
-        }
-
-        /// <summary>
-        /// Geta previous camera position.
-        /// </summary>
-        public Vector3 PreviousPosition
-        {
-            get { return cameraPreviousPosition; }
-        }
-
-        /// <summary>
-        /// Gets or sets next camera position, which
-        ///  is applied when ApplyChanges() is called.
-        /// </summary>
-        public Vector3 NextPosition
-        {
-            get { return cameraNextPosition; }
-            set
-            {
-                cameraNextPosition = value;
-                EnforceBounds();
-            }
+            set { SetPosition(value); }
         }
 
         /// <summary>
@@ -263,32 +199,6 @@ namespace XNALibrary
             get { return cameraPitch; }
         }
 
-        /// <summary>
-        /// Gets connection state of player 1 controller.
-        /// </summary>
-        public bool ControllerConnected
-        {
-            get { return controllerConnected; }
-        }
-
-        /// <summary>
-        /// Gets or sets flag to invert mouse look.
-        /// </summary>
-        public bool InvertMouseLook
-        {
-            get { return invertMouseLookY; }
-            set { invertMouseLookY = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets flag to invert controller look.
-        /// </summary>
-        public bool InvertControllerLook
-        {
-            get { return invertControllerLookY; }
-            set { invertControllerLookY = value; }
-        }
-
         #endregion
 
         #region Constructors
@@ -299,16 +209,27 @@ namespace XNALibrary
         public Camera()
         {
             viewFrustum = new BoundingFrustum(Matrix.Identity);
-            cameraMovementBounds = new BoundingBox();
+            cameraMovementBounds.Min = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            cameraMovementBounds.Max = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             cameraBoundingSphere = new BoundingSphere();
             cameraPosition = new Vector3(0, eyeHeight, 0);
-            cameraNextPosition = cameraPosition;
-            cameraPreviousPosition = cameraPosition;
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Updates view and frustum matrices.
+        /// </summary>
+        public void Update()
+        {
+            // Update view matrix
+            Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
+
+            // Update frustum
+            viewFrustum.Matrix = viewMatrix * projectionMatrix;
+        }
 
         /// <summary>
         /// Resets camera yaw and pitch.
@@ -327,145 +248,48 @@ namespace XNALibrary
         /// <param name="Z">Z amount.</param>
         public void Translate(float X, float Y, float Z)
         {
-            cameraNextPosition.X = cameraPosition.X + X;
-            cameraNextPosition.Y = cameraPosition.Y + Y;
-            cameraNextPosition.Z = cameraPosition.Z + Z;
+            cameraPosition.X = cameraPosition.X + X;
+            cameraPosition.Y = cameraPosition.Y + Y;
+            cameraPosition.Z = cameraPosition.Z + Z;
+            cameraTarget = cameraPosition + cameraReference;
             EnforceBounds();
-            ApplyChanges();
         }
 
         /// <summary>
-        /// Called when the camera should poll input methods and update.
+        /// Translate camera by vector.
         /// </summary>
-        /// <param name="flags">Update flags.</param>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public void Update(InputFlags flags, TimeSpan elapsedTime)
+        /// <param name="translation">Translation vector.</param>
+        public void Translate(Vector3 translation)
         {
-            // Calculate time delta
-            float timeDelta = (float)elapsedTime.TotalSeconds;
+            cameraPosition += translation;
+            cameraTarget = cameraPosition + cameraReference;
+            EnforceBounds();
+        }
 
-            // Init movement and rotation
-            movement = Vector3.Zero;
-            rotation = Matrix.Identity;
-
-            // Keyboard input
-            if ((flags & InputFlags.Keyboard) == InputFlags.Keyboard)
-            {
-                // Get movement
-                KeyboardState ks = Keyboard.GetState();
-                if (ks.IsKeyDown(Keys.Q))                               // Look left
-                    cameraYaw += keyboardSpinRate * timeDelta;
-                if (ks.IsKeyDown(Keys.E))                               // Look right
-                    cameraYaw -= keyboardSpinRate * timeDelta;
-                if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
-                    movement.Z -= keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
-                    movement.Z += keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.A) || ks.IsKeyDown(Keys.Left))    // Move left
-                    movement.X -= keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
-                    movement.X += keyboardMoveRate * timeDelta;
-
-                // Multiply keyboard movement when shift is down
-                if (ks.IsKeyDown(Keys.LeftShift) || ks.IsKeyDown(Keys.RightShift))
-                {
-                    movement *= keyboardShiftKeyMultiplier;
-                }
-            }
-
-            // Mouse input
-            if ((flags & InputFlags.Mouse) == InputFlags.Mouse)
-            {
-                // Update mouse state
-                MouseState ms = Mouse.GetState();
-                lastMousePos = mousePos;
-                mousePos.X = ms.X;
-                mousePos.Y = ms.Y;
-                mouseDelta.X = mousePos.X - lastMousePos.X;
-                mouseDelta.Y = mousePos.Y - lastMousePos.Y;
-
-                // Mouse-look with left-button pressed
-                if (ms.LeftButton == ButtonState.Pressed)
-                {
-                    cameraYaw -= (mouseDelta.X * mouseSpinRate) * timeDelta;
-                    cameraPitch -= ((invertMouseLookY) ? -mouseDelta.Y : mouseDelta.Y) * mouseSpinRate * timeDelta;
-                }
-
-                // Movement with right-button pressed
-                if (ms.RightButton == ButtonState.Pressed)
-                {
-                    movement.Z += (mouseDelta.Y * mouseMoveRate) * timeDelta;
-                }
-
-                // Movement with middle-button pressed
-                if (ms.MiddleButton == ButtonState.Pressed)
-                {
-                    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
-                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
-                }
-            }
-
-            // Controller input
-            if ((flags & InputFlags.Controller) == InputFlags.Controller)
-            {
-                GamePadState cs = GamePad.GetState(0);
-                if (cs.IsConnected)
-                {
-                    controllerConnected = true;
-
-                    // Look left and right
-                    if (cs.ThumbSticks.Right.X < 0)
-                        cameraYaw += (controllerSpinRate * -cs.ThumbSticks.Right.X) * timeDelta;
-                    if (cs.ThumbSticks.Right.X > 0)
-                        cameraYaw -= (controllerSpinRate * cs.ThumbSticks.Right.X) * timeDelta;
-
-                    // Look up and down
-                    if (invertControllerLookY)
-                    {
-                        if (cs.ThumbSticks.Right.Y < 0)
-                            cameraPitch += (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
-                        if (cs.ThumbSticks.Right.Y > 0)
-                            cameraPitch -= (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
-                    }
-                    else
-                    {
-                        if (cs.ThumbSticks.Right.Y < 0)
-                            cameraPitch -= (controllerSpinRate * -cs.ThumbSticks.Right.Y)  * timeDelta;
-                        if (cs.ThumbSticks.Right.Y > 0)
-                            cameraPitch += (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
-                    }
-
-                    // Move forward and backward
-                    if (cs.ThumbSticks.Left.Y > 0)
-                        movement.Z -= (controllerMoveRate * cs.ThumbSticks.Left.Y) * timeDelta;
-                    if (cs.ThumbSticks.Left.Y < 0)
-                        movement.Z += (controllerMoveRate * -cs.ThumbSticks.Left.Y) * timeDelta;
-
-                    // Move left and right
-                    if (cs.ThumbSticks.Left.X > 0)
-                        movement.X -= (controllerMoveRate * -cs.ThumbSticks.Left.X) * timeDelta;
-                    if (cs.ThumbSticks.Left.X < 0)
-                        movement.X += (controllerMoveRate * cs.ThumbSticks.Left.X) * timeDelta;
-                }
-                else
-                {
-                    controllerConnected = false;
-                }
-            }
-
-            // Fix yaw
+        /// <summary>
+        /// Transform camera.
+        /// </summary>
+        /// <param name="yaw">Amount to change yaw.</param>
+        /// <param name="pitch">Amount to change pitch.</param>
+        /// <param name="movement">Distance to move from current position.</param>
+        public void Transform(float yaw, float pitch, Vector3 movement)
+        {
+            //  Apply yaw
+            cameraYaw += yaw;
             if (cameraYaw > 360)
                 cameraYaw -= 360;
             else if (cameraYaw < 0)
                 cameraYaw += 360;
 
-            // Fix pitch
+            // Apply pitch
+            cameraPitch += pitch;
             if (cameraPitch > 89)
                 cameraPitch = 89;
             if (cameraPitch < -89)
                 cameraPitch = -89;
 
             // Apply rotation
+            Matrix rotation = Matrix.Identity;
             Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
             rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
 
@@ -473,30 +297,18 @@ namespace XNALibrary
             if (movement != Vector3.Zero)
             {
                 Vector3.Transform(ref movement, ref rotation, out movement);
-                cameraNextPosition = cameraPosition + movement;
-                EnforceBounds();
             }
-        }
 
-        /// <summary>
-        /// Apply pending changes to camera movement and rotation.
-        ///  Updates View matrix.
-        /// </summary>
-        public void ApplyChanges()
-        {
             // Update position
-            cameraPreviousPosition = cameraPosition;
-            cameraPosition = cameraNextPosition;
-            
+            cameraPosition += movement;
+            cameraTarget = cameraPosition + cameraReference;
+
             // Transform camera
             Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
             Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
 
-            // Update view matrix
-            Matrix.CreateLookAt(ref cameraPosition, ref cameraTarget, ref cameraUpVector, out viewMatrix);
-
-            // Update frustum
-            viewFrustum.Matrix = viewMatrix * projectionMatrix;
+            // Enforce bounds and update
+            EnforceBounds();
         }
 
         /// <summary>
@@ -504,16 +316,14 @@ namespace XNALibrary
         /// </summary>
         public void CentreInBounds(float height)
         {
-            cameraNextPosition = new Vector3(
+            cameraPosition = new Vector3(
                     cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2,
                     height,
                     cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2);
-            ApplyChanges();
         }
 
         /// <summary>
-        /// Sets new aspect ratio.
-        ///  Updates Projections matrix.
+        /// Sets new aspect ratio and updates projection matrix.
         /// </summary>
         /// <param name="aspectRatio">New aspect ratio.</param>
         public void SetAspectRatio(float aspectRatio)
@@ -524,8 +334,8 @@ namespace XNALibrary
                 nearPlaneDistance,
                 farPlaneDistance);
 
-            // Update frustum
-            viewFrustum.Matrix = viewMatrix * projectionMatrix;
+            // Update
+            Update();
         }
 
         #endregion
@@ -533,28 +343,36 @@ namespace XNALibrary
         #region Private Methods
 
         /// <summary>
-        /// Checks and enforces camera bounds.
+        /// Sets new camera position.
+        /// </summary>
+        /// <param name="position">Position vector.</param>
+        private void SetPosition(Vector3 position)
+        {
+            cameraPosition.X = position.X;
+            cameraPosition.Y = position.Y + eyeHeight;
+            cameraPosition.Z = position.Z;
+            cameraTarget = cameraPosition + cameraReference;
+            EnforceBounds();
+        }
+
+        /// <summary>
+        /// Ensures camera stays within movement bounds.
         /// </summary>
         private void EnforceBounds()
         {
             // Keep camera position within defined movement bounds
-            if (cameraNextPosition.X < cameraMovementBounds.Min.X)
-                cameraNextPosition.X = cameraMovementBounds.Min.X;
-
-            if (cameraNextPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
-                cameraNextPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
-
-            if (cameraNextPosition.Z < cameraMovementBounds.Min.Z)
-                cameraNextPosition.Z = cameraMovementBounds.Min.Z;
-
-            if (cameraNextPosition.X > cameraMovementBounds.Max.X)
-                cameraNextPosition.X = cameraMovementBounds.Max.X;
-
-            if (cameraNextPosition.Y > cameraMovementBounds.Max.Y)
-                cameraNextPosition.Y = cameraMovementBounds.Max.Y;
-
-            if (cameraNextPosition.Z > cameraMovementBounds.Max.Z)
-                cameraNextPosition.Z = cameraMovementBounds.Max.Z;
+            if (cameraPosition.X < cameraMovementBounds.Min.X)
+                cameraPosition.X = cameraMovementBounds.Min.X;
+            if (cameraPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
+                cameraPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
+            if (cameraPosition.Z < cameraMovementBounds.Min.Z)
+                cameraPosition.Z = cameraMovementBounds.Min.Z;
+            if (cameraPosition.X > cameraMovementBounds.Max.X)
+                cameraPosition.X = cameraMovementBounds.Max.X;
+            if (cameraPosition.Y > cameraMovementBounds.Max.Y - eyeHeight)
+                cameraPosition.Y = cameraMovementBounds.Max.Y - eyeHeight;
+            if (cameraPosition.Z > cameraMovementBounds.Max.Z)
+                cameraPosition.Z = cameraMovementBounds.Max.Z;
         }
 
         #endregion

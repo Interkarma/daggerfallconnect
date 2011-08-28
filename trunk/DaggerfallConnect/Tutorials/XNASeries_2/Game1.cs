@@ -24,18 +24,16 @@ namespace XNASeries_2
         // XNA
         GraphicsDeviceManager graphics;
 
-        // Daggerfall Connect
+        // XNALibrary
+        Renderer renderer;
+        Input input;
+
+        // Daggerfall path
         string arena2Path = @"C:\dosgames\dagger\arena2";
-        TextureManager textureManager;
-        ModelManager modelManager;
-        BlockManager blockManager;
 
-        // Content
-        //string blockName = "MAGEAA13.RMB";          // Exterior block
-        string blockName = "S0000100.RDB";        // Dungeon block
-
-        // Scene
-        SceneManager sceneManager;
+        // Content (Only uncomment one of these)
+        string blockName = "MAGEAA13.RMB";          // Exterior block
+        //string blockName = "S0000100.RDB";        // Dungeon block
 
         // Camera
         Vector3 cameraPos = new Vector3(2048, 400, 1000);
@@ -67,35 +65,18 @@ namespace XNASeries_2
         /// </summary>
         protected override void Initialize()
         {
-            // Create Daggerfall Connect objects
-            textureManager = new TextureManager(GraphicsDevice, arena2Path);
-            modelManager = new ModelManager(GraphicsDevice, arena2Path);
-            blockManager = new BlockManager(GraphicsDevice, arena2Path);
+            // Create renderer
+            renderer = new Renderer(GraphicsDevice);
+            renderer.Scene.TextureManager = new TextureManager(GraphicsDevice, arena2Path);
+            renderer.Scene.ModelManager = new ModelManager(GraphicsDevice, arena2Path);
+            renderer.Scene.BlockManager = new BlockManager(GraphicsDevice, arena2Path);
+            renderer.Camera.Position = cameraPos;
 
-            // Set climate and weather
-            textureManager.Climate = climate;
-            textureManager.Weather = weather;
-
-            // Create scene manager
-            sceneManager = new SceneManager(GraphicsDevice, arena2Path);
-            sceneManager.Initialize();
-            sceneManager.TextureManager = textureManager;
-            sceneManager.ModelManager = modelManager;
-            sceneManager.BlockManager = blockManager;
-
-            // Set camera position
-            sceneManager.Camera.NextPosition = cameraPos;
-            sceneManager.Camera.ApplyChanges();
-
-            // Set camera updating
-            sceneManager.CameraInputFlags =
-                Camera.InputFlags.Keyboard |
-                Camera.InputFlags.Mouse |
-                Camera.InputFlags.Controller;
-
-            // Set camera look preferences
-            sceneManager.Camera.InvertMouseLook = invertMouseLook;
-            sceneManager.Camera.InvertControllerLook = invertControllerLook;
+            // Create input
+            input = new Input();
+            input.ActiveDevices = Input.DeviceFlags.All;
+            input.InvertMouseLook = invertMouseLook;
+            input.InvertControllerLook = invertControllerLook;
 
             base.Initialize();
         }
@@ -107,12 +88,11 @@ namespace XNASeries_2
         protected override void LoadContent()
         {
             // Set root node to draw bounds
-            sceneManager.Root.Matrix = Matrix.CreateTranslation(0f, 0f, 0f);
-            sceneManager.Root.DrawBounds = drawBounds;
-            sceneManager.Root.DrawBoundsColor = Color.Red;
+            renderer.Scene.Root.DrawBounds = drawBounds;
+            renderer.Scene.Root.DrawBoundsColor = Color.Red;
 
             // Add a block node
-            sceneManager.AddBlockNode(null, blockName);
+            renderer.Scene.AddBlockNode(null, blockName);
         }
 
         /// <summary>
@@ -130,7 +110,12 @@ namespace XNASeries_2
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            sceneManager.Update(gameTime.ElapsedGameTime);
+            // Update input
+            input.Update(gameTime.ElapsedGameTime);
+            input.Apply(renderer.Camera);
+
+            // Update scene
+            renderer.Scene.Update(gameTime.ElapsedGameTime);
         }
 
         /// <summary>
@@ -139,9 +124,10 @@ namespace XNASeries_2
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            sceneManager.Draw();
+            // Draw scene
+            renderer.Draw();
             if (drawBounds)
-                sceneManager.DrawBounds();
+                renderer.DrawBounds();
         }
     }
 }

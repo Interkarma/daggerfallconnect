@@ -122,10 +122,9 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="device">Graphics Device.</param>
-        /// <param name="arena2Path">Path to Arena2 folder.</param>
-        public BillboardManager(GraphicsDevice graphicsDevice, string arena2Path)
-            : base(graphicsDevice, arena2Path)
+        /// <param name="graphicsDevice">Graphics device used in rendering.</param>
+        public BillboardManager(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice)
         {
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
@@ -145,28 +144,14 @@ namespace XNALibrary
         #region Abstract Overrides
 
         /// <summary>
-        /// Called when component must initialise.
-        /// </summary>
-        public override void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// Called when view component should update animation.
-        /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public override void Update(TimeSpan elapsedTime)
-        {
-        }
-
-        /// <summary>
         /// Called when view component should redraw.
         /// </summary>
-        public override void Draw()
+        /// <param name="camera">Camera looking into scene.</param>
+        public override void Draw(Camera camera)
         {
             if (this.Enabled && camera != null)
             {
-                BeginDraw();
+                BeginDraw(camera);
                 DrawBatch();
                 EndDraw();
             }
@@ -189,11 +174,13 @@ namespace XNALibrary
         /// Submit a billboard to be drawn. This must be done
         ///  every frame or Draw() will do nothing.
         /// </summary>
-        /// <param name="position">Position.</param>
+        /// <param name="camera">Camera looking into scene.</param>
+        /// <param name="origin">Origin of billboard.</param>
+        /// <param name="position">Position of billboard relative to origin.</param>
         /// <param name="size">Size.</param>
         /// <param name="textureKey">Texture key.</param>
         /// <param name="blockTransform">Matrix of parent block.</param>
-        public void AddBatch(Vector3 origin, Vector3 position, Vector2 size, int textureKey, Matrix blockTransform)
+        public void AddBatch(Camera camera, Vector3 origin, Vector3 position, Vector2 size, int textureKey, Matrix blockTransform)
         {
             // Create billboard matrix
             Matrix constrainedBillboard = Matrix.CreateConstrainedBillboard(
@@ -213,7 +200,7 @@ namespace XNALibrary
             // Calc distance between batch and camera
             float distance = Vector3.Distance(
                 Vector3.Transform(position, blockTransform),
-                Camera.Position);
+                camera.Position);
 
             // Add to batch
             BillboardBatchItem batchItem = new BillboardBatchItem(
@@ -231,29 +218,30 @@ namespace XNALibrary
         /// Begin drawing billboards. This must be called before the first
         ///  billboard is drawn.
         /// </summary>
-        private void BeginDraw()
+        /// <param name="camera">Camera looking into scene.</param>
+        private void BeginDraw(Camera camera)
         {
             // Set render states
-            graphicsDevice.RenderState.DepthBufferEnable = true;
-            graphicsDevice.RenderState.DepthBufferWriteEnable = false;
-            graphicsDevice.RenderState.AlphaBlendEnable = true;
-            graphicsDevice.RenderState.AlphaTestEnable = false;
-            graphicsDevice.RenderState.CullMode = CullMode.None;
-            graphicsDevice.RenderState.SourceBlend = Blend.One;
-            graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+            GraphicsDevice.RenderState.DepthBufferEnable = true;
+            GraphicsDevice.RenderState.DepthBufferWriteEnable = false;
+            GraphicsDevice.RenderState.AlphaBlendEnable = true;
+            GraphicsDevice.RenderState.AlphaTestEnable = false;
+            GraphicsDevice.RenderState.CullMode = CullMode.None;
+            GraphicsDevice.RenderState.SourceBlend = Blend.One;
+            GraphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
 
             // Set sampler state
-            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
-            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+            GraphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Clamp;
+            GraphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
 
             // Set zero anisotropy
-            graphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
-            graphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
-            graphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
-            graphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
+            GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Linear;
+            GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
+            GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Linear;
+            GraphicsDevice.SamplerStates[0].MaxAnisotropy = 0;
 
             // Set vertex declaration
-            graphicsDevice.VertexDeclaration = vertexDeclaration;
+            GraphicsDevice.VertexDeclaration = vertexDeclaration;
 
             // Set matrices
             effect.View = camera.View;
@@ -272,6 +260,10 @@ namespace XNALibrary
         /// </summary>
         private void DrawBatch()
         {
+            // Exit if TextureManager not set
+            if (textureManager == null)
+                return;
+
             // Draw all billboards in batch
             foreach (var item in batch)
             {
@@ -281,7 +273,7 @@ namespace XNALibrary
                 effect.CommitChanges();
 
                 // Draw billboard
-                graphicsDevice.DrawUserIndexedPrimitives(
+                GraphicsDevice.DrawUserIndexedPrimitives(
                     PrimitiveType.TriangleList,
                     billboardVertices,
                     0,
@@ -303,7 +295,7 @@ namespace XNALibrary
             effect.End();
 
             // Restore uncommon render states
-            graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+            GraphicsDevice.RenderState.DepthBufferWriteEnable = true;
         }
 
         /// <summary>

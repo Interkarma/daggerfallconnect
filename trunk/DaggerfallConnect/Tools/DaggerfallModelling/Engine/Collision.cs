@@ -27,7 +27,7 @@ namespace DaggerfallModelling.Engine
     /// <summary>
     /// Scene intersection tests and collision response.
     /// </summary>
-    public class Collision : ComponentBase
+    public class Collision : ComponentBaseOld
     {
         #region Class Variables
 
@@ -42,7 +42,7 @@ namespace DaggerfallModelling.Engine
 
         // Scene
         int sceneLayoutCount = 0;
-        Scene.BlockPosition[] sceneLayout = null;
+        SceneOld.BlockPosition[] sceneLayout = null;
 
         #endregion
 
@@ -192,7 +192,7 @@ namespace DaggerfallModelling.Engine
         /// <param name="layout">Layout array.</param>
         /// <param name="count">Number of valid elements.</param>
         public void SetLayout(
-            Scene.BlockPosition[] layout,
+            SceneOld.BlockPosition[] layout,
             int count)
         {
             this.sceneLayoutCount = count;
@@ -396,17 +396,18 @@ namespace DaggerfallModelling.Engine
                 ModelManager.ModelData model = host.ModelManager.GetModelData(mi.ModelID.Value);
 
                 // Get motion ray
-                step = camera.NextPosition - camera.Position;
+                //step = camera.NextPosition - camera.Position;
                 motionRay.Position = camera.Position;
-                motionRay.Direction = Vector3.Normalize(step);
-                distance = Intersection.RayIntersectsDFMesh(
-                    motionRay,
-                    mi.ModelMatrix,
-                    ref model,
-                    out subMeshResult,
-                    out planeResult);
+                //motionRay.Direction = Vector3.Normalize(step);
+                //distance = Intersection.RayIntersectsDFMesh(
+                //    motionRay,
+                //    mi.ModelMatrix,
+                //    ref model,
+                //    out subMeshResult,
+                //    out planeResult);
 
                 // Ensure camera does not move beyond obstacle
+                /*
                 if (distance != null)
                 {
                     // If distance to move is greater than distance to collision
@@ -417,7 +418,7 @@ namespace DaggerfallModelling.Engine
                     {
                         // Move valid amount along movement vector
                         Matrix m = Matrix.CreateTranslation(motionRay.Direction * validDistance);
-                        camera.NextPosition = Vector3.Transform(camera.Position, m);
+                        //camera.NextPosition = Vector3.Transform(camera.Position, m);
                     }
 
                     // Test sphere intersection
@@ -434,27 +435,30 @@ namespace DaggerfallModelling.Engine
                         float difference = camera.BodyRadius - distance.Value;
                         Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.ModelMatrix);
                         Matrix m = Matrix.CreateTranslation(normal * difference);
-                        camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
+                        //camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
                     }
                 }
+                */
 
                 // Test down ray
-                downRay.Position = camera.NextPosition;
+                //downRay.Position = camera.NextPosition;
                 downRay.Direction = Vector3.Down;
-                distance = Intersection.RayIntersectsDFMesh(
-                    downRay,
-                    mi.ModelMatrix,
-                    ref model,
-                    out subMeshResult,
-                    out planeResult);
+                //distance = Intersection.RayIntersectsDFMesh(
+                //    downRay,
+                //    mi.ModelMatrix,
+                //    ref model,
+                //    out subMeshResult,
+                //    out planeResult);
 
                 // Ensure camera is always at eye height
+                /*
                 if (distance != null && distance < camera.EyeHeight)
                 {
-                    Vector3 nextPosition = camera.NextPosition;
-                    nextPosition.Y += camera.EyeHeight - distance.Value;
-                    camera.NextPosition = nextPosition;
+                    //Vector3 nextPosition = camera.NextPosition;
+                    //nextPosition.Y += camera.EyeHeight - distance.Value;
+                    //camera.NextPosition = nextPosition;
                 }
+                */
             }
         }
 

@@ -30,7 +30,7 @@ namespace DaggerfallModelling.Engine
     /// <summary>
     /// Component to draw a Daggerfall sky in outsoor scenes.
     /// </summary>
-    public class Sky : ComponentBase
+    public class Sky : ComponentBaseOld
     {
 
         #region Class Variables

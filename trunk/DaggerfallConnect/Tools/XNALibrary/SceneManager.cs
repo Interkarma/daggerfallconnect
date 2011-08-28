@@ -22,17 +22,14 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class for rendering Daggerfall environments with XNA.
-    ///  Provides basic resource loading, scene graph, and rendering
-    ///  using BasicEffect. For more advanced scene management and effects
-    ///  override or reimplement as needed.
+    /// Helper class for loading Daggerfall content and constructing a scene graph.
     /// </summary>
-    public class SceneManager : Component
+    public class SceneManager
     {
 
         #region Class Variables
 
-        // Daggerfall resources
+        // Daggerfall content managers
         private TextureManager textureManager = null;
         private ModelManager modelManager = null;
         private BlockManager blockManager = null;
@@ -40,85 +37,12 @@ namespace XNALibrary
         // Scene
         private SceneNode root;
 
-        // Camera
-        Camera.InputFlags cameraInputFlags;
-
-        // Batches
-        private Dictionary<int, List<BatchItem>> batches;
-
-        // Bounds
-        private RenderableBoundingSphere renderableBounds;
-
-        // XNA
-        private Color backgroundColor;
-        private VertexDeclaration vertexDeclaration;
-        private BasicEffect basicEffect;
-
         // Ground height
         private int groundHeight = -1;
-
-        // Sub-Components
-        BillboardManager billboardManager;
-        // TODO: Create sky
-
-        #endregion
-
-        #region Class Structures
-
-        /// <summary>
-        /// Renderable item.
-        /// </summary>
-        private struct BatchItem
-        {
-            public bool Indexed;
-            public Matrix Matrix;
-            public int NumVertices;
-            public VertexBuffer VertexBuffer;
-            public IndexBuffer IndexBuffer;
-            public int StartIndex;
-            public int PrimitiveCount;
-        }
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets colour used for device clears.
-        /// </summary>
-        public Color BackgroundColor
-        {
-            get { return backgroundColor; }
-            set { backgroundColor = value; }
-        }
-
-        /// <summary>
-        /// Gets BasicEffect used for default rendering.
-        /// </summary>
-        public BasicEffect BasicEffect
-        {
-            get { return basicEffect; }
-        }
-
-        public new Camera Camera
-        {
-            get { return camera; }
-            set
-            {
-                camera = value;
-                billboardManager.Camera = value;
-                // TODO: Set sky camera
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets camera input flags.
-        /// </summary>
-        public Camera.InputFlags CameraInputFlags
-        {
-            get { return cameraInputFlags; }
-            set { cameraInputFlags = value; }
-        }
 
         /// <summary>
         /// Gets root scene node.
@@ -129,21 +53,17 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets TextureManager for resource loading.
+        /// Gets or sets TextureManager for content loading.
         /// </summary>
         public TextureManager TextureManager
         {
             get { return textureManager; }
-            set
-            {
-                textureManager = value;
-                billboardManager.TextureManager = value;
-            }
+            set { textureManager = value; }
         }
 
         /// <summary>
-        /// Gets or sets ModelManager for resource loading.
-        ///  For best results model caching should be enabled.
+        /// Gets or sets ModelManager for content loading.
+        ///  For best results model caching should be enabled in ModelManager.
         /// </summary>
         public ModelManager ModelManager
         {
@@ -152,7 +72,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets BlockManager for resource loading.
+        /// Gets or sets BlockManager for content loading.
         /// </summary>
         public BlockManager BlockManager
         {
@@ -165,95 +85,45 @@ namespace XNALibrary
         #region Constructors
 
         /// <summary>
-        /// Constructor.
+        /// Constructor. Takes references to content managers to enable content loading.
+        ///  Note that content loading will throw an exception if attempting to load
+        ///  content with a null manager.
+        /// <param name="textureManager">TextureManager reference or null.</param>
+        /// <param name="modelManager">ModelManager reference or null..</param>
+        /// <param name="blockManager">BlockManager reference or null..</param>
         /// </summary>
-        /// <param name="device">Graphics Device.</param>
-        /// <param name="arena2Path">Path to Arena2 folder.</param>
-        public SceneManager(GraphicsDevice graphicsDevice, string arena2Path)
-            : base(graphicsDevice, arena2Path)
+        public SceneManager(TextureManager textureManager, ModelManager modelManager, BlockManager blockManager)
         {
-            // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(
-                graphicsDevice, VertexPositionNormalTexture.VertexElements);
-
-            // Batching
-            batches = new Dictionary<int, List<BatchItem>>();
-
-            // Set default background colour
-            backgroundColor = Color.CornflowerBlue;
-
-            // Set default camera update flags
-            cameraInputFlags = Camera.InputFlags.None;
-
-            // Setup renderable bounds
-            renderableBounds = new RenderableBoundingSphere(graphicsDevice);
-
-            // Setup components
-            billboardManager = new BillboardManager(graphicsDevice, arena2Path);
-            billboardManager.Initialize();
-            billboardManager.Camera = camera;
-
             // Create default scene
-            root = new SceneNode();
-            CreateDefaultBasicEffect();
-            CreateDefaultSceneCamera();
-        }
+            ResetScene();
 
-        #endregion
-
-        #region Abstract Overrides
-
-        /// <summary>
-        /// Called when component must initialise.
-        /// </summary>
-        public override void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// Prepare scene for rendering.
-        ///  Progresses actions.
-        ///  Performs visibility testing.
-        ///  Batches visible geometry by texture.
-        ///  Batches and sorts billboards.
-        /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
-        public override void Update(TimeSpan elapsedTime)
-        {
-            // Clear batches from previous frame
-            ClearBatches();
-
-            // Update camera with input flags
-            camera.Update(cameraInputFlags, elapsedTime);
-
-            // Update nodes
-            UpdateNode(root, Matrix.Identity);
-
-            // Batch visible elements
-            BatchNode(root, Matrix.Identity);
-
-            // Apply camera changes
-            camera.ApplyChanges();
-        }
-
-        /// <summary>
-        /// Render scene with BasicEffect.
-        /// </summary>
-        public override void Draw()
-        {
-            // Draw background
-            DrawBackground();
-
-            // Draw visible geometry
-            DrawBatches();
-
-            // Draw billboard batch
-            billboardManager.Draw();
+            // Store content managers
+            this.textureManager = textureManager;
+            this.modelManager = modelManager;
+            this.blockManager = blockManager;
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Reset entire scene back to empty root node.
+        /// </summary>
+        public void ResetScene()
+        {
+            root = new SceneNode();
+        }
+
+        /// <summary>
+        /// Prepare scene for rendering.
+        /// </summary>
+        /// <param name="elapsedTime">Elapsed time since last frame.</param>
+        public void Update(TimeSpan elapsedTime)
+        {
+            // Update nodes
+            UpdateNode(root, Matrix.Identity);
+        }
 
         /// <summary>
         /// Adds a model node to the scene.
@@ -322,62 +192,9 @@ namespace XNALibrary
             }
         }
 
-        /// <summary>
-        /// Updates camera aspect ratio after viewport changes size.
-        /// </summary>
-        public void UpdateCameraAspectRatio()
-        {
-            if (camera != null)
-            {
-                camera.SetAspectRatio(
-                    (float)graphicsDevice.Viewport.Width / 
-                    (float)graphicsDevice.Viewport.Height);
-            }
-        }
-
-        /// <summary>
-        /// Renders bounding volumes for any node with
-        ///  flag set to draw bounds. This involves
-        ///  another pass over the scene.
-        /// </summary>
-        public void DrawBounds()
-        {
-            DrawNodeBounds(root);
-        }
-
         #endregion
 
         #region Private Methods
-
-        /// <summary>
-        /// Creates default basic effect for rendering.
-        ///  All nodes will render using this effect.
-        /// </summary>
-        private void CreateDefaultBasicEffect()
-        {
-            basicEffect = new BasicEffect(graphicsDevice, null);
-            basicEffect.World = Matrix.Identity;
-            basicEffect.TextureEnabled = true;
-            basicEffect.PreferPerPixelLighting = true;
-            basicEffect.EnableDefaultLighting();
-            basicEffect.AmbientLightColor = new Vector3(0.4f, 0.4f, 0.4f);
-            basicEffect.SpecularColor = new Vector3(0.2f, 0.2f, 0.2f);
-        }
-
-        /// <summary>
-        /// Creates default scene camera. This camera is used for all
-        ///  culling and rendering operations unless another camera
-        ///  is specified.
-        /// </summary>
-        private void CreateDefaultSceneCamera()
-        {
-            Camera = new Camera();
-            UpdateCameraAspectRatio();
-            Camera.MovementBounds = new BoundingBox(
-                new Vector3(float.MinValue, float.MinValue, float.MinValue),
-                new Vector3(float.MaxValue, float.MaxValue, float.MaxValue));
-            Camera.ApplyChanges();
-        }
 
         /// <summary>
         /// Builds an exterior node with all child nodes.
@@ -505,7 +322,7 @@ namespace XNALibrary
             // Get dimensions and scale of this texture image
             // We do this as TextureManager may have just pulled texture key from cache.
             // without loading file. We need the following information to create bounds.
-            string path = Path.Combine(arena2Path, TextureFile.IndexToFileName(flatItem.TextureArchive));
+            string path = Path.Combine(TextureManager.Arena2Path, TextureFile.IndexToFileName(flatItem.TextureArchive));
             System.Drawing.Size size = TextureFile.QuickSize(path, flatItem.TextureRecord);
             System.Drawing.Size scale = TextureFile.QuickScale(path, flatItem.TextureRecord);
             flatItem.Size.X = size.Width;
@@ -622,245 +439,6 @@ namespace XNALibrary
             // TODO: Run actions
 
             return bounds;
-        }
-
-        #endregion
-
-        #region Batching
-
-        /// <summary>
-        /// Clears any batched data from previous frame.
-        /// </summary>
-        private void ClearBatches()
-        {
-            // Clear local batches
-            foreach (var batch in batches)
-            {
-                batch.Value.Clear();
-            }
-
-            // Clear billboard batches
-            billboardManager.ClearBatch();
-        }
-
-        /// <summary>
-        /// Add batch item.
-        /// </summary>
-        /// <param name="textureKey">Texture key.</param>
-        private void AddBatch(int textureKey, BatchItem batchItem)
-        {
-            // Start new batch if required
-            if (!batches.ContainsKey(textureKey))
-            {
-                batches.Add(textureKey, new List<BatchItem>());
-            }
-
-            // Add to batch
-            batches[textureKey].Add(batchItem);
-        }
-
-        /// <summary>
-        /// Recursively walks scene and batches visible submeshes.
-        /// </summary>
-        /// <param name="node">Start node.</param>
-        /// <param name="matrix">Cumulative matrix.</param>
-        private void BatchNode(SceneNode node, Matrix matrix)
-        {
-            // Do nothing if not visible
-            if (!node.Visible)
-                return;
-
-            // Test node bounds against camera frustum
-            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
-                return;
-
-            // Update children of this node
-            foreach (SceneNode child in node.Children)
-            {
-                BatchNode(child, node.Matrix * matrix);
-            }
-
-            // TODO: Pointer intersection test
-
-            // Batch model node
-            if (node is ModelNode)
-                BatchModelNode((ModelNode)node, node.Matrix * matrix);
-            else if (node is GroundPlaneNode)
-                BatchGroundPlaneNode((GroundPlaneNode)node, node.Matrix * matrix);
-            else if (node is BillboardNode)
-                BatchBillboardNode((BillboardNode)node, node.Matrix * matrix);
-        }
-
-        /// <summary>
-        /// Batch a model node for rendering.
-        /// </summary>
-        /// <param name="node">ModelNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchModelNode(ModelNode node, Matrix matrix)
-        {
-            // Batch submeshes
-            BatchItem batchItem;
-            foreach (var submesh in node.Model.SubMeshes)
-            {
-                batchItem.Indexed = true;
-                batchItem.Matrix = matrix;
-                batchItem.NumVertices = node.Model.Vertices.Length;
-                batchItem.VertexBuffer = node.Model.VertexBuffer;
-                batchItem.IndexBuffer = node.Model.IndexBuffer;
-                batchItem.StartIndex = submesh.StartIndex;
-                batchItem.PrimitiveCount = submesh.PrimitiveCount;
-                AddBatch(submesh.TextureKey, batchItem);
-            }
-        }
-
-        /// <summary>
-        /// Batch a ground plane node for rendering.
-        /// </summary>
-        /// <param name="node">GroundPlaneNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchGroundPlaneNode(GroundPlaneNode node, Matrix matrix)
-        {
-            // Batch ground plane
-            BatchItem batchItem;
-            batchItem.Indexed = false;
-            batchItem.Matrix = matrix;
-            batchItem.NumVertices = node.PrimitiveCount * 3;
-            batchItem.VertexBuffer = node.VertexBuffer;
-            batchItem.IndexBuffer = null;
-            batchItem.StartIndex = 0;
-            batchItem.PrimitiveCount = node.PrimitiveCount;
-            AddBatch(TextureManager.TerrainAtlasKey, batchItem);
-        }
-
-        /// <summary>
-        /// Batch a billboard node for rendering.
-        /// </summary>
-        /// <param name="node">BillboardNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchBillboardNode(BillboardNode node, Matrix matrix)
-        {
-            // Batch billboard
-            BlockManager.FlatItem flat = node.Flat;
-            billboardManager.AddBatch(
-                flat.Origin,
-                flat.Position,
-                flat.Size,
-                flat.TextureKey,
-                matrix);
-        }
-
-        #endregion
-
-        #region Rendering
-
-        /// <summary>
-        /// Clears device and renders a background.
-        /// </summary>
-        private void DrawBackground()
-        {
-            graphicsDevice.Clear(backgroundColor);
-        }
-
-        /// <summary>
-        /// Renders batches of visible geometry.
-        /// </summary>
-        private void DrawBatches()
-        {
-            // Set vertex declaration
-            graphicsDevice.VertexDeclaration = vertexDeclaration;
-
-            // Update view and projection matrices
-            basicEffect.View = camera.View;
-            basicEffect.Projection = camera.Projection;
-
-            // Set sampler state
-            graphicsDevice.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
-
-            // Iterate batches
-            foreach (var batch in batches)
-            {
-                // Do nothing if batch empty
-                if (batch.Value.Count == 0)
-                    continue;
-
-                // Set texture
-                basicEffect.Texture = textureManager.GetTexture(batch.Key);
-
-                // Begin
-                basicEffect.Begin();
-                basicEffect.CurrentTechnique.Passes[0].Begin();
-
-                // Iterate batch items
-                foreach (var batchItem in batch.Value)
-                {
-                    // Set vertex buffer
-                    graphicsDevice.Vertices[0].SetSource(
-                        batchItem.VertexBuffer,
-                        0,
-                        VertexPositionNormalTexture.SizeInBytes);
-
-                    // Set transform
-                    basicEffect.World = batchItem.Matrix;
-                    basicEffect.CommitChanges();
-
-                    // Draw based on indexed flag
-                    if (batchItem.Indexed)
-                    {
-                        // Set index buffer
-                        graphicsDevice.Indices = batchItem.IndexBuffer;
-
-                        // Draw indexed primitives
-                        graphicsDevice.DrawIndexedPrimitives(
-                            PrimitiveType.TriangleList,
-                            0,
-                            0,
-                            batchItem.NumVertices,
-                            batchItem.StartIndex,
-                            batchItem.PrimitiveCount);
-                    }
-                    else
-                    {
-                        // Draw primitives
-                        graphicsDevice.DrawPrimitives(
-                            PrimitiveType.TriangleList,
-                            batchItem.StartIndex,
-                            batchItem.PrimitiveCount);
-                    }
-                }
-
-                // End
-                basicEffect.CurrentTechnique.Passes[0].End();
-                basicEffect.End();
-            }
-        }
-
-        /// <summary>
-        /// Recursively draws node bounds.
-        /// </summary>
-        /// <param name="node">Start node.</param>
-        private void DrawNodeBounds(SceneNode node)
-        {
-            // Test node bounds against camera frustum
-            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
-                return;
-
-            // Draw child bounds
-            foreach (SceneNode child in node.Children)
-            {
-                DrawNodeBounds(child);
-            }
-
-            // Draw node bounds
-            if (node.DrawBounds)
-            {
-                renderableBounds.Color = node.DrawBoundsColor;
-                renderableBounds.Draw(
-                    node.TransformedBounds,
-                    camera.View,
-                    camera.Projection,
-                    Matrix.Identity);
-            }
         }
 
         #endregion

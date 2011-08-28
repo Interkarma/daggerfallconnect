@@ -26,7 +26,7 @@ namespace DaggerfallModelling.Engine
     /// <summary>
     /// Base class for drawable view components.
     /// </summary>
-    public abstract class ComponentBase
+    public abstract class ComponentBaseOld
     {
         #region Class Variables
 
@@ -63,7 +63,7 @@ namespace DaggerfallModelling.Engine
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ComponentBase(ViewHost host)
+        public ComponentBaseOld(ViewHost host)
         {
             this.host = host;
         }

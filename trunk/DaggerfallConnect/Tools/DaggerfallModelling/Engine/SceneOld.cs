@@ -30,7 +30,7 @@ namespace DaggerfallModelling.Engine
     ///  renderer. Designed around Daggerfall's map layouts
     ///  and is not intended to be a general-purpose scene graph.
     /// </summary>
-    public class Scene : ComponentBase
+    public class SceneOld : ComponentBaseOld
     {
 
         #region Class Variables
@@ -239,7 +239,7 @@ namespace DaggerfallModelling.Engine
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Scene(ViewHost host, LocationView view)
+        public SceneOld(ViewHost host, LocationView view)
             : base (host)
         {
             this.view = view;
@@ -319,7 +319,7 @@ namespace DaggerfallModelling.Engine
         /// </summary>
         /// <param name="layout">Layout array output.</param>
         /// <param name="count">Layout count output.</param>
-        public void GetLayoutArray(out Scene.BlockPosition[] layout, out int count)
+        public void GetLayoutArray(out SceneOld.BlockPosition[] layout, out int count)
         {
             // Reset outputs
             layout = null;
@@ -353,6 +353,7 @@ namespace DaggerfallModelling.Engine
             // Update based on camera mode
             if (view.CameraMode == ViewBase.CameraModes.Free)
             {
+                /*
                 // Set input flags
                 Camera.InputFlags flags = Camera.InputFlags.Controller;
                 if (host.Focused)
@@ -375,6 +376,7 @@ namespace DaggerfallModelling.Engine
                         break;
 
                 }
+                */
             }
             else if (view.CameraMode == ViewBase.CameraModes.TopDown)
             {
@@ -382,6 +384,7 @@ namespace DaggerfallModelling.Engine
                 //ActiveCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
 
                 // Update based on batch mode
+                /*
                 switch (batchMode)
                 {
                     case BatchModes.Exterior:
@@ -391,6 +394,7 @@ namespace DaggerfallModelling.Engine
                         dungeonTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
                         break;
                 }
+                */
             }
         }
 
@@ -428,7 +432,7 @@ namespace DaggerfallModelling.Engine
             currentLocation = null;
 
             // Set default sky
-            view.SkyManager.SkyIndex = Sky.DefaultSkyIndex;
+            //view.SkyManager.SkyIndex = Sky.DefaultSkyIndex;
 
             // Init camera
             //cameraVelocity = Vector3.Zero;
@@ -465,7 +469,7 @@ namespace DaggerfallModelling.Engine
             currentLocation = null;
 
             // Set default sky
-            view.SkyManager.SkyIndex = Sky.DefaultSkyIndex;
+            //view.SkyManager.SkyIndex = Sky.DefaultSkyIndex;
 
             // Init camera
             //cameraVelocity = Vector3.Zero;
@@ -508,7 +512,7 @@ namespace DaggerfallModelling.Engine
             currentLocation = dfLocation;
 
             // Set climate sky
-            view.SkyManager.SkyIndex = dfLocation.SkyArchive;
+            //view.SkyManager.SkyIndex = dfLocation.SkyArchive;
 
             // Init camera
             //cameraVelocity = Vector3.Zero;
@@ -807,7 +811,7 @@ namespace DaggerfallModelling.Engine
             }
 
             // Clear billboard batch
-            view.BillboardManager.ClearBatch();
+            //view.BillboardManager.ClearBatch();
         }
 
         /// <summary>
@@ -954,12 +958,12 @@ namespace DaggerfallModelling.Engine
                     continue;
 
                 // Add to batch
-                view.BillboardManager.AddToBatch(
-                    flat.Origin,
-                    flat.Position,
-                    flat.Size,
-                    flat.TextureKey,
-                    blockTransform);
+                //view.BillboardManager.AddToBatch(
+                //    flat.Origin,
+                //    flat.Position,
+                //    flat.Size,
+                //    flat.TextureKey,
+                //    blockTransform);
             }
         }
 
@@ -1203,20 +1207,20 @@ namespace DaggerfallModelling.Engine
         private void InitTopDownCameraPosition()
         {
             // Reset top down cameras
-            exteriorTopDownCamera.ResetReference();
-            dungeonTopDownCamera.ResetReference();
+            //exteriorTopDownCamera.ResetReference();
+            //dungeonTopDownCamera.ResetReference();
 
             // Set position
             exteriorTopDownCamera.CentreInBounds(cameraStartHeight);
             dungeonTopDownCamera.CentreInBounds(cameraStartHeight);
 
             // Set reference
-            exteriorTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
-            dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+            //exteriorTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+            //dungeonTopDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
 
             // Update
-            exteriorTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
-            dungeonTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            //exteriorTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            //dungeonTopDownCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
         }
 
         /// <summary>
@@ -1225,30 +1229,30 @@ namespace DaggerfallModelling.Engine
         private void InitFreeCameraPosition()
         {
             // Reset free cameras
-            exteriorFreeCamera.ResetReference();
-            dungeonFreeCamera.ResetReference();
+            //exteriorFreeCamera.ResetReference();
+            //dungeonFreeCamera.ResetReference();
 
             // Set position
             Vector3 exteriorPos = new Vector3(
                 exteriorFreeCamera.MovementBounds.Max.X / 2,
                 cameraFloorHeight,
                 exteriorFreeCamera.MovementBounds.Max.Z);
-            exteriorFreeCamera.NextPosition = exteriorPos;
+            exteriorFreeCamera.Position = exteriorPos;
 
             // Set dungeon free camera position
             Vector3 dungeonPos = new Vector3(
                 dungeonFreeCamera.MovementBounds.Min.X + (dungeonFreeCamera.MovementBounds.Max.X - dungeonFreeCamera.MovementBounds.Min.X) / 2,
                 1024f,
                 dungeonFreeCamera.MovementBounds.Max.Z);
-            dungeonFreeCamera.NextPosition = dungeonPos;
+            dungeonFreeCamera.Position = dungeonPos;
 
             // Set reference
-            exteriorFreeCamera.Reference = new Vector3(0f, 0f, -1f);
-            dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
+            //exteriorFreeCamera.Reference = new Vector3(0f, 0f, -1f);
+            //dungeonFreeCamera.Reference = new Vector3(0f, 0f, -1f);
 
             // Update
-            exteriorFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
-            dungeonFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            //exteriorFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
+            //dungeonFreeCamera.Update(Camera.InputFlags.None, host.ElapsedTime);
         }
 
         /// <summary>
