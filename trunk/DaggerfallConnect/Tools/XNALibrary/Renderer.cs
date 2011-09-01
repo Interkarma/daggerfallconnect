@@ -33,7 +33,7 @@ namespace XNALibrary
         // Scene
         SceneManager scene;
 
-        // Camera and input
+        // Camera
         Camera camera;
 
         // Batches
@@ -285,7 +285,7 @@ namespace XNALibrary
             if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
                 return;
 
-            // Update children of this node
+            // Batch children of this node
             foreach (SceneNode child in node.Children)
             {
                 BatchNode(child, node.Matrix * matrix);
@@ -293,7 +293,7 @@ namespace XNALibrary
 
             // TODO: Pointer intersection test
 
-            // Batch model node
+            // Batch node
             if (node is ModelNode)
                 BatchModelNode((ModelNode)node, node.Matrix * matrix);
             else if (node is GroundPlaneNode)

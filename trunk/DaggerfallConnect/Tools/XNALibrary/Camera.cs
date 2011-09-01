@@ -307,7 +307,7 @@ namespace XNALibrary
             Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
             Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
 
-            // Enforce bounds and update
+            // Enforce bounds
             EnforceBounds();
         }
 
@@ -320,6 +320,7 @@ namespace XNALibrary
                     cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2,
                     height,
                     cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2);
+            cameraTarget = cameraPosition + cameraReference;
         }
 
         /// <summary>

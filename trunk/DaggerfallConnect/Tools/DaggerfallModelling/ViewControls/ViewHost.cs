@@ -786,8 +786,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.Scene.ResetScene();
-                view.Scene.AddBlockNode(null, name);
+                view.ShowBlock(name);
             }
 
             // Set view mode
