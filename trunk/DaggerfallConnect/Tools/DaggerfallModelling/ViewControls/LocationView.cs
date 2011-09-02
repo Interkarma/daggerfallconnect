@@ -31,8 +31,12 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         // XNALibrary
-        private Renderer renderer;
         private Input input;
+        private Renderer renderer;
+
+        // Cameras
+        private Camera topDownCamera = new Camera();
+        private Camera freeCamera = new Camera();
 
         // Status message
         private string currentStatus = string.Empty;
@@ -46,7 +50,7 @@ namespace DaggerfallModelling.ViewControls
         //private static float cameraDungeonFreedom = 1000.0f;
 
         // Appearance
-        private Color genericBackgroundColor = Color.LightGray;
+        private Color generalBackgroundColor = Color.LightGray;
         //private Color dungeonBackgroundColor = Color.Black;
         //private Color modelHighlightColor = Color.Gold;
         //private Color doorHighlightColor = Color.Red;
@@ -58,41 +62,6 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Properties
-
-        /*
-        /// <summary>
-        /// Gets renderer.
-        /// </summary>
-        public Renderer Renderer
-        {
-            get { return renderer; }
-        }
-
-        /// <summary>
-        /// Gets scene manager.
-        /// </summary>
-        public SceneManager Scene
-        {
-            get { return renderer.Scene; }
-        }
-
-        /// <summary>
-        /// Gets camera.
-        /// </summary>
-        public Camera Camera
-        {
-            get { return renderer.Camera; }
-        }
-
-        /// <summary>
-        /// Gets input manager.
-        /// </summary>
-        public Input Input
-        {
-            get { return input; }
-        }
-        */
-
         #endregion
 
         #region Constructors
@@ -106,9 +75,6 @@ namespace DaggerfallModelling.ViewControls
             // Create XNALibrary subsystems
             input = new Input();
             renderer = new Renderer(host.GraphicsDevice);
-
-            // Start in top-down camera mode
-            CameraMode = CameraModes.TopDown;
         }
 
         #endregion
@@ -124,15 +90,17 @@ namespace DaggerfallModelling.ViewControls
             renderer.Scene.TextureManager = host.TextureManager;
             renderer.Scene.ModelManager = host.ModelManager;
             renderer.Scene.BlockManager = host.BlockManager;
-            renderer.UpdateCameraAspectRatio(-1, -1);
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
             input.InvertMouseLook = false;
             input.InvertControllerLook = true;
 
+            // Start in top-down camera mode
+            CameraMode = CameraModes.TopDown;
+
             // Initialise camera positions
-            ResetCamera();
+            ResetCameras();
         }
 
         /// <summary>
@@ -243,6 +211,22 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnChangeCameraMode(cameraMode);
 
+            // Set camera
+            switch (cameraMode)
+            {
+                case CameraModes.TopDown:
+                    renderer.Camera = topDownCamera;
+                    input.ActiveDevices = Input.DeviceFlags.None;
+                    break;
+                case CameraModes.Free:
+                    renderer.Camera = freeCamera;
+                    input.ActiveDevices = Input.DeviceFlags.All;
+                    break;
+            }
+
+            // Upadate camera
+            renderer.UpdateCameraAspectRatio(-1, -1);
+
             // Clear camera velocity
             cameraVelocity = Vector3.Zero;
         }
@@ -254,31 +238,50 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Shows a block scene.
         /// </summary>
-        /// <param name="name"></param>
-        public void ShowBlock(string name)
+        /// <param name="name">Block name.</param>
+        public void ShowBlockScene(string name)
         {
+            // Create scene node
+            DFBlock.BlockTypes type;
             renderer.Scene.ResetScene();
-            renderer.Scene.AddBlockNode(null, name);
-            renderer.Scene.Update(TimeSpan.MinValue);
-            renderer.BackgroundColor = genericBackgroundColor;
-            ResetCamera();
+            renderer.BackgroundColor = generalBackgroundColor;
+            SceneNode node = renderer.Scene.AddBlockNode(null, name, out type);
+            if (node == null)
+                return;
+
+            // Set camera movement bounds
+            switch (type)
+            {
+                case DFBlock.BlockTypes.Rmb:
+                    topDownCamera.MovementBounds = BlockManager.RMBBoundingBox;
+                    freeCamera.MovementBounds = BlockManager.RMBBoundingBox;
+                    break;
+                case DFBlock.BlockTypes.Rdb:
+                    topDownCamera.MovementBounds = BlockManager.RDBBoundingBox;
+                    freeCamera.MovementBounds = BlockManager.RDBBoundingBox;
+                    break;
+                default:
+                    return;
+            }
+
+            // Reset cameras
+            ResetCameras();
         }
 
         /// <summary>
         /// Initialise camera position.
         /// </summary>
-        public void ResetCamera()
+        public void ResetCameras()
         {
-            // Reset based on camera mode
-            switch (cameraMode)
-            {
-                case CameraModes.TopDown:
-                    ResetTopDownCamera();
-                    break;
-                case CameraModes.Free:
-                    ResetFreeCamera();
-                    break;
-            }
+            // Set top-down camera position and reference
+            topDownCamera.Position = new Vector3(0, cameraStartHeight, 0);
+            topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+            topDownCamera.CentreInBounds(cameraStartHeight);
+
+            // Set free camera position and reference
+            freeCamera.Position = new Vector3(0, 0, 0);
+            freeCamera.Reference = new Vector3(0f, 0f, -1f);
+            //freeCamera.CentreInBounds(cameraStartHeight);
         }
 
         #endregion
@@ -292,36 +295,6 @@ namespace DaggerfallModelling.ViewControls
         {
             // Set the message
             host.StatusMessage = currentStatus;
-        }
-
-        /// <summary>
-        /// Resets top-down camera to starting position.
-        /// </summary>
-        private void ResetTopDownCamera()
-        {
-            // Set camera position and reference
-            renderer.Camera.Position = new Vector3(0, cameraStartHeight, 0);
-            renderer.Camera.Reference = new Vector3(0f, -1.0f, -0.01f);
-
-            // Set camera bounds and centre
-            BoundingSphere sphere = renderer.Scene.Root.TransformedBounds;
-            renderer.Camera.MovementBounds = new BoundingBox(
-                new Vector3(sphere.Center.X - sphere.Radius, cameraFloorHeight, sphere.Center.Z - sphere.Radius),
-                new Vector3(sphere.Center.X + sphere.Radius, cameraCeilingHeight, sphere.Center.Z + sphere.Radius));
-            renderer.Camera.CentreInBounds(cameraStartHeight);
-
-            // Disable input as this handled by events in top-down mode
-            input.ActiveDevices = Input.DeviceFlags.None;
-        }
-
-        /// <summary>
-        /// Resets free camera to starting position.
-        /// </summary>
-        private void ResetFreeCamera()
-        {
-            renderer.Camera.Position = new Vector3(0, cameraStartHeight, 0);
-            renderer.Camera.Reference = new Vector3(0f, 0f, -1f);
-            // TODO: Set bounds and centre on southern edge
         }
 
         #endregion

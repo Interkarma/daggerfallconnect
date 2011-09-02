@@ -32,7 +32,7 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         protected ViewHost host = null;
-        protected CameraModes cameraMode = CameraModes.None;
+        private CameraModes cameraMode = CameraModes.None;
         private DFLocation.ClimateType climateType = DFLocation.ClimateType.None;
 
         #endregion

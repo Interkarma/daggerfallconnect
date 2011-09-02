@@ -30,11 +30,17 @@ namespace XNALibrary
     {
         #region Class Variables
 
+        // Block management
         private string arena2Path;
         private GraphicsDevice graphicsDevice;
         private BlocksFile blocksFile;
         private const float rotationDivisor = 5.68888888888889f;
         private Dictionary<string, BlockData> blockDictionary;
+
+        // Constants
+        private const float rmbSide = 4096f;
+        private const float rdbSide = 2048f;
+        private const float blkHeight = 10000f;
 
         #endregion
 
@@ -45,7 +51,7 @@ namespace XNALibrary
         ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
         ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
         /// </summary>
-        public struct BlockData
+        public class BlockData
         {
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
@@ -246,11 +252,37 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// BlocksFile.
+        /// Gets BlocksFile.
         /// </summary>
         public BlocksFile BlocksFile
         {
             get { return blocksFile; }
+        }
+
+        /// <summary>
+        /// Gets RMB BoundingBox from local origin.
+        /// </summary>
+        static public BoundingBox RMBBoundingBox
+        {
+            get
+            {
+                return new BoundingBox(
+                    new Vector3(0, 0, -rmbSide),
+                    new Vector3(rmbSide, blkHeight, 0));
+            }
+        }
+
+        /// <summary>
+        /// Gets RDB BoundingBox from local origin.
+        /// </summary>
+        static public BoundingBox RDBBoundingBox
+        {
+            get
+            {
+                return new BoundingBox(
+                    new Vector3(0, 0, -rdbSide),
+                    new Vector3(rdbSide, blkHeight, 0));
+            }
         }
 
         #endregion

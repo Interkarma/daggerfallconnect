@@ -775,18 +775,19 @@ namespace DaggerfallModelling.ViewControls
         /// Shows a single block.
         /// </summary>
         /// <param name="name">Block name.</param>
+        /// <param name="climate">Climate of block.</param>
         public void ShowBlockView(string name, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
                 return;
 
-            // Load based on block type
+            // Show block scene
             if (!string.IsNullOrEmpty(name))
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.ShowBlock(name);
+                view.ShowBlockScene(name);
             }
 
             // Set view mode

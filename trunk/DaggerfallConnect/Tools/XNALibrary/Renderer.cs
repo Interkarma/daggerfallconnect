@@ -23,7 +23,7 @@ namespace XNALibrary
     /// <summary>
     /// Takes scene and camera objects as properties and draws the scene
     ///  as visualised by the camera. If using the default scene and camera
-    ///  created at construction, don't forget to set content managers
+    ///  created at construction don't forget to set content managers
     ///  (TextureManager, ModelManager, BlockManager) so the scene can load content.
     /// </summary>
     public class Renderer

@@ -89,8 +89,8 @@ namespace XNALibrary
         ///  Note that content loading will throw an exception if attempting to load
         ///  content with a null manager.
         /// <param name="textureManager">TextureManager reference or null.</param>
-        /// <param name="modelManager">ModelManager reference or null..</param>
-        /// <param name="blockManager">BlockManager reference or null..</param>
+        /// <param name="modelManager">ModelManager reference or null.</param>
+        /// <param name="blockManager">BlockManager reference or null.</param>
         /// </summary>
         public SceneManager(TextureManager textureManager, ModelManager modelManager, BlockManager blockManager)
         {
@@ -168,12 +168,24 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Adds a block node to root.
+        /// </summary>
+        /// <param name="name">Name of block.</param>
+        /// <returns>SceneNode.</returns>
+        public SceneNode AddBlockNode(string name)
+        {
+            DFBlock.BlockTypes type;
+            return AddBlockNode(null, name, out type);
+        }
+
+        /// <summary>
         /// Adds a block node to the scene. 
         /// </summary>
         /// <param name="parent">Parent node to receive block node child.</param>
         /// <param name="name">Name of block.</param>
+        /// <param name="type">DFBlock.BlockTypes of loaded block.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddBlockNode(SceneNode parent, string name)
+        public SceneNode AddBlockNode(SceneNode parent, string name, out DFBlock.BlockTypes type)
         {
             // Use root node if no parent specified
             if (parent == null)
@@ -181,12 +193,13 @@ namespace XNALibrary
 
             // Load block
             BlockManager.BlockData block = LoadDaggerfallBlock(name);
-            switch (block.DFBlock.Type)
+            type = block.DFBlock.Type;
+            switch (type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    return BuildRMBNode(parent, ref block);
+                    return BuildRMBNode(parent, block);
                 case DFBlock.BlockTypes.Rdb:
-                    return BuildRDBNode(parent, ref block);
+                    return BuildRDBNode(parent, block);
                 default:
                     return null;
             }
@@ -202,7 +215,7 @@ namespace XNALibrary
         /// <param name="parent">Parent node.</param>
         /// <param name="block">BlockManager.BlockData.</param>
         /// <returns>SceneNode.</returns>
-        private SceneNode BuildRMBNode(SceneNode parent, ref BlockManager.BlockData block)
+        private SceneNode BuildRMBNode(SceneNode parent, BlockManager.BlockData block)
         {
             // Create block parent node
             SceneNode blockNode = new SceneNode();
@@ -245,7 +258,7 @@ namespace XNALibrary
         /// <param name="parent">Parent node.</param>
         /// <param name="block">BlockManager.BlockData.</param>
         /// <returns>SceneNode.</returns>
-        private SceneNode BuildRDBNode(SceneNode parent, ref BlockManager.BlockData block)
+        private SceneNode BuildRDBNode(SceneNode parent, BlockManager.BlockData block)
         {
             // Create block parent node
             SceneNode blockNode = new SceneNode();
@@ -394,17 +407,19 @@ namespace XNALibrary
         /// <summary>
         /// Loads a Daggerfall block.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">Block name.</param>
+        /// <returns>BlockManager.BlockData.</returns>
         private BlockManager.BlockData LoadDaggerfallBlock(string name)
         {
             // Cannot proceed if BlockManager null
             if (blockManager == null)
                 throw new Exception("BlockManager is not set.");
 
-            BlockManager.BlockData block = blockManager.LoadBlock(name);
+            // Clear block cache
+            blockManager.ClearBlocks();
 
-            return block;
+            // Load block
+            return blockManager.LoadBlock(name);
         }
 
         #endregion
