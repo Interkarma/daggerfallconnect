@@ -108,7 +108,26 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Update()
         {
+            // Determine input flags
+            Input.DeviceFlags flags = Input.DeviceFlags.None;
+            if (CameraMode == CameraModes.Free)
+            {
+                // Always enable controller
+                flags |= Input.DeviceFlags.Controller;
+
+                // Only enable keyboard and mouse if host has focus
+                if (host.Focused)
+                {
+                    flags |= Input.DeviceFlags.Keyboard;
+                    flags |= Input.DeviceFlags.Mouse;
+                }
+            }   
+
+            // Gether input
+            input.ActiveDevices = flags;
             input.Update(host.ElapsedTime);
+
+            // Apply input to camera and update scene
             input.Apply(renderer.Camera);
             renderer.Scene.Update(host.ElapsedTime);
         }
@@ -118,6 +137,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Draw()
         {
+            // Render scene
             renderer.Draw();
         }
 
@@ -216,11 +236,9 @@ namespace DaggerfallModelling.ViewControls
             {
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
-                    input.ActiveDevices = Input.DeviceFlags.None;
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
-                    input.ActiveDevices = Input.DeviceFlags.All;
                     break;
             }
 
@@ -242,10 +260,12 @@ namespace DaggerfallModelling.ViewControls
         public void ShowBlockScene(string name)
         {
             // Create scene node
+            SceneNode node = null;
             DFBlock.BlockTypes type;
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
-            SceneNode node = renderer.Scene.AddBlockNode(null, name, out type);
+            node = renderer.Scene.AddBlockNode(null, name, out type);
+            renderer.Scene.Update(TimeSpan.MinValue);
             if (node == null)
                 return;
 
@@ -274,14 +294,16 @@ namespace DaggerfallModelling.ViewControls
         public void ResetCameras()
         {
             // Set top-down camera position and reference
-            topDownCamera.Position = new Vector3(0f, cameraStartHeight, 0f);
-            topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
             topDownCamera.CentreInBounds(cameraStartHeight);
+            topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
 
             // Set free camera position and reference
-            freeCamera.Position = new Vector3(0f, 0f, 0f);
+            freeCamera.CentreInBounds(0f);
             freeCamera.Reference = new Vector3(0f, 0f, -1f);
-            //freeCamera.CentreInBounds(cameraStartHeight);
+            freeCamera.Position = new Vector3(
+                freeCamera.Position.X,
+                0f,
+                0f);
         }
 
         #endregion

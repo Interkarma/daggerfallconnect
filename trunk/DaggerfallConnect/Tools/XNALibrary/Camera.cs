@@ -318,9 +318,11 @@ namespace XNALibrary
         /// </summary>
         public void CentreInBounds(float height)
         {
+            ResetReference();
             cameraPosition.X = cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2;
             cameraPosition.Y = height;
             cameraPosition.Z = cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2;
+            EnforceBounds();
             cameraTarget = cameraPosition + cameraReference;
         }
 
