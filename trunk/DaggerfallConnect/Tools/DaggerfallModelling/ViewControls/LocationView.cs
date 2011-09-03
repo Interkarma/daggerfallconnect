@@ -274,12 +274,12 @@ namespace DaggerfallModelling.ViewControls
         public void ResetCameras()
         {
             // Set top-down camera position and reference
-            topDownCamera.Position = new Vector3(0, cameraStartHeight, 0);
+            topDownCamera.Position = new Vector3(0f, cameraStartHeight, 0f);
             topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
             topDownCamera.CentreInBounds(cameraStartHeight);
 
             // Set free camera position and reference
-            freeCamera.Position = new Vector3(0, 0, 0);
+            freeCamera.Position = new Vector3(0f, 0f, 0f);
             freeCamera.Reference = new Vector3(0f, 0f, -1f);
             //freeCamera.CentreInBounds(cameraStartHeight);
         }

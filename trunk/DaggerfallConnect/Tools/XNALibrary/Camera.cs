@@ -137,7 +137,7 @@ namespace XNALibrary
         public Vector3 Reference
         {
             get { return cameraReference; }
-            set { cameraReference = value; }
+            set { SetReference(value); }
         }
 
         /// <summary>
@@ -213,6 +213,7 @@ namespace XNALibrary
             cameraMovementBounds.Max = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             cameraBoundingSphere = new BoundingSphere();
             cameraPosition = new Vector3(0, eyeHeight, 0);
+            ResetReference();
         }
 
         #endregion
@@ -238,6 +239,9 @@ namespace XNALibrary
         {
             cameraYaw = 0f;
             cameraPitch = 0f;
+            cameraReference.X = 0f;
+            cameraReference.Y = 0f;
+            cameraReference.Z = -1f;
         }
 
         /// <summary>
@@ -251,8 +255,8 @@ namespace XNALibrary
             cameraPosition.X = cameraPosition.X + X;
             cameraPosition.Y = cameraPosition.Y + Y;
             cameraPosition.Z = cameraPosition.Z + Z;
-            cameraTarget = cameraPosition + cameraReference;
             EnforceBounds();
+            cameraTarget = cameraPosition + cameraReference;
         }
 
         /// <summary>
@@ -262,8 +266,8 @@ namespace XNALibrary
         public void Translate(Vector3 translation)
         {
             cameraPosition += translation;
-            cameraTarget = cameraPosition + cameraReference;
             EnforceBounds();
+            cameraTarget = cameraPosition + cameraReference;
         }
 
         /// <summary>
@@ -301,14 +305,12 @@ namespace XNALibrary
 
             // Update position
             cameraPosition += movement;
+            EnforceBounds();
             cameraTarget = cameraPosition + cameraReference;
 
             // Transform camera
             Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
             Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
-
-            // Enforce bounds
-            EnforceBounds();
         }
 
         /// <summary>
@@ -316,10 +318,9 @@ namespace XNALibrary
         /// </summary>
         public void CentreInBounds(float height)
         {
-            cameraPosition = new Vector3(
-                    cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2,
-                    height,
-                    cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2);
+            cameraPosition.X = cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2;
+            cameraPosition.Y = height;
+            cameraPosition.Z = cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2;
             cameraTarget = cameraPosition + cameraReference;
         }
 
@@ -352,8 +353,19 @@ namespace XNALibrary
             cameraPosition.X = position.X;
             cameraPosition.Y = position.Y + eyeHeight;
             cameraPosition.Z = position.Z;
-            cameraTarget = cameraPosition + cameraReference;
             EnforceBounds();
+            cameraTarget = cameraPosition + cameraReference;
+        }
+
+        /// <summary>
+        /// Sets new camera reference.
+        /// </summary>
+        /// <param name="reference">Reference vector.</param>
+        private void SetReference(Vector3 reference)
+        {
+            ResetReference();
+            cameraReference = reference;
+            cameraTarget = cameraPosition + cameraReference;
         }
 
         /// <summary>
