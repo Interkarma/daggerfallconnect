@@ -42,8 +42,8 @@ namespace DaggerfallModelling
         // Searching
         private int minSearchLength = 2;
         private bool searchModels = false;
-        private bool searchBlocks = true;
-        private bool searchLocations = false;
+        private bool searchBlocks = false;
+        private bool searchLocations = true;
         private Dictionary<int, uint> modelsFound;
         private Dictionary<int, string> blocksFound;
         private Dictionary<int, string> mapsFound;
@@ -122,13 +122,15 @@ namespace DaggerfallModelling
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
 
             // TEST: Set a specific view while testing content
+            DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            ContentViewer.ShowLocationExterior(dfLocation);
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             //UpdateActiveCameraMode();
 
             // Show thumbnails view
-            ContentViewer.ShowThumbnailsView();
+            //ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -197,7 +199,7 @@ namespace DaggerfallModelling
                     case BlockTag:
                         // Show view
                         blockViewAvailable = true;
-                        ContentViewer.ShowBlockView(node.Text, DFLocation.ClimateType.None);
+                        ContentViewer.LoadBlockView(node.Text, DFLocation.ClimateType.None);
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -364,7 +366,7 @@ namespace DaggerfallModelling
             if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
                 ContentViewer.ShowLocationExterior();
             else
-                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+                ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
@@ -373,7 +375,7 @@ namespace DaggerfallModelling
             if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
                 ContentViewer.ShowLocationDungeon();
             else
-                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+                ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
@@ -403,7 +405,7 @@ namespace DaggerfallModelling
 
                 // Load block into view
                 blockViewAvailable = true;
-                ContentViewer.ShowBlockView(e.Name, climate);
+                ContentViewer.LoadBlockView(e.Name, climate);
 
                 return;
             }
@@ -982,7 +984,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set view
-            ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         /// <summary>

@@ -86,7 +86,7 @@ namespace XNASeries_2
             renderer.Scene.Root.DrawBoundsColor = Color.Red;
 
             // Add a block node
-            renderer.Scene.AddBlockNode(blockName);
+            renderer.Scene.AddBlockNode(null, blockName);
         }
 
         /// <summary>

@@ -33,6 +33,7 @@ namespace XNALibrary
         private TextureManager textureManager = null;
         private ModelManager modelManager = null;
         private BlockManager blockManager = null;
+        private MapsFile mapsFile = null;
 
         // Scene
         private SceneNode root;
@@ -80,6 +81,15 @@ namespace XNALibrary
             set { blockManager = value; }
         }
 
+        /// <summary>
+        /// Gets or sets MapsFile for content loading.
+        /// </summary>
+        public MapsFile MapManager
+        {
+            get { return mapsFile; }
+            set { mapsFile = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -91,8 +101,12 @@ namespace XNALibrary
         /// <param name="textureManager">TextureManager reference or null.</param>
         /// <param name="modelManager">ModelManager reference or null.</param>
         /// <param name="blockManager">BlockManager reference or null.</param>
+        /// <param name="mapsManager">MapsFile reference or null.</param>
         /// </summary>
-        public SceneManager(TextureManager textureManager, ModelManager modelManager, BlockManager blockManager)
+        public SceneManager(TextureManager textureManager,
+            ModelManager modelManager,
+            BlockManager blockManager,
+            MapsFile mapsManager)
         {
             // Create default scene
             ResetScene();
@@ -101,6 +115,7 @@ namespace XNALibrary
             this.textureManager = textureManager;
             this.modelManager = modelManager;
             this.blockManager = blockManager;
+            this.mapsFile = mapsManager;
         }
 
         #endregion
@@ -169,33 +184,34 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Adds a block node to root.
+        /// Adds a block node by name.
         /// </summary>
+        /// <param name="parent">Parent node.</param>
         /// <param name="name">Name of block.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddBlockNode(string name)
+        public SceneNode AddBlockNode(SceneNode parent, string name)
         {
-            DFBlock.BlockTypes type;
-            return AddBlockNode(null, name, out type);
+            return AddBlockNode(parent, blockManager.LoadBlock(name));
         }
 
         /// <summary>
         /// Adds a block node to the scene. 
         /// </summary>
-        /// <param name="parent">Parent node to receive block node child.</param>
-        /// <param name="name">Name of block.</param>
-        /// <param name="type">DFBlock.BlockTypes of loaded block.</param>
+        /// <param name="parent">Parent node.</param>
+        /// <param name="name">Block data.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddBlockNode(SceneNode parent, string name, out DFBlock.BlockTypes type)
+        public SceneNode AddBlockNode(SceneNode parent, BlockManager.BlockData block)
         {
+            // Validate
+            if (block == null)
+                return null;
+
             // Use root node if no parent specified
             if (parent == null)
                 parent = root;
 
-            // Load block
-            BlockManager.BlockData block = LoadDaggerfallBlock(name);
-            type = block.DFBlock.Type;
-            switch (type)
+            // Build block node
+            switch (block.DFBlock.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
                     return BuildRMBNode(parent, block);
@@ -204,6 +220,54 @@ namespace XNALibrary
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Adds an exterior location node to the scene.
+        /// </summary>
+        /// <param name="parent">Parent node.</param>
+        /// <param name="dfLocation">Location data.</param>
+        /// <returns>SceneNode.</returns>
+        public SceneNode AddExteriorLocationNode(SceneNode parent, ref DFLocation dfLocation)
+        {
+            // Validate
+            if (mapsFile == null)
+                throw new Exception("MapManager is not set.");
+
+            // Use root node if no parent specified
+            if (parent == null)
+                parent = root;
+
+            // Create location node
+            SceneNode locationNode = new SceneNode();
+
+            // Get dimensions of exterior location array
+            int width = dfLocation.Exterior.ExteriorData.Width;
+            int height = dfLocation.Exterior.ExteriorData.Height;
+
+            // Build exterior node from blocks
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Get final block name
+                    string name = blockManager.BlocksFile.CheckName(
+                        mapsFile.GetRmbBlockName(ref dfLocation, x, y));
+
+                    // Create block position data
+                    SceneNode blockNode = AddBlockNode(locationNode, name);
+                    blockNode.Matrix *= Matrix.CreateTranslation(
+                        new Vector3(x * BlockManager.RMBSide, 0, -(y * BlockManager.RMBSide)));
+
+                    // Add to location node
+                    locationNode.Add(blockNode);
+                }
+            }
+
+            // Add location node to scene
+            parent.Add(locationNode);
+
+            return locationNode;
         }
 
         #endregion

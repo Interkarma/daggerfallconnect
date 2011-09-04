@@ -86,10 +86,11 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Initialise renderer subsystem
+            // Initialise scene content managers
             renderer.Scene.TextureManager = host.TextureManager;
             renderer.Scene.ModelManager = host.ModelManager;
             renderer.Scene.BlockManager = host.BlockManager;
+            renderer.Scene.MapManager = host.MapsFile;
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
@@ -257,28 +258,29 @@ namespace DaggerfallModelling.ViewControls
         #region Scene Building
 
         /// <summary>
-        /// Shows a block scene.
+        /// Builds a new scene containing a single RMB or RDB block.
         /// </summary>
-        /// <param name="name">Block name.</param>
-        public void ShowBlockScene(string name)
+        /// <param name="name">Block data.</param>
+        public void ViewBlock(BlockManager.BlockData block)
         {
-            // Create scene node
-            SceneNode node = null;
-            DFBlock.BlockTypes type;
+            // Create scene
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
-            node = renderer.Scene.AddBlockNode(null, name, out type);
-            renderer.Scene.Update(TimeSpan.MinValue);
+            SceneNode node = renderer.Scene.AddBlockNode(null, block);
             if (node == null)
                 return;
 
+            // Update scene so bounds are correct
+            renderer.Scene.Update(TimeSpan.MinValue);
+
             // Get centre position for this block.
             // This is worked out using static block dimensions to get a
-            // nicer "centred" feeling when scrolling through blocks.
-            float side = (type == DFBlock.BlockTypes.Rmb) ? BlockManager.RMBSide : BlockManager.RDBSide;
+            // nice "centred" feeling when scrolling through blocks.
+            float side = (block.DFBlock.Type == DFBlock.BlockTypes.Rmb) ? 
+                BlockManager.RMBSide : BlockManager.RDBSide;
             Vector3 center = new Vector3(side / 2, 0, -side / 2);
 
-            // Set movement bounds
+            // Set custom movement bounds
             float radius = renderer.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
@@ -291,7 +293,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Position free camera
             freeCamera.Reference = Vector3.Forward;
-            if (type == DFBlock.BlockTypes.Rmb)
+            if (block.DFBlock.Type == DFBlock.BlockTypes.Rmb)
             {
                 freeCamera.CentreInBounds(freeCamera.EyeHeight);
                 freeCamera.Position = new Vector3(
@@ -303,7 +305,35 @@ namespace DaggerfallModelling.ViewControls
                 freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, movementBounds.Max.Z);
             }
+        }
 
+        /// <summary>
+        /// Builds a new scene containing a location exterior.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        public void ViewLocationExterior(ref DFLocation dfLocation)
+        {
+            // Create scene
+            renderer.Scene.ResetScene();
+            renderer.BackgroundColor = Color.Green;
+            SceneNode node = renderer.Scene.AddExteriorLocationNode(null, ref dfLocation);
+            if (node == null)
+                return;
+
+            // Update scene so bounds are correct
+            renderer.Scene.Update(TimeSpan.MinValue);
+
+            // Set custom movement bounds
+            Vector3 center = renderer.Scene.Root.TransformedBounds.Center;
+            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            BoundingBox movementBounds = new BoundingBox(
+                new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
+                new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
+            topDownCamera.MovementBounds = movementBounds;
+            freeCamera.MovementBounds = movementBounds;
+
+            // Position top-down camera
+            topDownCamera.CentreInBounds(topDownCameraStartHeight);
         }
 
         #endregion

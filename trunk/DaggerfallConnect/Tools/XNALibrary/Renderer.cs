@@ -123,7 +123,7 @@ namespace XNALibrary
             this.graphicsDevice = graphicsDevice;
 
             // Create null scene manager
-            scene = new SceneManager(null, null, null);
+            scene = new SceneManager(null, null, null, null);
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(

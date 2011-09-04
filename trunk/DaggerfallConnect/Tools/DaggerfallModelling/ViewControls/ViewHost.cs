@@ -772,11 +772,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Shows a single block.
+        /// Loads a single block view.
         /// </summary>
         /// <param name="name">Block name.</param>
         /// <param name="climate">Climate of block.</param>
-        public void ShowBlockView(string name, DFLocation.ClimateType climate)
+        public void LoadBlockView(string name, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -787,7 +787,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.ShowBlockScene(name);
+                view.ViewBlock(blockManager.LoadBlock(name));
             }
 
             // Set view mode
@@ -807,10 +807,9 @@ namespace DaggerfallModelling.ViewControls
             if (!isReady)
                 return;
 
-            // Load exterior
+            // Show exterior scene
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            //view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
-            //view.SceneManager.LoadLocation(ref dfLocation);
+            view.ViewLocationExterior(ref dfLocation);
 
             // Set view mode
             lastViewMode = viewMode;
