@@ -86,11 +86,8 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Initialise scene content managers
-            renderer.Scene.TextureManager = host.TextureManager;
-            renderer.Scene.ModelManager = host.ModelManager;
-            renderer.Scene.BlockManager = host.BlockManager;
-            renderer.Scene.MapManager = host.MapsFile;
+            // Initialise scene content helper
+            renderer.Scene.ContentHelper = host.ContentHelper;
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;

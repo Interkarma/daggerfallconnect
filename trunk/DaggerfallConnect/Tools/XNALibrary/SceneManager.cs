@@ -29,11 +29,8 @@ namespace XNALibrary
 
         #region Class Variables
 
-        // Daggerfall content managers
-        private TextureManager textureManager = null;
-        private ModelManager modelManager = null;
-        private BlockManager blockManager = null;
-        private MapsFile mapsFile = null;
+        // Content
+        private ContentHelper contentHelper;
 
         // Scene
         private SceneNode root;
@@ -54,40 +51,12 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets TextureManager for content loading.
+        /// Gets or sets content helper.
         /// </summary>
-        public TextureManager TextureManager
+        public ContentHelper ContentHelper
         {
-            get { return textureManager; }
-            set { textureManager = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets ModelManager for content loading.
-        ///  For best results model caching should be enabled in ModelManager.
-        /// </summary>
-        public ModelManager ModelManager
-        {
-            get { return modelManager; }
-            set { modelManager = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets BlockManager for content loading.
-        /// </summary>
-        public BlockManager BlockManager
-        {
-            get { return blockManager; }
-            set { blockManager = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets MapsFile for content loading.
-        /// </summary>
-        public MapsFile MapManager
-        {
-            get { return mapsFile; }
-            set { mapsFile = value; }
+            get { return contentHelper; }
+            set { contentHelper = value; }
         }
 
         #endregion
@@ -98,24 +67,11 @@ namespace XNALibrary
         /// Constructor. Takes references to content managers to enable content loading.
         ///  Note that content loading will throw an exception if attempting to load
         ///  content with a null manager.
-        /// <param name="textureManager">TextureManager reference or null.</param>
-        /// <param name="modelManager">ModelManager reference or null.</param>
-        /// <param name="blockManager">BlockManager reference or null.</param>
-        /// <param name="mapsManager">MapsFile reference or null.</param>
         /// </summary>
-        public SceneManager(TextureManager textureManager,
-            ModelManager modelManager,
-            BlockManager blockManager,
-            MapsFile mapsManager)
+        public SceneManager()
         {
             // Create default scene
             ResetScene();
-
-            // Store content managers
-            this.textureManager = textureManager;
-            this.modelManager = modelManager;
-            this.blockManager = blockManager;
-            this.mapsFile = mapsManager;
         }
 
         #endregion
@@ -191,7 +147,7 @@ namespace XNALibrary
         /// <returns>SceneNode.</returns>
         public SceneNode AddBlockNode(SceneNode parent, string name)
         {
-            return AddBlockNode(parent, blockManager.LoadBlock(name));
+            return AddBlockNode(parent, contentHelper.BlockManager.LoadBlock(name));
         }
 
         /// <summary>
@@ -230,9 +186,9 @@ namespace XNALibrary
         /// <returns>SceneNode.</returns>
         public SceneNode AddExteriorLocationNode(SceneNode parent, ref DFLocation dfLocation)
         {
-            // Validate
-            if (mapsFile == null)
-                throw new Exception("MapManager is not set.");
+            // Cannot proceed if content helper is null
+            if (contentHelper == null)
+                throw new Exception("ContentHelper is not set.");
 
             // Use root node if no parent specified
             if (parent == null)
@@ -251,15 +207,15 @@ namespace XNALibrary
                 for (int x = 0; x < width; x++)
                 {
                     // Get final block name
-                    string name = blockManager.BlocksFile.CheckName(
-                        mapsFile.GetRmbBlockName(ref dfLocation, x, y));
+                    string name = contentHelper.BlockManager.BlocksFile.CheckName(
+                        contentHelper.MapManager.MapsFile.GetRmbBlockName(ref dfLocation, x, y));
 
                     // Create block position data
                     SceneNode blockNode = AddBlockNode(locationNode, name);
                     blockNode.Matrix *= Matrix.CreateTranslation(
                         new Vector3(x * BlockManager.RMBSide, 0, -(y * BlockManager.RMBSide)));
 
-                    // Add to location node
+                    // Add block to location node
                     locationNode.Add(blockNode);
                 }
             }
@@ -286,7 +242,7 @@ namespace XNALibrary
             SceneNode blockNode = new SceneNode();
 
             // Add ground plane node
-            blockManager.BuildRmbGroundPlane(textureManager, ref block);
+            contentHelper.BlockManager.BuildRmbGroundPlane(contentHelper.TextureManager, ref block);
             GroundPlaneNode groundNode = new GroundPlaneNode(
                 block.GroundPlaneVertexBuffer,
                 block.GroundPlaneVertices.Length / 3);
@@ -362,11 +318,11 @@ namespace XNALibrary
         /// <returns>TextureManager key.</returns>
         private int LoadDaggerfallTexture(int archive, int record, TextureManager.TextureCreateFlags flags)
         {
-            // Cannot proceed if TextureManager null
-            if (textureManager == null)
-                throw new Exception("TextureManager is not set.");
+            // Cannot proceed if content helper is null
+            if (contentHelper == null)
+                throw new Exception("ContentHelper is not set.");
 
-            return textureManager.LoadTexture(archive, record, flags);
+            return contentHelper.TextureManager.LoadTexture(archive, record, flags);
         }
 
         /// <summary>
@@ -396,7 +352,8 @@ namespace XNALibrary
             // Get dimensions and scale of this texture image
             // We do this as TextureManager may have just pulled texture key from cache.
             // without loading file. We need the following information to create bounds.
-            string path = Path.Combine(TextureManager.Arena2Path, TextureFile.IndexToFileName(flatItem.TextureArchive));
+            string path = Path.Combine(contentHelper.TextureManager.Arena2Path,
+                TextureFile.IndexToFileName(flatItem.TextureArchive));
             System.Drawing.Size size = TextureFile.QuickSize(path, flatItem.TextureRecord);
             System.Drawing.Size scale = TextureFile.QuickScale(path, flatItem.TextureRecord);
             flatItem.Size.X = size.Width;
@@ -445,12 +402,12 @@ namespace XNALibrary
         /// <returns>ModelManager.ModelData.</returns>
         private ModelManager.ModelData LoadDaggerfallModel(uint id)
         {
-            // Cannot proceed if ModelManager null
-            if (modelManager == null)
-                throw new Exception("ModelManager is not set.");
+            // Cannot proceed if content helper is null
+            if (contentHelper == null)
+                throw new Exception("ContentHelper is not set.");
 
             // Load model and textures
-            ModelManager.ModelData model = modelManager.GetModelData(id);
+            ModelManager.ModelData model = contentHelper.ModelManager.GetModelData(id);
             for (int i = 0; i < model.SubMeshes.Length; i++)
             {
                 // Load texture
@@ -472,15 +429,15 @@ namespace XNALibrary
         /// <returns>BlockManager.BlockData.</returns>
         private BlockManager.BlockData LoadDaggerfallBlock(string name)
         {
-            // Cannot proceed if BlockManager null
-            if (blockManager == null)
-                throw new Exception("BlockManager is not set.");
+            // Cannot proceed if content helper is null
+            if (contentHelper == null)
+                throw new Exception("ContentHelper is not set.");
 
             // Clear block cache
-            blockManager.ClearBlocks();
+            contentHelper.BlockManager.ClearBlocks();
 
             // Load block
-            return blockManager.LoadBlock(name);
+            return contentHelper.BlockManager.LoadBlock(name);
         }
 
         #endregion

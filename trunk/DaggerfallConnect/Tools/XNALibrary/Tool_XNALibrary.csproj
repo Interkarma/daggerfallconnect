@@ -82,6 +82,7 @@
     <Compile Include="ContentHelper.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Intersection.cs" />
+    <Compile Include="MapManager.cs" />
     <Compile Include="ModelManager.cs" />
     <Compile Include="PowerOfTwo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

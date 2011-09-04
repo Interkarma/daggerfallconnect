@@ -123,7 +123,7 @@ namespace XNALibrary
             this.graphicsDevice = graphicsDevice;
 
             // Create null scene manager
-            scene = new SceneManager(null, null, null, null);
+            scene = new SceneManager();
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(
@@ -188,7 +188,7 @@ namespace XNALibrary
             DrawBatches();
 
             // Draw billboard batch
-            billboardManager.TextureManager = scene.TextureManager;
+            billboardManager.TextureManager = scene.ContentHelper.TextureManager;
             billboardManager.Draw(camera);
         }
 
@@ -431,7 +431,7 @@ namespace XNALibrary
                     continue;
 
                 // Set texture
-                basicEffect.Texture = scene.TextureManager.GetTexture(batch.Key);
+                basicEffect.Texture = scene.ContentHelper.TextureManager.GetTexture(batch.Key);
 
                 // Begin
                 basicEffect.Begin();

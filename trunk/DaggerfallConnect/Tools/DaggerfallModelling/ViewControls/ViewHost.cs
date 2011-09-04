@@ -37,14 +37,6 @@ namespace DaggerfallModelling.ViewControls
         private bool isReady = false;
         private string arena2Path = string.Empty;
 
-        // XNALibrary Managers
-        private TextureManager textureManager;
-        private ModelManager modelManager;
-        private BlockManager blockManager;
-
-        // Connect objects
-        private MapsFile mapsFile;
-
         // Mouse
         private Point mousePos;
         private long mouseTime;
@@ -171,11 +163,19 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Gets host ContentHelper.
+        /// </summary>
+        public ContentHelper ContentHelper
+        {
+            get { return contentHelper; }
+        }
+
+        /// <summary>
         /// Gets host TextureManager.
         /// </summary>
         public TextureManager TextureManager
         {
-            get { return textureManager; }
+            get { return contentHelper.TextureManager; }
         }
 
         /// <summary>
@@ -183,23 +183,23 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public ModelManager ModelManager
         {
-            get { return modelManager; }
+            get { return contentHelper.ModelManager; }
         }
 
         /// <summary>
-        /// Gets host BlocksManager.
+        /// Gets host BlockManager.
         /// </summary>
         public BlockManager BlockManager
         {
-            get { return blockManager; }
+            get { return contentHelper.BlockManager; }
         }
 
         /// <summary>
-        /// Gets host MapsFile.
+        /// Gets host MapManager.
         /// </summary>
-        public MapsFile MapsFile
+        public MapManager MapManager
         {
-            get { return mapsFile; }
+            get { return contentHelper.MapManager; }
         }
 
         /// <summary>
@@ -345,17 +345,6 @@ namespace DaggerfallModelling.ViewControls
         {
             // Create view dictionaries
             viewClients = new Dictionary<ViewModes, ViewBase>();
-
-            // Create content helper
-            contentHelper = new ContentHelper(
-                Services,
-                Path.Combine(Application.StartupPath, "Content"));
-        }
-
-        public ViewHost(string arena2Path)
-            : this()
-        {
-            SetArena2Path(arena2Path);
         }
 
         #endregion
@@ -703,9 +692,16 @@ namespace DaggerfallModelling.ViewControls
         public void SetArena2Path(string arena2Path)
         {
             if (this.Created)
-            {
-                // Save path and initialise view
+            {   
+                // Initialise content
                 this.arena2Path = arena2Path;
+                contentHelper = new ContentHelper(
+                    GraphicsDevice,
+                    arena2Path,
+                    Services,
+                    Path.Combine(Application.StartupPath, "Content"));
+
+                // Initialise view
                 InitialiseView();
             }
             else
@@ -787,7 +783,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.ViewBlock(blockManager.LoadBlock(name));
+                view.ViewBlock(BlockManager.LoadBlock(name));
             }
 
             // Set view mode
@@ -940,25 +936,11 @@ namespace DaggerfallModelling.ViewControls
             if (!this.Created || string.IsNullOrEmpty(arena2Path))
                 return false;
 
-            // Create managers
-            try
-            {
-                textureManager = new TextureManager(GraphicsDevice, arena2Path);
-                modelManager = new ModelManager(GraphicsDevice, arena2Path);
-                blockManager = new BlockManager(GraphicsDevice, arena2Path);
-                mapsFile = new MapsFile(Path.Combine(arena2Path, "MAPS.BSA"), FileUsage.UseDisk, true);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return false;
-            }
-
             // Hook idle event to run as fast as possible
             Application.Idle += TickWhileIdle;
             update = true;
 
-            // Bind views
+            // Bind view clients
             BindViewClient(ViewModes.ThumbnailView, new ThumbnailView(this));
             BindViewClient(ViewModes.ModelView, new ModelView(this));
             BindViewClient(ViewModes.BlockView, new LocationView(this));

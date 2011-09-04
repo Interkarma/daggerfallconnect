@@ -60,6 +60,7 @@ namespace XNASeries_2
         /// </summary>
         protected override void Initialize()
         {
+            /*
             // Create renderer
             renderer = new Renderer(GraphicsDevice);
             renderer.Scene.TextureManager = new TextureManager(GraphicsDevice, arena2Path);
@@ -72,6 +73,7 @@ namespace XNASeries_2
             input.ActiveDevices = Input.DeviceFlags.All;
             input.InvertMouseLook = invertMouseLook;
             input.InvertControllerLook = invertControllerLook;
+            */
 
             base.Initialize();
         }
