@@ -260,6 +260,22 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets side scalar of RMB blocks.
+        /// </summary>
+        static public float RMBSide
+        {
+            get { return rmbSide; }
+        }
+
+        /// <summary>
+        /// Gets side scalar of RDB blocks.
+        /// </summary>
+        static public float RDBSide
+        {
+            get { return rdbSide; }
+        }
+
+        /// <summary>
         /// Gets RMB BoundingBox from local origin.
         /// </summary>
         static public BoundingBox RMBBoundingBox

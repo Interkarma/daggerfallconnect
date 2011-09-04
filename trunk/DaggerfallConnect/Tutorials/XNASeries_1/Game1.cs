@@ -34,7 +34,6 @@ namespace XNASeries_1
         Vector3 cameraPos = new Vector3(0, 300, 4000);
 
         // Options
-        bool drawBounds = true;
         bool invertMouseLook = false;
         bool invertControllerLook = true;
 
@@ -78,18 +77,15 @@ namespace XNASeries_1
         protected override void LoadContent()
         {
             // Set root node to draw bounds
-            renderer.Scene.Root.DrawBounds = drawBounds;
             renderer.Scene.Root.DrawBoundsColor = Color.Red;
 
             // Add a model node
             ModelNode node1 = renderer.Scene.AddModelNode(null, 456);
             node1.Matrix = Matrix.CreateTranslation(1000f, 0f, 0f);
-            node1.DrawBounds = drawBounds;
 
             // Add a second model node
             ModelNode node2 = renderer.Scene.AddModelNode(null, 343);
             node2.Matrix = Matrix.CreateTranslation(-1000f, 0f, 0f);
-            node2.DrawBounds = drawBounds;
         }
 
         /// <summary>
@@ -123,8 +119,7 @@ namespace XNASeries_1
         {
             // Draw scene
             renderer.Draw();
-            if (drawBounds)
-                renderer.DrawBounds();
+            renderer.DrawBounds();
         }
     }
 }

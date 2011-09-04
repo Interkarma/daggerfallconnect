@@ -113,6 +113,7 @@ namespace XNALibrary
         public void ResetScene()
         {
             root = new SceneNode();
+            root.DrawBoundsColor = Color.Red;
         }
 
         /// <summary>
@@ -233,7 +234,6 @@ namespace XNALibrary
             {
                 modelNode = AddModelNode(blockNode, model.ModelId);
                 modelNode.Matrix = model.Matrix;
-                modelNode.DrawBounds = true;
             }
 
             // Add billboard nodes
@@ -242,7 +242,6 @@ namespace XNALibrary
             {
                 billboardNode = AddBillboardNode(blockNode, flat);
                 billboardNode.Matrix = Matrix.Identity;
-                billboardNode.DrawBounds = true;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
 
@@ -269,7 +268,6 @@ namespace XNALibrary
             {
                 modelNode = AddModelNode(blockNode, model.ModelId);
                 modelNode.Matrix = model.Matrix;
-                modelNode.DrawBounds = true;
             }
 
             // Add billboard nodes
@@ -278,7 +276,6 @@ namespace XNALibrary
             {
                 billboardNode = AddBillboardNode(blockNode, flat);
                 billboardNode.Matrix = Matrix.Identity;
-                billboardNode.DrawBounds = true;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
 

@@ -193,13 +193,41 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Renders bounding volumes for any node with
-        ///  flag set to draw bounds. This involves
-        ///  another pass over the scene.
+        /// Recursively draws node bounds from starting node down.
+        ///  Equivalent to calling DrawBounds(null).
         /// </summary>
         public void DrawBounds()
         {
-            DrawNodeBounds(scene.Root);
+            DrawBounds(null);
+        }
+
+        /// <summary>
+        /// Recursively draws node bounds from starting node down.
+        /// </summary>
+        /// <param name="node">Start node, or null for root.</param>
+        public void DrawBounds(SceneNode node)
+        {
+            // Use root node if no start specified
+            if (node == null)
+                node = scene.Root;
+
+            // Test node bounds against camera frustum
+            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
+                return;
+
+            // Draw child bounds
+            foreach (SceneNode child in node.Children)
+            {
+                DrawBounds(child);
+            }
+
+            // Draw node bounds
+            renderableBounds.Color = node.DrawBoundsColor;
+            renderableBounds.Draw(
+                node.TransformedBounds,
+                camera.View,
+                camera.Projection,
+                Matrix.Identity);
         }
 
         #endregion
@@ -450,34 +478,6 @@ namespace XNALibrary
                 // End
                 basicEffect.CurrentTechnique.Passes[0].End();
                 basicEffect.End();
-            }
-        }
-
-        /// <summary>
-        /// Recursively draws node bounds.
-        /// </summary>
-        /// <param name="node">Start node.</param>
-        private void DrawNodeBounds(SceneNode node)
-        {
-            // Test node bounds against camera frustum
-            if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
-                return;
-
-            // Draw child bounds
-            foreach (SceneNode child in node.Children)
-            {
-                DrawNodeBounds(child);
-            }
-
-            // Draw node bounds
-            if (node.DrawBounds)
-            {
-                renderableBounds.Color = node.DrawBoundsColor;
-                renderableBounds.Draw(
-                    node.TransformedBounds,
-                    camera.View,
-                    camera.Projection,
-                    Matrix.Identity);
             }
         }
 

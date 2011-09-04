@@ -239,9 +239,7 @@ namespace XNALibrary
         {
             cameraYaw = 0f;
             cameraPitch = 0f;
-            cameraReference.X = 0f;
-            cameraReference.Y = 0f;
-            cameraReference.Z = -1f;
+            cameraReference = Vector3.Forward;
         }
 
         /// <summary>
@@ -318,7 +316,6 @@ namespace XNALibrary
         /// </summary>
         public void CentreInBounds(float height)
         {
-            ResetReference();
             cameraPosition.X = cameraMovementBounds.Min.X + (cameraMovementBounds.Max.X - cameraMovementBounds.Min.X) / 2;
             cameraPosition.Y = height;
             cameraPosition.Z = cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2;

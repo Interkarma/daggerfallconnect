@@ -39,13 +39,8 @@ namespace XNASeries_2
         Vector3 cameraPos = new Vector3(2048, 400, 1000);
 
         // Options
-        bool drawBounds = true;
         bool invertMouseLook = false;
         bool invertControllerLook = true;
-
-        // Climate
-        DFLocation.ClimateType climate = DFLocation.ClimateType.Temperate;
-        DFLocation.ClimateWeather weather = DFLocation.ClimateWeather.Normal;
 
         /// <summary>
         /// Constructor.
@@ -88,7 +83,6 @@ namespace XNASeries_2
         protected override void LoadContent()
         {
             // Set root node to draw bounds
-            renderer.Scene.Root.DrawBounds = drawBounds;
             renderer.Scene.Root.DrawBoundsColor = Color.Red;
 
             // Add a block node
@@ -126,8 +120,7 @@ namespace XNASeries_2
         {
             // Draw scene
             renderer.Draw();
-            if (drawBounds)
-                renderer.DrawBounds();
+            renderer.DrawBounds();
         }
     }
 }

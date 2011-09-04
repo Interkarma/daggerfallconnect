@@ -44,9 +44,9 @@ namespace DaggerfallModelling.ViewControls
         // Movement
         private Vector3 cameraVelocity;
         private float cameraStep = 5.0f;
+        private static float topDownCameraStartHeight = 6000.0f;
         private static float cameraFloorHeight = 0.0f;
         private static float cameraCeilingHeight = 10000.0f;
-        private static float cameraStartHeight = 6000.0f;
         //private static float cameraDungeonFreedom = 1000.0f;
 
         // Appearance
@@ -99,8 +99,8 @@ namespace DaggerfallModelling.ViewControls
             // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
 
-            // Initialise camera positions
-            ResetCameras();
+            // Set top-down camera reference
+            topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
         }
 
         /// <summary>
@@ -252,6 +252,9 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Public Methods
+        #endregion
+
+        #region Scene Building
 
         /// <summary>
         /// Shows a block scene.
@@ -269,41 +272,38 @@ namespace DaggerfallModelling.ViewControls
             if (node == null)
                 return;
 
-            // Set camera movement bounds
-            switch (type)
+            // Get centre position for this block.
+            // This is worked out using static block dimensions to get a
+            // nicer "centred" feeling when scrolling through blocks.
+            float side = (type == DFBlock.BlockTypes.Rmb) ? BlockManager.RMBSide : BlockManager.RDBSide;
+            Vector3 center = new Vector3(side / 2, 0, -side / 2);
+
+            // Set movement bounds
+            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            BoundingBox movementBounds = new BoundingBox(
+                new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
+                new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
+            topDownCamera.MovementBounds = movementBounds;
+            freeCamera.MovementBounds = movementBounds;
+
+            // Position top-down camera
+            topDownCamera.CentreInBounds(topDownCameraStartHeight);
+
+            // Position free camera
+            freeCamera.Reference = Vector3.Forward;
+            if (type == DFBlock.BlockTypes.Rmb)
             {
-                case DFBlock.BlockTypes.Rmb:
-                    topDownCamera.MovementBounds = BlockManager.RMBBoundingBox;
-                    freeCamera.MovementBounds = BlockManager.RMBBoundingBox;
-                    break;
-                case DFBlock.BlockTypes.Rdb:
-                    topDownCamera.MovementBounds = BlockManager.RDBBoundingBox;
-                    freeCamera.MovementBounds = BlockManager.RDBBoundingBox;
-                    break;
-                default:
-                    return;
+                freeCamera.CentreInBounds(freeCamera.EyeHeight);
+                freeCamera.Position = new Vector3(
+                    freeCamera.Position.X, freeCamera.Position.Y, 0f);
+            }
+            else
+            {
+                freeCamera.CentreInBounds(radius / 2);
+                freeCamera.Position = new Vector3(
+                    freeCamera.Position.X, freeCamera.Position.Y, movementBounds.Max.Z);
             }
 
-            // Reset cameras
-            ResetCameras();
-        }
-
-        /// <summary>
-        /// Initialise camera position.
-        /// </summary>
-        public void ResetCameras()
-        {
-            // Set top-down camera position and reference
-            topDownCamera.CentreInBounds(cameraStartHeight);
-            topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
-
-            // Set free camera position and reference
-            freeCamera.CentreInBounds(0f);
-            freeCamera.Reference = new Vector3(0f, 0f, -1f);
-            freeCamera.Position = new Vector3(
-                freeCamera.Position.X,
-                0f,
-                0f);
         }
 
         #endregion

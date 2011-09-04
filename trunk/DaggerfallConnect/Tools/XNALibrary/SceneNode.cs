@@ -39,7 +39,6 @@ namespace XNALibrary
         private float? distance;
         private BoundingSphere localBounds;
         private BoundingSphere transformedBounds;
-        private bool drawBounds;
         private Color drawBoundsColor;
         private Matrix matrix;
         private ActionData action;
@@ -175,16 +174,6 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets flag to draw node bounding volume.
-        ///  Call DrawBounds() in SceneManager to draw bounds.
-        /// </summary>
-        public bool DrawBounds
-        {
-            get { return drawBounds; }
-            set { drawBounds = value; }
-        }
-
-        /// <summary>
         /// Gets or sets colour used to draw bounding volume.
         ///  Call DrawBounds() in SceneManager to draw bounds.
         /// </summary>
@@ -267,7 +256,6 @@ namespace XNALibrary
             this.id = SceneNode.NewID;
             this.visible = true;
             this.distance = null;
-            this.drawBounds = false;
             this.drawBoundsColor = Color.White;
             this.matrix = Matrix.Identity;
             this.parent = null;
