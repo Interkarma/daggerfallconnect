@@ -123,7 +123,7 @@ namespace DaggerfallModelling
 
             // TEST: Set a specific view while testing content
             DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
-            ContentViewer.ShowLocationExterior(dfLocation);
+            ContentViewer.ShowLocationDungeon(dfLocation);
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.CameraMode = ViewBase.CameraModes.Free;

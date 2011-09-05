@@ -331,6 +331,45 @@ namespace DaggerfallModelling.ViewControls
 
             // Position top-down camera
             topDownCamera.CentreInBounds(topDownCameraStartHeight);
+
+            // Position free camera
+            freeCamera.CentreInBounds(freeCamera.EyeHeight);
+            freeCamera.Position = new Vector3(
+                    freeCamera.Position.X, freeCamera.Position.Y, 0f);
+        }
+
+        /// <summary>
+        /// Builds a new scene containing a location dungeon.
+        /// </summary>
+        /// <param name="dfLocation">DFLocation.</param>
+        public void ViewLocationDungeon(ref DFLocation dfLocation)
+        {
+            // Create scene
+            renderer.Scene.ResetScene();
+            renderer.BackgroundColor = Color.Green;
+            SceneNode node = renderer.Scene.AddDungeonLocationNode(null, ref dfLocation);
+            if (node == null)
+                return;
+
+            // Update scene so bounds are correct
+            renderer.Scene.Update(TimeSpan.MinValue);
+
+            // Set custom movement bounds
+            Vector3 center = renderer.Scene.Root.TransformedBounds.Center;
+            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            BoundingBox movementBounds = new BoundingBox(
+                new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
+                new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
+            topDownCamera.MovementBounds = movementBounds;
+            freeCamera.MovementBounds = movementBounds;
+
+            // Position top-down camera
+            topDownCamera.CentreInBounds(topDownCameraStartHeight);
+
+            // Position free camera
+            freeCamera.CentreInBounds(freeCamera.EyeHeight);
+            freeCamera.Position = new Vector3(
+                    freeCamera.Position.X, freeCamera.Position.Y, 0f);
         }
 
         #endregion

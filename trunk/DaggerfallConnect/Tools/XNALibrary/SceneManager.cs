@@ -64,9 +64,7 @@ namespace XNALibrary
         #region Constructors
 
         /// <summary>
-        /// Constructor. Takes references to content managers to enable content loading.
-        ///  Note that content loading will throw an exception if attempting to load
-        ///  content with a null manager.
+        /// Constructor.
         /// </summary>
         public SceneManager()
         {
@@ -182,9 +180,9 @@ namespace XNALibrary
         /// Adds an exterior location node to the scene.
         /// </summary>
         /// <param name="parent">Parent node.</param>
-        /// <param name="dfLocation">Location data.</param>
+        /// <param name="location">Location data.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddExteriorLocationNode(SceneNode parent, ref DFLocation dfLocation)
+        public SceneNode AddExteriorLocationNode(SceneNode parent, ref DFLocation location)
         {
             // Cannot proceed if content helper is null
             if (contentHelper == null)
@@ -198,8 +196,8 @@ namespace XNALibrary
             SceneNode locationNode = new SceneNode();
 
             // Get dimensions of exterior location array
-            int width = dfLocation.Exterior.ExteriorData.Width;
-            int height = dfLocation.Exterior.ExteriorData.Height;
+            int width = location.Exterior.ExteriorData.Width;
+            int height = location.Exterior.ExteriorData.Height;
 
             // Build exterior node from blocks
             for (int y = 0; y < height; y++)
@@ -208,16 +206,52 @@ namespace XNALibrary
                 {
                     // Get final block name
                     string name = contentHelper.BlockManager.BlocksFile.CheckName(
-                        contentHelper.MapManager.MapsFile.GetRmbBlockName(ref dfLocation, x, y));
+                        contentHelper.MapManager.MapsFile.GetRmbBlockName(ref location, x, y));
 
                     // Create block position data
                     SceneNode blockNode = AddBlockNode(locationNode, name);
                     blockNode.Matrix *= Matrix.CreateTranslation(
-                        new Vector3(x * BlockManager.RMBSide, 0, -(y * BlockManager.RMBSide)));
+                        new Vector3(x * BlockManager.RMBSide, 0f, -(y * BlockManager.RMBSide)));
 
                     // Add block to location node
                     locationNode.Add(blockNode);
                 }
+            }
+
+            // Add location node to scene
+            parent.Add(locationNode);
+
+            return locationNode;
+        }
+
+        /// <summary>
+        /// Adds a dungeon location node to the scene.
+        /// </summary>
+        /// <param name="parent">Parent node.</param>
+        /// <param name="location">Location data.</param>
+        /// <returns>SceneNode.</returns>
+        public SceneNode AddDungeonLocationNode(SceneNode parent, ref DFLocation location)
+        {
+            // Cannot proceed if content helper is null
+            if (contentHelper == null)
+                throw new Exception("ContentHelper is not set.");
+
+            // Use root node if no parent specified
+            if (parent == null)
+                parent = root;
+
+            // Create location node
+            SceneNode locationNode = new SceneNode();
+
+            // Create dungeon layout
+            foreach (var block in location.Dungeon.Blocks)
+            {
+                // TODO: Handle duplicate block coordinates (e.g. Orsinium)
+
+                // Create block position data
+                SceneNode blockNode = AddBlockNode(locationNode, block.BlockName);
+                blockNode.Matrix *= Matrix.CreateTranslation(
+                        new Vector3(block.X * BlockManager.RDBSide, 0f, -(block.Z * BlockManager.RDBSide)));
             }
 
             // Add location node to scene

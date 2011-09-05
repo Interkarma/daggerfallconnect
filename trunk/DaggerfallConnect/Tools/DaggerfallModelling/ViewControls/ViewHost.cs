@@ -825,13 +825,12 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Load dungeon
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            //view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
-            //view.SceneManager.LoadLocation(ref dfLocation);
+            LocationView view = (LocationView)viewClients[ViewModes.DungeonView];
+            view.ViewLocationDungeon(ref dfLocation);
 
             // Set view mode
             lastViewMode = viewMode;
-            viewMode = ViewModes.LocationView;
+            viewMode = ViewModes.DungeonView;
             viewClients[viewMode].ResumeView();
             RaiseViewModeChangedEvent();
         }
