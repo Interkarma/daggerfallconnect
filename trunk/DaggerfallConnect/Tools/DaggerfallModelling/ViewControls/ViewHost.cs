@@ -26,7 +26,7 @@ namespace DaggerfallModelling.ViewControls
 {
 
     /// <summary>
-    /// Serves different views to the user.
+    /// Serves different views to the user from a single control.
     /// </summary>
     public class ViewHost : WinFormsGraphicsDevice.GraphicsDeviceControl
     {
@@ -783,7 +783,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.ViewBlock(BlockManager.LoadBlock(name));
+                view.Block = BlockManager.LoadBlock(name);
             }
 
             // Set view mode
@@ -805,7 +805,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Show exterior scene
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.ViewLocationExterior(ref dfLocation);
+            view.Exterior = dfLocation;
 
             // Set view mode
             lastViewMode = viewMode;
@@ -826,43 +826,11 @@ namespace DaggerfallModelling.ViewControls
 
             // Load dungeon
             LocationView view = (LocationView)viewClients[ViewModes.DungeonView];
-            view.ViewLocationDungeon(ref dfLocation);
+            view.Dungeon = dfLocation;
 
             // Set view mode
             lastViewMode = viewMode;
             viewMode = ViewModes.DungeonView;
-            viewClients[viewMode].ResumeView();
-            RaiseViewModeChangedEvent();
-        }
-
-        /// <summary>
-        /// Shows whatever exterior layout is currently loaded.
-        /// </summary>
-        public void ShowLocationExterior()
-        {
-            // Setup view
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            //view.SceneManager.BatchMode = Scene.BatchModes.Exterior;
-
-            // Set view mode
-            lastViewMode = viewMode;
-            viewMode = ViewModes.LocationView;
-            viewClients[viewMode].ResumeView();
-            RaiseViewModeChangedEvent();
-        }
-
-        /// <summary>
-        /// Shows whatever dungeon layout is currently loaded.
-        /// </summary>
-        public void ShowLocationDungeon()
-        {
-            // Setup view
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            //view.SceneManager.BatchMode = Scene.BatchModes.Dungeon;
-
-            // Set view mode
-            lastViewMode = viewMode;
-            viewMode = ViewModes.LocationView;
             viewClients[viewMode].ResumeView();
             RaiseViewModeChangedEvent();
         }

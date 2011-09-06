@@ -30,6 +30,11 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        // Scene data
+        private BlockManager.BlockData block;
+        private DFLocation location;
+        private SceneTypes sceneType = SceneTypes.None;
+
         // XNALibrary
         private Input input;
         private Renderer renderer;
@@ -59,9 +64,66 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Class Structures
+
+        /// <summary>
+        /// Used to track what kind of scene has been set.
+        /// </summary>
+        public enum SceneTypes
+        {
+            None,
+            Block,
+            Exterior,
+            Dungeon,
+        }
+
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets block.
+        ///  Setting this property will display a block scene.
+        ///  Any existing scene will be replaced.
+        /// </summary>
+        public BlockManager.BlockData Block
+        {
+            get { return block; }
+            set { SetBlock(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets exterior location.
+        ///  Setting this property will display an exterior scene.
+        ///  Any existing scene will be replaced.
+        /// </summary>
+        public DFLocation Exterior
+        {
+            get { return location; }
+            set { SetExterior(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets visible dungeon location.
+        ///  Setting this property will display a dungeon scene.
+        ///  Will throw exception if DFLocation does not contain
+        ///  a dungeon layout.
+        ///  Any existing scene will be replaced.
+        /// </summary>
+        public DFLocation Dungeon
+        {
+            get { return location; }
+            set { SetDungeon(value); }
+        }
+
+        /// <summary>
+        /// Gets current scene type based on scene data
+        ///  previously passed in.
+        /// </summary>
+        public SceneTypes SceneType
+        {
+            get { return sceneType; }
+        }
+
         #endregion
 
         #region Constructors
@@ -258,8 +320,18 @@ namespace DaggerfallModelling.ViewControls
         /// Builds a new scene containing a single RMB or RDB block.
         /// </summary>
         /// <param name="name">Block data.</param>
-        public void ViewBlock(BlockManager.BlockData block)
+        private void SetBlock(BlockManager.BlockData block)
         {
+            // Check if resulting scene will be the same
+            if (this.block != null)
+            {
+                if (this.block.DFBlock.Index == block.DFBlock.Index &&
+                    this.sceneType == SceneTypes.Block)
+                {
+                    return;
+                }
+            }
+
             // Create scene
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
@@ -302,17 +374,29 @@ namespace DaggerfallModelling.ViewControls
                 freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, movementBounds.Max.Z);
             }
+
+            // Store data
+            this.block = block;
+            this.sceneType = SceneTypes.Block;
         }
 
         /// <summary>
         /// Builds a new scene containing a location exterior.
         /// </summary>
         /// <param name="dfLocation">DFLocation.</param>
-        public void ViewLocationExterior(ref DFLocation dfLocation)
+        private void SetExterior(DFLocation dfLocation)
         {
+            // Check if resulting scene will be the same
+            if (this.location.Name == dfLocation.Name &&
+                this.location.Politic == dfLocation.Politic &&
+                this.sceneType == SceneTypes.Exterior)
+            {
+                return;
+            }
+
             // Create scene
             renderer.Scene.ResetScene();
-            renderer.BackgroundColor = Color.Green;
+            renderer.BackgroundColor = generalBackgroundColor;
             SceneNode node = renderer.Scene.AddExteriorLocationNode(null, ref dfLocation);
             if (node == null)
                 return;
@@ -333,20 +417,33 @@ namespace DaggerfallModelling.ViewControls
             topDownCamera.CentreInBounds(topDownCameraStartHeight);
 
             // Position free camera
+            freeCamera.Reference = Vector3.Forward;
             freeCamera.CentreInBounds(freeCamera.EyeHeight);
             freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
+
+            // Store data
+            this.location = dfLocation;
+            this.sceneType = SceneTypes.Exterior;
         }
 
         /// <summary>
         /// Builds a new scene containing a location dungeon.
         /// </summary>
         /// <param name="dfLocation">DFLocation.</param>
-        public void ViewLocationDungeon(ref DFLocation dfLocation)
+        private void SetDungeon(DFLocation dfLocation)
         {
+            // Check if resulting scene will be the same
+            if (this.location.Name == dfLocation.Name &&
+                this.location.Politic == dfLocation.Politic &&
+                this.sceneType == SceneTypes.Dungeon)
+            {
+                return;
+            }
+
             // Create scene
             renderer.Scene.ResetScene();
-            renderer.BackgroundColor = Color.Green;
+            renderer.BackgroundColor = generalBackgroundColor;
             SceneNode node = renderer.Scene.AddDungeonLocationNode(null, ref dfLocation);
             if (node == null)
                 return;
@@ -370,6 +467,10 @@ namespace DaggerfallModelling.ViewControls
             freeCamera.CentreInBounds(freeCamera.EyeHeight);
             freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
+
+            // Store data
+            this.location = dfLocation;
+            this.sceneType = SceneTypes.Dungeon;
         }
 
         #endregion

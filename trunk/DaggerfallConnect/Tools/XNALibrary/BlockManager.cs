@@ -329,10 +329,29 @@ namespace XNALibrary
         #region Public Methods
 
         /// <summary>
+        /// Load a block by index.
+        /// </summary>
+        /// <param name="index">Index of block.</param>
+        /// <returns>BlockData.</returns>
+        public BlockData LoadBlock(int index)
+        {
+            string name = blocksFile.GetBlockName(index);
+            if (!blockDictionary.ContainsKey(name))
+            {
+                // Load block if not already loaded
+                return LoadBlockData(name);
+            }
+            else
+            {
+                return blockDictionary[name];
+            }
+        }
+
+        /// <summary>
         /// Load a block by name.
         /// </summary>
         /// <param name="name">Name of block.</param>
-        /// <returns>Block.</returns>
+        /// <returns>BlockData.</returns>
         public BlockData LoadBlock(string name)
         {
             if (!blockDictionary.ContainsKey(name))
@@ -347,21 +366,20 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Load a block by index.
+        /// Load a block from DFBlock struct.
         /// </summary>
-        /// <param name="index">Index of block.</param>
-        /// <returns>Block.</returns>
-        public BlockData LoadBlock(int index)
+        /// <param name="dfBlock">DFBlock.</param>
+        /// <returns>BlockData.</returns>
+        public BlockData LoadBlock(DFBlock dfBlock)
         {
-            string name = blocksFile.GetBlockName(index);
-            if (!blockDictionary.ContainsKey(name))
+            if (!blockDictionary.ContainsKey(dfBlock.Name))
             {
                 // Load block if not already loaded
-                return LoadBlockData(name);
+                return LoadBlockData(ref dfBlock);
             }
             else
             {
-                return blockDictionary[name];
+                return blockDictionary[dfBlock.Name];
             }
         }
 
@@ -423,6 +441,16 @@ namespace XNALibrary
             // Get block data
             DFBlock dfBlock = blocksFile.GetBlock(name);
 
+            return LoadBlockData(ref dfBlock);
+        }
+
+        /// <summary>
+        /// Loads block content.
+        /// </summary>
+        /// <param name="dfBlock">DFBlock.</param>
+        /// <returns>BlockData.</returns>
+        private BlockData LoadBlockData(ref DFBlock dfBlock)
+        {
             // Create new local block instance
             BlockData block = new BlockData();
             block.DFBlock = dfBlock;

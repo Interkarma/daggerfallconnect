@@ -122,15 +122,15 @@ namespace DaggerfallModelling
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
 
             // TEST: Set a specific view while testing content
-            DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
-            ContentViewer.ShowLocationDungeon(dfLocation);
+            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            //ContentViewer.ShowLocationDungeon(dfLocation);
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             //UpdateActiveCameraMode();
 
             // Show thumbnails view
-            //ContentViewer.ShowThumbnailsView();
+            ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -363,19 +363,21 @@ namespace DaggerfallModelling
         private void ExteriorModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Exterior);
-            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
-                ContentViewer.ShowLocationExterior();
-            else
-                ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
+            //if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
+            //    ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
+            //else
+            //    ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Dungeon);
-            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
-                ContentViewer.ShowLocationDungeon();
-            else
-                ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
+            //if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
+            //    ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
+            //else
+            //    ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
@@ -1003,13 +1005,13 @@ namespace DaggerfallModelling
             switch (AutoMapViewer.ViewMode)
             {
                 case AutoMapView.ViewModes.Exterior:
-                    ContentViewer.ShowLocationExterior();
+                    ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
                     break;
                 case AutoMapView.ViewModes.Dungeon:
-                    ContentViewer.ShowLocationDungeon();
+                    ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
                     break;
                 default:
-                    ContentViewer.ShowLocationExterior();
+                    ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
                     break;
             }
         }
@@ -1068,6 +1070,9 @@ namespace DaggerfallModelling
                 case ViewHost.ViewModes.LocationView:
                     ViewLocationToolStripButton.Checked = true;
                     break;
+                case ViewHost.ViewModes.DungeonView:
+                    ViewLocationToolStripButton.Checked = true;
+                    break;
                 default:
                     break;
             }
@@ -1099,8 +1104,6 @@ namespace DaggerfallModelling
                     break;
             }
         }
-
-        #endregion
 
         private void ToggleSearchPaneToolStripButton_Click(object sender, EventArgs e)
         {
@@ -1139,6 +1142,8 @@ namespace DaggerfallModelling
             TimeOfDayPanel.Visible = !TimeOfDayPanel.Visible;
             AdjustSkyToolStripMenuItem.Checked = TimeOfDayPanel.Visible;
         }
+
+        #endregion
 
     }
 }
