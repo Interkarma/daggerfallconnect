@@ -48,6 +48,9 @@ namespace XNALibrary
         private VertexDeclaration vertexDeclaration;
         private BasicEffect basicEffect;
 
+        // Options
+        RendererOptions rendererOptions = RendererOptions.None;
+
         // Sub-Components
         BillboardManager billboardManager;
         // TODO: Create sky manager
@@ -68,6 +71,22 @@ namespace XNALibrary
             public IndexBuffer IndexBuffer;
             public int StartIndex;
             public int PrimitiveCount;
+        }
+
+        /// <summary>
+        /// Flags for renderer options.
+        /// </summary>
+        [Flags]
+        public enum RendererOptions
+        {
+            /// <summary>No flags set.</summary>
+            None = 0,
+
+            /// <summary>Render sky behind scene.</summary>
+            SkyPlane = 1,
+
+            /// <summary>Render flats (e.g. trees, rocks, animals).</summary>
+            Flats = 2,
         }
 
         #endregion
@@ -107,6 +126,15 @@ namespace XNALibrary
         public BasicEffect BasicEffect
         {
             get { return basicEffect; }
+        }
+
+        /// <summary>
+        /// Gets or sets renderer options flags.
+        /// </summary>
+        public RendererOptions Options
+        {
+            get { return rendererOptions; }
+            set { rendererOptions = value; }
         }
 
         #endregion
@@ -188,8 +216,11 @@ namespace XNALibrary
             DrawBatches();
 
             // Draw billboard batch
-            billboardManager.TextureManager = scene.ContentHelper.TextureManager;
-            billboardManager.Draw(camera);
+            if (HasOptionsFlags(RendererOptions.Flats))
+            {
+                billboardManager.TextureManager = scene.ContentHelper.TextureManager;
+                billboardManager.Draw(camera);
+            }
         }
 
         /// <summary>
@@ -228,6 +259,16 @@ namespace XNALibrary
                 camera.View,
                 camera.Projection,
                 Matrix.Identity);
+        }
+
+        /// <summary>
+        /// Determines if specified renderer option flags are set.
+        /// </summary>
+        /// <param name="flags">RendererOptionsFlags.</param>
+        /// <returns>True if flags set.</returns>
+        public bool HasOptionsFlags(RendererOptions flags)
+        {
+            return flags == (rendererOptions & flags);
         }
 
         #endregion

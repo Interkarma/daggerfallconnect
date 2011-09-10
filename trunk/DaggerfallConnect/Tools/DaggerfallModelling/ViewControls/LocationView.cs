@@ -331,9 +331,12 @@ namespace DaggerfallModelling.ViewControls
             {
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
+                    renderer.Options = Renderer.RendererOptions.None;
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
+                    renderer.Options = Renderer.RendererOptions.Flats |
+                        Renderer.RendererOptions.SkyPlane;
                     break;
             }
 
