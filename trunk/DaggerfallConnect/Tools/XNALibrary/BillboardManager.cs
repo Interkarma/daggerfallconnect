@@ -127,7 +127,8 @@ namespace XNALibrary
             : base(graphicsDevice)
         {
             // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+            vertexDeclaration = new VertexDeclaration(graphicsDevice,
+                VertexPositionNormalTexture.VertexElements);
 
             // Create billboard effect
             effect = new BasicEffect(graphicsDevice, null);

@@ -52,8 +52,8 @@ namespace XNALibrary
         RendererOptions rendererOptions = RendererOptions.None;
 
         // Sub-Components
-        BillboardManager billboardManager;
-        // TODO: Create sky manager
+        Sky sky = null;
+        BillboardManager billboardManager = null;
 
         #endregion
 
@@ -118,6 +118,15 @@ namespace XNALibrary
         {
             get { return backgroundColor; }
             set { backgroundColor = value; }
+        }
+
+        /// <summary>
+        /// Gets sky component. Must call InitialiseSky()
+        ///  before using.
+        /// </summary>
+        public Sky Sky
+        {
+            get { return sky; }
         }
 
         /// <summary>
@@ -199,6 +208,16 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Initialse sky component for this renderer.
+        ///  Must be called before a sky background can be drawn.
+        /// </summary>
+        /// <param name="arena2Path">Path to Arena2 folder.</param>
+        public void InitialiseSky(string arena2Path)
+        {
+            sky = new Sky(graphicsDevice, arena2Path);
+        }
+
+        /// <summary>
         /// Render active scene.
         /// </summary>
         public void Draw()
@@ -215,7 +234,7 @@ namespace XNALibrary
             // Draw visible geometry
             DrawBatches();
 
-            // Draw billboard batch
+            // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
             {
                 billboardManager.TextureManager = scene.ContentHelper.TextureManager;
@@ -439,7 +458,15 @@ namespace XNALibrary
         /// </summary>
         private void DrawBackground()
         {
-            graphicsDevice.Clear(backgroundColor);
+            if (sky != null && HasOptionsFlags(RendererOptions.SkyPlane))
+            {
+                graphicsDevice.Clear(sky.ClearColor);
+                sky.Draw(camera);
+            }
+            else
+            {
+                graphicsDevice.Clear(backgroundColor);
+            }
         }
 
         /// <summary>

@@ -91,6 +91,7 @@
     <Compile Include="Renderer.cs" />
     <Compile Include="SceneManager.cs" />
     <Compile Include="SceneNode.cs" />
+    <Compile Include="Sky.cs" />
     <Compile Include="TextureManager.cs" />
   </ItemGroup>
   <ItemGroup>

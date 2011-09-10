@@ -57,7 +57,7 @@ namespace DaggerfallModelling.ViewControls
 
         // Appearance
         private Color generalBackgroundColor = Color.LightGray;
-        //private Color dungeonBackgroundColor = Color.Black;
+        private Color dungeonBackgroundColor = Color.Black;
         //private Color modelHighlightColor = Color.Gold;
         //private Color doorHighlightColor = Color.Red;
         //private Color actionHighlightColor = Color.CornflowerBlue;
@@ -151,6 +151,9 @@ namespace DaggerfallModelling.ViewControls
         {
             // Initialise scene content helper
             renderer.Scene.ContentHelper = host.ContentHelper;
+
+            // Initialise renderer sky
+            renderer.InitialiseSky(host.Arena2Path);
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
@@ -335,11 +338,14 @@ namespace DaggerfallModelling.ViewControls
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
                     renderer.Options = Renderer.RendererOptions.None;
+                    SetTopDownCameraBackground();
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
-                    renderer.Options = Renderer.RendererOptions.Flats |
-                        Renderer.RendererOptions.SkyPlane;
+                    renderer.Options = Renderer.RendererOptions.Flats;
+                    if (sceneType == SceneTypes.Exterior)
+                        renderer.Options |= Renderer.RendererOptions.SkyPlane;
+                    SetFreeCameraBackground();
                     break;
             }
 
@@ -378,7 +384,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Create scene
             renderer.Scene.ResetScene();
-            renderer.BackgroundColor = generalBackgroundColor;
             SceneNode node = renderer.Scene.AddBlockNode(null, block, null);
             if (node == null)
                 return;
@@ -418,6 +423,10 @@ namespace DaggerfallModelling.ViewControls
                 freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, movementBounds.Max.Z);
             }
+
+            // Set background
+            SetTopDownCameraBackground();
+            SetFreeCameraBackground();
 
             // Store data
             this.block = block;
@@ -468,6 +477,16 @@ namespace DaggerfallModelling.ViewControls
             freeCamera.CentreInBounds(freeCamera.EyeHeight);
             freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
+
+            // Set background
+            SetTopDownCameraBackground();
+            SetFreeCameraBackground();
+
+            // Set sky
+            if (renderer.Sky != null)
+            {
+                renderer.Sky.SkyIndex = dfLocation.SkyArchive;
+            }
 
             // Store data
             base.Climate = dfLocation.Climate;
@@ -520,6 +539,10 @@ namespace DaggerfallModelling.ViewControls
             freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
 
+            // Set background
+            SetTopDownCameraBackground();
+            SetFreeCameraBackground();
+
             // Store data
             base.Climate = DFLocation.ClimateType.None;
             this.location = dfLocation;
@@ -529,6 +552,26 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Sets background colours for top down camera.
+        /// </summary>
+        private void SetTopDownCameraBackground()
+        {
+            // Always use general in top down mode
+            renderer.BackgroundColor = generalBackgroundColor;
+        }
+
+        /// <summary>
+        /// Sets background sky/colours for free camera.
+        /// </summary>
+        private void SetFreeCameraBackground()
+        {
+            if (sceneType == SceneTypes.Dungeon)
+                renderer.BackgroundColor = dungeonBackgroundColor;
+            else
+                renderer.BackgroundColor = generalBackgroundColor;
+        }
 
         /// <summary>
         /// Updates status message.
