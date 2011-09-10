@@ -49,6 +49,7 @@ namespace DaggerfallModelling.ViewControls
         // Movement
         private Vector3 cameraVelocity;
         private float cameraStep = 5.0f;
+        private float wheelStep = 100.0f;
         private static float topDownCameraStartHeight = 6000.0f;
         private static float cameraFloorHeight = 0.0f;
         private static float cameraCeilingHeight = 10000.0f;
@@ -181,7 +182,10 @@ namespace DaggerfallModelling.ViewControls
                     flags |= Input.DeviceFlags.Keyboard;
                     flags |= Input.DeviceFlags.Mouse;
                 }
-            }   
+            }
+
+            // Apply top-down camera velocity
+            topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
 
             // Gether input
             input.ActiveDevices = flags;
@@ -239,6 +243,12 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseWheel(MouseEventArgs e)
         {
+            // Top down camera movement
+            if (CameraMode == CameraModes.TopDown)
+            {
+                float amount = ((float)e.Delta / 120.0f) * wheelStep;
+                topDownCamera.Translate(0, -amount, 0);
+            }
         }
 
         /// <summary>
@@ -247,6 +257,8 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseDown(MouseEventArgs e)
         {
+            // Clear camera velocity for any mouse down event
+            cameraVelocity = Vector3.Zero;
         }
 
         /// <summary>
@@ -255,6 +267,23 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseUp(MouseEventArgs e)
         {
+            // Top-down camera movement
+            if (CameraMode == CameraModes.TopDown)
+            {
+                // Scene dragging
+                if (e.Button == MouseButtons.Right)
+                {
+                    // Set scroll velocity on right mouse up
+                    cameraVelocity = new Vector3(
+                        -host.MouseVelocity.X * cameraStep,
+                        0.0f,
+                        -host.MouseVelocity.Y * cameraStep);
+
+                    // Cap velocity at very small amounts to limit drifting
+                    if (cameraVelocity.X > -cameraStep && cameraVelocity.X < cameraStep) cameraVelocity.X = 0.0f;
+                    if (cameraVelocity.Z > -cameraStep && cameraVelocity.Z < cameraStep) cameraVelocity.Z = 0.0f;
+                }
+            }
         }
 
         /// <summary>
@@ -279,7 +308,13 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            // Clear scroll velocity
+            cameraVelocity = Vector3.Zero;
+
+            // Resume view
             Resize();
+            host.ModelManager.CacheModelData = true;
+            UpdateStatusMessage();
             host.Refresh();
         }
 
