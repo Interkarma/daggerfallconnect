@@ -22,9 +22,8 @@ namespace XNALibrary
 {
     /// <summary>
     /// Takes scene and camera objects as properties and draws the scene
-    ///  as visualised by the camera. If using the default scene and camera
-    ///  created at construction don't forget to set content managers
-    ///  (TextureManager, ModelManager, BlockManager) so the scene can load content.
+    ///  as visualised by the camera. If using the default scene, don't
+    ///  forget to set the ContentHelper for content loading.
     /// </summary>
     public class Renderer
     {
@@ -50,6 +49,11 @@ namespace XNALibrary
 
         // Options
         RendererOptions rendererOptions = RendererOptions.None;
+
+        // Picking
+        private Ray pointerRay = new Ray();
+        private const int defaultIntersectionCapacity = 35;
+        private List<NodeIntersection> pointerNodeIntersections;
 
         // Sub-Components
         Sky sky = null;
@@ -87,6 +91,9 @@ namespace XNALibrary
 
             /// <summary>Render flats (e.g. trees, rocks, animals).</summary>
             Flats = 2,
+
+            /// <summary>Highlights model under mouse.</summary>
+            MousePicking = 4,
         }
 
         #endregion
@@ -146,6 +153,68 @@ namespace XNALibrary
             set { rendererOptions = value; }
         }
 
+        /// <summary>
+        /// Gets or sets pointer ray.
+        /// </summary>
+        public Ray PointerRay
+        {
+            get { return pointerRay; }
+            set { pointerRay = value; }
+        }
+
+        #endregion
+
+        #region SubClasses
+
+        /// <summary>
+        /// Describes a node that has intersected with something.
+        ///  Used when sorting intersections for face-accurate picking
+        ///  and collision tests.
+        /// </summary>
+        public class NodeIntersection : IComparable<NodeIntersection>
+        {
+            // Variables
+            private float? distance;
+            private SceneNode node;
+
+            // Properties
+            public float? Distance
+            {
+                get { return distance; }
+                set { distance = value; }
+            }
+            public SceneNode Node
+            {
+                get { return node; }
+                set { node = value; }
+            }
+
+            // Constructors
+            public NodeIntersection()
+            {
+                this.distance = null;
+                this.node = null;
+            }
+            public NodeIntersection(
+                float? distance,
+                SceneNode node)
+            {
+                this.distance = distance;
+                this.node = node;
+            }
+
+            // IComparable
+            public int CompareTo(NodeIntersection other)
+            {
+                int returnValue = -1;
+                if (other.Distance < this.Distance)
+                    returnValue = 1;
+                else if (other.Distance == this.Distance)
+                    returnValue = 0;
+                return returnValue;
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -174,6 +243,9 @@ namespace XNALibrary
 
             // Setup renderable bounds
             renderableBounds = new RenderableBoundingSphere(graphicsDevice);
+
+            // Create intersections list
+            pointerNodeIntersections = new List<NodeIntersection>();
 
             // Setup components
             billboardManager = new BillboardManager(graphicsDevice);
@@ -208,6 +280,27 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Update pointer ray for picking.
+        /// </summary>
+        /// <param name="x">Pointer X in viewport.</param>
+        /// <param name="y">Pointer Y in viewport.</param>
+        /// <param name="view">View matrix.</param>
+        /// <param name="projection">Projection matrix.</param>
+        public void UpdatePointerRay(int x, int y, Matrix view, Matrix projection)
+        {
+            // Unproject vectors into view area
+            Viewport vp = graphicsDevice.Viewport;
+            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, Matrix.Identity);
+            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projection, view, Matrix.Identity);
+
+            // Create ray
+            Vector3 direction = far - near;
+            direction.Normalize();
+            pointerRay.Position = near;
+            pointerRay.Direction = direction;
+        }
+
+        /// <summary>
         /// Initialse sky component for this renderer.
         ///  Must be called before a sky background can be drawn.
         /// </summary>
@@ -222,11 +315,15 @@ namespace XNALibrary
         /// </summary>
         public void Draw()
         {
+            // Reset intersections
+            pointerNodeIntersections.Clear();
+            pointerNodeIntersections.Capacity = defaultIntersectionCapacity;
+
             // Clear batches from previous frame
             ClearBatches();
 
             // Batch visible elements
-            BatchNode(scene.Root, Matrix.Identity);
+            BatchNode(scene.Root, Matrix.Identity, true);
 
             // Draw background
             DrawBackground();
@@ -239,6 +336,15 @@ namespace XNALibrary
             {
                 billboardManager.TextureManager = scene.ContentHelper.TextureManager;
                 billboardManager.Draw(camera);
+            }
+
+            // TEST: Draw intersection bounds
+            if (pointerNodeIntersections.Count > 0)
+            {
+                foreach (var ni in pointerNodeIntersections)
+                {
+                    DrawBounds(ni.Node);
+                }
             }
         }
 
@@ -363,7 +469,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="node">Start node.</param>
         /// <param name="matrix">Cumulative matrix.</param>
-        private void BatchNode(SceneNode node, Matrix matrix)
+        private void BatchNode(SceneNode node, Matrix matrix, bool pointerIntersects)
         {
             // Do nothing if not visible
             if (!node.Visible)
@@ -373,21 +479,39 @@ namespace XNALibrary
             if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
                 return;
 
+            // Test if pointer still intersects
+            float? intersectDistance = null;
+            if (pointerIntersects)
+            {
+                intersectDistance = pointerRay.Intersects(node.TransformedBounds);
+                if (intersectDistance == null)
+                    pointerIntersects = false;
+            }
+
             // Batch children of this node
             foreach (SceneNode child in node.Children)
             {
-                BatchNode(child, node.Matrix * matrix);
+                BatchNode(child, node.Matrix * matrix, pointerIntersects);
             }
-
-            // TODO: Pointer intersection test
 
             // Batch node
             if (node is ModelNode)
+            {
                 BatchModelNode((ModelNode)node, node.Matrix * matrix);
+                if (pointerIntersects)
+                {
+                    NodeIntersection ni =  new NodeIntersection(intersectDistance, node);
+                    pointerNodeIntersections.Add(ni);
+                }
+            }
             else if (node is GroundPlaneNode)
+            {
                 BatchGroundPlaneNode((GroundPlaneNode)node, node.Matrix * matrix);
+            }
             else if (node is BillboardNode)
+            {
                 BatchBillboardNode((BillboardNode)node, node.Matrix * matrix);
+            }
         }
 
         /// <summary>

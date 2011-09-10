@@ -166,7 +166,6 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseMove(MouseEventArgs e)
         {
             // Update mouse ray
-            Matrix world = modelRotation * modelTranslation;
             host.UpdateMouseRay(e.X, e.Y, viewMatrix, projectionMatrix);
 
             if (host.LeftMouseDown)

@@ -187,10 +187,13 @@ namespace DaggerfallModelling.ViewControls
                 }
             }
 
+            // Update pointer ray
+            renderer.PointerRay = host.MouseRay;
+
             // Apply top-down camera velocity
             topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
 
-            // Gether input
+            // Gather input
             input.ActiveDevices = flags;
             input.Update(host.ElapsedTime);
 
@@ -226,6 +229,12 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs</param>
         public override void OnMouseMove(MouseEventArgs e)
         {
+            // Update mouse ray
+            host.UpdateMouseRay(
+                e.X, e.Y,
+                renderer.Camera.View,
+                renderer.Camera.Projection);
+
             // Top down camera movement
             if (CameraMode == CameraModes.TopDown)
             {
