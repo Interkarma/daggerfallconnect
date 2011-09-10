@@ -119,12 +119,23 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node to receive billboard node child.</param>
         /// <param name="flatItem">BlockManager.FlatItem.</param>
+        /// <param name="dfLocation">Optional DFLocation for this billboard's climate swap. Can be null.</param>
         /// <returns>BillboardNode.</returns>
-        public BillboardNode AddBillboardNode(SceneNode parent, BlockManager.FlatItem flatItem)
+        public BillboardNode AddBillboardNode(SceneNode parent, BlockManager.FlatItem flatItem, DFLocation? dfLocation)
         {
             // Use root node if no parent specified
             if (parent == null)
                 parent = root;
+
+            // Set climate ground flats archive if this is a scenery flat
+            if (flatItem.FlatType == BlockManager.FlatType.Scenery)
+            {
+                // Just use temperate (504) if no location set
+                if (dfLocation == null)
+                    flatItem.TextureArchive = 504;
+                else
+                    flatItem.TextureArchive = dfLocation.Value.GroundFlatsArchive;
+            }
 
             // Load flat item
             flatItem = LoadDaggerfallFlat(flatItem);
@@ -142,10 +153,11 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node.</param>
         /// <param name="name">Name of block.</param>
+        /// <param name="dfLocation">Optional DFLocation for this block's climate swap. Can be null.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddBlockNode(SceneNode parent, string name)
+        public SceneNode AddBlockNode(SceneNode parent, string name, DFLocation? dfLocation)
         {
-            return AddBlockNode(parent, contentHelper.BlockManager.LoadBlock(name));
+            return AddBlockNode(parent, contentHelper.BlockManager.LoadBlock(name), dfLocation);
         }
 
         /// <summary>
@@ -153,8 +165,9 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node.</param>
         /// <param name="name">Block data.</param>
+        /// <param name="dfLocation">Optional DFLocation for this block's climate swap. Can be null.</param>
         /// <returns>SceneNode.</returns>
-        public SceneNode AddBlockNode(SceneNode parent, BlockManager.BlockData block)
+        public SceneNode AddBlockNode(SceneNode parent, BlockManager.BlockData block, DFLocation? dfLocation)
         {
             // Validate
             if (block == null)
@@ -168,9 +181,9 @@ namespace XNALibrary
             switch (block.DFBlock.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    return BuildRMBNode(parent, block);
+                    return BuildRMBNode(parent, block, dfLocation);
                 case DFBlock.BlockTypes.Rdb:
-                    return BuildRDBNode(parent, block);
+                    return BuildRDBNode(parent, block, dfLocation);
                 default:
                     return null;
             }
@@ -209,7 +222,7 @@ namespace XNALibrary
                         contentHelper.MapManager.MapsFile.GetRmbBlockName(ref location, x, y));
 
                     // Create block position data
-                    SceneNode blockNode = AddBlockNode(locationNode, name);
+                    SceneNode blockNode = AddBlockNode(locationNode, name, location);
                     blockNode.Matrix *= Matrix.CreateTranslation(
                         new Vector3(x * BlockManager.RMBSide, 0f, -(y * BlockManager.RMBSide)));
 
@@ -249,7 +262,7 @@ namespace XNALibrary
                 // TODO: Handle duplicate block coordinates (e.g. Orsinium)
 
                 // Create block position data
-                SceneNode blockNode = AddBlockNode(locationNode, block.BlockName);
+                SceneNode blockNode = AddBlockNode(locationNode, block.BlockName, null);
                 blockNode.Matrix *= Matrix.CreateTranslation(
                         new Vector3(block.X * BlockManager.RDBSide, 0f, -(block.Z * BlockManager.RDBSide)));
             }
@@ -269,8 +282,9 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node.</param>
         /// <param name="block">BlockManager.BlockData.</param>
+        /// <param name="dfLocation">Optional DFLocation for this block's climate swap. Can be null.</param>
         /// <returns>SceneNode.</returns>
-        private SceneNode BuildRMBNode(SceneNode parent, BlockManager.BlockData block)
+        private SceneNode BuildRMBNode(SceneNode parent, BlockManager.BlockData block, DFLocation? dfLocation)
         {
             // Create block parent node
             SceneNode blockNode = new SceneNode();
@@ -280,6 +294,7 @@ namespace XNALibrary
             GroundPlaneNode groundNode = new GroundPlaneNode(
                 block.GroundPlaneVertexBuffer,
                 block.GroundPlaneVertices.Length / 3);
+            groundNode.Matrix *= Matrix.CreateTranslation(0f, groundHeight, 0f);
             blockNode.Add(groundNode);
 
             // Add model nodes
@@ -294,7 +309,7 @@ namespace XNALibrary
             BillboardNode billboardNode;
             foreach (var flat in block.Flats)
             {
-                billboardNode = AddBillboardNode(blockNode, flat);
+                billboardNode = AddBillboardNode(blockNode, flat, dfLocation);
                 billboardNode.Matrix = Matrix.Identity;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
@@ -310,8 +325,9 @@ namespace XNALibrary
         /// </summary>
         /// <param name="parent">Parent node.</param>
         /// <param name="block">BlockManager.BlockData.</param>
+        /// <param name="dfLocation">Optional DFLocation for this block's climate swap. Can be null.</param>
         /// <returns>SceneNode.</returns>
-        private SceneNode BuildRDBNode(SceneNode parent, BlockManager.BlockData block)
+        private SceneNode BuildRDBNode(SceneNode parent, BlockManager.BlockData block, DFLocation? dfLocation)
         {
             // Create block parent node
             SceneNode blockNode = new SceneNode();
@@ -328,7 +344,7 @@ namespace XNALibrary
             BillboardNode billboardNode;
             foreach (var flat in block.Flats)
             {
-                billboardNode = AddBillboardNode(blockNode, flat);
+                billboardNode = AddBillboardNode(blockNode, flat, dfLocation);
                 billboardNode.Matrix = Matrix.Identity;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
@@ -366,16 +382,6 @@ namespace XNALibrary
         /// <returns>BlockManager.FlatItem.</returns>
         private BlockManager.FlatItem LoadDaggerfallFlat(BlockManager.FlatItem flatItem)
         {
-            // Set climate ground flats archive if this is a scenery flat
-            if (flatItem.FlatType == BlockManager.FlatType.Scenery)
-            {
-                // Just use temperate (504) if no location set
-                //if (currentLocation == null)
-                    flatItem.TextureArchive = 504;
-                //else
-                //    info.TextureArchive = currentLocation.Value.GroundFlatsArchive;
-            }
-
             // Load texture
             flatItem.TextureKey = LoadDaggerfallTexture(
                 flatItem.TextureArchive,

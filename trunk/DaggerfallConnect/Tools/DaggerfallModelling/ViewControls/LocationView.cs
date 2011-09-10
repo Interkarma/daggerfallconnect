@@ -308,6 +308,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void ResumeView()
         {
+            // Set texture manager climate
+            host.TextureManager.Climate = base.Climate;
+
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
 
@@ -370,10 +373,13 @@ namespace DaggerfallModelling.ViewControls
                 }
             }
 
+            // Set climate
+            host.TextureManager.Climate = DFLocation.ClimateType.None;
+
             // Create scene
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
-            SceneNode node = renderer.Scene.AddBlockNode(null, block);
+            SceneNode node = renderer.Scene.AddBlockNode(null, block, null);
             if (node == null)
                 return;
 
@@ -432,6 +438,9 @@ namespace DaggerfallModelling.ViewControls
                 return;
             }
 
+            // Set climate
+            host.TextureManager.Climate = dfLocation.Climate;
+
             // Create scene
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
@@ -461,6 +470,7 @@ namespace DaggerfallModelling.ViewControls
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
 
             // Store data
+            base.Climate = dfLocation.Climate;
             this.location = dfLocation;
             this.sceneType = SceneTypes.Exterior;
         }
@@ -478,6 +488,10 @@ namespace DaggerfallModelling.ViewControls
             {
                 return;
             }
+
+            // Set climate.
+            // Dungeons do not use climate swaps yet.
+            host.TextureManager.Climate = DFLocation.ClimateType.None;
 
             // Create scene
             renderer.Scene.ResetScene();
@@ -507,6 +521,7 @@ namespace DaggerfallModelling.ViewControls
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
 
             // Store data
+            base.Climate = DFLocation.ClimateType.None;
             this.location = dfLocation;
             this.sceneType = SceneTypes.Dungeon;
         }
