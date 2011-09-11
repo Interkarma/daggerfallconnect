@@ -60,7 +60,11 @@ namespace XNALibrary
         private BasicEffect lineEffect;
         private VertexDeclaration lineVertexDeclaration;
         VertexPositionColor[] planeLines = new VertexPositionColor[64];
+        VertexPositionColor[] actionLines = new VertexPositionColor[64];
+
+        // Appearance
         private Color modelHighlightColor = Color.Gold;
+        private Color actionHighlightColor = Color.CornflowerBlue;
 
         // Sub-Components
         Sky sky = null;
@@ -497,11 +501,82 @@ namespace XNALibrary
         /// </summary>
         private void HighlightModelUnderPointer()
         {
-            // Highlight model under mouse/controller
             if (pointerOverModelNode != null)
             {
-                ModelManager.ModelData model = pointerOverModelNode.Model;
-                DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
+                if (pointerOverModelNode.Action.Enabled)
+                {
+                    // Handle action-enabled nodes
+                    HighlightActionChain(pointerOverModelNode);
+                }
+                else
+                {
+                    // Just highlight model
+                    ModelManager.ModelData model = pointerOverModelNode.Model;
+                    DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Highlights an action chain.
+        /// </summary>
+        /// <param name="start">Start node.</param>
+        private void HighlightActionChain(ModelNode start)
+        {
+            // Link back to start node if there is a parent
+            while (start.Action.PreviousNode != null)
+            {
+                start = (ModelNode)start.Action.PreviousNode;
+            }
+
+            // Link through chain from start
+            int lineCount = 0;
+            ModelNode node = start;
+            while (node != null)
+            {
+                // Highlight model
+                ModelManager.ModelData model = node.Model;
+                DrawNativeMesh(actionHighlightColor, ref model, node.CumulativeMatrix);
+
+                // Get line start
+                actionLines[lineCount].Color = Color.Red;
+                actionLines[lineCount++].Position = node.TransformedBounds.Center;
+
+                // Get next node
+                node = (ModelNode)node.Action.NextNode;
+
+                // Store end point of line if there is another node in chain
+                if (node != null)
+                {
+                    actionLines[lineCount].Color = Color.Red;
+                    actionLines[lineCount++].Position = node.TransformedBounds.Center;
+                }
+                else
+                {
+                    lineCount--;
+                }
+            }
+
+            // Draw action connection lines
+            if (lineCount >= 2)
+            {
+                // Set render states
+                graphicsDevice.RenderState.DepthBufferEnable = false;
+
+                // Set view and projection matrices
+                lineEffect.View = camera.View;
+                lineEffect.Projection = camera.Projection;
+                lineEffect.World = Matrix.Identity;
+
+                // Set vertex declaration
+                graphicsDevice.VertexDeclaration = lineVertexDeclaration;
+
+                // Draw lines
+                lineEffect.Begin();
+                lineEffect.CurrentTechnique.Passes[0].Begin();
+                graphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, actionLines, 0, lineCount / 2);
+                lineEffect.CurrentTechnique.Passes[0].End();
+                lineEffect.End();
             }
         }
 

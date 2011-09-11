@@ -58,6 +58,11 @@ namespace XNALibrary
         public struct ActionData
         {
             /// <summary>
+            /// True if action is enabled.
+            /// </summary>
+            public bool Enabled;
+
+            /// <summary>
             /// Rotation to perform around each axis in degrees.
             /// </summary>
             public Vector3 Rotation;
@@ -102,6 +107,11 @@ namespace XNALibrary
             /// Next node for chained action records.
             /// </summary>
             public SceneNode NextNode;
+
+            /// <summary>
+            /// Previous node for chained action records.
+            /// </summary>
+            public SceneNode PreviousNode;
         }
 
         /// <summary>
@@ -270,6 +280,7 @@ namespace XNALibrary
             this.drawBoundsColor = Color.White;
             this.matrix = Matrix.Identity;
             this.cumulativeMatrix = Matrix.Identity;
+            this.action = new ActionData();
             this.parent = null;
             this.children = new List<SceneNode>();
         }

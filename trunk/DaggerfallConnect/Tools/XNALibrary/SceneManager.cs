@@ -98,7 +98,7 @@ namespace XNALibrary
         /// <summary>
         /// Adds a model node to the scene.
         /// </summary>
-        /// <param name="parent">Parent node to receive model node child.</param>
+        /// <param name="parent">Parent node.</param>
         /// <param name="id">ModelID to load.</param>
         /// <returns>ModelNode.</returns>
         public ModelNode AddModelNode(SceneNode parent, uint id)
@@ -332,12 +332,56 @@ namespace XNALibrary
             // Create block parent node
             SceneNode blockNode = new SceneNode();
 
+            // Dictionary to link action records with scene nodes
+            Dictionary<int, SceneNode> actionKeyNodeDict = new Dictionary<int, SceneNode>();
+
             // Add model nodes
             ModelNode modelNode;
             foreach (var model in block.Models)
             {
+                // Add model node to scene
                 modelNode = AddModelNode(blockNode, model.ModelId);
                 modelNode.Matrix = model.Matrix;
+
+                // Setup action data
+                if (model.HasActionRecord)
+                {
+                    // Enable action
+                    SceneNode.ActionData action = modelNode.Action;
+                    action.Enabled = true;
+                    modelNode.Action = action;
+
+                    // Link action key to model node
+                    actionKeyNodeDict.Add(model.ActionKey, modelNode);
+                    
+                }
+            }
+
+            // Chain action data
+            foreach (var model in block.Models)
+            {
+                if (model.HasActionRecord)
+                {
+                    SceneNode node = actionKeyNodeDict[model.ActionKey];
+                    int nextActionKey = model.ActionRecord.NextActionKey;
+                    if (actionKeyNodeDict.ContainsKey(nextActionKey))
+                    {
+                        // Link to next node
+                        SceneNode nextNode = actionKeyNodeDict[nextActionKey];
+                        SceneNode.ActionData action = node.Action;
+                        action.NextNode = nextNode;
+                        node.Action = action;
+
+                        // Link to previous node
+                        action = nextNode.Action;
+                        action.PreviousNode = node;
+                        nextNode.Action = action;
+                    }
+                    else
+                    {
+                        int foo = 0;
+                    }
+                }
             }
 
             // Add billboard nodes

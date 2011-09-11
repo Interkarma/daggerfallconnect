@@ -47,20 +47,12 @@ namespace XNALibrary
         #region Class Structures
 
         /// <summary>
-        /// Describes block layout as a ground plane and list of models. Models are represented by bounding
-        ///  boxes and ID. These bounding boxes are just stubs that will need to be properly sized once model
-        ///  data has been loaded. Use these bounding boxes for frustum culling, collision tests, etc.
+        /// Describes block layout as a ground plane, model list, and billboard list.
         /// </summary>
         public class BlockData
         {
             /// <summary>Original DFBlock object from Daggerfall data.</summary>
             public DFBlock DFBlock;
-
-            /// <summary>Flag set when block needs an update.</summary>
-            public bool UpdateRequired;
-
-            /// <summary>Bounding volume of this block in local space.</summary>
-            public BoundingBox BoundingBox;
 
             /// <summary>Vertices of ground plane.</summary>
             public VertexPositionNormalTexture[] GroundPlaneVertices;
@@ -71,12 +63,6 @@ namespace XNALibrary
             /// <summary>List of models used to build this block.</summary>
             public List<ModelItem> Models;
 
-            /// <summary>
-            /// Dictionary of keys used to lookup models in block.
-            ///  Primarily used to chain action records together.
-            /// </summary>
-            public Dictionary<int, int> ModelLookup;
-
             /// <summary>List of flats (billboards) populating block.</summary>
             public List<FlatItem> Flats;
         }
@@ -86,9 +72,6 @@ namespace XNALibrary
         /// </summary>
         public struct ModelItem
         {
-            /// <summary>Key to parent block in scene layout.</summary>
-            public int BlockSceneKey;
-
             /// <summary>Unique ID of model.</summary>
             public uint ModelId;
 
@@ -101,14 +84,11 @@ namespace XNALibrary
             /// <summary>Local transform to model and bounding volume.</summary>
             public Matrix Matrix;
 
-            /// <summary>Bounding volume of this model in local space.</summary>
-            public BoundingBox BoundingBox;
-
             /// <summary>Bounding sphere containing mesh data.</summary>
             public BoundingSphere BoundingSphere;
 
-            /// <summary>Key of this object.</summary>
-            public int ObjectKey;
+            /// <summary>Key for this action record.</summary>
+            public int ActionKey;
 
             /// <summary>True if this model has an action record offset.</summary>
             public bool HasActionRecord;
@@ -215,10 +195,10 @@ namespace XNALibrary
             public ActionState ActionState;
 
             /// <summary>
-            /// Key to next object for chained action records.
-            ///  Or -1 when no further objects.
+            /// Key to next action for chained action records.
+            ///  Or -1 when no further actions in chain.
             /// </summary>
-            public int NextObjectKey;
+            public int NextActionKey;
         }
 
         /// <summary>
@@ -454,7 +434,6 @@ namespace XNALibrary
             // Create new local block instance
             BlockData block = new BlockData();
             block.DFBlock = dfBlock;
-            block.UpdateRequired = true;
 
             // Build a model from this block
             switch (block.DFBlock.Type)
@@ -477,28 +456,15 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Stubs RMB block layout with coarse bounding volumes
-        ///  and links to resources. Raises update flag so this
-        ///  information can be loaded properly when convenient to
-        ///  the application.
+        /// Stubs RMB block layout.
         /// </summary>
         /// <param name="block">BlockData.</param>
         private void StubRmbBlockLayout(ref BlockData block)
         {
-            // Create bounding box for this block.
-            // All outdoor blocks are initialised to 4096x512x4096.
-            // Blocks are laid out on a 2D grid in X-Z space of 4096x4096 per block,
-            // so only height is arbitrary. You should adjust bounding box later
-            // to properly contain block.
-            Vector3 blockMin = new Vector3(0, 0, -4096);
-            Vector3 blockMax = new Vector3(4096, 512, 0);
-            block.BoundingBox = new BoundingBox(blockMin, blockMax);
-
             // Create model info list with a starting capacity equal to subrecord count.
             // Many subrecords have only 1 model per subrecord, but may have more.
             // The List will grow if needed.
             block.Models = new List<ModelItem>(block.DFBlock.RmbBlock.SubRecords.Length);
-            block.ModelLookup = null;
             block.Flats = new List<FlatItem>(block.DFBlock.RmbBlock.MiscFlatObjectRecords.Length);
 
             // Iterate through all subrecords
@@ -527,7 +493,6 @@ namespace XNALibrary
 
                     // Create stub of model info
                     ModelItem modelInfo = new ModelItem();
-                    modelInfo.BlockSceneKey = -1;
                     modelInfo.ModelId = obj.ModelIdNum;
                     modelInfo.Matrix = objMatrix * subRecordMatrix;
                     block.Models.Add(modelInfo);
@@ -547,7 +512,6 @@ namespace XNALibrary
 
                 // Create stub of model info
                 ModelItem modelInfo = new ModelItem();
-                modelInfo.BlockSceneKey = -1;
                 modelInfo.ModelId = obj.ModelIdNum;
                 modelInfo.Matrix = recordMatrix;
                 block.Models.Add(modelInfo);
@@ -602,37 +566,27 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Stubs RDB block layout with coarse bounding volumes
-        ///  and links to resources. Raises update flag so this
-        ///  information can be loaded properly when convenient to
-        ///  the application.
+        /// Stubs RDB block layout.
         /// </summary>
-        /// <param name="block"></param>
+        /// <param name="block">BlockData.</param>
         private void StubRdbBlockLayout(ref BlockData block)
         {
             Matrix translation;
 
-            // Create bounding box for this block.
-            // All dungeon blocks are initialised to 2048x2048x2048.
-            // Blocks are laid out on a 2D grid in X-Z space of 2048x2048 per block,
-            // so only height is arbitrary. You should adjust bounding box later
-            // to properly contain block.
-            Vector3 blockMin = new Vector3(0, 0, -2048);
-            Vector3 blockMax = new Vector3(2048, 2048, 0);
-            block.BoundingBox = new BoundingBox(blockMin, blockMax);
-
             // Create empty model and flat info lists. These will grow as needed.
             block.Models = new List<ModelItem>();
-            block.ModelLookup = new Dictionary<int, int>();
             block.Flats = new List<FlatItem>();
 
             // Iterate through object groups
-            int groupIndex = 0, listIndex = 0;
+            int groupIndex = 0;
             foreach (var group in block.DFBlock.RdbBlock.ObjectRootList)
             {
                 // Skip empty object groups
                 if (null == group.RdbObjects)
+                {
+                    groupIndex++;
                     continue;
+                }
 
                 // Iterate through objects in this group
                 foreach (var obj in group.RdbObjects)
@@ -644,7 +598,7 @@ namespace XNALibrary
                     switch (obj.Type)
                     {
                         case DFBlock.RdbResourceTypes.Model:
-                            StubRDBModel(obj, ref block, ref translation, groupIndex, listIndex++);
+                            StubRDBModel(obj, ref block, ref translation, groupIndex);
                             break;
 
                         case DFBlock.RdbResourceTypes.Flat:
@@ -683,13 +637,11 @@ namespace XNALibrary
         /// <param name="block">BlockData.</param>
         /// <param name="translation">Translation matrix.</param>
         /// <param name="grpIndex">Group index.</param>
-        /// <param name="lstIndex">List index.</param>
         private void StubRDBModel(
             DFBlock.RdbObject obj,
             ref BlockData block,
             ref Matrix translation,
-            int groupIndex,
-            int listIndex)
+            int groupIndex)
         {
             float degreesX, degreesY, degreesZ;
             Matrix rotationX, rotationY, rotationZ;
@@ -716,18 +668,13 @@ namespace XNALibrary
 
             // Create stub of model info
             ModelItem modelInfo = new ModelItem();
-            modelInfo.BlockSceneKey = -1;
             modelInfo.ModelId = modelId;
             modelInfo.Matrix = rotation * translation;
             modelInfo.Description = desc;
             modelInfo.RdbObject = obj;
 
-            // Create key for this object.
-            // This is only for chained action records to
-            // reference each other. Only stable within
-            // group but action records do not reference
-            // outside of their own group so this acceptible.
-            modelInfo.ObjectKey = groupIndex * 1000 + obj.Index;
+            // Create action key for this object
+            modelInfo.ActionKey = groupIndex * 1000 + obj.Index;
 
             // Check action record
             if (DFBlock.RdbActionType.None ==
@@ -735,7 +682,7 @@ namespace XNALibrary
             {
                 // No action record, no target
                 modelInfo.HasActionRecord = false;
-                modelInfo.ActionRecord.NextObjectKey = -1;
+                modelInfo.ActionRecord.NextActionKey = -1;
             }
             else
             {
@@ -744,9 +691,9 @@ namespace XNALibrary
                 modelInfo.HasActionRecord = true;
                 int targetIndex = obj.Resources.ModelResource.ActionResource.NextObjectIndex;
                 if (targetIndex > 0)
-                    modelInfo.ActionRecord.NextObjectKey = groupIndex * 1000 + targetIndex;
+                    modelInfo.ActionRecord.NextActionKey = groupIndex * 1000 + targetIndex;
                 else
-                    modelInfo.ActionRecord.NextObjectKey = -1;
+                    modelInfo.ActionRecord.NextActionKey = -1;
 
                 // Create action record for this model
                 CreateRDBActionRecord(
@@ -754,9 +701,8 @@ namespace XNALibrary
                     ref modelInfo);
             }
 
-            // Add model stub and lookup
+            // Add model stub
             block.Models.Add(modelInfo);
-            block.ModelLookup.Add(modelInfo.ObjectKey, listIndex);
         }
 
         /// <summary>
