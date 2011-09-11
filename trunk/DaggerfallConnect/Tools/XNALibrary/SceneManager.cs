@@ -507,6 +507,9 @@ namespace XNALibrary
             // Store transformed bounds
             node.TransformedBounds = bounds;
 
+            // Store cumulative matrix
+            node.CumulativeMatrix = node.Matrix * matrix;
+
             // TODO: Get distance to camera
 
             // TODO: Run actions

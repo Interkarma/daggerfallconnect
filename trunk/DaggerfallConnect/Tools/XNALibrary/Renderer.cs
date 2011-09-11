@@ -54,6 +54,13 @@ namespace XNALibrary
         private Ray pointerRay = new Ray();
         private const int defaultIntersectionCapacity = 35;
         private List<NodeIntersection> pointerNodeIntersections;
+        private ModelNode pointerOverModelNode = null;
+
+        // Line drawing
+        private BasicEffect lineEffect;
+        private VertexDeclaration lineVertexDeclaration;
+        VertexPositionColor[] planeLines = new VertexPositionColor[64];
+        private Color modelHighlightColor = Color.Gold;
 
         // Sub-Components
         Sky sky = null;
@@ -167,9 +174,7 @@ namespace XNALibrary
         #region SubClasses
 
         /// <summary>
-        /// Describes a node that has intersected with something.
-        ///  Used when sorting intersections for face-accurate picking
-        ///  and collision tests.
+        /// Describes a node that has intersected with pointer.
         /// </summary>
         public class NodeIntersection : IComparable<NodeIntersection>
         {
@@ -253,6 +258,14 @@ namespace XNALibrary
             // Create default effect and camera
             CreateDefaultBasicEffect();
             CreateDefaultSceneCamera();
+
+            // Setup line drawing
+            lineVertexDeclaration = new VertexDeclaration(
+                graphicsDevice, VertexPositionColor.VertexElements);
+            lineEffect = new BasicEffect(graphicsDevice, null);
+            lineEffect.LightingEnabled = false;
+            lineEffect.TextureEnabled = false;
+            lineEffect.VertexColorEnabled = true;
         }
 
         #endregion
@@ -331,20 +344,15 @@ namespace XNALibrary
             // Draw visible geometry
             DrawBatches();
 
+            // Model highlighting
+            PointerModelIntersectionsTest();
+            HighlightModelUnderPointer();
+
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
             {
                 billboardManager.TextureManager = scene.ContentHelper.TextureManager;
                 billboardManager.Draw(camera);
-            }
-
-            // TEST: Draw intersection bounds
-            if (pointerNodeIntersections.Count > 0)
-            {
-                foreach (var ni in pointerNodeIntersections)
-                {
-                    DrawBounds(ni.Node);
-                }
             }
         }
 
@@ -429,6 +437,74 @@ namespace XNALibrary
                 new Vector3(float.MaxValue, float.MaxValue, float.MaxValue));
         }
 
+        /// <summary>
+        /// Tests pointer against model intersections to
+        ///  resolve actual model intersection at face level.
+        /// </summary>
+        private void PointerModelIntersectionsTest()
+        {
+            // Nothing to do if no intersections
+            if (pointerNodeIntersections.Count == 0)
+                return;
+
+            // Sort intersections by distance
+            pointerNodeIntersections.Sort();
+
+            // Iterate intersections
+            float? intersection = null;
+            float? closestIntersection = null;
+            NodeIntersection closestModelIntersection = null;
+            foreach (var ni in pointerNodeIntersections)
+            {
+                // Ensure node is a ModelNode
+                if (false == (ni.Node is ModelNode))
+                    continue;
+
+                // Get model
+                ModelNode node = (ModelNode)ni.Node;
+                ModelManager.ModelData model = node.Model;
+
+                // Test model
+                bool insideBoundingSphere;
+                int subMeshResult, planeResult;
+                intersection = Intersection.RayIntersectsDFMesh(
+                    pointerRay,
+                    node.CumulativeMatrix,
+                    ref model,
+                    out insideBoundingSphere,
+                    out subMeshResult,
+                    out planeResult);
+
+                if (intersection != null)
+                {
+                    if (closestIntersection == null || intersection < closestIntersection)
+                    {
+                        closestIntersection = intersection;
+                        closestModelIntersection = ni;
+                    }
+                }
+            }
+
+            // Store closest intersection
+            if (closestModelIntersection != null)
+                pointerOverModelNode = (ModelNode)closestModelIntersection.Node;
+            else
+                pointerOverModelNode = null;
+        }
+
+        /// <summary>
+        /// Highlights model under pointer.
+        /// </summary>
+        private void HighlightModelUnderPointer()
+        {
+            // Highlight model under mouse/controller
+            if (pointerOverModelNode != null)
+            {
+                ModelManager.ModelData model = pointerOverModelNode.Model;
+                DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
+            }
+        }
+
         #endregion
 
         #region Batching
@@ -469,6 +545,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="node">Start node.</param>
         /// <param name="matrix">Cumulative matrix.</param>
+        /// <param name="pointerIntersects">True if pointer intersects.</param>
         private void BatchNode(SceneNode node, Matrix matrix, bool pointerIntersects)
         {
             // Do nothing if not visible
@@ -479,7 +556,7 @@ namespace XNALibrary
             if (!camera.BoundingFrustum.Intersects(node.TransformedBounds))
                 return;
 
-            // Test if pointer still intersects
+            // Test if pointer still intersects at this level
             float? intersectDistance = null;
             if (pointerIntersects)
             {
@@ -671,6 +748,85 @@ namespace XNALibrary
                 basicEffect.CurrentTechnique.Passes[0].End();
                 basicEffect.End();
             }
+        }
+
+        /// <summary>
+        /// Draw native mesh as wireframe lines.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="model">ModelManager.Model.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void DrawNativeMesh(Color color, ref ModelManager.ModelData model, Matrix matrix)
+        {
+            // Scale up just a little to make outline visually pop
+            matrix = Matrix.CreateScale(1.015f) * matrix;
+
+            // Set view and projection matrices
+            lineEffect.View = camera.View;
+            lineEffect.Projection = camera.Projection;
+            lineEffect.World = matrix;
+
+            // Set vertex declaration
+            graphicsDevice.VertexDeclaration = lineVertexDeclaration;
+
+            // Draw faces
+            foreach (var subMesh in model.DFMesh.SubMeshes)
+            {
+                foreach (var plane in subMesh.Planes)
+                {
+                    DrawNativeFace(color, plane.Points, matrix);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw a native face as a line list.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="points">DFMesh.DFPoint.</param>
+        /// <param name="matrix">Matrix.</param>
+        private void DrawNativeFace(Color color, DFMesh.DFPoint[] points, Matrix matrix)
+        {
+            // Build line primitives for this face
+            int lineCount = 0;
+            Vector3 vertex1, vertex2;
+            for (int p = 0; p < points.Length - 1; p++)
+            {
+                // Add first point
+                vertex1.X = points[p].X;
+                vertex1.Y = -points[p].Y;
+                vertex1.Z = -points[p].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex1;
+
+                // Add second point
+                vertex2.X = points[p + 1].X;
+                vertex2.Y = -points[p + 1].Y;
+                vertex2.Z = -points[p + 1].Z;
+                planeLines[lineCount].Color = color;
+                planeLines[lineCount++].Position = vertex2;
+            }
+
+            // Join final point to first point
+            vertex1.X = points[0].X;
+            vertex1.Y = -points[0].Y;
+            vertex1.Z = -points[0].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex1;
+            vertex2.X = points[points.Length - 1].X;
+            vertex2.Y = -points[points.Length - 1].Y;
+            vertex2.Z = -points[points.Length - 1].Z;
+            planeLines[lineCount].Color = color;
+            planeLines[lineCount++].Position = vertex2;
+
+            lineEffect.Begin();
+            lineEffect.CurrentTechnique.Passes[0].Begin();
+
+            // Draw lines
+            graphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, planeLines, 0, lineCount / 2);
+
+            lineEffect.CurrentTechnique.Passes[0].End();
+            lineEffect.End();
         }
 
         #endregion

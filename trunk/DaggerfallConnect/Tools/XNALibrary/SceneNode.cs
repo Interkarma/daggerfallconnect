@@ -41,6 +41,7 @@ namespace XNALibrary
         private BoundingSphere transformedBounds;
         private Color drawBoundsColor;
         private Matrix matrix;
+        private Matrix cumulativeMatrix;
         private ActionData action;
         private object tag;
         private SceneNode parent;
@@ -193,6 +194,16 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets or sets cumulative matrix for this node.
+        ///  Represents this node * parent node.
+        /// </summary>
+        public Matrix CumulativeMatrix
+        {
+            get { return cumulativeMatrix; }
+            set { cumulativeMatrix = value; }
+        }
+
+        /// <summary>
         /// Gets or sets action data.
         /// </summary>
         public ActionData Action
@@ -258,6 +269,7 @@ namespace XNALibrary
             this.distance = null;
             this.drawBoundsColor = Color.White;
             this.matrix = Matrix.Identity;
+            this.cumulativeMatrix = Matrix.Identity;
             this.parent = null;
             this.children = new List<SceneNode>();
         }
