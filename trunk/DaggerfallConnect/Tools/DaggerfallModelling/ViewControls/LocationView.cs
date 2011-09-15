@@ -31,7 +31,7 @@ namespace DaggerfallModelling.ViewControls
         #region Class Variables
 
         // Scene data
-        private BlockManager.BlockData block;
+        private DFBlock block;
         private DFLocation location;
         private SceneTypes sceneType = SceneTypes.None;
 
@@ -53,14 +53,10 @@ namespace DaggerfallModelling.ViewControls
         private static float topDownCameraStartHeight = 6000.0f;
         private static float cameraFloorHeight = 0.0f;
         private static float cameraCeilingHeight = 10000.0f;
-        //private static float cameraDungeonFreedom = 1000.0f;
 
         // Appearance
         private Color generalBackgroundColor = Color.LightGray;
         private Color dungeonBackgroundColor = Color.Black;
-        //private Color modelHighlightColor = Color.Gold;
-        //private Color doorHighlightColor = Color.Red;
-        //private Color actionHighlightColor = Color.CornflowerBlue;
 
         #endregion
 
@@ -80,41 +76,6 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets block.
-        ///  Setting this property will display a block scene.
-        ///  Any existing scene will be replaced.
-        /// </summary>
-        public BlockManager.BlockData Block
-        {
-            get { return block; }
-            set { SetBlock(value); }
-        }
-
-        /// <summary>
-        /// Gets or sets exterior location.
-        ///  Setting this property will display an exterior scene.
-        ///  Any existing scene will be replaced.
-        /// </summary>
-        public DFLocation Exterior
-        {
-            get { return location; }
-            set { SetExterior(value); }
-        }
-
-        /// <summary>
-        /// Gets or sets visible dungeon location.
-        ///  Setting this property will display a dungeon scene.
-        ///  Will throw exception if DFLocation does not contain
-        ///  a dungeon layout.
-        ///  Any existing scene will be replaced.
-        /// </summary>
-        public DFLocation Dungeon
-        {
-            get { return location; }
-            set { SetDungeon(value); }
-        }
 
         /// <summary>
         /// Gets current scene type based on scene data
@@ -184,9 +145,6 @@ namespace DaggerfallModelling.ViewControls
                 }
             }
 
-            // Update pointer ray
-            renderer.PointerRay = host.MouseRay;
-
             // Apply top-down camera velocity
             topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
 
@@ -227,10 +185,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseMove(MouseEventArgs e)
         {
             // Update mouse ray
-            host.UpdateMouseRay(
-                e.X, e.Y,
-                renderer.Camera.View,
-                renderer.Camera.Projection);
+            renderer.UpdatePointerRay(e.X, e.Y);
 
             // Top down camera movement
             if (CameraMode == CameraModes.TopDown)
@@ -349,12 +304,12 @@ namespace DaggerfallModelling.ViewControls
             {
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
-                    renderer.Options = Renderer.RendererOptions.None;
+                    renderer.Options = Renderer.RendererOptions.Picking;
                     SetTopDownCameraBackground();
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
-                    renderer.Options = Renderer.RendererOptions.Flats;
+                    renderer.Options = Renderer.RendererOptions.Flats | Renderer.RendererOptions.Picking;
                     if (sceneType == SceneTypes.Exterior)
                         renderer.Options |= Renderer.RendererOptions.SkyPlane;
                     SetFreeCameraBackground();
@@ -371,34 +326,32 @@ namespace DaggerfallModelling.ViewControls
         #endregion
 
         #region Public Methods
-        #endregion
-
-        #region Scene Building
 
         /// <summary>
         /// Builds a new scene containing a single RMB or RDB block.
         /// </summary>
-        /// <param name="name">Block data.</param>
-        private void SetBlock(BlockManager.BlockData block)
+        /// <param name="blockName">Block name.</param>
+        public void CreateBlockScene(string blockName)
         {
             // Check if resulting scene will be the same
-            if (this.block != null)
+            if (this.block.Name == blockName &&
+                this.sceneType == SceneTypes.Block)
             {
-                if (this.block.DFBlock.Index == block.DFBlock.Index &&
-                    this.sceneType == SceneTypes.Block)
-                {
-                    return;
-                }
+                return;
             }
 
-            // Set climate
-            host.TextureManager.ClimateType = DFLocation.ClimateType.None;
-
-            // Create scene
+            // Create block node
             renderer.Scene.ResetScene();
-            SceneNode node = renderer.Scene.AddBlockNode(null, block, null);
+            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, null);
             if (node == null)
                 return;
+
+            // Store data
+            this.block = node.Block;
+            this.sceneType = SceneTypes.Block;
+
+            // Add node to scene
+            renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
             renderer.Scene.Update(TimeSpan.MinValue);
@@ -406,8 +359,8 @@ namespace DaggerfallModelling.ViewControls
             // Get centre position for this block.
             // This is worked out using static block dimensions to get a
             // nice "centred" feeling when scrolling through blocks.
-            float side = (block.DFBlock.Type == DFBlock.BlockTypes.Rmb) ? 
-                BlockManager.RMBSide : BlockManager.RDBSide;
+            float side = (block.Type == DFBlock.BlockTypes.Rmb) ?
+                SceneBuilder.RMBSide : SceneBuilder.RDBSide;
             Vector3 center = new Vector3(side / 2, 0, -side / 2);
 
             // Set custom movement bounds
@@ -423,7 +376,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Position free camera
             freeCamera.Reference = Vector3.Forward;
-            if (block.DFBlock.Type == DFBlock.BlockTypes.Rmb)
+            if (block.Type == DFBlock.BlockTypes.Rmb)
             {
                 freeCamera.CentreInBounds(freeCamera.EyeHeight);
                 freeCamera.Position = new Vector3(
@@ -439,35 +392,36 @@ namespace DaggerfallModelling.ViewControls
             // Set background
             SetTopDownCameraBackground();
             SetFreeCameraBackground();
-
-            // Store data
-            this.block = block;
-            this.sceneType = SceneTypes.Block;
         }
 
         /// <summary>
         /// Builds a new scene containing a location exterior.
         /// </summary>
-        /// <param name="dfLocation">DFLocation.</param>
-        private void SetExterior(DFLocation dfLocation)
+        /// <param name="regionName">Region name.</param>
+        /// <param name="locationName">Location name.</param>
+        public void CreateExteriorLocationScene(string regionName, string locationName)
         {
             // Check if resulting scene will be the same
-            if (this.location.Name == dfLocation.Name &&
-                this.location.Politic == dfLocation.Politic &&
+            if (this.location.RegionName == regionName &&
+                this.location.Name == locationName &&                
                 this.sceneType == SceneTypes.Exterior)
             {
                 return;
             }
 
-            // Set climate
-            //host.TextureManager.Climate = dfLocation.Climate;
-
-            // Create scene
+            // Create location node
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
-            SceneNode node = renderer.Scene.AddExteriorLocationNode(null, ref dfLocation);
+            LocationNode node = host.SceneBuilder.CreateExteriorLocationNode(regionName, locationName);
             if (node == null)
                 return;
+
+            // Store data
+            this.location = node.Location;
+            this.sceneType = SceneTypes.Exterior;
+
+            // Add node to scene
+            renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
             renderer.Scene.Update(TimeSpan.MinValue);
@@ -497,39 +451,38 @@ namespace DaggerfallModelling.ViewControls
             // Set sky
             if (renderer.Sky != null)
             {
-                //renderer.Sky.SkyIndex = dfLocation.SkyArchive;
+                renderer.Sky.SkyIndex = node.Location.SkyArchive;
             }
-
-            // Store data
-            //base.Climate = dfLocation.Climate;
-            this.location = dfLocation;
-            this.sceneType = SceneTypes.Exterior;
         }
 
         /// <summary>
         /// Builds a new scene containing a location dungeon.
         /// </summary>
-        /// <param name="dfLocation">DFLocation.</param>
-        private void SetDungeon(DFLocation dfLocation)
+        /// <param name="regionName">Region name.</param>
+        /// <param name="locationName">Location name.</param>
+        public void CreateDungeonLocationScene(string regionName, string locationName)
         {
             // Check if resulting scene will be the same
-            if (this.location.Name == dfLocation.Name &&
-                this.location.Politic == dfLocation.Politic &&
+            if (this.location.RegionName == regionName &&
+                this.location.Name == locationName &&
                 this.sceneType == SceneTypes.Dungeon)
             {
                 return;
             }
 
-            // Set climate.
-            // Dungeons do not use climate swaps yet.
-            host.TextureManager.ClimateType = DFLocation.ClimateType.None;
-
-            // Create scene
+            // Create location node
             renderer.Scene.ResetScene();
             renderer.BackgroundColor = generalBackgroundColor;
-            SceneNode node = renderer.Scene.AddDungeonLocationNode(null, ref dfLocation);
+            LocationNode node = host.SceneBuilder.CreateDungeonLocationNode(regionName, locationName);
             if (node == null)
                 return;
+
+            // Store data
+            this.location = node.Location;
+            this.sceneType = SceneTypes.Dungeon;
+
+            // Add node to scene
+            renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
             renderer.Scene.Update(TimeSpan.MinValue);
@@ -554,11 +507,6 @@ namespace DaggerfallModelling.ViewControls
             // Set background
             SetTopDownCameraBackground();
             SetFreeCameraBackground();
-
-            // Store data
-            base.Climate = DFLocation.ClimateType.None;
-            this.location = dfLocation;
-            this.sceneType = SceneTypes.Dungeon;
         }
 
         #endregion

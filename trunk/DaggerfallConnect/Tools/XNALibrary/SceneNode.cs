@@ -432,13 +432,53 @@ namespace XNALibrary
     public class BlockNode : SceneNode
     {
         // Variables
+        private DFBlock block;
 
         // Properties
+        public DFBlock Block
+        {
+            get { return block; }
+            set { block = value; }
+        }
 
         // Constructors
         public BlockNode()
             : base()
         {
+        }
+        public BlockNode(
+            DFBlock block)
+            : base()
+        {
+            this.block = block;
+        }
+    }
+
+    /// <summary>
+    /// Scene node for a location.
+    /// </summary>
+    public class LocationNode : SceneNode
+    {
+        // Variables
+        private DFLocation location;
+
+        // Properties
+        public DFLocation Location
+        {
+            get { return location; }
+            set { location = value; }
+        }
+
+        // Constructors
+        public LocationNode()
+            : base()
+        {
+        }
+        public LocationNode(
+            DFLocation location)
+            : base()
+        {
+            this.location = location;
         }
     }
 

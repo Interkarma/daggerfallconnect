@@ -104,8 +104,8 @@ namespace XNALibrary
             /// <summary>Render flats (e.g. trees, rocks, animals).</summary>
             Flats = 2,
 
-            /// <summary>Highlights model under mouse.</summary>
-            MousePicking = 4,
+            /// <summary>Highlights model under pointer.</summary>
+            Picking = 4,
         }
 
         #endregion
@@ -145,6 +145,15 @@ namespace XNALibrary
         {
             get { return backgroundColor; }
             set { backgroundColor = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets model highlight colour used in picking.
+        /// </summary>
+        public Color ModelHighlightColor
+        {
+            get { return modelHighlightColor; }
+            set { modelHighlightColor = value; }
         }
 
         /// <summary>
@@ -317,13 +326,16 @@ namespace XNALibrary
 
         /// <summary>
         /// Update pointer ray for picking.
+        ///  Uses view and projection matrices from current camera.
         /// </summary>
         /// <param name="x">Pointer X in viewport.</param>
         /// <param name="y">Pointer Y in viewport.</param>
-        /// <param name="view">View matrix.</param>
-        /// <param name="projection">Projection matrix.</param>
-        public void UpdatePointerRay(int x, int y, Matrix view, Matrix projection)
+        public void UpdatePointerRay(int x, int y)
         {
+            // Get matrices
+            Matrix view = camera.View;
+            Matrix projection = camera.Projection;
+
             // Unproject vectors into view area
             Viewport vp = graphicsDevice.Viewport;
             Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, Matrix.Identity);
@@ -368,8 +380,11 @@ namespace XNALibrary
             DrawBatches();
 
             // Model highlighting
-            PointerModelIntersectionsTest();
-            HighlightModelUnderPointer();
+            if (HasOptionsFlags(RendererOptions.Picking))
+            {
+                PointerModelIntersectionsTest();
+                HighlightModelUnderPointer();
+            }
 
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
@@ -491,7 +506,7 @@ namespace XNALibrary
                 int subMeshResult, planeResult;
                 intersection = Intersection.RayIntersectsDFMesh(
                     pointerRay,
-                    Matrix.Identity,//node.CumulativeMatrix,
+                    node.Matrix,
                     ref model,
                     out insideBoundingSphere,
                     out subMeshResult,
@@ -530,7 +545,7 @@ namespace XNALibrary
                 {
                     // Just highlight model
                     ModelManager.ModelData model = pointerOverModelNode.Model;
-                    //DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
+                    DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.Matrix);
                 }
             }
         }
@@ -615,6 +630,9 @@ namespace XNALibrary
 
             // Clear billboard batches
             billboardManager.ClearBatch();
+
+            // Clear picked model node
+            pointerOverModelNode = null;
         }
 
         /// <summary>

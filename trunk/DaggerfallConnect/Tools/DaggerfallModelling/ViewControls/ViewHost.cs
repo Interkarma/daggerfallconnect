@@ -176,7 +176,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets host SceneBuilder.
         /// </summary>
-        public SceneBuilder SceneBuilderA
+        public SceneBuilder SceneBuilder
         {
             get { return sceneBuilder; }
         }
@@ -764,11 +764,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Loads a single block view.
+        /// Shows a single block view.
         /// </summary>
         /// <param name="name">Block name.</param>
         /// <param name="climate">Climate of block.</param>
-        public void LoadBlockView(string name, DFLocation.ClimateType climate)
+        public void ShowBlockView(string name, DFLocation.ClimateType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -779,7 +779,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                //view.Block = BlockManager.LoadBlock(name);
+                view.CreateBlockScene(name);
             }
 
             // Set view mode
@@ -801,7 +801,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Show exterior scene
             LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            view.Exterior = dfLocation;
+            view.CreateExteriorLocationScene(dfLocation.RegionName, dfLocation.Name);
 
             // Set view mode
             lastViewMode = viewMode;
@@ -822,7 +822,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Load dungeon
             LocationView view = (LocationView)viewClients[ViewModes.DungeonView];
-            view.Dungeon = dfLocation;
+            view.CreateDungeonLocationScene(dfLocation.RegionName, dfLocation.Name);
 
             // Set view mode
             lastViewMode = viewMode;

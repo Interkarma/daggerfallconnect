@@ -109,6 +109,14 @@ namespace XNALibrary
             set { invertControllerLookY = value; }
         }
 
+        /// <summary>
+        /// Gets current mouse position.
+        /// </summary>
+        public Point MousePos
+        {
+            get { return mousePos; }
+        }
+
         #endregion
 
         #region Constructors

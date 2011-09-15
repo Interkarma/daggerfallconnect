@@ -95,6 +95,22 @@ namespace XNALibrary
             get { return defaultWorldClimate; }
         }
 
+        /// <summary>
+        /// Gets RMB side length.
+        /// </summary>
+        static public float RMBSide
+        {
+            get { return rmbSide; }
+        }
+
+        /// <summary>
+        /// Gets RDB side length.
+        /// </summary>
+        static public float RDBSide
+        {
+            get { return rdbSide; }
+        }
+
         #endregion
 
         #region Constructors
@@ -186,7 +202,7 @@ namespace XNALibrary
         public BlockNode CreateBlockNode(string name, int? worldClimate)
         {
             // Load block
-            DFBlock? block;
+            DFBlock block;
             if (!LoadDaggerfallBlock(name, out block))
                 return null;
 
@@ -206,7 +222,7 @@ namespace XNALibrary
             
             // Build node
             BlockNode node = null;
-            switch (block.Value.Type)
+            switch (block.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
                     textureManager.ClimateType = climateType;
@@ -219,6 +235,99 @@ namespace XNALibrary
             }
 
             return node;
+        }
+
+        /// <summary>
+        /// Creates a new exterior location node.
+        /// </summary>
+        /// <param name="regionName">Region name.</param>
+        /// <param name="locationName">Location name.</param>
+        /// <returns>LocationNode.</returns>
+        public LocationNode CreateExteriorLocationNode(string regionName, string locationName)
+        {
+            // Get location
+            DFLocation location;
+            if (!LoadDaggerfallLocation(
+                regionName,
+                locationName,
+                out location))
+            {
+                return null;
+            }
+
+            // Create location node
+            LocationNode locationNode = new LocationNode(location);
+
+            // Get dimensions of exterior location array
+            int width = location.Exterior.ExteriorData.Width;
+            int height = location.Exterior.ExteriorData.Height;
+
+            // Build exterior node from blocks
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Get final block name
+                    string name = blocksFile.CheckName(
+                        mapsFile.GetRmbBlockName(ref location, x, y));
+
+                    // Create block position data
+                    SceneNode blockNode = CreateBlockNode(name, location.Climate);
+                    blockNode.Position = new Vector3(
+                        x * rmbSide,
+                        0f,
+                        -(y * rmbSide));
+
+                    // Add block to location node
+                    locationNode.Add(blockNode);
+                }
+            }
+
+            return locationNode;
+        }
+
+        /// <summary>
+        /// Creates a new dungeon location node.
+        /// </summary>
+        /// <param name="regionName">Region name.</param>
+        /// <param name="locationName">Location name.</param>
+        /// <returns>LocationNode.</returns>
+        public LocationNode CreateDungeonLocationNode(string regionName, string locationName)
+        {
+            // Get location
+            DFLocation location;
+            if (!LoadDaggerfallLocation(
+                regionName,
+                locationName,
+                out location))
+            {
+                return null;
+            }
+
+            // Exit if location does not have a dungeon
+            if (!location.HasDungeon)
+                return null;
+
+            // Create location node
+            LocationNode locationNode = new LocationNode(location);
+
+            // Create dungeon layout
+            foreach (var block in location.Dungeon.Blocks)
+            {
+                // TODO: Handle duplicate block coordinates (e.g. Orsinium)
+
+                // Create block position data
+                SceneNode blockNode = CreateBlockNode(block.BlockName, null);
+                blockNode.Position = new Vector3(
+                    block.X * rdbSide,
+                    0f,
+                    -(block.Z * rdbSide));
+
+                // Add block to location node
+                locationNode.Add(blockNode);
+            }
+
+            return locationNode;
         }
 
         #endregion
@@ -265,7 +374,7 @@ namespace XNALibrary
         /// <param name="name">Name of block.</param>
         /// <param name="block">DFBlock.</param>
         /// <returns>True if successful.</returns>
-        private bool LoadDaggerfallBlock(string name, out DFBlock? block)
+        private bool LoadDaggerfallBlock(string name, out DFBlock block)
         {
             try
             {
@@ -275,7 +384,7 @@ namespace XNALibrary
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
-                block = null;
+                block = new DFBlock();
                 return false;
             }
 
@@ -289,13 +398,15 @@ namespace XNALibrary
         /// <param name="textureRecord">Texture record index.</param>
         /// <param name="textureFlags">Texture create flags.</param>
         /// <param name="textureKey">Texture key.</param>
-        /// <param name="finalSize">Final size.</param>
+        /// <param name="startSize">Start size before scaling.</param>
+        /// <param name="finalSize">Final size after scaling.</param>
         /// <returns>True if successful.</returns>
         private bool LoadDaggerfallFlat(
             int textureArchive,
             int textureRecord,
             TextureManager.TextureCreateFlags textureFlags,
             out int textureKey,
+            out Vector2 startSize,
             out Vector2 finalSize)
         {
             try
@@ -308,6 +419,10 @@ namespace XNALibrary
                 // Get size and scale of this texture
                 System.Drawing.Size size = TextureFile.QuickSize(path, textureRecord);
                 System.Drawing.Size scale = TextureFile.QuickScale(path, textureRecord);
+
+                // Set start size
+                startSize.X = size.Width;
+                startSize.Y = size.Height;
 
                 // Apply scale
                 int xChange = (int)(size.Width * (scale.Width / scaleDivisor));
@@ -325,8 +440,37 @@ namespace XNALibrary
             {
                 Console.WriteLine(e.Message);
                 textureKey = -1;
+                startSize.X = 0;
+                startSize.Y = 0;
                 finalSize.X = 0;
                 finalSize.Y = 0;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Loads a Daggerfall location.
+        /// </summary>
+        /// <param name="regionName">Region name.</param>
+        /// <param name="locationName">Location name.</param>
+        /// <param name="location">DFLocation.</param>
+        /// <returns>True if successful.</returns>
+        private bool LoadDaggerfallLocation(
+            string regionName,
+            string locationName,
+            out DFLocation location)
+        {
+            try
+            {
+                // Get location
+                location = mapsFile.GetLocation(regionName, locationName);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                location = new DFLocation();
                 return false;
             }
 
@@ -343,10 +487,10 @@ namespace XNALibrary
         /// <param name="block">DFBlock.</param>
         /// <param name="sceneryArchive">Scenery texture archive index.</param>
         /// <returns>BlockNode.</returns>
-        private BlockNode BuildRMBNode(ref DFBlock? block, int sceneryArchive)
+        private BlockNode BuildRMBNode(ref DFBlock block, int sceneryArchive)
         {
             // Create parent block node
-            BlockNode blockNode = new BlockNode();
+            BlockNode blockNode = new BlockNode(block);
 
             // Add child nodes
             AddRMBModels(ref block, blockNode);
@@ -363,11 +507,11 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock.</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRMBModels(ref DFBlock? block, BlockNode blockNode)
+        private void AddRMBModels(ref DFBlock block, BlockNode blockNode)
         {
             // Iterate through all subrecords
             float degrees;
-            foreach (DFBlock.RmbSubRecord subRecord in block.Value.RmbBlock.SubRecords)
+            foreach (DFBlock.RmbSubRecord subRecord in block.RmbBlock.SubRecords)
             {
                 // Create subrecord node
                 SceneNode subrecordNode = new SceneNode();
@@ -394,11 +538,11 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRMBMiscModels(ref DFBlock? block, BlockNode blockNode)
+        private void AddRMBMiscModels(ref DFBlock block, BlockNode blockNode)
         {
             // Iterate through all misc records
             float degrees;
-            foreach (DFBlock.RmbBlock3dObjectRecord obj in block.Value.RmbBlock.Misc3dObjectRecords)
+            foreach (DFBlock.RmbBlock3dObjectRecord obj in block.RmbBlock.Misc3dObjectRecords)
             {
                 // Create misc record node
                 SceneNode miscNode = CreateModelNode(obj.ModelIdNum);
@@ -414,7 +558,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRMBGroundPlane(ref DFBlock? block, BlockNode blockNode)
+        private void AddRMBGroundPlane(ref DFBlock block, BlockNode blockNode)
         {
             // Add ground plane node
             VertexBuffer vertexBuffer;
@@ -432,13 +576,14 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRMBMiscFlats(ref DFBlock? block, BlockNode blockNode)
+        private void AddRMBMiscFlats(ref DFBlock block, BlockNode blockNode)
         {
             // Iterate through all misc flat records
-            foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.Value.RmbBlock.MiscFlatObjectRecords)
+            foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.RmbBlock.MiscFlatObjectRecords)
             {
                 // Load flat
                 int textureKey;
+                Vector2 startSize;
                 Vector2 finalSize;
                 if (true == LoadDaggerfallFlat(
                     obj.TextureArchive,
@@ -446,6 +591,7 @@ namespace XNALibrary
                     TextureManager.TextureCreateFlags.Dilate |
                     TextureManager.TextureCreateFlags.PreMultiplyAlpha,
                     out textureKey,
+                    out startSize,
                     out finalSize))
                 {
                     // Calcuate position
@@ -471,7 +617,7 @@ namespace XNALibrary
         /// <param name="block">DFBlock</param>
         /// <param name="blockNode">BlockNode.</param>
         /// <param name="sceneryArchive">Scenery texture archive index.</param>
-        private void AddRMBSceneryFlats(ref DFBlock? block, BlockNode blockNode, int sceneryArchive)
+        private void AddRMBSceneryFlats(ref DFBlock block, BlockNode blockNode, int sceneryArchive)
         {
             // Add block scenery
             for (int y = 0; y < 16; y++)
@@ -480,13 +626,14 @@ namespace XNALibrary
                 {
                     // Get scenery item
                     DFBlock.RmbGroundScenery scenery =
-                        block.Value.RmbBlock.FldHeader.GroundData.GroundScenery[x, y];
+                        block.RmbBlock.FldHeader.GroundData.GroundScenery[x, y];
 
                     // Ignore 0 as this appears to be a marker/waypoint of some kind
                     if (scenery.TextureRecord > 0)
                     {
                         // Load flat
                         int textureKey;
+                        Vector2 startSize;
                         Vector2 finalSize;
                         if (true == LoadDaggerfallFlat(
                             sceneryArchive,
@@ -494,6 +641,7 @@ namespace XNALibrary
                             TextureManager.TextureCreateFlags.Dilate |
                             TextureManager.TextureCreateFlags.PreMultiplyAlpha,
                             out textureKey,
+                            out startSize,
                             out finalSize))
                         {
                             // Calcuate position
@@ -524,14 +672,14 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock.</param>
         /// <returns>BlockNode.</returns>
-        private BlockNode BuildRDBNode(ref DFBlock? block)
+        private BlockNode BuildRDBNode(ref DFBlock block)
         {
             // Create parent block node
-            BlockNode blockNode = new BlockNode();
+            BlockNode blockNode = new BlockNode(block);
 
             // Iterate through object groups
             int groupIndex = 0;
-            foreach (DFBlock.RdbObjectRoot group in block.Value.RdbBlock.ObjectRootList)
+            foreach (DFBlock.RdbObjectRoot group in block.RdbBlock.ObjectRootList)
             {
                 // Skip empty object groups
                 if (null == group.RdbObjects)
@@ -550,7 +698,7 @@ namespace XNALibrary
                             AddRDBModel(ref block, obj, blockNode);
                             break;
                         case DFBlock.RdbResourceTypes.Flat:
-                            AddRDBFlat(ref block, obj, blockNode);
+                            AddRDBFlat(obj, blockNode);
                             break;
                         default:
                             // Only drawing models and flats for now
@@ -571,12 +719,12 @@ namespace XNALibrary
         /// <param name="block">DFBlock.</param>
         /// <param name="obj">RdbObject.</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRDBModel(ref DFBlock? block, DFBlock.RdbObject obj, BlockNode blockNode)
+        private void AddRDBModel(ref DFBlock block, DFBlock.RdbObject obj, BlockNode blockNode)
         {
             // Get model reference index, desc, and id
             int modelReference = obj.Resources.ModelResource.ModelIndex;
-            string desc = block.Value.RdbBlock.ModelReferenceList[modelReference].Description;
-            uint modelId = block.Value.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
+            string desc = block.RdbBlock.ModelReferenceList[modelReference].Description;
+            uint modelId = block.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
 
             // Get rotation angle for each axis
             float degreesX = obj.Resources.ModelResource.XRotation / rotationDivisor;
@@ -605,13 +753,13 @@ namespace XNALibrary
         /// <summary>
         /// Adds RDB flat to scene node.
         /// </summary>
-        /// <param name="block">DFBlock.</param>
         /// <param name="obj">RdbObject.</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRDBFlat(ref DFBlock? block, DFBlock.RdbObject obj, BlockNode blockNode)
+        private void AddRDBFlat(DFBlock.RdbObject obj, BlockNode blockNode)
         {
             // Load flat
             int textureKey;
+            Vector2 startSize;
             Vector2 finalSize;
             if (true == LoadDaggerfallFlat(
                 obj.Resources.FlatResource.TextureArchive,
@@ -619,8 +767,16 @@ namespace XNALibrary
                 TextureManager.TextureCreateFlags.Dilate |
                 TextureManager.TextureCreateFlags.PreMultiplyAlpha,
                 out textureKey,
+                out startSize,
                 out finalSize))
             {
+                // Foliage (TEXTURE.500 and up) do not seem to use scaling
+                // in dungeons. Revert scaling.
+                if (obj.Resources.FlatResource.TextureArchive > 499)
+                {
+                    finalSize = startSize;
+                }
+
                 // Calcuate position
                 Vector3 position = new Vector3(
                     obj.XPos,
@@ -647,7 +803,7 @@ namespace XNALibrary
         /// <param name="block">DFBlock.</param>
         /// <param name="groundPlaneVertexBuffer">VertexBuffer.</param>
         private void BuildRmbGroundPlaneVertexBuffer(
-            ref DFBlock? block,
+            ref DFBlock block,
             out VertexBuffer groundPlaneVertexBuffer,
             out int vertexCount)
         {
@@ -666,7 +822,7 @@ namespace XNALibrary
             {
                 for (int y = tileCount - 1; y >= 0; y--)
                 {
-                    tile = block.Value.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
+                    tile = block.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
                     AddGroundTile(ref groundPlaneVertices, x, y, tile.TextureRecord, tile.IsRotated, tile.IsFlipped);
                 }
             }

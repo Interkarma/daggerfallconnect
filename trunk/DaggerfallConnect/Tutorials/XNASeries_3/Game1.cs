@@ -17,8 +17,7 @@ namespace XNASeries_3
 {
     /// <summary>
     /// This tutorial shows how to use the Daggerfall Connect XNALibrary
-    ///  to load an exterior location with a specific climate and perform
-    ///  mouse picking.
+    ///  to load an exterior location and perform triangle-accurate mouse picking.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -34,14 +33,11 @@ namespace XNASeries_3
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
         // Content
-        string regionName = "Wayrest";
-        string locationName = "Wayrest";
+        string regionName = "Daggerfall";
+        string locationName = "Daggerfall";
 
         // Camera
-        Vector3 cameraPos = new Vector3(2048, 400, 1000);
-
-        // World climate value (223-232)
-        int worldClimate = 231;
+        Vector3 cameraPos = new Vector3(16384, 512, -16384);
 
         // Options
         bool invertMouseLook = false;
@@ -76,6 +72,9 @@ namespace XNASeries_3
             renderer = new Renderer(sceneBuilder.TextureManager);
             renderer.Camera.Position = cameraPos;
 
+            // Enable picking
+            renderer.Options |= Renderer.RendererOptions.Picking;
+
             // Create input
             input = new Input();
             input.ActiveDevices = Input.DeviceFlags.All;
@@ -91,6 +90,14 @@ namespace XNASeries_3
         /// </summary>
         protected override void LoadContent()
         {
+            // Create location node
+            SceneNode node =
+                sceneBuilder.CreateExteriorLocationNode(
+                regionName,
+                locationName);
+
+            // Add to scene
+            renderer.Scene.AddNode(null, node);
         }
 
         /// <summary>
@@ -110,6 +117,10 @@ namespace XNASeries_3
         {
             // Update scene
             renderer.Scene.Update(gameTime.ElapsedGameTime);
+
+            // Update pointer ray with mouse position
+            Point mousePos = input.MousePos;
+            renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
 
             // Update input
             input.Update(gameTime.ElapsedGameTime);

@@ -125,14 +125,15 @@ namespace DaggerfallModelling
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //DFLocation dfLocation = mapsFile.GetLocation("Dragontail Mountains", "Scourg Barrow");
             //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            //DFLocation dfLocation = mapsFile.GetLocation("Sentinel", "Sentinel");
             //ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);
-            ContentViewer.LoadBlockView("MAGEAA13.RMB", DFLocation.ClimateType.None);
-            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
-            UpdateActiveCameraMode();
+            //ContentViewer.ShowBlockView("MAGEAA13.RMB", DFLocation.ClimateType.None);
+            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            //UpdateActiveCameraMode();
 
             // Show thumbnails view
-            //ContentViewer.ShowThumbnailsView();
+            ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -201,7 +202,7 @@ namespace DaggerfallModelling
                     case BlockTag:
                         // Show view
                         blockViewAvailable = true;
-                        ContentViewer.LoadBlockView(node.Text, DFLocation.ClimateType.None);
+                        ContentViewer.ShowBlockView(node.Text, DFLocation.ClimateType.None);
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -409,7 +410,7 @@ namespace DaggerfallModelling
 
                 // Load block into view
                 blockViewAvailable = true;
-                ContentViewer.LoadBlockView(e.Name, climate);
+                ContentViewer.ShowBlockView(e.Name, climate);
 
                 return;
             }
@@ -988,7 +989,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set view
-            ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         /// <summary>

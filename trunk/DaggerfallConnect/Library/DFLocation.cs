@@ -27,6 +27,11 @@ namespace DaggerfallConnect
         public string Name;
 
         /// <summary>
+        /// Name of the parent region.
+        /// </summary>
+        public string RegionName;
+
+        /// <summary>
         /// True if location has a dungeon, otherwise false.
         /// </summary>
         public bool HasDungeon;
@@ -55,6 +60,16 @@ namespace DaggerfallConnect
         /// Political alignment of this location (equal to region index + 128).
         /// </summary>
         public int Politic;
+
+        /// <summary>
+        /// Texture archive index for RMB scenery.
+        /// </summary>
+        public int RMBSceneryArchive;
+
+        /// <summary>
+        /// Sky archive index.
+        /// </summary>
+        public int SkyArchive;
 
         #endregion
 

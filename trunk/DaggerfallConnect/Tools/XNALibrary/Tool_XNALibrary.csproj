@@ -76,7 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BillboardManager.cs" />
-    <Compile Include="BlockManager.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Component.cs" />
     <Compile Include="ContentHelper.cs" />

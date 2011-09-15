@@ -615,6 +615,9 @@ namespace DaggerfallConnect.Arena2
         {
             try
             {
+                // Store parent region name
+                dfLocation.RegionName = RegionNames[Region];
+
                 // Read MapPItem for this location
                 BinaryReader reader = Regions[Region].MapPItem.GetReader();
                 ReadMapPItem(ref reader, Region, Location, ref dfLocation);
@@ -656,6 +659,14 @@ namespace DaggerfallConnect.Arena2
 
             // Read climate data
             dfLocation.Climate = ClimatePak.GetValue(x, y);
+
+            // Set archive indices
+            DFLocation.ClimateType climateType;
+            MapsFile.GetWorldClimateSettings(
+                dfLocation.Climate,
+                out climateType,
+                out dfLocation.RMBSceneryArchive,
+                out dfLocation.SkyArchive);
         }
 
         /// <summary>
