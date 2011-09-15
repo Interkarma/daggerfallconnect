@@ -258,6 +258,18 @@ namespace DaggerfallConnect.Arena2
 
         #endregion
 
+        #region Static Properties
+
+        /// <summary>
+        /// Gets default ARCH3D.BSA filename.
+        /// </summary>
+        static public string Filename
+        {
+            get { return "ARCH3D.BSA"; }
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>

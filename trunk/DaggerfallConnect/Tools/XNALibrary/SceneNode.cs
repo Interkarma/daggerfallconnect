@@ -24,8 +24,7 @@ namespace XNALibrary
     #region SceneNode
 
     /// <summary>
-    /// Parent class of a scene node. Provides hierarchy, visibility,
-    ///  containment, distance sorting, actions, and a transformation matrix.
+    /// Parent class of a scene node.
     /// </summary>
     public class SceneNode :
         IComparable<SceneNode>,
@@ -40,47 +39,48 @@ namespace XNALibrary
         private BoundingSphere localBounds;
         private BoundingSphere transformedBounds;
         private Color drawBoundsColor;
+        private Vector3 rotation;
+        private Vector3 position;
         private Matrix matrix;
-        private Matrix cumulativeMatrix;
-        private ActionData action;
+        private ActionRecord action;
         private object tag;
         private SceneNode parent;
         private List<SceneNode> children;
 
         #endregion
 
-        #region Class Structures
+        #region Sub Classes
 
         /// <summary>
         /// Describes an action that can be performed on a node.
         ///  Only rotations and translations are supported at this time.
         /// </summary>
-        public struct ActionData
+        public class ActionRecord
         {
             /// <summary>
             /// True if action is enabled.
             /// </summary>
-            public bool Enabled;
+            public bool Enabled = false;
 
             /// <summary>
             /// Rotation to perform around each axis in degrees.
             /// </summary>
-            public Vector3 Rotation;
+            public Vector3 Rotation = Vector3.Zero;
 
             /// <summary>
             /// Amount of rotation that has been performed so far, in degrees.
             /// </summary>
-            public Vector3 CurrentRotation;
+            public Vector3 CurrentRotation = Vector3.Zero;
 
             /// <summary>
             /// Translation to perform on each axis.
             /// </summary>
-            public Vector3 Translation;
+            public Vector3 Translation = Vector3.Zero;
 
             /// <summary>
             /// Amount of translation that has been performed so far.
             /// </summary>
-            public Vector3 CurrentTranslation;
+            public Vector3 CurrentTranslation = Vector3.Zero;
 
             /// <summary>
             /// Matrix representing the current state of this action.
@@ -90,29 +90,33 @@ namespace XNALibrary
             /// <summary>
             /// Start time for the action in milliseconds.
             /// </summary>
-            public long StartTime;
+            public long StartTime = 0;
 
             /// <summary>
             /// Elapsed time in milliseconds for object to reach final state.
             ///  TotalTime = StartTime+Duration.
             /// </summary>
-            public long Duration;
+            public long Duration = 0;
 
             /// <summary>
             /// State this action is currently in.
             /// </summary>
-            public ActionState ActionState;
+            public ActionState ActionState = ActionState.Start;
 
             /// <summary>
             /// Next node for chained action records.
             /// </summary>
-            public SceneNode NextNode;
+            public SceneNode NextNode = null;
 
             /// <summary>
             /// Previous node for chained action records.
             /// </summary>
-            public SceneNode PreviousNode;
+            public SceneNode PreviousNode = null;
         }
+
+        #endregion
+
+        #region Class Structures
 
         /// <summary>
         /// State of an action.
@@ -128,8 +132,8 @@ namespace XNALibrary
             /// <summary>Action is running backwards (end to start).</summary>
             RunningBackwards,
 
-            /// <summary>Action is applied continuously without end.</summary>
-            Continuous,
+            /// <summary>Action will continuously bounce between start and end.</summary>
+            Bounce,
 
             /// <summary>Action is in the end position.</summary>
             End,
@@ -195,28 +199,36 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets or sets node rotation.
+        /// </summary>
+        public Vector3 Rotation
+        {
+            get { return rotation; }
+            set { rotation = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets node position.
+        /// </summary>
+        public Vector3 Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
+
+        /// <summary>
         /// Gets or sets transformation matrix.
         /// </summary>
-        public Matrix Matrix
+        internal Matrix Matrix
         {
             get { return matrix; }
             set { matrix = value; }
         }
 
         /// <summary>
-        /// Gets or sets cumulative matrix for this node.
-        ///  Represents this node * parent node.
-        /// </summary>
-        public Matrix CumulativeMatrix
-        {
-            get { return cumulativeMatrix; }
-            set { cumulativeMatrix = value; }
-        }
-
-        /// <summary>
         /// Gets or sets action data.
         /// </summary>
-        public ActionData Action
+        public ActionRecord Action
         {
             get { return action; }
             set { action = value; }
@@ -279,8 +291,7 @@ namespace XNALibrary
             this.distance = null;
             this.drawBoundsColor = Color.White;
             this.matrix = Matrix.Identity;
-            this.cumulativeMatrix = Matrix.Identity;
-            this.action = new ActionData();
+            this.action = new ActionRecord();
             this.parent = null;
             this.children = new List<SceneNode>();
         }
@@ -326,7 +337,7 @@ namespace XNALibrary
         #region IComparable
 
         /// <summary>
-        /// Compare distance of two nodes from camera.
+        /// Compare distance of two nodes from each other.
         ///  Distance must be set before sorting.
         /// </summary>
         /// <param name="other">SceneNode.</param>
@@ -402,11 +413,32 @@ namespace XNALibrary
         {
             this.model = null;
         }
-        public ModelNode(ModelManager.ModelData model)
+        public ModelNode(
+            ModelManager.ModelData model)
             : base()
         {
             this.model = model;
             this.LocalBounds = model.BoundingSphere;
+        }
+    }
+
+    #endregion
+
+    #region BlockNode
+
+    /// <summary>
+    /// Scene node for a block.
+    /// </summary>
+    public class BlockNode : SceneNode
+    {
+        // Variables
+
+        // Properties
+
+        // Constructors
+        public BlockNode()
+            : base()
+        {
         }
     }
 
@@ -442,7 +474,9 @@ namespace XNALibrary
             this.vertexBuffer = null;
             this.primitiveCount = 0;
         }
-        public GroundPlaneNode(VertexBuffer vertexBuffer, int primitiveCount)
+        public GroundPlaneNode(
+            VertexBuffer vertexBuffer,
+            int primitiveCount)
             : base()
         {
             this.vertexBuffer = vertexBuffer;
@@ -463,25 +497,63 @@ namespace XNALibrary
     public class BillboardNode : SceneNode
     {
         // Variables
-        BlockManager.FlatItem flat;
+        private BillboardType type;
+        private int textureKey;
+        private Vector2 size;
+
+        /// <summary>
+        /// Billboard types enumeration.
+        /// </summary>
+        public enum BillboardType
+        {
+            /// <summary>Decorative flats.</summary>
+            Decorative,
+            /// <summary>Non-player characters, such as quest givers and shop keepers.</summary>
+            NPC,
+            /// <summary>Flat is also light-source.</summary>
+            Light,
+            /// <summary>Editor flats, such as markers for quests, random monters, and treasure.</summary>
+            Editor,
+            /// <summary>Climate-specific scenery in exterior blocks, such as trees and rocks.</summary>
+            ClimateScenery,
+        }
 
         // Properties
-        public BlockManager.FlatItem Flat
+        public BillboardType Type
         {
-            get { return flat; }
-            set { flat = value; }
+            get { return type; }
+            set { type = value; }
+        }
+        public int TextureKey
+        {
+            get { return textureKey; }
+            set { textureKey = value; }
+        }
+        public Vector2 Size
+        {
+            get { return size; }
+            set { size = value; }
         }
 
         // Constructors
         public BillboardNode()
             : base()
         {
-            this.flat = new BlockManager.FlatItem();
+            this.type = BillboardType.Decorative;
+            this.textureKey = -1;
         }
-        public BillboardNode(BlockManager.FlatItem flat)
+        public BillboardNode(
+            BillboardType type,
+            int textureKey,
+            Vector2 size)
             : base()
         {
-            this.flat = flat;
+            this.type = type;
+            this.textureKey = textureKey;
+            this.size = size;
+            this.LocalBounds = new BoundingSphere(
+                Vector3.Zero,
+                (size.X > size.Y) ? size.X / 2 : size.Y / 2);
         }
     }
 

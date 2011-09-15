@@ -22,15 +22,12 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Helper class for loading Daggerfall content and constructing a scene graph.
+    /// Manages a scene graph of SceneNode objects.
     /// </summary>
-    public class SceneManager
+    public class Scene
     {
 
         #region Class Variables
-
-        // Content
-        private ContentHelper contentHelper;
 
         // Scene
         private SceneNode root;
@@ -50,15 +47,6 @@ namespace XNALibrary
             get { return root; }
         }
 
-        /// <summary>
-        /// Gets or sets content helper.
-        /// </summary>
-        public ContentHelper ContentHelper
-        {
-            get { return contentHelper; }
-            set { contentHelper = value; }
-        }
-
         #endregion
 
         #region Constructors
@@ -66,7 +54,7 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        public SceneManager()
+        public Scene()
         {
             // Create default scene
             ResetScene();
@@ -93,6 +81,19 @@ namespace XNALibrary
         {
             // Update nodes
             UpdateNode(root, Matrix.Identity);
+        }
+
+        /// <summary>
+        /// Adds a node to the scene.
+        /// </summary>
+        /// <param name="parent">Parent node, or NULL for root.</param>
+        /// <param name="node">SceneNode to add to parent.</param>
+        public void AddNode(SceneNode parent, SceneNode node)
+        {
+            if (parent == null)
+                root.Add(node);
+            else
+                parent.Add(node);
         }
 
         /// <summary>
@@ -134,14 +135,15 @@ namespace XNALibrary
                 if (dfLocation == null)
                     flatItem.TextureArchive = 504;
                 else
-                    flatItem.TextureArchive = dfLocation.Value.GroundFlatsArchive;
+                    flatItem.TextureArchive = 504;
             }
 
             // Load flat item
             flatItem = LoadDaggerfallFlat(flatItem);
 
             // Create billboard node
-            BillboardNode node = new BillboardNode(flatItem);
+            BillboardNode node = new BillboardNode();
+            //BillboardNode node = new BillboardNode(flatItem);
             node.LocalBounds = flatItem.BoundingSphere;
             parent.Add(node);
 
@@ -157,7 +159,8 @@ namespace XNALibrary
         /// <returns>SceneNode.</returns>
         public SceneNode AddBlockNode(SceneNode parent, string name, DFLocation? dfLocation)
         {
-            return AddBlockNode(parent, contentHelper.BlockManager.LoadBlock(name), dfLocation);
+            return null;
+            //return AddBlockNode(parent, contentHelper.BlockManager.LoadBlock(name), dfLocation);
         }
 
         /// <summary>
@@ -198,8 +201,8 @@ namespace XNALibrary
         public SceneNode AddExteriorLocationNode(SceneNode parent, ref DFLocation location)
         {
             // Cannot proceed if content helper is null
-            if (contentHelper == null)
-                throw new Exception("ContentHelper is not set.");
+            //if (contentHelper == null)
+            //    throw new Exception("ContentHelper is not set.");
 
             // Use root node if no parent specified
             if (parent == null)
@@ -218,13 +221,18 @@ namespace XNALibrary
                 for (int x = 0; x < width; x++)
                 {
                     // Get final block name
-                    string name = contentHelper.BlockManager.BlocksFile.CheckName(
-                        contentHelper.MapManager.MapsFile.GetRmbBlockName(ref location, x, y));
+                    string name = "UNCOMMENT BELOW";
+                    //string name = contentHelper.BlockManager.BlocksFile.CheckName(
+                    //    contentHelper.MapManager.MapsFile.GetRmbBlockName(ref location, x, y));
 
                     // Create block position data
                     SceneNode blockNode = AddBlockNode(locationNode, name, location);
-                    blockNode.Matrix *= Matrix.CreateTranslation(
-                        new Vector3(x * BlockManager.RMBSide, 0f, -(y * BlockManager.RMBSide)));
+                    blockNode.Position = new Vector3(
+                        x * BlockManager.RMBSide,
+                        0f,
+                        -(y * BlockManager.RMBSide));
+                    //blockNode.Matrix *= Matrix.CreateTranslation(
+                    //    new Vector3(x * BlockManager.RMBSide, 0f, -(y * BlockManager.RMBSide)));
 
                     // Add block to location node
                     locationNode.Add(blockNode);
@@ -246,8 +254,8 @@ namespace XNALibrary
         public SceneNode AddDungeonLocationNode(SceneNode parent, ref DFLocation location)
         {
             // Cannot proceed if content helper is null
-            if (contentHelper == null)
-                throw new Exception("ContentHelper is not set.");
+            //if (contentHelper == null)
+            //    throw new Exception("ContentHelper is not set.");
 
             // Use root node if no parent specified
             if (parent == null)
@@ -263,8 +271,12 @@ namespace XNALibrary
 
                 // Create block position data
                 SceneNode blockNode = AddBlockNode(locationNode, block.BlockName, null);
-                blockNode.Matrix *= Matrix.CreateTranslation(
-                        new Vector3(block.X * BlockManager.RDBSide, 0f, -(block.Z * BlockManager.RDBSide)));
+                blockNode.Position = new Vector3(
+                    block.X * BlockManager.RDBSide,
+                    0f,
+                    -(block.Z * BlockManager.RDBSide));
+                //blockNode.Matrix *= Matrix.CreateTranslation(
+                //        new Vector3(block.X * BlockManager.RDBSide, 0f, -(block.Z * BlockManager.RDBSide)));
             }
 
             // Add location node to scene
@@ -290,19 +302,28 @@ namespace XNALibrary
             SceneNode blockNode = new SceneNode();
 
             // Add ground plane node
-            contentHelper.BlockManager.BuildRmbGroundPlane(contentHelper.TextureManager, ref block);
+            //contentHelper.BlockManager.BuildRmbGroundPlane(contentHelper.TextureManager, ref block);
             GroundPlaneNode groundNode = new GroundPlaneNode(
                 block.GroundPlaneVertexBuffer,
                 block.GroundPlaneVertices.Length / 3);
-            groundNode.Matrix *= Matrix.CreateTranslation(0f, groundHeight, 0f);
+            groundNode.Position = new Vector3(0f, groundHeight, 0f);
             blockNode.Add(groundNode);
 
             // Add model nodes
             ModelNode modelNode;
+            Vector3 scale;
+            Quaternion rotation;
+            Vector3 translation;
             foreach (var model in block.Models)
             {
+                // Decompose matrix
+                model.Matrix.Decompose(out scale, out rotation, out translation);
+
+                // Assign to node
                 modelNode = AddModelNode(blockNode, model.ModelId);
-                modelNode.Matrix = model.Matrix;
+                modelNode.Position = translation;
+                //rotation.
+                //modelNode.Rotation = model.Rotation;
             }
 
             // Add billboard nodes
@@ -310,7 +331,7 @@ namespace XNALibrary
             foreach (var flat in block.Flats)
             {
                 billboardNode = AddBillboardNode(blockNode, flat, dfLocation);
-                billboardNode.Matrix = Matrix.Identity;
+                //billboardNode.Position = billboardNode.Flat.Origin + billboardNode.Flat.Position;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
 
@@ -341,14 +362,17 @@ namespace XNALibrary
             {
                 // Add model node to scene
                 modelNode = AddModelNode(blockNode, model.ModelId);
-                modelNode.Matrix = model.Matrix;
+                //modelNode.Position = model.Position;
+                //modelNode.Rotation = model.Rotation;
 
                 // Setup action data
                 if (model.HasActionRecord)
                 {
                     // Enable action
-                    SceneNode.ActionData action = modelNode.Action;
+                    SceneNode.ActionRecord action = modelNode.Action;
                     action.Enabled = true;
+                    action.Rotation = model.ActionRecord.Rotation;
+                    action.Translation = model.ActionRecord.Translation;
                     modelNode.Action = action;
 
                     // Link action key to model node
@@ -368,7 +392,7 @@ namespace XNALibrary
                     {
                         // Link to next node
                         SceneNode nextNode = actionKeyNodeDict[nextActionKey];
-                        SceneNode.ActionData action = node.Action;
+                        SceneNode.ActionRecord action = node.Action;
                         action.NextNode = nextNode;
                         node.Action = action;
 
@@ -376,10 +400,6 @@ namespace XNALibrary
                         action = nextNode.Action;
                         action.PreviousNode = node;
                         nextNode.Action = action;
-                    }
-                    else
-                    {
-                        int foo = 0;
                     }
                 }
             }
@@ -389,7 +409,6 @@ namespace XNALibrary
             foreach (var flat in block.Flats)
             {
                 billboardNode = AddBillboardNode(blockNode, flat, dfLocation);
-                billboardNode.Matrix = Matrix.Identity;
                 billboardNode.DrawBoundsColor = Color.Green;
             }
 
@@ -413,10 +432,11 @@ namespace XNALibrary
         private int LoadDaggerfallTexture(int archive, int record, TextureManager.TextureCreateFlags flags)
         {
             // Cannot proceed if content helper is null
-            if (contentHelper == null)
-                throw new Exception("ContentHelper is not set.");
+            //if (contentHelper == null)
+            //    throw new Exception("ContentHelper is not set.");
 
-            return contentHelper.TextureManager.LoadTexture(archive, record, flags);
+            return 0;
+            //return contentHelper.TextureManager.LoadTexture(archive, record, flags);
         }
 
         /// <summary>
@@ -436,8 +456,9 @@ namespace XNALibrary
             // Get dimensions and scale of this texture image
             // We do this as TextureManager may have just pulled texture key from cache.
             // without loading file. We need the following information to create bounds.
-            string path = Path.Combine(contentHelper.TextureManager.Arena2Path,
-                TextureFile.IndexToFileName(flatItem.TextureArchive));
+            string path = "FIX BELOW";
+            //string path = Path.Combine(contentHelper.TextureManager.Arena2Path,
+            //    TextureFile.IndexToFileName(flatItem.TextureArchive));
             System.Drawing.Size size = TextureFile.QuickSize(path, flatItem.TextureRecord);
             System.Drawing.Size scale = TextureFile.QuickScale(path, flatItem.TextureRecord);
             flatItem.Size.X = size.Width;
@@ -464,13 +485,10 @@ namespace XNALibrary
             // Sink them just a little so they don't look too floaty.
             if (flatItem.BlockType == DFBlock.BlockTypes.Rmb)
             {
-                flatItem.Origin.Y = (groundHeight + flatItem.Size.Y / 2) - 4;
+                flatItem.Origin.Y = (flatItem.Size.Y / 2) - 4;
             }
 
-            // Set bounding sphere
-            flatItem.BoundingSphere.Center.X = flatItem.Origin.X + flatItem.Position.X;
-            flatItem.BoundingSphere.Center.Y = flatItem.Origin.Y + flatItem.Position.Y;
-            flatItem.BoundingSphere.Center.Z = flatItem.Origin.Z + flatItem.Position.Z;
+            // Set bounding sphere radius
             if (flatItem.Size.X > flatItem.Size.Y)
                 flatItem.BoundingSphere.Radius = flatItem.Size.X / 2;
             else
@@ -487,23 +505,25 @@ namespace XNALibrary
         private ModelManager.ModelData LoadDaggerfallModel(uint id)
         {
             // Cannot proceed if content helper is null
-            if (contentHelper == null)
-                throw new Exception("ContentHelper is not set.");
+            //if (contentHelper == null)
+            //    throw new Exception("ContentHelper is not set.");
 
             // Load model and textures
-            ModelManager.ModelData model = contentHelper.ModelManager.GetModelData(id);
-            for (int i = 0; i < model.SubMeshes.Length; i++)
-            {
-                // Load texture
-                model.SubMeshes[i].TextureKey = LoadDaggerfallTexture(
-                    model.DFMesh.SubMeshes[i].TextureArchive,
-                    model.DFMesh.SubMeshes[i].TextureRecord,
-                    TextureManager.TextureCreateFlags.ApplyClimate |
-                    TextureManager.TextureCreateFlags.MipMaps |
-                    TextureManager.TextureCreateFlags.PowerOfTwo);
-            }
+            //ModelManager.ModelData model = contentHelper.ModelManager.GetModelData(id);
+            //for (int i = 0; i < model.SubMeshes.Length; i++)
+            //{
+            //    // Load texture
+            //    model.SubMeshes[i].TextureKey = LoadDaggerfallTexture(
+            //        model.DFMesh.SubMeshes[i].TextureArchive,
+            //        model.DFMesh.SubMeshes[i].TextureRecord,
+            //        TextureManager.TextureCreateFlags.ApplyClimate |
+            //        TextureManager.TextureCreateFlags.MipMaps |
+            //        TextureManager.TextureCreateFlags.PowerOfTwo);
+            //}
 
-            return model;
+            //return model;
+
+            return new ModelManager.ModelData();
         }
 
         /// <summary>
@@ -514,14 +534,16 @@ namespace XNALibrary
         private BlockManager.BlockData LoadDaggerfallBlock(string name)
         {
             // Cannot proceed if content helper is null
-            if (contentHelper == null)
-                throw new Exception("ContentHelper is not set.");
+            //if (contentHelper == null)
+            //    throw new Exception("ContentHelper is not set.");
 
             // Clear block cache
-            contentHelper.BlockManager.ClearBlocks();
+            //contentHelper.BlockManager.ClearBlocks();
 
             // Load block
-            return contentHelper.BlockManager.LoadBlock(name);
+            //return contentHelper.BlockManager.LoadBlock(name);
+
+            return new BlockManager.BlockData();
         }
 
         #endregion
@@ -536,23 +558,37 @@ namespace XNALibrary
         /// <returns>Transformed and merged BoundingSphere.</returns>
         private BoundingSphere UpdateNode(SceneNode node, Matrix matrix)
         {
+            // Create node transforms
+            Matrix rotationX = Matrix.CreateRotationX(node.Rotation.X);
+            Matrix rotationY = Matrix.CreateRotationY(node.Rotation.Y);
+            Matrix rotationZ = Matrix.CreateRotationZ(node.Rotation.Z);
+            Matrix translation = Matrix.CreateTranslation(node.Position);
+
+            // Update cumulative matrix with node transforms
+            Matrix cumulativeMatrix = Matrix.Identity;
+            Matrix.Multiply(ref cumulativeMatrix, ref rotationX, out cumulativeMatrix);
+            Matrix.Multiply(ref cumulativeMatrix, ref rotationY, out cumulativeMatrix);
+            Matrix.Multiply(ref cumulativeMatrix, ref rotationZ, out cumulativeMatrix);
+            Matrix.Multiply(ref cumulativeMatrix, ref translation, out cumulativeMatrix);
+            Matrix.Multiply(ref cumulativeMatrix, ref matrix, out cumulativeMatrix);
+
             // Transform bounds
             BoundingSphere bounds = node.LocalBounds;
-            bounds.Center = Vector3.Transform(bounds.Center, node.Matrix * matrix);
+            Vector3.Transform(ref bounds.Center, ref cumulativeMatrix, out bounds.Center);
 
             // Update child nodes
             foreach (SceneNode child in node.Children)
             {
                 bounds = BoundingSphere.CreateMerged(
                     bounds,
-                    UpdateNode(child, node.Matrix * matrix));
+                    UpdateNode(child, cumulativeMatrix));
             }
 
             // Store transformed bounds
             node.TransformedBounds = bounds;
 
             // Store cumulative matrix
-            node.CumulativeMatrix = node.Matrix * matrix;
+            node.Matrix = cumulativeMatrix;
 
             // TODO: Get distance to camera
 

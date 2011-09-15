@@ -122,15 +122,17 @@ namespace DaggerfallModelling
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
 
             // TEST: Set a specific view while testing content
-            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
-            //ContentViewer.ShowLocationDungeon(dfLocation);
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
+            //DFLocation dfLocation = mapsFile.GetLocation("Dragontail Mountains", "Scourg Barrow");
+            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            //ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);
-            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
-            //UpdateActiveCameraMode();
+            ContentViewer.LoadBlockView("MAGEAA13.RMB", DFLocation.ClimateType.None);
+            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            UpdateActiveCameraMode();
 
             // Show thumbnails view
-            ContentViewer.ShowThumbnailsView();
+            //ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()

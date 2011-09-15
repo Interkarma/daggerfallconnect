@@ -13,11 +13,12 @@ using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
 
-namespace XNASeries_2
+namespace XNASeries_3
 {
     /// <summary>
     /// This tutorial shows how to use the Daggerfall Connect XNALibrary
-    ///  to load RMB and RDB blocks into a new scene.
+    ///  to load an exterior location with a specific climate and perform
+    ///  mouse picking.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -33,13 +34,14 @@ namespace XNASeries_2
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
         // Content
-        bool showDungeonBlock = false;
-        string rmbBlockName = "MAGEAA13.RMB";           // Exterior block
-        string rdbBlockName = "S0000040.RDB";           // Dungeon block
+        string regionName = "Wayrest";
+        string locationName = "Wayrest";
 
         // Camera
-        Vector3 rmbCameraPos = new Vector3(2048, 400, 1000);
-        Vector3 rdbCameraPos = new Vector3(1024, 512, 1000);
+        Vector3 cameraPos = new Vector3(2048, 400, 1000);
+
+        // World climate value (223-232)
+        int worldClimate = 231;
 
         // Options
         bool invertMouseLook = false;
@@ -72,6 +74,7 @@ namespace XNASeries_2
 
             // Create renderer
             renderer = new Renderer(sceneBuilder.TextureManager);
+            renderer.Camera.Position = cameraPos;
 
             // Create input
             input = new Input();
@@ -88,21 +91,6 @@ namespace XNASeries_2
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a block node
-            BlockNode node;
-            if (showDungeonBlock)
-            {
-                node = sceneBuilder.CreateBlockNode(rdbBlockName, null);
-                renderer.Camera.Position = rdbCameraPos;
-            }
-            else
-            {
-                node = sceneBuilder.CreateBlockNode(rmbBlockName, null);
-                renderer.Camera.Position = rmbCameraPos;
-            }
-
-            // Add to scene
-            renderer.Scene.AddNode(null, node);
         }
 
         /// <summary>

@@ -61,6 +61,13 @@ namespace DaggerfallModelling.ViewControls
         // XNA
         private SpriteBatch spriteBatch;
 
+        // XNA Content
+        private ContentHelper contentHelper;
+        private SpriteFont arialSmallFont;
+
+        // XNALibrary
+        private SceneBuilder sceneBuilder = null;
+
         // Appearance
         private Color backgroundColour = Color.Gray;
 
@@ -69,18 +76,14 @@ namespace DaggerfallModelling.ViewControls
         private ViewModes viewMode = ViewModes.ThumbnailView;
         private Dictionary<ViewModes, ViewBase> viewClients;
 
-        // Content
-        private ContentHelper contentHelper;
-        private SpriteFont arialSmallFont;
-
         // Filtered model array consumed by thumbnail and single model views
         private uint[] filteredModelsArray;
 
-        // Status message
-        private string statusMessage;
-
         // Ray testing
         Ray mouseRay;
+
+        // Status message
+        private string statusMessage;
 
         #endregion
 
@@ -171,11 +174,19 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
+        /// Gets host SceneBuilder.
+        /// </summary>
+        public SceneBuilder SceneBuilderA
+        {
+            get { return sceneBuilder; }
+        }
+
+        /// <summary>
         /// Gets host TextureManager.
         /// </summary>
         public TextureManager TextureManager
         {
-            get { return contentHelper.TextureManager; }
+            get { return sceneBuilder.TextureManager; }
         }
 
         /// <summary>
@@ -183,23 +194,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public ModelManager ModelManager
         {
-            get { return contentHelper.ModelManager; }
-        }
-
-        /// <summary>
-        /// Gets host BlockManager.
-        /// </summary>
-        public BlockManager BlockManager
-        {
-            get { return contentHelper.BlockManager; }
-        }
-
-        /// <summary>
-        /// Gets host MapManager.
-        /// </summary>
-        public MapManager MapManager
-        {
-            get { return contentHelper.MapManager; }
+            get { return sceneBuilder.ModelManager; }
         }
 
         /// <summary>
@@ -696,10 +691,11 @@ namespace DaggerfallModelling.ViewControls
                 // Initialise content
                 this.arena2Path = arena2Path;
                 contentHelper = new ContentHelper(
-                    GraphicsDevice,
-                    arena2Path,
                     Services,
                     Path.Combine(Application.StartupPath, "Content"));
+
+                // Initialise scene builder
+                sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
 
                 // Initialise view
                 InitialiseView();
@@ -783,7 +779,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.Block = BlockManager.LoadBlock(name);
+                //view.Block = BlockManager.LoadBlock(name);
             }
 
             // Set view mode

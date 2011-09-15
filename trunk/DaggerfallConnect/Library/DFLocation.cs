@@ -47,19 +47,9 @@ namespace DaggerfallConnect
         public LocationDungeon Dungeon;
 
         /// <summary>
-        /// Climate of this location.
+        /// Climate of this location (range is 223-232).
         /// </summary>
-        public ClimateType Climate;
-
-        /// <summary>
-        /// Archive to use for ground flats populating this location.
-        /// </summary>
-        public int GroundFlatsArchive;
-
-        /// <summary>
-        /// Archive to use for the sky behind this location.
-        /// </summary>
-        public int SkyArchive;
+        public int Climate;
 
         /// <summary>
         /// Political alignment of this location (equal to region index + 128).
@@ -295,7 +285,7 @@ namespace DaggerfallConnect
 
         #endregion
 
-        #region External Child Structures
+        #region Exterior Child Structures
 
         /// <summary>
         /// Describes exterior location.

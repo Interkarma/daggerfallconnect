@@ -121,7 +121,7 @@ namespace DaggerfallConnect.Arena2
         /// <summary>
         /// Offsets to dungeon records.
         /// </summary>
-        public struct DungeonOffset
+        private struct DungeonOffset
         {
             /// <summary>Offset in bytes relative to end of offset list.</summary>
             public UInt32 Offset;
@@ -131,6 +131,18 @@ namespace DaggerfallConnect.Arena2
 
             /// <summary>The exterior location this dungeon is paired with.</summary>
             public UInt16 ExteriorLocationId;
+        }
+
+        #endregion
+
+        #region Static Properties
+
+        /// <summary>
+        /// Gets default MAPS.BSA filename.
+        /// </summary>
+        static public string Filename
+        {
+            get { return "MAPS.BSA"; }
         }
 
         #endregion
@@ -194,6 +206,80 @@ namespace DaggerfallConnect.Arena2
         public bool Ready
         {
             get { return IsReady; }
+        }
+
+        #endregion
+
+        #region Static Public Methods
+
+        /// <summary>
+        /// Gets settings for specified map climate.
+        /// </summary>
+        /// <param name="worldClimate">Climate value from CLIMATE.PAK. Valid range is 223-232.</param>
+        /// <param name="climateType">ClimateType.</param>
+        /// <param name="rmbSceneryArchive">Texture archive index for exterior scenery.</param>
+        /// <param name="skyArchive">Sky archive index.</param>
+        static public void GetWorldClimateSettings(
+            int worldClimate,
+            out DFLocation.ClimateType climateType,
+            out int rmbSceneryArchive,
+            out int skyArchive)
+        {
+            switch (worldClimate)
+            {
+                case 223:
+                    climateType = DFLocation.ClimateType.Swamp;
+                    rmbSceneryArchive = 502;
+                    skyArchive = 29;
+                    break;
+                case 224:
+                    climateType = DFLocation.ClimateType.Desert;
+                    rmbSceneryArchive = 503;
+                    skyArchive = 9;
+                    break;
+                case 225:
+                    climateType = DFLocation.ClimateType.Desert;
+                    rmbSceneryArchive = 503;
+                    skyArchive = 9;
+                    break;
+                case 226:
+                    climateType = DFLocation.ClimateType.Mountain;
+                    rmbSceneryArchive = 510;
+                    skyArchive = 1;
+                    break;
+                case 227:
+                    climateType = DFLocation.ClimateType.Swamp;
+                    rmbSceneryArchive = 500;
+                    skyArchive = 29;
+                    break;
+                case 228:
+                    climateType = DFLocation.ClimateType.Swamp;
+                    rmbSceneryArchive = 502;
+                    skyArchive = 29;
+                    break;
+                case 229:
+                    climateType = DFLocation.ClimateType.Desert;
+                    rmbSceneryArchive = 501;
+                    skyArchive = 25;
+                    break;
+                case 230:
+                    climateType = DFLocation.ClimateType.Mountain;
+                    rmbSceneryArchive = 504;
+                    skyArchive = 17;
+                    break;
+                case 231:
+                    climateType = DFLocation.ClimateType.Temperate;
+                    rmbSceneryArchive = 504;
+                    skyArchive = 17;
+                    break;
+                case 232:
+                    climateType = DFLocation.ClimateType.Temperate;
+                    rmbSceneryArchive = 508;
+                    skyArchive = 17;
+                    break;
+                default:
+                    throw new Exception("Unknown world climate encountered.");
+            }
         }
 
         #endregion
@@ -553,7 +639,7 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
-        /// Reads climate information from ClimatePak.
+        /// Reads information from CLIMATE.PAK and POLITIC.PAK.
         /// </summary>
         /// <param name="dfLocation">DFLocation.</param>
         private void ReadClimatePoliticData(ref DFLocation dfLocation)
@@ -569,62 +655,7 @@ namespace DaggerfallConnect.Arena2
             dfLocation.Politic = PoliticPak.GetValue(x, y);
 
             // Read climate data
-            int climate = ClimatePak.GetValue(x, y);
-            switch (climate)
-            {
-                case 223:
-                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
-                    dfLocation.GroundFlatsArchive = 502;
-                    dfLocation.SkyArchive = 29;
-                    break;
-                case 224:
-                    dfLocation.Climate = DFLocation.ClimateType.Desert;
-                    dfLocation.GroundFlatsArchive = 503;
-                    dfLocation.SkyArchive = 9;
-                    break;
-                case 225:
-                    dfLocation.Climate = DFLocation.ClimateType.Desert;
-                    dfLocation.GroundFlatsArchive = 503;
-                    dfLocation.SkyArchive = 9;
-                    break;
-                case 226:
-                    dfLocation.Climate = DFLocation.ClimateType.Mountain;
-                    dfLocation.GroundFlatsArchive = 510;
-                    dfLocation.SkyArchive = 1;
-                    break;
-                case 227:
-                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
-                    dfLocation.GroundFlatsArchive = 500;
-                    dfLocation.SkyArchive = 29;
-                    break;
-                case 228:
-                    dfLocation.Climate = DFLocation.ClimateType.Swamp;
-                    dfLocation.GroundFlatsArchive = 502;
-                    dfLocation.SkyArchive = 29;
-                    break;
-                case 229:
-                    dfLocation.Climate = DFLocation.ClimateType.Desert;
-                    dfLocation.GroundFlatsArchive = 501;
-                    dfLocation.SkyArchive = 25;
-                    break;
-                case 230:
-                    dfLocation.Climate = DFLocation.ClimateType.Mountain;
-                    dfLocation.GroundFlatsArchive = 504;
-                    dfLocation.SkyArchive = 17;
-                    break;
-                case 231:
-                    dfLocation.Climate = DFLocation.ClimateType.Temperate;
-                    dfLocation.GroundFlatsArchive = 504;
-                    dfLocation.SkyArchive = 17;
-                    break;
-                case 232:
-                    dfLocation.Climate = DFLocation.ClimateType.Temperate;
-                    dfLocation.GroundFlatsArchive = 508;
-                    dfLocation.SkyArchive = 17;
-                    break;
-                default:
-                    throw new Exception("Unknown climate type encountered.");
-            }
+            dfLocation.Climate = ClimatePak.GetValue(x, y);
         }
 
         /// <summary>

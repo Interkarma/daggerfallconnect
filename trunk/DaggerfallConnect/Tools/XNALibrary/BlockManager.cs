@@ -34,10 +34,10 @@ namespace XNALibrary
         private string arena2Path;
         private GraphicsDevice graphicsDevice;
         private BlocksFile blocksFile;
-        private const float rotationDivisor = 5.68888888888889f;
         private Dictionary<string, BlockData> blockDictionary;
 
         // Constants
+        private const float rotationDivisor = 5.68888888888889f;
         private const float rmbSide = 4096f;
         private const float rdbSide = 2048f;
         private const float blkHeight = 10000f;

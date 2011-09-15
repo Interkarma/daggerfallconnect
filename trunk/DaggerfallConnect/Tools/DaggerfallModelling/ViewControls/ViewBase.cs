@@ -95,7 +95,7 @@ namespace DaggerfallModelling.ViewControls
         public virtual void ResumeView()
         {
             // Set preferred climate for this view
-            host.TextureManager.Climate = this.climateType;
+            host.TextureManager.ClimateType = this.climateType;
         }
 
         /// <summary>

@@ -21,16 +21,14 @@ using DaggerfallConnect.Arena2;
 namespace XNALibrary
 {
     /// <summary>
-    /// Takes scene and camera objects as properties and draws the scene
-    ///  as visualised by the camera. If using the default scene, don't
-    ///  forget to set the ContentHelper for content loading.
+    /// Draws a scene as visualised by a camera.
     /// </summary>
     public class Renderer
     {
         #region Class Variables
 
         // Scene
-        SceneManager scene;
+        Scene scene;
 
         // Camera
         Camera camera;
@@ -47,8 +45,11 @@ namespace XNALibrary
         private VertexDeclaration vertexDeclaration;
         private BasicEffect basicEffect;
 
+        // Textures
+        private TextureManager textureManager;
+
         // Options
-        RendererOptions rendererOptions = RendererOptions.None;
+        RendererOptions rendererOptions = RendererOptions.Flats;
 
         // Picking
         private Ray pointerRay = new Ray();
@@ -112,9 +113,17 @@ namespace XNALibrary
         #region Properties
 
         /// <summary>
+        /// Gets TextureManager set at construction.
+        /// </summary>
+        public TextureManager TextureManager
+        {
+            get { return textureManager; }
+        }
+
+        /// <summary>
         /// Gets or sets scene to render.
         /// </summary>
-        public SceneManager Scene
+        public Scene Scene
         {
             get { return scene; }
             set { scene = value; }
@@ -171,6 +180,14 @@ namespace XNALibrary
         {
             get { return pointerRay; }
             set { pointerRay = value; }
+        }
+
+        /// <summary>
+        /// Gets node under pointer.
+        /// </summary>
+        public SceneNode PointerOverNode
+        {
+            get { return pointerOverModelNode; }
         }
 
         #endregion
@@ -231,14 +248,15 @@ namespace XNALibrary
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="device">Graphics Device.</param>
-        public Renderer(GraphicsDevice graphicsDevice)
+        /// <param name="textureManager">TextureManager.</param>
+        public Renderer(TextureManager textureManager)
         {
-            // Store graphics device
-            this.graphicsDevice = graphicsDevice;
+            // Renderer uses same graphics device as texture manager
+            this.graphicsDevice = textureManager.GraphicsDevice;
+            this.textureManager = textureManager;
 
             // Create null scene manager
-            scene = new SceneManager();
+            scene = new Scene();
 
             // Create vertex declaration
             vertexDeclaration = new VertexDeclaration(
@@ -258,6 +276,7 @@ namespace XNALibrary
 
             // Setup components
             billboardManager = new BillboardManager(graphicsDevice);
+            billboardManager.TextureManager = textureManager;
 
             // Create default effect and camera
             CreateDefaultBasicEffect();
@@ -340,7 +359,7 @@ namespace XNALibrary
             ClearBatches();
 
             // Batch visible elements
-            BatchNode(scene.Root, Matrix.Identity, true);
+            BatchNode(scene.Root, true);
 
             // Draw background
             DrawBackground();
@@ -355,7 +374,6 @@ namespace XNALibrary
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
             {
-                billboardManager.TextureManager = scene.ContentHelper.TextureManager;
                 billboardManager.Draw(camera);
             }
         }
@@ -473,7 +491,7 @@ namespace XNALibrary
                 int subMeshResult, planeResult;
                 intersection = Intersection.RayIntersectsDFMesh(
                     pointerRay,
-                    node.CumulativeMatrix,
+                    Matrix.Identity,//node.CumulativeMatrix,
                     ref model,
                     out insideBoundingSphere,
                     out subMeshResult,
@@ -512,7 +530,7 @@ namespace XNALibrary
                 {
                     // Just highlight model
                     ModelManager.ModelData model = pointerOverModelNode.Model;
-                    DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
+                    //DrawNativeMesh(modelHighlightColor, ref model, pointerOverModelNode.CumulativeMatrix);
                 }
             }
         }
@@ -536,7 +554,7 @@ namespace XNALibrary
             {
                 // Highlight model
                 ModelManager.ModelData model = node.Model;
-                DrawNativeMesh(actionHighlightColor, ref model, node.CumulativeMatrix);
+                //DrawNativeMesh(actionHighlightColor, ref model, node.CumulativeMatrix);
 
                 // Get line start
                 actionLines[lineCount].Color = Color.Red;
@@ -619,9 +637,8 @@ namespace XNALibrary
         /// Recursively walks scene and batches visible submeshes.
         /// </summary>
         /// <param name="node">Start node.</param>
-        /// <param name="matrix">Cumulative matrix.</param>
         /// <param name="pointerIntersects">True if pointer intersects.</param>
-        private void BatchNode(SceneNode node, Matrix matrix, bool pointerIntersects)
+        private void BatchNode(SceneNode node, bool pointerIntersects)
         {
             // Do nothing if not visible
             if (!node.Visible)
@@ -643,13 +660,13 @@ namespace XNALibrary
             // Batch children of this node
             foreach (SceneNode child in node.Children)
             {
-                BatchNode(child, node.Matrix * matrix, pointerIntersects);
+                BatchNode(child, pointerIntersects);
             }
 
             // Batch node
             if (node is ModelNode)
             {
-                BatchModelNode((ModelNode)node, node.Matrix * matrix);
+                BatchModelNode((ModelNode)node);
                 if (pointerIntersects)
                 {
                     NodeIntersection ni =  new NodeIntersection(intersectDistance, node);
@@ -658,11 +675,11 @@ namespace XNALibrary
             }
             else if (node is GroundPlaneNode)
             {
-                BatchGroundPlaneNode((GroundPlaneNode)node, node.Matrix * matrix);
+                BatchGroundPlaneNode((GroundPlaneNode)node);
             }
             else if (node is BillboardNode)
             {
-                BatchBillboardNode((BillboardNode)node, node.Matrix * matrix);
+                BatchBillboardNode((BillboardNode)node);
             }
         }
 
@@ -670,15 +687,14 @@ namespace XNALibrary
         /// Batch a model node for rendering.
         /// </summary>
         /// <param name="node">ModelNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchModelNode(ModelNode node, Matrix matrix)
+        private void BatchModelNode(ModelNode node)
         {
             // Batch submeshes
             BatchItem batchItem;
             foreach (var submesh in node.Model.SubMeshes)
             {
                 batchItem.Indexed = true;
-                batchItem.Matrix = matrix;
+                batchItem.Matrix = node.Matrix;
                 batchItem.NumVertices = node.Model.Vertices.Length;
                 batchItem.VertexBuffer = node.Model.VertexBuffer;
                 batchItem.IndexBuffer = node.Model.IndexBuffer;
@@ -692,13 +708,12 @@ namespace XNALibrary
         /// Batch a ground plane node for rendering.
         /// </summary>
         /// <param name="node">GroundPlaneNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchGroundPlaneNode(GroundPlaneNode node, Matrix matrix)
+        private void BatchGroundPlaneNode(GroundPlaneNode node)
         {
             // Batch ground plane
             BatchItem batchItem;
             batchItem.Indexed = false;
-            batchItem.Matrix = matrix;
+            batchItem.Matrix = node.Matrix;
             batchItem.NumVertices = node.PrimitiveCount * 3;
             batchItem.VertexBuffer = node.VertexBuffer;
             batchItem.IndexBuffer = null;
@@ -711,18 +726,10 @@ namespace XNALibrary
         /// Batch a billboard node for rendering.
         /// </summary>
         /// <param name="node">BillboardNode.</param>
-        /// <param name="matrix">Matrix.</param>
-        private void BatchBillboardNode(BillboardNode node, Matrix matrix)
+        private void BatchBillboardNode(BillboardNode node)
         {
             // Batch billboard
-            BlockManager.FlatItem flat = node.Flat;
-            billboardManager.AddBatch(
-                camera,
-                flat.Origin,
-                flat.Position,
-                flat.Size,
-                flat.TextureKey,
-                matrix);
+            billboardManager.AddBatch(camera, node);
         }
 
         #endregion
@@ -775,7 +782,7 @@ namespace XNALibrary
                     continue;
 
                 // Set texture
-                basicEffect.Texture = scene.ContentHelper.TextureManager.GetTexture(batch.Key);
+                basicEffect.Texture = textureManager.GetTexture(batch.Key);
 
                 // Begin
                 basicEffect.Begin();

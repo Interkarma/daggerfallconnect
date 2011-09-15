@@ -129,7 +129,7 @@ namespace XNALibrary
         {
             // Setup
             graphicsDevice = device;
-            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, "ARCH3D.BSA"), FileUsage.UseDisk, true);
+            arch3dFile = new Arch3dFile(Path.Combine(arena2Path, Arch3dFile.Filename), FileUsage.UseDisk, true);
             arch3dFile.AutoDiscard = true;
             this.arena2Path = arena2Path;
             modelDataDict = new Dictionary<uint, ModelData>();

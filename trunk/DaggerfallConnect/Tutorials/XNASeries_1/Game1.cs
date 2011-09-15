@@ -24,6 +24,7 @@ namespace XNASeries_1
         GraphicsDeviceManager graphics;
 
         // XNALibrary
+        SceneBuilder sceneBuilder;
         Renderer renderer;
         Input input;
 
@@ -36,6 +37,7 @@ namespace XNASeries_1
         // Options
         bool invertMouseLook = false;
         bool invertControllerLook = true;
+        bool drawBounds = true;
 
         /// <summary>
         /// Constructor.
@@ -43,6 +45,9 @@ namespace XNASeries_1
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferWidth = 1024;
+            graphics.PreferredBackBufferHeight = 768;
+            graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
         }
@@ -55,11 +60,11 @@ namespace XNASeries_1
         /// </summary>
         protected override void Initialize()
         {
-            /*
+            // Create scene builder
+            sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
+
             // Create renderer
-            renderer = new Renderer(GraphicsDevice);
-            renderer.Scene.TextureManager = new TextureManager(GraphicsDevice, arena2Path);
-            renderer.Scene.ModelManager = new ModelManager(GraphicsDevice, arena2Path);
+            renderer = new Renderer(sceneBuilder.TextureManager);
             renderer.Camera.Position = cameraPos;
 
             // Create input
@@ -67,7 +72,6 @@ namespace XNASeries_1
             input.ActiveDevices = Input.DeviceFlags.All;
             input.InvertMouseLook = invertMouseLook;
             input.InvertControllerLook = invertControllerLook;
-            */
 
             base.Initialize();
         }
@@ -78,16 +82,15 @@ namespace XNASeries_1
         /// </summary>
         protected override void LoadContent()
         {
-            // Set root node to draw bounds
-            renderer.Scene.Root.DrawBoundsColor = Color.Red;
-
             // Add a model node
-            ModelNode node1 = renderer.Scene.AddModelNode(null, 456);
-            node1.Matrix = Matrix.CreateTranslation(1000f, 0f, 0f);
+            ModelNode node1 = sceneBuilder.CreateModelNode(456);
+            node1.Position = new Vector3(1000f, 0f, 0f);
+            renderer.Scene.AddNode(null, node1);
 
             // Add a second model node
-            ModelNode node2 = renderer.Scene.AddModelNode(null, 343);
-            node2.Matrix = Matrix.CreateTranslation(-1000f, 0f, 0f);
+            ModelNode node2 = sceneBuilder.CreateModelNode(343);
+            node2.Position = new Vector3(-1000f, 0f, 0f);
+            renderer.Scene.AddNode(null, node2);
         }
 
         /// <summary>
@@ -105,12 +108,12 @@ namespace XNASeries_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            // Update scene
+            renderer.Scene.Update(gameTime.ElapsedGameTime);
+
             // Update input
             input.Update(gameTime.ElapsedGameTime);
             input.Apply(renderer.Camera);
-
-            // Update scene
-            renderer.Scene.Update(gameTime.ElapsedGameTime);
         }
 
         /// <summary>
@@ -121,7 +124,10 @@ namespace XNASeries_1
         {
             // Draw scene
             renderer.Draw();
-            renderer.DrawBounds();
+
+            // Draw bounds
+            if (drawBounds)
+                renderer.DrawBounds();
         }
     }
 }

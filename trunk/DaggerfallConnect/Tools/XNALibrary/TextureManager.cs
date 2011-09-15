@@ -145,6 +145,14 @@ namespace XNALibrary
         #region Properties
 
         /// <summary>
+        /// Gets GraphicsDevice set at construction.
+        /// </summary>
+        public GraphicsDevice GraphicsDevice
+        {
+            get { return graphicsDevice; }
+        }
+
+        /// <summary>
         /// Gets Arena2 path set at construction.
         /// </summary>
         public string Arena2Path
@@ -153,9 +161,9 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets current climate for swaps.
+        /// Gets or sets current climate type for swaps.
         /// </summary>
-        public ClimateType Climate
+        public ClimateType ClimateType
         {
             get { return climateType; }
             set { SetClimate(value, climateWeather); }

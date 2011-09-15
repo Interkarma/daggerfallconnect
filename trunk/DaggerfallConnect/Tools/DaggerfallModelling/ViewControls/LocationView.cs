@@ -137,7 +137,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Create XNALibrary subsystems
             input = new Input();
-            renderer = new Renderer(host.GraphicsDevice);
+            renderer = new Renderer(host.TextureManager);
         }
 
         #endregion
@@ -149,9 +149,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Initialise scene content helper
-            renderer.Scene.ContentHelper = host.ContentHelper;
-
             // Initialise renderer sky
             renderer.InitialiseSky(host.Arena2Path);
 
@@ -312,6 +309,12 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">KeyEventArgs.</param>
         public override void OnKeyDown(KeyEventArgs e)
         {
+            // Run action record when user hits activate key
+            if (e.KeyCode == Keys.R ||
+                e.KeyCode == Keys.Enter)
+            {
+                RunActionRecord();
+            }
         }
 
         /// <summary>
@@ -321,7 +324,7 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             // Set texture manager climate
-            host.TextureManager.Climate = base.Climate;
+            host.TextureManager.ClimateType = base.Climate;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -389,7 +392,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Set climate
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
+            host.TextureManager.ClimateType = DFLocation.ClimateType.None;
 
             // Create scene
             renderer.Scene.ResetScene();
@@ -457,7 +460,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Set climate
-            host.TextureManager.Climate = dfLocation.Climate;
+            //host.TextureManager.Climate = dfLocation.Climate;
 
             // Create scene
             renderer.Scene.ResetScene();
@@ -494,11 +497,11 @@ namespace DaggerfallModelling.ViewControls
             // Set sky
             if (renderer.Sky != null)
             {
-                renderer.Sky.SkyIndex = dfLocation.SkyArchive;
+                //renderer.Sky.SkyIndex = dfLocation.SkyArchive;
             }
 
             // Store data
-            base.Climate = dfLocation.Climate;
+            //base.Climate = dfLocation.Climate;
             this.location = dfLocation;
             this.sceneType = SceneTypes.Exterior;
         }
@@ -519,7 +522,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Set climate.
             // Dungeons do not use climate swaps yet.
-            host.TextureManager.Climate = DFLocation.ClimateType.None;
+            host.TextureManager.ClimateType = DFLocation.ClimateType.None;
 
             // Create scene
             renderer.Scene.ResetScene();
@@ -580,6 +583,66 @@ namespace DaggerfallModelling.ViewControls
                 renderer.BackgroundColor = dungeonBackgroundColor;
             else
                 renderer.BackgroundColor = generalBackgroundColor;
+        }
+
+        /// <summary>
+        /// Executes the action record of a parent action.
+        /// </summary>
+        private void RunActionRecord()
+        {
+            // Exit if nothing under pointer
+            SceneNode node = renderer.PointerOverNode;
+            if (node == null)
+                return;
+
+            // Exit if no action present on node
+            if (!node.Action.Enabled)
+                return;
+
+            // Link back to start node if there is a parent
+            while (node.Action.PreviousNode != null)
+            {
+                node = (ModelNode)node.Action.PreviousNode;
+            }
+
+            // TEST: Run action chain directly to end state
+            do
+            {
+                float degreesX, degreesY, degreesZ;
+                Matrix rotationX, rotationY, rotationZ;
+
+                // Get rotation matrix for each axis
+                degreesX = node.Action.Rotation.X;
+                degreesY = node.Action.Rotation.Y;
+                degreesZ = -node.Action.Rotation.Z;
+                rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
+                rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
+                rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
+
+                // Create final matrix
+                Matrix matrix = Matrix.Identity;
+                matrix *= rotationX;
+                matrix *= rotationY;
+                matrix *= rotationZ;
+                matrix *= Matrix.CreateTranslation(node.Action.Translation);
+
+                if (node.Action.ActionState == SceneNode.ActionState.Start)
+                {
+                    // Apply matrix
+                    node.Action.Matrix = matrix;
+                    node.Action.ActionState = SceneNode.ActionState.End;
+                }
+                else if (node.Action.ActionState == SceneNode.ActionState.End)
+                {
+                    // Apply inverse matrix
+                    Matrix.Invert(ref matrix, out matrix);
+                    node.Action.Matrix = matrix;
+                    node.Action.ActionState = SceneNode.ActionState.Start;
+                }
+
+                // Get next node in chain
+                node = node.Action.NextNode;
+            } while (node != null);
         }
 
         /// <summary>

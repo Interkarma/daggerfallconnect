@@ -24,6 +24,7 @@ namespace XNALibrary
     /// <summary>
     /// Component to draw Daggerfall billboards (flats).
     ///  These billboards rotate around Y axis to always face camera.
+    ///  Assumes billboards have pre-multiplied alpha.
     /// </summary>
     public class BillboardManager : Component
     {
@@ -176,37 +177,32 @@ namespace XNALibrary
         ///  every frame or Draw() will do nothing.
         /// </summary>
         /// <param name="camera">Camera looking into scene.</param>
-        /// <param name="origin">Origin of billboard.</param>
-        /// <param name="position">Position of billboard relative to origin.</param>
-        /// <param name="size">Size.</param>
-        /// <param name="textureKey">Texture key.</param>
-        /// <param name="blockTransform">Matrix of parent block.</param>
-        public void AddBatch(Camera camera, Vector3 origin, Vector3 position, Vector2 size, int textureKey, Matrix blockTransform)
+        /// <param name="node">BillboardNode</param>
+        public void AddBatch(Camera camera, BillboardNode node)
         {
             // Create billboard matrix
             Matrix constrainedBillboard = Matrix.CreateConstrainedBillboard(
-                position,
-                position - camera.TransformedReference,
+                Vector3.Zero,
+                -camera.TransformedReference,
                 Vector3.Up,
                 null,
                 null);
 
             // Create billboard transform
             Matrix transform =
-                Matrix.CreateScale(size.X, size.Y, 1f) *
-                Matrix.CreateTranslation(origin) *
+                Matrix.CreateScale(node.Size.X, node.Size.Y, 1f) *
                 constrainedBillboard *
-                blockTransform;
+                node.Matrix;
 
-            // Calc distance between batch and camera
+            // Calc distance between node and camera
             float distance = Vector3.Distance(
-                Vector3.Transform(position, blockTransform),
+                node.TransformedBounds.Center,
                 camera.Position);
 
             // Add to batch
             BillboardBatchItem batchItem = new BillboardBatchItem(
                 distance,
-                textureKey,
+                node.TextureKey,
                 transform);
             batch.Add(batchItem);
         }

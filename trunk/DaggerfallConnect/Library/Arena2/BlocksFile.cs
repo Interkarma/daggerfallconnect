@@ -111,6 +111,18 @@ namespace DaggerfallConnect.Arena2
 
         #endregion
 
+        #region Static Properties
+
+        /// <summary>
+        /// Gets default BLOCKS.BSA filename.
+        /// </summary>
+        static public string Filename
+        {
+            get { return "BLOCKS.BSA"; }
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
