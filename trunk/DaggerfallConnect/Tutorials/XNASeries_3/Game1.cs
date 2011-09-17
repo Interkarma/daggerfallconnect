@@ -79,7 +79,7 @@ namespace XNASeries_3
             input = new Input();
             input.ActiveDevices = Input.DeviceFlags.All;
             input.InvertMouseLook = invertMouseLook;
-            input.InvertControllerLook = invertControllerLook;
+            input.InvertGamePadLook = invertControllerLook;
 
             base.Initialize();
         }

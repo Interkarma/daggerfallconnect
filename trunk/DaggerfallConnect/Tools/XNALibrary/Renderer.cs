@@ -569,7 +569,7 @@ namespace XNALibrary
             {
                 // Highlight model
                 ModelManager.ModelData model = node.Model;
-                //DrawNativeMesh(actionHighlightColor, ref model, node.CumulativeMatrix);
+                DrawNativeMesh(actionHighlightColor, ref model, node.Matrix);
 
                 // Get line start
                 actionLines[lineCount].Color = Color.Red;

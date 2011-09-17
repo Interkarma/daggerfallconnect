@@ -120,6 +120,12 @@ namespace XNALibrary
             Matrix.Multiply(ref cumulativeMatrix, ref rotationY, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref rotationX, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref rotationZ, out cumulativeMatrix);
+
+            if (node.Action.Enabled)
+            {
+                Matrix.Multiply(ref cumulativeMatrix, ref node.Action.LerpMatrix, out cumulativeMatrix);
+            }
+
             Matrix.Multiply(ref cumulativeMatrix, ref translation, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref matrix, out cumulativeMatrix);
 

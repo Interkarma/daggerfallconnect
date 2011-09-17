@@ -116,7 +116,7 @@ namespace DaggerfallModelling.ViewControls
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
             input.InvertMouseLook = false;
-            input.InvertControllerLook = true;
+            input.InvertGamePadLook = true;
 
             // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
@@ -135,7 +135,7 @@ namespace DaggerfallModelling.ViewControls
             if (CameraMode == CameraModes.Free)
             {
                 // Always enable controller
-                flags |= Input.DeviceFlags.Controller;
+                flags |= Input.DeviceFlags.GamePad;
 
                 // Only enable keyboard and mouse if host has focus
                 if (host.Focused)
@@ -550,41 +550,20 @@ namespace DaggerfallModelling.ViewControls
             // Link back to start node if there is a parent
             while (node.Action.PreviousNode != null)
             {
-                node = (ModelNode)node.Action.PreviousNode;
+                node = node.Action.PreviousNode;
             }
 
             // TEST: Run action chain directly to end state
             do
             {
-                float degreesX, degreesY, degreesZ;
-                Matrix rotationX, rotationY, rotationZ;
-
-                // Get rotation matrix for each axis
-                degreesX = node.Action.Rotation.X;
-                degreesY = node.Action.Rotation.Y;
-                degreesZ = -node.Action.Rotation.Z;
-                rotationX = Matrix.CreateRotationX(MathHelper.ToRadians(degreesX));
-                rotationY = Matrix.CreateRotationY(MathHelper.ToRadians(degreesY));
-                rotationZ = Matrix.CreateRotationZ(MathHelper.ToRadians(degreesZ));
-
-                // Create final matrix
-                Matrix matrix = Matrix.Identity;
-                matrix *= rotationX;
-                matrix *= rotationY;
-                matrix *= rotationZ;
-                matrix *= Matrix.CreateTranslation(node.Action.Translation);
-
                 if (node.Action.ActionState == SceneNode.ActionState.Start)
                 {
-                    // Apply matrix
-                    node.Action.Matrix = matrix;
+                    node.Action.LerpMatrix = node.Action.EndMatrix;
                     node.Action.ActionState = SceneNode.ActionState.End;
                 }
                 else if (node.Action.ActionState == SceneNode.ActionState.End)
                 {
-                    // Apply inverse matrix
-                    Matrix.Invert(ref matrix, out matrix);
-                    node.Action.Matrix = matrix;
+                    node.Action.LerpMatrix = Matrix.Identity;
                     node.Action.ActionState = SceneNode.ActionState.Start;
                 }
 

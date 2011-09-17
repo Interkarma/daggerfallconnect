@@ -13,11 +13,10 @@ using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
 
-namespace XNASeries_2
+namespace XNASeries_4
 {
     /// <summary>
-    /// This tutorial shows how to use the Daggerfall Connect XNALibrary
-    ///  to load RMB and RDB blocks into a new scene.
+    /// Currently an action record testbed.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -33,13 +32,10 @@ namespace XNASeries_2
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
         // Content
-        bool showDungeonBlock = false;
-        string rmbBlockName = "MAGEAA13.RMB";           // Exterior block
-        string rdbBlockName = "S0000040.RDB";           // Dungeon block
+        string blockName = "S0000205.RDB";
 
         // Camera
-        Vector3 rmbCameraPos = new Vector3(2048, 400, 1000);
-        Vector3 rdbCameraPos = new Vector3(1024, 512, 1000);
+        Vector3 cameraPos = new Vector3(900, 1860, -440);
 
         // Options
         bool invertMouseLook = false;
@@ -73,6 +69,9 @@ namespace XNASeries_2
             // Create renderer
             renderer = new Renderer(sceneBuilder.TextureManager);
 
+            // Enable picking
+            renderer.Options |= Renderer.RendererOptions.Picking;
+
             // Create input
             input = new Input();
             input.ActiveDevices = Input.DeviceFlags.All;
@@ -90,16 +89,8 @@ namespace XNASeries_2
         {
             // Create a block node
             BlockNode node;
-            if (showDungeonBlock)
-            {
-                node = sceneBuilder.CreateBlockNode(rdbBlockName, null);
-                renderer.Camera.Position = rdbCameraPos;
-            }
-            else
-            {
-                node = sceneBuilder.CreateBlockNode(rmbBlockName, null);
-                renderer.Camera.Position = rmbCameraPos;
-            }
+            node = sceneBuilder.CreateBlockNode(blockName, null);
+            renderer.Camera.Position = cameraPos;
 
             // Add to scene
             renderer.Scene.AddNode(null, node);
@@ -123,9 +114,25 @@ namespace XNASeries_2
             // Update scene
             renderer.Scene.Update(gameTime.ElapsedGameTime);
 
+            // Update pointer ray with mouse position
+            Point mousePos = input.MousePos;
+            renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
+
             // Update input
             input.Update(gameTime.ElapsedGameTime);
             input.Apply(renderer.Camera);
+
+            // Mouse clicked
+            if (input.MouseState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+            {
+                // Test pointer over node
+                if (renderer.PointerOverNode != null)
+                {
+                    // Test node has action
+                    if (renderer.PointerOverNode.Action.Enabled)
+                        ToggleAction(renderer.PointerOverNode);
+                }
+            }
         }
 
         /// <summary>
@@ -140,6 +147,15 @@ namespace XNASeries_2
             // Draw bounds
             if (drawBounds)
                 renderer.DrawBounds();
+        }
+
+        /// <summary>
+        /// Toggles action between start and end states.
+        /// </summary>
+        /// <param name="node">SceneNode.</param>
+        public void ToggleAction(SceneNode node)
+        {
+            int foo = 0;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace XNASeries_1
 
         // Options
         bool invertMouseLook = false;
-        bool invertControllerLook = true;
+        bool invertGamePadLook = true;
         bool drawBounds = true;
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace XNASeries_1
             input = new Input();
             input.ActiveDevices = Input.DeviceFlags.All;
             input.InvertMouseLook = invertMouseLook;
-            input.InvertControllerLook = invertControllerLook;
+            input.InvertGamePadLook = invertGamePadLook;
 
             base.Initialize();
         }

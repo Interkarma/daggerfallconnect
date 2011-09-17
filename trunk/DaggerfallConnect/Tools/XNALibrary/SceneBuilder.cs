@@ -43,6 +43,23 @@ namespace XNALibrary
         private const int groundHeight = -1;
         private const int defaultWorldClimate = 231;
 
+        // Action link dictionary
+        private Dictionary<int, ActionLink> actionLinkDict;
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Links actions to scene nodes.
+        /// </summary>
+        private struct ActionLink
+        {
+            public ModelNode node;
+            public int nextKey;
+            public int prevKey;
+        }
+
         #endregion
 
         #region Properties
@@ -136,6 +153,9 @@ namespace XNALibrary
                 Path.Combine(arena2Path, MapsFile.Filename),
                 FileUsage.UseDisk,
                 true);
+
+            // Create action link dictionary
+            actionLinkDict = new Dictionary<int, ActionLink>();
         }
 
         /// <summary>
@@ -677,6 +697,9 @@ namespace XNALibrary
             // Create parent block node
             BlockNode blockNode = new BlockNode(block);
 
+            // Clear action link dictionary
+            actionLinkDict.Clear();
+
             // Iterate through object groups
             int groupIndex = 0;
             foreach (DFBlock.RdbObjectRoot group in block.RdbBlock.ObjectRootList)
@@ -695,7 +718,7 @@ namespace XNALibrary
                     switch (obj.Type)
                     {
                         case DFBlock.RdbResourceTypes.Model:
-                            AddRDBModel(ref block, obj, blockNode);
+                            AddRDBModel(ref block, obj, blockNode, groupIndex);
                             break;
                         case DFBlock.RdbResourceTypes.Flat:
                             AddRDBFlat(obj, blockNode);
@@ -710,6 +733,9 @@ namespace XNALibrary
                 groupIndex++;
             }
 
+            // Link action nodes
+            LinkActionNodes();
+
             return blockNode;
         }
 
@@ -719,7 +745,8 @@ namespace XNALibrary
         /// <param name="block">DFBlock.</param>
         /// <param name="obj">RdbObject.</param>
         /// <param name="blockNode">BlockNode.</param>
-        private void AddRDBModel(ref DFBlock block, DFBlock.RdbObject obj, BlockNode blockNode)
+        /// <param name="groupIndex">Group index.</param>
+        private void AddRDBModel(ref DFBlock block, DFBlock.RdbObject obj, BlockNode blockNode, int groupIndex)
         {
             // Get model reference index, desc, and id
             int modelReference = obj.Resources.ModelResource.ModelIndex;
@@ -748,6 +775,131 @@ namespace XNALibrary
             modelNode.Position = position;
             modelNode.Rotation = rotation;
             blockNode.Add(modelNode);
+
+            // Setup action record
+            DFBlock.RdbActionResource resource = obj.Resources.ModelResource.ActionResource;
+            if (DFBlock.RdbActionType.None !=
+                obj.Resources.ModelResource.ActionResource.ActionType)
+            {
+                // Create action
+                CreateModelAction(ref resource, modelNode.Action);
+
+                // Create action link
+                ActionLink link;
+                link.node = modelNode;
+                link.nextKey = GetActionKey(groupIndex, resource.NextObjectIndex);
+                link.prevKey = GetActionKey(groupIndex, resource.PreviousObjectIndex);
+                actionLinkDict.Add(GetActionKey(groupIndex, obj.Index), link);
+            }
+        }
+
+        /// <summary>
+        /// Prepares an action record for use.
+        /// </summary>
+        /// <param name="resource">DFBlock.RdbActionResource</param>
+        /// <param name="action">ModelNode.ActionRecord</param>
+        private void CreateModelAction(ref DFBlock.RdbActionResource resource, ModelNode.ActionRecord action)
+        {
+            // Store original action
+            action.RdbAction = resource;
+
+            // Create action record for this model from Daggerfall's action record.
+            // Only rotation and translation are supported at this time.
+            switch (resource.ActionType)
+            {
+                case DFBlock.RdbActionType.Rotation:
+                    action.Rotation = GetActionVector(ref resource);
+                    action.Rotation.X =
+                        MathHelper.ToRadians(action.Rotation.X / rotationDivisor);
+                    action.Rotation.Y =
+                        MathHelper.ToRadians(action.Rotation.Y / rotationDivisor);
+                    action.Rotation.Z =
+                        -MathHelper.ToRadians(action.Rotation.Z / rotationDivisor);
+                    break;
+
+                case DFBlock.RdbActionType.Translation:
+                    action.Translation = GetActionVector(ref resource);
+                    break;
+
+                default:
+                    // Unsupported action record
+                    return;
+            }
+
+            // Set duration
+            action.Duration = resource.Duration;
+
+            // Create matrix
+            Matrix rotation = Matrix.CreateFromYawPitchRoll(
+                action.Rotation.Y, action.Rotation.X, action.Rotation.Z);
+            Matrix translation = Matrix.CreateTranslation(action.Translation);
+            Matrix.Multiply(ref action.EndMatrix, ref rotation, out action.EndMatrix);
+            Matrix.Multiply(ref action.EndMatrix, ref translation, out action.EndMatrix);
+
+            // Enable action
+            action.Enabled = true;
+        }
+
+        /// <summary>
+        /// Constructs a Vector3 from magnitude and direction
+        ///  in RDB action resource.
+        /// </summary>
+        /// <param name="resource">DFBlock.RdbActionResource</param>
+        /// <returns>Vector3.</returns>
+        private Vector3 GetActionVector(ref DFBlock.RdbActionResource resource)
+        {
+            Vector3 vector = Vector3.Zero;
+            float magnitude = resource.Magnitude;
+            switch (resource.Axis)
+            {
+                case DFBlock.RdbActionAxes.NegativeX:
+                    vector.X = -magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.NegativeY:
+                    vector.Y = -magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.NegativeZ:
+                    vector.Z = -magnitude;
+                    break;
+
+                case DFBlock.RdbActionAxes.PositiveX:
+                    vector.X = magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.PositiveY:
+                    vector.Y = magnitude;
+                    break;
+                case DFBlock.RdbActionAxes.PositiveZ:
+                    vector.Z = magnitude;
+                    break;
+
+                default:
+                    magnitude = 0f;
+                    break;
+            }
+
+            return vector;
+        }
+
+        /// <summary>
+        /// Links action chains together.
+        /// </summary>
+        private void LinkActionNodes()
+        {
+            // Exit if no actions
+            if (actionLinkDict.Count == 0)
+                return;
+
+            // Iterate through actions
+            foreach (var item in actionLinkDict)
+            {
+                // Link to next node
+                if (actionLinkDict.ContainsKey(item.Value.nextKey))
+                    item.Value.node.Action.NextNode = actionLinkDict[item.Value.nextKey].node;
+
+                // Link to previous node
+                if (actionLinkDict.ContainsKey(item.Value.prevKey))
+                    item.Value.node.Action.PreviousNode = actionLinkDict[item.Value.prevKey].node;
+            }
         }
 
         /// <summary>
@@ -791,6 +943,18 @@ namespace XNALibrary
                 billboardNode.Position = position;
                 blockNode.Add(billboardNode);
             }
+        }
+
+        /// <summary>
+        /// Creates action key unique within group.
+        /// </summary>
+        /// <param name="groupIndex">RDB group index.</param>
+        /// <param name="objIndex">RDB object index.</param>
+        /// <returns></returns>
+        private int GetActionKey(int groupIndex, int objIndex)
+        {
+            // Create action key for this object
+            return groupIndex * 1000 + objIndex;
         }
 
         #endregion

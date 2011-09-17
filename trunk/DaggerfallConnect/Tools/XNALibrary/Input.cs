@@ -34,14 +34,14 @@ namespace XNALibrary
         private const float mouseMoveRate = 100f;
         private const float middleButonMoveRate = 100f;
 
-        // Controller movement
-        private bool controllerConnected = false;
-        private const float controllerSpinRate = 180f;
-        private const float controllerMoveRate = 1100f;
+        // GamePad movement
+        private bool gamePadConnected = false;
+        private const float gamePadSpinRate = 180f;
+        private const float gamePadMoveRate = 1100f;
 
         // Look options
         private bool invertMouseLookY = false;
-        private bool invertControllerLookY = true;
+        private bool invertGamePadLookY = true;
 
         // Mouse
         private Point lastMousePos = Point.Zero;
@@ -56,6 +56,10 @@ namespace XNALibrary
         // Input flags
         private DeviceFlags activeDevices = DeviceFlags.None;
 
+        // Input state
+        private KeyboardState keyboardState;
+        private MouseState mouseState;
+
         #endregion
 
         #region Class Structures
@@ -66,7 +70,7 @@ namespace XNALibrary
             None = 0,
             Keyboard = 1,
             Mouse = 2,
-            Controller = 4,
+            GamePad = 4,
             All = 7,
         }
 
@@ -84,11 +88,11 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets connection state of player 1 controller.
+        /// Gets connection state of player 1 gamepad.
         /// </summary>
-        public bool ControllerConnected
+        public bool GamePadConnected
         {
-            get { return controllerConnected; }
+            get { return gamePadConnected; }
         }
 
         /// <summary>
@@ -101,12 +105,12 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets or sets flag to invert controller look.
+        /// Gets or sets flag to invert gamepad look.
         /// </summary>
-        public bool InvertControllerLook
+        public bool InvertGamePadLook
         {
-            get { return invertControllerLookY; }
-            set { invertControllerLookY = value; }
+            get { return invertGamePadLookY; }
+            set { invertGamePadLookY = value; }
         }
 
         /// <summary>
@@ -115,6 +119,22 @@ namespace XNALibrary
         public Point MousePos
         {
             get { return mousePos; }
+        }
+
+        /// <summary>
+        /// Gets keyboard state at time of last update.
+        /// </summary>
+        public KeyboardState KeyboardState
+        {
+            get { return keyboardState; }
+        }
+
+        /// <summary>
+        /// Gets mouse state at time of last update.
+        /// </summary>
+        public MouseState MouseState
+        {
+            get { return mouseState; }
         }
 
         #endregion
@@ -142,72 +162,79 @@ namespace XNALibrary
             float timeDelta = (float)elapsedTime.TotalSeconds;
 
             // Get keyboard state
-            KeyboardState ks = Keyboard.GetState();
+            keyboardState = Keyboard.GetState();
 
             // Keyboard input
             if ((activeDevices & DeviceFlags.Keyboard) == DeviceFlags.Keyboard)
             {
                 // Movement
-                if (ks.IsKeyDown(Keys.Q))                               // Look left
+                if (keyboardState.IsKeyDown(Keys.Q))                                            // Look left
                     yaw += keyboardSpinRate * timeDelta;
-                if (ks.IsKeyDown(Keys.E))                               // Look right
+                if (keyboardState.IsKeyDown(Keys.E))                                            // Look right
                     yaw -= keyboardSpinRate * timeDelta;
-                if (ks.IsKeyDown(Keys.W) || ks.IsKeyDown(Keys.Up))      // Move forwards
+                if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.Up))        // Move forwards
                     movement.Z -= keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.S) || ks.IsKeyDown(Keys.Down))    // Move backwards
+                if (keyboardState.IsKeyDown(Keys.S) || keyboardState.IsKeyDown(Keys.Down))      // Move backwards
                     movement.Z += keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.A) || ks.IsKeyDown(Keys.Left))    // Move left
+                if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.Left))      // Move left
                     movement.X -= keyboardMoveRate * timeDelta;
-                if (ks.IsKeyDown(Keys.D) || ks.IsKeyDown(Keys.Right))   // Move right
+                if (keyboardState.IsKeyDown(Keys.D) || keyboardState.IsKeyDown(Keys.Right))     // Move right
                     movement.X += keyboardMoveRate * timeDelta;
 
                 // Multiply keyboard movement when shift is down
-                if (ks.IsKeyDown(Keys.LeftShift) || ks.IsKeyDown(Keys.RightShift))
+                if (keyboardState.IsKeyDown(Keys.LeftShift) ||
+                    keyboardState.IsKeyDown(Keys.RightShift))
                 {
                     movement *= keyboardShiftKeyMultiplier;
                 }
             }
 
             // Get mouse state
-            MouseState ms = Mouse.GetState();
+            mouseState = Mouse.GetState();
             lastMousePos = mousePos;
-            mousePos.X = ms.X;
-            mousePos.Y = ms.Y;
+            mousePos.X = mouseState.X;
+            mousePos.Y = mouseState.Y;
             mouseDelta.X = mousePos.X - lastMousePos.X;
             mouseDelta.Y = mousePos.Y - lastMousePos.Y;
 
             // Mouse input
             if ((activeDevices & DeviceFlags.Mouse) == DeviceFlags.Mouse)
             {
-                // Mouse-look with left-button pressed
-                if (ms.LeftButton == ButtonState.Pressed)
+                // Mouse-look with right-button pressed
+                if (mouseState.RightButton == ButtonState.Pressed)
                 {
                     yaw -= (mouseDelta.X * mouseSpinRate) * timeDelta;
                     pitch -= ((invertMouseLookY) ? -mouseDelta.Y : mouseDelta.Y) * mouseSpinRate * timeDelta;
                 }
 
                 // Movement with right-button pressed
-                if (ms.RightButton == ButtonState.Pressed)
-                {
-                    movement.Z += (mouseDelta.Y * mouseMoveRate) * timeDelta;
-                }
+                //if (mouseState.RightButton == ButtonState.Pressed)
+                //{
+                //    movement.Z += (mouseDelta.Y * mouseMoveRate) * timeDelta;
+                //}
 
                 // Movement with middle-button pressed
-                if (ms.MiddleButton == ButtonState.Pressed)
+                if (mouseState.MiddleButton == ButtonState.Pressed)
                 {
                     movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
                     movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
                 }
             }
 
-            /*
-            // Controller input
-            if ((flags & Flags.Controller) == Flags.Controller)
+            // Get player 1 gamepad state
+            GamePadState gamePadState = GamePad.GetState(0);
+            if (gamePadState.IsConnected)
             {
-                GamePadState cs = GamePad.GetState(0);
+                gamePadConnected = true;
+            }
+
+            /*
+            // GamePad input
+            if ((flags & Flags.GamePad) == Flags.GamePad)
+            {
                 if (cs.IsConnected)
                 {
-                    controllerConnected = true;
+                    gamePadConnected = true;
 
                     // Look left and right
                     if (cs.ThumbSticks.Right.X < 0)

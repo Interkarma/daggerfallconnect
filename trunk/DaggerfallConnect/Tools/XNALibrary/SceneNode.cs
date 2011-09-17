@@ -57,46 +57,52 @@ namespace XNALibrary
         /// </summary>
         public class ActionRecord
         {
+            #region Action Settings
+
+            /// <summary>
+            /// Original action resource from game files.
+            /// </summary>
+            public DFBlock.RdbActionResource RdbAction;
+
             /// <summary>
             /// True if action is enabled.
             /// </summary>
             public bool Enabled = false;
 
             /// <summary>
-            /// Rotation to perform around each axis in degrees.
+            /// Rotation to perform.
             /// </summary>
             public Vector3 Rotation = Vector3.Zero;
 
             /// <summary>
-            /// Amount of rotation that has been performed so far, in degrees.
-            /// </summary>
-            public Vector3 CurrentRotation = Vector3.Zero;
-
-            /// <summary>
-            /// Translation to perform on each axis.
+            /// Translation to perform.
             /// </summary>
             public Vector3 Translation = Vector3.Zero;
 
             /// <summary>
-            /// Amount of translation that has been performed so far.
-            /// </summary>
-            public Vector3 CurrentTranslation = Vector3.Zero;
-
-            /// <summary>
-            /// Matrix representing the current state of this action.
-            /// </summary>
-            public Matrix Matrix;
-
-            /// <summary>
-            /// Start time for the action in milliseconds.
-            /// </summary>
-            public long StartTime = 0;
-
-            /// <summary>
-            /// Elapsed time in milliseconds for object to reach final state.
+            /// Time in milliseconds for object to reach final state.
             ///  TotalTime = StartTime+Duration.
             /// </summary>
             public long Duration = 0;
+
+            /// <summary>
+            /// Matrix representing the final state of this action.
+            /// </summary>
+            public Matrix EndMatrix = Matrix.Identity;
+
+            /// <summary>
+            /// Previous node for chained action records.
+            /// </summary>
+            public SceneNode PreviousNode = null;
+
+            /// <summary>
+            /// Next node for chained action records.
+            /// </summary>
+            public SceneNode NextNode = null;
+
+            #endregion
+
+            #region Action State
 
             /// <summary>
             /// State this action is currently in.
@@ -104,14 +110,16 @@ namespace XNALibrary
             public ActionState ActionState = ActionState.Start;
 
             /// <summary>
-            /// Next node for chained action records.
+            /// Start time for the action in milliseconds.
             /// </summary>
-            public SceneNode NextNode = null;
+            public long StartTime = 0;
 
             /// <summary>
-            /// Previous node for chained action records.
+            /// Matrix representing the current state of this action.
             /// </summary>
-            public SceneNode PreviousNode = null;
+            public Matrix LerpMatrix = Matrix.Identity;
+
+            #endregion
         }
 
         #endregion
@@ -453,6 +461,10 @@ namespace XNALibrary
             this.block = block;
         }
     }
+
+    #endregion
+
+    #region LocationNode
 
     /// <summary>
     /// Scene node for a location.
