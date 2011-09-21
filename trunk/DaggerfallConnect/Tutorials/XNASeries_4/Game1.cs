@@ -33,8 +33,8 @@ namespace XNASeries_4
         string arena2Path = @"c:\dosgames\dagger\arena2";
 
         // Content
-        string blockName = "S0000004.RDB";
-        //string blockName = "S0000999.RDB";
+        //string blockName = "S0000004.RDB";
+        string blockName = "S0000999.RDB";
         //string blockName = "S0000205.RDB";
 
         // Camera
@@ -44,9 +44,6 @@ namespace XNASeries_4
         bool invertMouseLook = false;
         bool invertGamePadLook = true;
         bool drawBounds = false;
-
-        // Testing
-        DaggerfallConnect.Utility.DFModTool modTool;
 
         /// <summary>
         /// Constructor.
@@ -59,8 +56,6 @@ namespace XNASeries_4
             graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
-
-            modTool = new DaggerfallConnect.Utility.DFModTool(arena2Path);
         }
 
         /// <summary>
@@ -167,9 +162,9 @@ namespace XNASeries_4
         public void ToggleAction(SceneNode node)
         {
             if (node.Action.ActionState == SceneNode.ActionState.Start)
-                node.Action.ActionState = SceneNode.ActionState.End;
+                node.Action.ActionState = SceneNode.ActionState.RunningForwards;
             else if (node.Action.ActionState == SceneNode.ActionState.End)
-                node.Action.ActionState = SceneNode.ActionState.Start;
+                node.Action.ActionState = SceneNode.ActionState.RunningBackwards;
         }
     }
 }

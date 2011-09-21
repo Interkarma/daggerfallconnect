@@ -80,8 +80,7 @@ namespace XNALibrary
             public Vector3 Translation = Vector3.Zero;
 
             /// <summary>
-            /// Time in milliseconds for object to reach final state.
-            ///  TotalTime = StartTime+Duration.
+            /// Time for object to reach final state.
             /// </summary>
             public long Duration = 0;
 
@@ -110,9 +109,9 @@ namespace XNALibrary
             public ActionState ActionState = ActionState.Start;
 
             /// <summary>
-            /// Start time for the action in milliseconds.
+            /// Time action has been in progress.
             /// </summary>
-            public long StartTime = 0;
+            public long RunTime = 0;
 
             /// <summary>
             /// Matrix representing the current state of this action.

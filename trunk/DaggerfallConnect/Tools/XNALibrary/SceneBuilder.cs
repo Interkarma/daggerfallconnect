@@ -814,10 +814,9 @@ namespace XNALibrary
             switch (description)
             {
                 case "LID":         // Coffin lids in Scourg Barrow
-                    action.Rotation = new Vector3(0f, 0f, MathHelper.ToRadians(-90f));
-                    action.Duration = 40;
-                    action.Enabled = true;
-                    return;
+                    resource.Axis = DFBlock.RdbActionAxes.NegativeZ;
+                    resource.Magnitude = 512;
+                    break;
 
                 default:            // Let everything else be handled as per action record
                     break;
@@ -847,7 +846,7 @@ namespace XNALibrary
             }
 
             // Set duration
-            action.Duration = resource.Duration;
+            action.Duration = (long)(1000f * (resource.Duration / 60f));
 
             // TODO: Create matrix
 

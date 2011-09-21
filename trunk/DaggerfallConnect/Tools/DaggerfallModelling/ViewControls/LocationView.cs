@@ -557,15 +557,9 @@ namespace DaggerfallModelling.ViewControls
             do
             {
                 if (node.Action.ActionState == SceneNode.ActionState.Start)
-                {
-                    node.Action.LerpMatrix = node.Action.EndMatrix;
-                    node.Action.ActionState = SceneNode.ActionState.End;
-                }
+                    node.Action.ActionState = SceneNode.ActionState.RunningForwards;
                 else if (node.Action.ActionState == SceneNode.ActionState.End)
-                {
-                    node.Action.LerpMatrix = Matrix.Identity;
-                    node.Action.ActionState = SceneNode.ActionState.Start;
-                }
+                    node.Action.ActionState = SceneNode.ActionState.RunningBackwards;
 
                 // Get next node in chain
                 node = node.Action.NextNode;

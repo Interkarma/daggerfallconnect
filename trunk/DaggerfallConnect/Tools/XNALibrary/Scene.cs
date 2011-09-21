@@ -80,7 +80,7 @@ namespace XNALibrary
         public void Update(TimeSpan elapsedTime)
         {
             // Update nodes
-            UpdateNode(root, Matrix.Identity);
+            UpdateNode(root, Matrix.Identity, elapsedTime);
         }
 
         /// <summary>
@@ -106,24 +106,55 @@ namespace XNALibrary
         /// <param name="node">SceneNode.</param>
         /// <param name="matrix">Cumulative Matrix.</param>
         /// <returns>Transformed and merged BoundingSphere.</returns>
-        private BoundingSphere UpdateNode(SceneNode node, Matrix matrix)
+        /// <param name="elapsedTime">Elapsed time since last frame.</param>
+        private BoundingSphere UpdateNode(SceneNode node, Matrix matrix, TimeSpan elapsedTime)
         {
+            Matrix cumulativeMatrix = Matrix.Identity;
+
             // Create node transforms
             Matrix rotationX = Matrix.CreateRotationX(node.Rotation.X);
             Matrix rotationY = Matrix.CreateRotationY(node.Rotation.Y);
             Matrix rotationZ = Matrix.CreateRotationZ(node.Rotation.Z);
             Matrix translation = Matrix.CreateTranslation(node.Position);
 
-            // Handle actions
             Matrix actionTranslation = Matrix.Identity;
-            Matrix cumulativeMatrix = Matrix.Identity;
-            if (node.Action.Enabled == true && node.Action.ActionState == SceneNode.ActionState.End)
+            if (node.Action.Enabled)
             {
+                // Progress actions
+                if (node.Action.ActionState == SceneNode.ActionState.RunningForwards)
+                {
+                    // Progress action
+                    node.Action.RunTime += elapsedTime.Milliseconds;
+                    if (node.Action.RunTime >= node.Action.Duration)
+                    {
+                        node.Action.RunTime = node.Action.Duration;
+                        node.Action.ActionState = SceneNode.ActionState.End;
+                    }
+                }
+                else if (node.Action.ActionState == SceneNode.ActionState.RunningBackwards)
+                {
+                    // Progress action
+                    node.Action.RunTime -= elapsedTime.Milliseconds;
+                    if (node.Action.RunTime <= 0)
+                    {
+                        node.Action.RunTime = 0;
+                        node.Action.ActionState = SceneNode.ActionState.Start;
+                    }
+                }
+
+                float scale = (float)node.Action.RunTime / (float)node.Action.Duration;
+                float xrot = node.Action.Rotation.X * scale;
+                float yrot = node.Action.Rotation.Y * scale;
+                float zrot = node.Action.Rotation.Z * scale;
+                float xtrn = node.Action.Translation.X * scale;
+                float ytrn = node.Action.Translation.Y * scale;
+                float ztrn = node.Action.Translation.Z * scale;
+
                 // Create action transforms
-                Matrix actionRotationX = Matrix.CreateRotationX(node.Action.Rotation.X);
-                Matrix actionRotationY = Matrix.CreateRotationY(node.Action.Rotation.Y);
-                Matrix actionRotationZ = Matrix.CreateRotationZ(node.Action.Rotation.Z);
-                actionTranslation = Matrix.CreateTranslation(node.Action.Translation);
+                Matrix actionRotationX = Matrix.CreateRotationX(xrot);
+                Matrix actionRotationY = Matrix.CreateRotationY(yrot);
+                Matrix actionRotationZ = Matrix.CreateRotationZ(zrot);
+                actionTranslation = Matrix.CreateTranslation(xtrn, ytrn, ztrn);
 
                 // Apply action transforms
                 Matrix.Multiply(ref cumulativeMatrix, ref actionRotationY, out cumulativeMatrix);
@@ -149,7 +180,7 @@ namespace XNALibrary
             {
                 bounds = BoundingSphere.CreateMerged(
                     bounds,
-                    UpdateNode(child, cumulativeMatrix));
+                    UpdateNode(child, cumulativeMatrix, elapsedTime));
             }
 
             // Store transformed bounds
@@ -157,8 +188,6 @@ namespace XNALibrary
 
             // Store cumulative matrix
             node.Matrix = cumulativeMatrix;
-
-            // TODO: Get distance to camera
 
             return bounds;
         }
