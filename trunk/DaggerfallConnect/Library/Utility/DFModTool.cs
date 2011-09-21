@@ -20,7 +20,9 @@ namespace DaggerfallConnect.Utility
 
     /// <summary>
     /// Class for modifying certain values in Daggerfall's files
-    ///  to aid research. Do not use unless you know exactly what you
+    ///  to aid research.
+    ///  These methods are special-purpose, and not intended for general editing.
+    ///  Do not use unless you know exactly what you
     ///  are doing and always make a backup of your game files beforehand.
     /// </summary>
     public class DFModTool
@@ -59,6 +61,42 @@ namespace DaggerfallConnect.Utility
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Changes action record at specified position.
+        /// </summary>
+        /// <param name="blockName">Name of block file.</param>
+        /// <param name="position">Start position of action record.</param>
+        /// <param name="axis">Rotation axis.</param>
+        /// <param name="duration">Duration of action.</param>
+        /// <param name="magnitude">Magnitude of action.</param>
+        public void ModActionRecord(string blockName, long position, byte axis, UInt16 duration, UInt16 magnitude)
+        {
+            // Load resources
+            string path = Path.Combine(arena2Path, "BLOCKS.BSA");
+            BsaFile bsaFile = new BsaFile(
+                path,
+                FileUsage.UseDisk,
+                false);
+
+            // Get binary record
+            int index = bsaFile.GetRecordIndex(blockName);
+            byte[] buffer = bsaFile.GetRecordBytes(index);
+
+            // Create stream to binary record
+            MemoryStream ms = new MemoryStream(buffer);
+            ms.Position = position;
+
+            // Write new data
+            BinaryWriter writer = new BinaryWriter(ms, Encoding.UTF8);
+            writer.Write(axis);
+            writer.Write(duration);
+            writer.Write(magnitude);
+            writer.Close();
+
+            // Save back binary record
+            bsaFile.RewriteRecord(index, buffer);
+        }
 
         /// <summary>
         /// ARCH3D.BSA: Modify base texture assigned to plane.

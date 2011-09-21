@@ -114,18 +114,29 @@ namespace XNALibrary
             Matrix rotationZ = Matrix.CreateRotationZ(node.Rotation.Z);
             Matrix translation = Matrix.CreateTranslation(node.Position);
 
-            // Update cumulative matrix with node transforms.
-            // Rotation order is Y*X*Z as this seems to be correct in observed cases.
+            // Handle actions
+            Matrix actionTranslation = Matrix.Identity;
             Matrix cumulativeMatrix = Matrix.Identity;
+            if (node.Action.Enabled == true && node.Action.ActionState == SceneNode.ActionState.End)
+            {
+                // Create action transforms
+                Matrix actionRotationX = Matrix.CreateRotationX(node.Action.Rotation.X);
+                Matrix actionRotationY = Matrix.CreateRotationY(node.Action.Rotation.Y);
+                Matrix actionRotationZ = Matrix.CreateRotationZ(node.Action.Rotation.Z);
+                actionTranslation = Matrix.CreateTranslation(node.Action.Translation);
+
+                // Apply action transforms
+                Matrix.Multiply(ref cumulativeMatrix, ref actionRotationY, out cumulativeMatrix);
+                Matrix.Multiply(ref cumulativeMatrix, ref actionRotationX, out cumulativeMatrix);
+                Matrix.Multiply(ref cumulativeMatrix, ref actionRotationZ, out cumulativeMatrix);
+            }
+
+            // Apply node transforms.
+            // Rotation order is Y*X*Z which seems to be correct in all observed cases.            
             Matrix.Multiply(ref cumulativeMatrix, ref rotationY, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref rotationX, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref rotationZ, out cumulativeMatrix);
-
-            if (node.Action.Enabled)
-            {
-                Matrix.Multiply(ref cumulativeMatrix, ref node.Action.LerpMatrix, out cumulativeMatrix);
-            }
-
+            Matrix.Multiply(ref cumulativeMatrix, ref actionTranslation, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref translation, out cumulativeMatrix);
             Matrix.Multiply(ref cumulativeMatrix, ref matrix, out cumulativeMatrix);
 
@@ -148,8 +159,6 @@ namespace XNALibrary
             node.Matrix = cumulativeMatrix;
 
             // TODO: Get distance to camera
-
-            // TODO: Run actions
 
             return bounds;
         }

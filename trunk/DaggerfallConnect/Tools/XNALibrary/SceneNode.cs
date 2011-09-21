@@ -140,9 +140,6 @@ namespace XNALibrary
             /// <summary>Action is running backwards (end to start).</summary>
             RunningBackwards,
 
-            /// <summary>Action will continuously bounce between start and end.</summary>
-            Bounce,
-
             /// <summary>Action is in the end position.</summary>
             End,
         }
@@ -407,12 +404,18 @@ namespace XNALibrary
     {
         // Variables
         private ModelManager.ModelData model;
+        private string description;
 
         // Properties
         public ModelManager.ModelData Model
         {
             get { return model; }
             set { model = value; }
+        }
+        public string Description
+        {
+            get { return description; }
+            set { description = value; }
         }
 
         // Constructors

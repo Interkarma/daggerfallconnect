@@ -667,7 +667,7 @@ namespace DaggerfallConnect
             /// <summary>Model ID parsed to UInt32.</summary>
             public UInt32 ModelIdNum;
 
-            /// <summary>Three letter description of unknown purpose.</summary>
+            /// <summary>Three letter description of model.</summary>
             public String Description;
         }
 
@@ -842,6 +842,9 @@ namespace DaggerfallConnect
         /// </summary>
         public struct RdbActionResource
         {
+            /// <summary>Position in stream to find this data.</summary>
+            public long Position;
+
             /// <summary>About which the object should rotate or translate.</summary>
             public RdbActionAxes Axis;
 

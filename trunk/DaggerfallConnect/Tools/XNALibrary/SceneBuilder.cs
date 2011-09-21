@@ -750,7 +750,7 @@ namespace XNALibrary
         {
             // Get model reference index, desc, and id
             int modelReference = obj.Resources.ModelResource.ModelIndex;
-            string desc = block.RdbBlock.ModelReferenceList[modelReference].Description;
+            string modelDescription = block.RdbBlock.ModelReferenceList[modelReference].Description;
             uint modelId = block.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
 
             // Get rotation angle for each axis
@@ -772,6 +772,7 @@ namespace XNALibrary
 
             // Create model node
             ModelNode modelNode = CreateModelNode(modelId);
+            modelNode.Description = modelDescription;
             modelNode.Position = position;
             modelNode.Rotation = rotation;
             blockNode.Add(modelNode);
@@ -782,7 +783,7 @@ namespace XNALibrary
                 obj.Resources.ModelResource.ActionResource.ActionType)
             {
                 // Create action
-                CreateModelAction(ref resource, modelNode.Action);
+                CreateModelAction(ref resource, modelNode.Action, modelDescription);
 
                 // Create action link
                 ActionLink link;
@@ -798,10 +799,29 @@ namespace XNALibrary
         /// </summary>
         /// <param name="resource">DFBlock.RdbActionResource</param>
         /// <param name="action">ModelNode.ActionRecord</param>
-        private void CreateModelAction(ref DFBlock.RdbActionResource resource, ModelNode.ActionRecord action)
+        /// <param name="description">Description of model.</param>
+        private void CreateModelAction(ref DFBlock.RdbActionResource resource, ModelNode.ActionRecord action, string description)
         {
             // Store original action
             action.RdbAction = resource;
+
+            // Some Daggerfall models have action records that are not used in the game.
+            // This has been confirmed by changing action properties to no effect.
+            // These unused action records can also be incorrect for the scene, leading to improper rotations.
+            // It appears these actions are hard-coded based on model description.
+            // The following code will setup a corrected scene action based on model description.
+            // This will be added to as more are discovered.
+            switch (description)
+            {
+                case "LID":         // Coffin lids in Scourg Barrow
+                    action.Rotation = new Vector3(0f, 0f, MathHelper.ToRadians(-90f));
+                    action.Duration = 40;
+                    action.Enabled = true;
+                    return;
+
+                default:            // Let everything else be handled as per action record
+                    break;
+            }
 
             // Create action record for this model from Daggerfall's action record.
             // Only rotation and translation are supported at this time.
@@ -810,11 +830,11 @@ namespace XNALibrary
                 case DFBlock.RdbActionType.Rotation:
                     action.Rotation = GetActionVector(ref resource);
                     action.Rotation.X =
-                        MathHelper.ToRadians(action.Rotation.X / rotationDivisor);
+                        -MathHelper.ToRadians(action.Rotation.X / rotationDivisor);
                     action.Rotation.Y =
                         MathHelper.ToRadians(action.Rotation.Y / rotationDivisor);
                     action.Rotation.Z =
-                        -MathHelper.ToRadians(action.Rotation.Z / rotationDivisor);
+                        MathHelper.ToRadians(action.Rotation.Z / rotationDivisor);
                     break;
 
                 case DFBlock.RdbActionType.Translation:
@@ -829,12 +849,7 @@ namespace XNALibrary
             // Set duration
             action.Duration = resource.Duration;
 
-            // Create matrix
-            Matrix rotation = Matrix.CreateFromYawPitchRoll(
-                action.Rotation.Y, action.Rotation.X, action.Rotation.Z);
-            Matrix translation = Matrix.CreateTranslation(action.Translation);
-            Matrix.Multiply(ref action.EndMatrix, ref rotation, out action.EndMatrix);
-            Matrix.Multiply(ref action.EndMatrix, ref translation, out action.EndMatrix);
+            // TODO: Create matrix
 
             // Enable action
             action.Enabled = true;

@@ -22,6 +22,7 @@ namespace XNASeries_4
     {
         // XNA
         GraphicsDeviceManager graphics;
+        Microsoft.Xna.Framework.Input.KeyboardState oldKeyboardState;
 
         // XNALibrary
         SceneBuilder sceneBuilder;
@@ -29,10 +30,12 @@ namespace XNASeries_4
         Input input;
 
         // Daggerfall path
-        string arena2Path = @"C:\dosgames\dagger\arena2";
+        string arena2Path = @"c:\dosgames\dagger\arena2";
 
         // Content
-        string blockName = "S0000205.RDB";
+        string blockName = "S0000004.RDB";
+        //string blockName = "S0000999.RDB";
+        //string blockName = "S0000205.RDB";
 
         // Camera
         Vector3 cameraPos = new Vector3(900, 1860, -440);
@@ -41,6 +44,9 @@ namespace XNASeries_4
         bool invertMouseLook = false;
         bool invertGamePadLook = true;
         bool drawBounds = false;
+
+        // Testing
+        DaggerfallConnect.Utility.DFModTool modTool;
 
         /// <summary>
         /// Constructor.
@@ -53,6 +59,8 @@ namespace XNASeries_4
             graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
+
+            modTool = new DaggerfallConnect.Utility.DFModTool(arena2Path);
         }
 
         /// <summary>
@@ -88,8 +96,7 @@ namespace XNASeries_4
         protected override void LoadContent()
         {
             // Create a block node
-            BlockNode node;
-            node = sceneBuilder.CreateBlockNode(blockName, null);
+            BlockNode node = sceneBuilder.CreateBlockNode(blockName, null);
             renderer.Camera.Position = cameraPos;
 
             // Add to scene
@@ -122,8 +129,10 @@ namespace XNASeries_4
             input.Update(gameTime.ElapsedGameTime);
             input.Apply(renderer.Camera);
 
-            // Mouse clicked
-            if (input.MouseState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+            // Space pressed
+            if (
+                input.KeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space) &&
+                !oldKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space))
             {
                 // Test pointer over node
                 if (renderer.PointerOverNode != null)
@@ -133,6 +142,8 @@ namespace XNASeries_4
                         ToggleAction(renderer.PointerOverNode);
                 }
             }
+
+            oldKeyboardState = input.KeyboardState;
         }
 
         /// <summary>
@@ -155,7 +166,10 @@ namespace XNASeries_4
         /// <param name="node">SceneNode.</param>
         public void ToggleAction(SceneNode node)
         {
-            int foo = 0;
+            if (node.Action.ActionState == SceneNode.ActionState.Start)
+                node.Action.ActionState = SceneNode.ActionState.End;
+            else if (node.Action.ActionState == SceneNode.ActionState.End)
+                node.Action.ActionState = SceneNode.ActionState.Start;
         }
     }
 }

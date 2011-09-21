@@ -985,6 +985,7 @@ namespace DaggerfallConnect.Arena2
             Reader.BaseStream.Position = RdbObject.Resources.ModelResource.ActionOffset;
 
             // Read action data
+            RdbObject.Resources.ModelResource.ActionResource.Position = Reader.BaseStream.Position;
             RdbObject.Resources.ModelResource.ActionResource.Axis = (DFBlock.RdbActionAxes)Reader.ReadByte();
             RdbObject.Resources.ModelResource.ActionResource.Duration = Reader.ReadUInt16();
             RdbObject.Resources.ModelResource.ActionResource.Magnitude = Reader.ReadUInt16();
