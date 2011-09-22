@@ -772,86 +772,132 @@ namespace XNALibrary
 
             // Create model node
             ModelNode modelNode = CreateModelNode(modelId);
-            modelNode.Description = modelDescription;
             modelNode.Position = position;
             modelNode.Rotation = rotation;
             blockNode.Add(modelNode);
 
-            // Setup action record
-            DFBlock.RdbActionResource resource = obj.Resources.ModelResource.ActionResource;
-            if (DFBlock.RdbActionType.None !=
-                obj.Resources.ModelResource.ActionResource.ActionType)
-            {
-                // Create action
-                CreateModelAction(ref resource, modelNode.Action, modelDescription);
+            // Setup actions for this node
+            CreateModelAction(
+                obj.Resources.ModelResource.ActionResource,
+                modelNode,
+                modelDescription,
+                groupIndex,
+                obj.Index);
+        }
 
-                // Create action link
-                ActionLink link;
-                link.node = modelNode;
-                link.nextKey = GetActionKey(groupIndex, resource.NextObjectIndex);
-                link.prevKey = GetActionKey(groupIndex, resource.PreviousObjectIndex);
-                actionLinkDict.Add(GetActionKey(groupIndex, obj.Index), link);
+        /// <summary>
+        /// Adds RDB flat to scene node.
+        /// </summary>
+        /// <param name="obj">RdbObject.</param>
+        /// <param name="blockNode">BlockNode.</param>
+        private void AddRDBFlat(DFBlock.RdbObject obj, BlockNode blockNode)
+        {
+            // Load flat
+            int textureKey;
+            Vector2 startSize;
+            Vector2 finalSize;
+            if (true == LoadDaggerfallFlat(
+                obj.Resources.FlatResource.TextureArchive,
+                obj.Resources.FlatResource.TextureRecord,
+                TextureManager.TextureCreateFlags.Dilate |
+                TextureManager.TextureCreateFlags.PreMultiplyAlpha,
+                out textureKey,
+                out startSize,
+                out finalSize))
+            {
+                // Foliage (TEXTURE.500 and up) do not seem to use scaling
+                // in dungeons. Revert scaling.
+                if (obj.Resources.FlatResource.TextureArchive > 499)
+                {
+                    finalSize = startSize;
+                }
+
+                // Calcuate position
+                Vector3 position = new Vector3(
+                    obj.XPos,
+                    -obj.YPos,
+                    -obj.ZPos);
+
+                // Create billboard node
+                BillboardNode billboardNode = new BillboardNode(
+                    BillboardNode.BillboardType.Decorative,
+                    textureKey,
+                    finalSize);
+                billboardNode.Position = position;
+                blockNode.Add(billboardNode);
             }
         }
+
+        #endregion
+
+        #region Action Building
 
         /// <summary>
         /// Prepares an action record for use.
         /// </summary>
-        /// <param name="resource">DFBlock.RdbActionResource</param>
-        /// <param name="action">ModelNode.ActionRecord</param>
+        /// <param name="action">DFBlock.RdbActionResource</param>
+        /// <param name="modelNode">ModelNode</param>
         /// <param name="description">Description of model.</param>
-        private void CreateModelAction(ref DFBlock.RdbActionResource resource, ModelNode.ActionRecord action, string description)
+        /// <param name="groupIndex">RDB group index.</param>
+        /// <param name="modelIndex">RDB model index.</param>
+        private void CreateModelAction(DFBlock.RdbActionResource action, ModelNode modelNode, string description, int groupIndex, int modelIndex)
         {
-            // Store original action
-            action.RdbAction = resource;
-
-            // Some Daggerfall models have action records that are not used in the game.
-            // This has been confirmed by changing action properties to no effect.
-            // These unused action records can also be incorrect for the scene, leading to improper rotations.
-            // It appears these actions are hard-coded based on model description.
-            // The following code will setup a corrected scene action based on model description.
-            // This will be added to as more are discovered.
+            // Handle special case actions. These are models like doors, which
+            // do not have an action record, or the coffin lids in Scourg Barrow,
+            // which do not use their action data at all.
             switch (description)
             {
-                case "LID":         // Coffin lids in Scourg Barrow
-                    resource.Axis = DFBlock.RdbActionAxes.NegativeZ;
-                    resource.Magnitude = 512;
+                case "DOR":         // Doors
+                    action.ActionType = DFBlock.RdbActionType.Rotation;
+                    action.Axis = DFBlock.RdbActionAxes.PositiveY;
+                    action.Magnitude = 512;
+                    action.Duration = 40;
                     break;
-
+                case "LID":         // Coffin lids in Scourg Barrow
+                    action.Axis = DFBlock.RdbActionAxes.NegativeZ;
+                    action.Magnitude = 512;
+                    action.Duration = 40;
+                    break;
                 default:            // Let everything else be handled as per action record
                     break;
             }
 
             // Create action record for this model from Daggerfall's action record.
             // Only rotation and translation are supported at this time.
-            switch (resource.ActionType)
+            switch (action.ActionType)
             {
                 case DFBlock.RdbActionType.Rotation:
-                    action.Rotation = GetActionVector(ref resource);
-                    action.Rotation.X =
-                        -MathHelper.ToRadians(action.Rotation.X / rotationDivisor);
-                    action.Rotation.Y =
-                        MathHelper.ToRadians(action.Rotation.Y / rotationDivisor);
-                    action.Rotation.Z =
-                        MathHelper.ToRadians(action.Rotation.Z / rotationDivisor);
+                    modelNode.Action.Rotation = GetActionVector(ref action);
+                    modelNode.Action.Rotation.X =
+                        -MathHelper.ToRadians(modelNode.Action.Rotation.X / rotationDivisor);
+                    modelNode.Action.Rotation.Y =
+                        MathHelper.ToRadians(modelNode.Action.Rotation.Y / rotationDivisor);
+                    modelNode.Action.Rotation.Z =
+                        MathHelper.ToRadians(modelNode.Action.Rotation.Z / rotationDivisor);
                     break;
 
                 case DFBlock.RdbActionType.Translation:
-                    action.Translation = GetActionVector(ref resource);
+                    modelNode.Action.Translation = GetActionVector(ref action);
                     break;
 
                 default:
                     // Unsupported action record
+                    modelNode.Action.Enabled = false;
                     return;
             }
 
             // Set duration
-            action.Duration = (long)(1000f * (resource.Duration / 60f));
-
-            // TODO: Create matrix
+            modelNode.Action.Duration = (long)(1000f * (action.Duration / 60f));
 
             // Enable action
-            action.Enabled = true;
+            modelNode.Action.Enabled = true;
+
+            // Create action links
+            ActionLink link;
+            link.node = modelNode;
+            link.nextKey = GetActionKey(groupIndex, action.NextObjectIndex);
+            link.prevKey = GetActionKey(groupIndex, action.PreviousObjectIndex);
+            actionLinkDict.Add(GetActionKey(groupIndex, modelIndex), link);
         }
 
         /// <summary>
@@ -913,49 +959,6 @@ namespace XNALibrary
                 // Link to previous node
                 if (actionLinkDict.ContainsKey(item.Value.prevKey))
                     item.Value.node.Action.PreviousNode = actionLinkDict[item.Value.prevKey].node;
-            }
-        }
-
-        /// <summary>
-        /// Adds RDB flat to scene node.
-        /// </summary>
-        /// <param name="obj">RdbObject.</param>
-        /// <param name="blockNode">BlockNode.</param>
-        private void AddRDBFlat(DFBlock.RdbObject obj, BlockNode blockNode)
-        {
-            // Load flat
-            int textureKey;
-            Vector2 startSize;
-            Vector2 finalSize;
-            if (true == LoadDaggerfallFlat(
-                obj.Resources.FlatResource.TextureArchive,
-                obj.Resources.FlatResource.TextureRecord,
-                TextureManager.TextureCreateFlags.Dilate |
-                TextureManager.TextureCreateFlags.PreMultiplyAlpha,
-                out textureKey,
-                out startSize,
-                out finalSize))
-            {
-                // Foliage (TEXTURE.500 and up) do not seem to use scaling
-                // in dungeons. Revert scaling.
-                if (obj.Resources.FlatResource.TextureArchive > 499)
-                {
-                    finalSize = startSize;
-                }
-
-                // Calcuate position
-                Vector3 position = new Vector3(
-                    obj.XPos,
-                    -obj.YPos,
-                    -obj.ZPos);
-
-                // Create billboard node
-                BillboardNode billboardNode = new BillboardNode(
-                    BillboardNode.BillboardType.Decorative,
-                    textureKey,
-                    finalSize);
-                billboardNode.Position = position;
-                blockNode.Add(billboardNode);
             }
         }
 

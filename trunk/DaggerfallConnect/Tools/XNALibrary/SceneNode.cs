@@ -60,11 +60,6 @@ namespace XNALibrary
             #region Action Settings
 
             /// <summary>
-            /// Original action resource from game files.
-            /// </summary>
-            public DFBlock.RdbActionResource RdbAction;
-
-            /// <summary>
             /// True if action is enabled.
             /// </summary>
             public bool Enabled = false;
@@ -112,11 +107,6 @@ namespace XNALibrary
             /// Time action has been in progress.
             /// </summary>
             public long RunTime = 0;
-
-            /// <summary>
-            /// Matrix representing the current state of this action.
-            /// </summary>
-            public Matrix LerpMatrix = Matrix.Identity;
 
             #endregion
         }
@@ -403,18 +393,12 @@ namespace XNALibrary
     {
         // Variables
         private ModelManager.ModelData model;
-        private string description;
 
         // Properties
         public ModelManager.ModelData Model
         {
             get { return model; }
             set { model = value; }
-        }
-        public string Description
-        {
-            get { return description; }
-            set { description = value; }
         }
 
         // Constructors
