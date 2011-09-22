@@ -102,6 +102,10 @@ namespace XNALibrary
 
         /// <summary>
         /// Update node.
+        ///  This method requires some clean-up and optimisation.
+        ///  Currently rebuilding matrices on every update whether node
+        ///  has changed or not. This is done for simplicity and will
+        ///  be improved later.
         /// </summary>
         /// <param name="node">SceneNode.</param>
         /// <param name="matrix">Cumulative Matrix.</param>
@@ -117,6 +121,7 @@ namespace XNALibrary
             Matrix rotationZ = Matrix.CreateRotationZ(node.Rotation.Z);
             Matrix translation = Matrix.CreateTranslation(node.Position);
 
+            // Create action transforms
             Matrix actionTranslation = Matrix.Identity;
             if (node.Action.Enabled)
             {

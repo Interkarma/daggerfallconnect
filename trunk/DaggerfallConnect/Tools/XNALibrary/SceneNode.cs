@@ -60,6 +60,11 @@ namespace XNALibrary
             #region Action Settings
 
             /// <summary>
+            /// RDB record description for the model associated with this action.
+            /// </summary>
+            public string ModelDescription = null;
+
+            /// <summary>
             /// True if action is enabled.
             /// </summary>
             public bool Enabled = false;
@@ -78,11 +83,6 @@ namespace XNALibrary
             /// Time for object to reach final state.
             /// </summary>
             public long Duration = 0;
-
-            /// <summary>
-            /// Matrix representing the final state of this action.
-            /// </summary>
-            public Matrix EndMatrix = Matrix.Identity;
 
             /// <summary>
             /// Previous node for chained action records.

@@ -33,8 +33,9 @@ namespace XNASeries_4
         string arena2Path = @"c:\dosgames\dagger\arena2";
 
         // Content
+        string blockName = "S0000080.RDB";
         //string blockName = "S0000004.RDB";
-        string blockName = "S0000999.RDB";
+        //string blockName = "S0000999.RDB";
         //string blockName = "S0000205.RDB";
 
         // Camera

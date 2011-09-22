@@ -842,21 +842,25 @@ namespace XNALibrary
         /// <param name="modelIndex">RDB model index.</param>
         private void CreateModelAction(DFBlock.RdbActionResource action, ModelNode modelNode, string description, int groupIndex, int modelIndex)
         {
+            // Store description in action node
+            modelNode.Action.ModelDescription = description;
+
             // Handle special case actions. These are models like doors, which
             // do not have an action record, or the coffin lids in Scourg Barrow,
             // which do not use their action data at all.
             switch (description)
             {
-                case "DOR":         // Doors
+                case "DOR":         // Door
+                case "DDR":         // Double-door
                     action.ActionType = DFBlock.RdbActionType.Rotation;
                     action.Axis = DFBlock.RdbActionAxes.PositiveY;
                     action.Magnitude = 512;
-                    action.Duration = 40;
+                    action.Duration = 60;
                     break;
-                case "LID":         // Coffin lids in Scourg Barrow
+                case "LID":         // Coffin lid in Scourg Barrow
                     action.Axis = DFBlock.RdbActionAxes.NegativeZ;
                     action.Magnitude = 512;
-                    action.Duration = 40;
+                    action.Duration = 80;
                     break;
                 default:            // Let everything else be handled as per action record
                     break;
@@ -866,6 +870,10 @@ namespace XNALibrary
             // Only rotation and translation are supported at this time.
             switch (action.ActionType)
             {
+                case DFBlock.RdbActionType.None:
+                    modelNode.Action.Enabled = false;
+                    return;
+
                 case DFBlock.RdbActionType.Rotation:
                     modelNode.Action.Rotation = GetActionVector(ref action);
                     modelNode.Action.Rotation.X =
@@ -881,12 +889,14 @@ namespace XNALibrary
                     break;
 
                 default:
-                    // Unsupported action record
+                    // Unsupported action type
                     modelNode.Action.Enabled = false;
                     return;
             }
 
-            // Set duration
+            // Set duration.
+            // Not really sure of the correct unit - definitely not milliseconds.
+            // Using n/60ths of a second for now, which seems pretty close.
             modelNode.Action.Duration = (long)(1000f * (action.Duration / 60f));
 
             // Enable action
