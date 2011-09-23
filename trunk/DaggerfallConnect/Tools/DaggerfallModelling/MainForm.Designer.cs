@@ -52,9 +52,7 @@
             this.SearchLocationsToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.QuickSearchDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
-            this.allModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.allBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.allLocationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearSearchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.exteriorBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dungeonBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -65,6 +63,10 @@
             this.homesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.religionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tavernsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.allModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.allBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.allLocationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewPaneToolStrip = new System.Windows.Forms.ToolStrip();
             this.AboutToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.ToggleSearchPaneToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -368,9 +370,7 @@
             // 
             this.QuickSearchDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.QuickSearchDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.allModelsToolStripMenuItem,
-            this.allBlocksToolStripMenuItem,
-            this.allLocationsToolStripMenuItem,
+            this.clearSearchToolStripMenuItem,
             this.toolStripSeparator9,
             this.exteriorBlocksToolStripMenuItem,
             this.dungeonBlocksToolStripMenuItem,
@@ -380,33 +380,24 @@
             this.graveyardsToolStripMenuItem,
             this.homesToolStripMenuItem,
             this.religionsToolStripMenuItem,
-            this.tavernsToolStripMenuItem});
+            this.tavernsToolStripMenuItem,
+            this.toolStripSeparator13,
+            this.allModelsToolStripMenuItem,
+            this.allBlocksToolStripMenuItem,
+            this.allLocationsToolStripMenuItem});
             this.QuickSearchDropDownButton.Image = global::DaggerfallModelling.Properties.Resources.magnifier;
             this.QuickSearchDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.QuickSearchDropDownButton.Name = "QuickSearchDropDownButton";
             this.QuickSearchDropDownButton.Size = new System.Drawing.Size(29, 22);
             this.QuickSearchDropDownButton.Text = "Quick Search";
             // 
-            // allModelsToolStripMenuItem
+            // clearSearchToolStripMenuItem
             // 
-            this.allModelsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.model_find;
-            this.allModelsToolStripMenuItem.Name = "allModelsToolStripMenuItem";
-            this.allModelsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
-            this.allModelsToolStripMenuItem.Text = "All Models";
-            // 
-            // allBlocksToolStripMenuItem
-            // 
-            this.allBlocksToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.block_find;
-            this.allBlocksToolStripMenuItem.Name = "allBlocksToolStripMenuItem";
-            this.allBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
-            this.allBlocksToolStripMenuItem.Text = "All Blocks";
-            // 
-            // allLocationsToolStripMenuItem
-            // 
-            this.allLocationsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.location_find;
-            this.allLocationsToolStripMenuItem.Name = "allLocationsToolStripMenuItem";
-            this.allLocationsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
-            this.allLocationsToolStripMenuItem.Text = "All Locations";
+            this.clearSearchToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.delete;
+            this.clearSearchToolStripMenuItem.Name = "clearSearchToolStripMenuItem";
+            this.clearSearchToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.clearSearchToolStripMenuItem.Text = "Clear Search";
+            this.clearSearchToolStripMenuItem.Click += new System.EventHandler(this.clearSearchToolStripMenuItem_Click);
             // 
             // toolStripSeparator9
             // 
@@ -419,6 +410,7 @@
             this.exteriorBlocksToolStripMenuItem.Name = "exteriorBlocksToolStripMenuItem";
             this.exteriorBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.exteriorBlocksToolStripMenuItem.Text = "Exterior Blocks";
+            this.exteriorBlocksToolStripMenuItem.Click += new System.EventHandler(this.exteriorBlocksToolStripMenuItem_Click);
             // 
             // dungeonBlocksToolStripMenuItem
             // 
@@ -426,6 +418,7 @@
             this.dungeonBlocksToolStripMenuItem.Name = "dungeonBlocksToolStripMenuItem";
             this.dungeonBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.dungeonBlocksToolStripMenuItem.Text = "Dungeon Blocks";
+            this.dungeonBlocksToolStripMenuItem.Click += new System.EventHandler(this.dungeonBlocksToolStripMenuItem_Click);
             // 
             // toolStripSeparator12
             // 
@@ -438,6 +431,7 @@
             this.citiesToolStripMenuItem.Name = "citiesToolStripMenuItem";
             this.citiesToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.citiesToolStripMenuItem.Text = "Cities";
+            this.citiesToolStripMenuItem.Click += new System.EventHandler(this.citiesToolStripMenuItem_Click);
             // 
             // dungeonsToolStripMenuItem
             // 
@@ -445,6 +439,7 @@
             this.dungeonsToolStripMenuItem.Name = "dungeonsToolStripMenuItem";
             this.dungeonsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.dungeonsToolStripMenuItem.Text = "Dungeons";
+            this.dungeonsToolStripMenuItem.Click += new System.EventHandler(this.dungeonsToolStripMenuItem_Click);
             // 
             // graveyardsToolStripMenuItem
             // 
@@ -452,6 +447,7 @@
             this.graveyardsToolStripMenuItem.Name = "graveyardsToolStripMenuItem";
             this.graveyardsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.graveyardsToolStripMenuItem.Text = "Graveyards";
+            this.graveyardsToolStripMenuItem.Click += new System.EventHandler(this.graveyardsToolStripMenuItem_Click);
             // 
             // homesToolStripMenuItem
             // 
@@ -459,6 +455,7 @@
             this.homesToolStripMenuItem.Name = "homesToolStripMenuItem";
             this.homesToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.homesToolStripMenuItem.Text = "Homes";
+            this.homesToolStripMenuItem.Click += new System.EventHandler(this.homesToolStripMenuItem_Click);
             // 
             // religionsToolStripMenuItem
             // 
@@ -466,6 +463,7 @@
             this.religionsToolStripMenuItem.Name = "religionsToolStripMenuItem";
             this.religionsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.religionsToolStripMenuItem.Text = "Religions";
+            this.religionsToolStripMenuItem.Click += new System.EventHandler(this.religionsToolStripMenuItem_Click);
             // 
             // tavernsToolStripMenuItem
             // 
@@ -473,6 +471,36 @@
             this.tavernsToolStripMenuItem.Name = "tavernsToolStripMenuItem";
             this.tavernsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.tavernsToolStripMenuItem.Text = "Taverns";
+            this.tavernsToolStripMenuItem.Click += new System.EventHandler(this.tavernsToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(157, 6);
+            // 
+            // allModelsToolStripMenuItem
+            // 
+            this.allModelsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.model_find;
+            this.allModelsToolStripMenuItem.Name = "allModelsToolStripMenuItem";
+            this.allModelsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allModelsToolStripMenuItem.Text = "All Models";
+            this.allModelsToolStripMenuItem.Click += new System.EventHandler(this.allModelsToolStripMenuItem_Click);
+            // 
+            // allBlocksToolStripMenuItem
+            // 
+            this.allBlocksToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.block_find;
+            this.allBlocksToolStripMenuItem.Name = "allBlocksToolStripMenuItem";
+            this.allBlocksToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allBlocksToolStripMenuItem.Text = "All Blocks";
+            this.allBlocksToolStripMenuItem.Click += new System.EventHandler(this.allBlocksToolStripMenuItem_Click);
+            // 
+            // allLocationsToolStripMenuItem
+            // 
+            this.allLocationsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.location_find;
+            this.allLocationsToolStripMenuItem.Name = "allLocationsToolStripMenuItem";
+            this.allLocationsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.allLocationsToolStripMenuItem.Text = "All Locations";
+            this.allLocationsToolStripMenuItem.Click += new System.EventHandler(this.allLocationsToolStripMenuItem_Click);
             // 
             // ViewPaneToolStrip
             // 
@@ -981,6 +1009,8 @@
         private System.Windows.Forms.ToolStripMenuItem homesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem religionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tavernsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearSearchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
     }
 }
 

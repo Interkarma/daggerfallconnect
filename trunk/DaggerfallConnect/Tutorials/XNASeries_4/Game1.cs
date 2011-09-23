@@ -33,7 +33,8 @@ namespace XNASeries_4
         string arena2Path = @"c:\dosgames\dagger\arena2";
 
         // Content
-        string blockName = "S0000080.RDB";
+        string blockName = "W0000029.RDB";
+        //string blockName = "S0000080.RDB";
         //string blockName = "S0000004.RDB";
         //string blockName = "S0000999.RDB";
         //string blockName = "S0000205.RDB";
@@ -135,7 +136,7 @@ namespace XNASeries_4
                 {
                     // Test node has action
                     if (renderer.PointerOverNode.Action.Enabled)
-                        ToggleAction(renderer.PointerOverNode);
+                        ToggleAction((ModelNode)renderer.PointerOverNode);
                 }
             }
 
@@ -160,7 +161,7 @@ namespace XNASeries_4
         /// Toggles action between start and end states.
         /// </summary>
         /// <param name="node">SceneNode.</param>
-        public void ToggleAction(SceneNode node)
+        public void ToggleAction(ModelNode node)
         {
             if (node.Action.ActionState == SceneNode.ActionState.Start)
                 node.Action.ActionState = SceneNode.ActionState.RunningForwards;

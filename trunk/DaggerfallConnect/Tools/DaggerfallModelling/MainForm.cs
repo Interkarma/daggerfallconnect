@@ -28,6 +28,9 @@ namespace DaggerfallModelling
         #region Class Variables
 
         // Constants
+        private const string WildcardChar = "*";
+        private const string RmbPattern = ".RMB";
+        private const string RdbPattern = ".RDB";
         private const string ModelTag = "MDL";
         private const string BlockTag = "BLK";
         private const string LocationTag = "LCN";
@@ -40,6 +43,7 @@ namespace DaggerfallModelling
         private MapsFile mapsFile = new MapsFile();
 
         // Searching
+        private SearchFilters searchFilter = SearchFilters.All;
         private int minSearchLength = 2;
         private bool searchModels = false;
         private bool searchBlocks = false;
@@ -51,6 +55,24 @@ namespace DaggerfallModelling
         // Views
         private bool blockViewAvailable = false;
         private bool locationViewAvailable = false;
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Filters to refine location searches.
+        /// </summary>
+        private enum SearchFilters
+        {
+            All,
+            Cities,
+            Dungeons,
+            Graveyards,
+            Homes,
+            Religions,
+            Taverns,
+        }
 
         #endregion
 
@@ -552,7 +574,7 @@ namespace DaggerfallModelling
         private void DoSearch(string pattern)
         {
             // Enforce minimum search length
-            if (pattern.Length < minSearchLength)
+            if (pattern.Length < minSearchLength && pattern != WildcardChar)
             {
                 string msg = string.Format("Search must be at least {0} characters", minSearchLength);
                 MainTips.Show(msg, SearchTextBox, 0, -45, 2000);
@@ -597,7 +619,7 @@ namespace DaggerfallModelling
                 SearchMaps(ref pattern, out mapsFound);
 
             // Show search results
-            ShowSearchResults();
+            ShowSearchResults(pattern);
 
             // Enable search controls
             SearchPaneToolStrip.Enabled = true;
@@ -625,22 +647,36 @@ namespace DaggerfallModelling
                 return;
             }
 
-            // Check pattern is numeric
-            uint id;
-            if (!uint.TryParse(pattern, out id))
+            // Support wildcard character
+            if (pattern == WildcardChar)
             {
-                searchOut = modelsFound;
-                return;
-            }
-
-            // Search all models for a match
-            for (int model = 0; model < arch3dFile.Count; model++)
-            {
-                Application.DoEvents();
-                uint objectId = arch3dFile.GetRecordId(model);
-                string objectIdString = objectId.ToString();
-                if (ContainsCaseInsensitive(ref objectIdString, ref pattern))
+                // Add all models
+                for (int model = 0; model < arch3dFile.Count; model++)
+                {
+                    Application.DoEvents();
+                    uint objectId = arch3dFile.GetRecordId(model);
                     modelsFound.Add(model, objectId);
+                }
+            }
+            else
+            {
+                // Check pattern is numeric
+                uint id;
+                if (!uint.TryParse(pattern, out id))
+                {
+                    searchOut = modelsFound;
+                    return;
+                }
+
+                // Search all models for a match
+                for (int model = 0; model < arch3dFile.Count; model++)
+                {
+                    Application.DoEvents();
+                    uint objectId = arch3dFile.GetRecordId(model);
+                    string objectIdString = objectId.ToString();
+                    if (ContainsCaseInsensitive(ref objectIdString, ref pattern))
+                        modelsFound.Add(model, objectId);
+                }
             }
 
             searchOut = modelsFound;
@@ -648,6 +684,7 @@ namespace DaggerfallModelling
 
         private void SearchBlocks(ref string pattern, out Dictionary<int, string> searchOut)
         {
+            string rdiPattern = ".RDI";
             Dictionary<int, string> blocksFound = new Dictionary<int, string>();
 
             // Handle resource null
@@ -657,13 +694,33 @@ namespace DaggerfallModelling
                 return;
             }
 
-            // Search all blocks for a match
-            for (int block = 0; block < blocksFile.Count; block++)
+            // Support wildcard character
+            if (pattern == WildcardChar)
             {
-                Application.DoEvents();
-                string name = blocksFile.GetBlockName(block);
-                if (ContainsCaseInsensitive(ref name, ref pattern))
-                    blocksFound.Add(block, name);
+                // Add all blocks
+                for (int block = 0; block < blocksFile.Count; block++)
+                {
+                    Application.DoEvents();
+                    string name = blocksFile.GetBlockName(block);
+                    if (!ContainsCaseInsensitive(ref name, ref rdiPattern))
+                    {
+                        blocksFound.Add(block, name);
+                    }
+                }
+            }
+            else
+            {
+                // Search all blocks for a match
+                for (int block = 0; block < blocksFile.Count; block++)
+                {
+                    Application.DoEvents();
+                    string name = blocksFile.GetBlockName(block);
+                    if (ContainsCaseInsensitive(ref name, ref pattern) &&
+                        !ContainsCaseInsensitive(ref name, ref rdiPattern))
+                    {
+                        blocksFound.Add(block, name);
+                    }
+                }
             }
 
             searchOut = blocksFound;
@@ -680,15 +737,59 @@ namespace DaggerfallModelling
                 return;
             }
 
-            // Search all regions and locations for match
-            for (int region = 0; region < mapsFile.RegionCount; region++)
+            // Support wildcard character
+            if (pattern == WildcardChar)
             {
-                Application.DoEvents();
-                DFRegion dfRegion = mapsFile.GetRegion(region);
-                for (int location = 0; location < dfRegion.LocationCount; location++)
+                // Add all regions and locations
+                for (int region = 0; region < mapsFile.RegionCount; region++)
                 {
-                    if (ContainsCaseInsensitive(ref dfRegion.MapNames[location], ref pattern))
-                        mapsFound.Add(RegionLocationToKey(region, location), dfRegion.MapNames[location]);
+                    Application.DoEvents();
+                    DFRegion dfRegion = mapsFile.GetRegion(region);
+                    for (int location = 0; location < dfRegion.LocationCount; location++)
+                    {
+                        DFRegion.LocationTypes locationType = dfRegion.MapTable[location].Type;
+                        if (searchFilter == SearchFilters.All ||
+
+                            searchFilter == SearchFilters.Cities && locationType == DFRegion.LocationTypes.TownCity ||
+                            searchFilter == SearchFilters.Cities && locationType == DFRegion.LocationTypes.TownHamlet ||
+                            searchFilter == SearchFilters.Cities && locationType == DFRegion.LocationTypes.TownVillage ||
+
+                            searchFilter == SearchFilters.Dungeons && locationType == DFRegion.LocationTypes.DungeonKeep ||
+                            searchFilter == SearchFilters.Dungeons && locationType == DFRegion.LocationTypes.DungeonLabyrinth ||
+                            searchFilter == SearchFilters.Dungeons && locationType == DFRegion.LocationTypes.DungeonRuin ||
+
+                            searchFilter == SearchFilters.Graveyards && locationType == DFRegion.LocationTypes.GraveyardCommon ||
+                            searchFilter == SearchFilters.Graveyards && locationType == DFRegion.LocationTypes.GraveyardForgotten ||
+
+                            searchFilter == SearchFilters.Homes && locationType == DFRegion.LocationTypes.HomeFarms ||
+                            searchFilter == SearchFilters.Homes && locationType == DFRegion.LocationTypes.HomePoor ||
+                            searchFilter == SearchFilters.Homes && locationType == DFRegion.LocationTypes.HomeWealthy ||
+                            searchFilter == SearchFilters.Homes && locationType == DFRegion.LocationTypes.HomeYourShips ||
+
+                            searchFilter == SearchFilters.Religions && locationType == DFRegion.LocationTypes.ReligionCoven ||
+                            searchFilter == SearchFilters.Religions && locationType == DFRegion.LocationTypes.ReligionCult ||
+                            searchFilter == SearchFilters.Religions && locationType == DFRegion.LocationTypes.ReligionTemple ||
+
+                            searchFilter == SearchFilters.Taverns && locationType == DFRegion.LocationTypes.Tavern
+                            )
+                        {
+                            mapsFound.Add(RegionLocationToKey(region, location), dfRegion.MapNames[location]);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Search all regions and locations for match
+                for (int region = 0; region < mapsFile.RegionCount; region++)
+                {
+                    Application.DoEvents();
+                    DFRegion dfRegion = mapsFile.GetRegion(region);
+                    for (int location = 0; location < dfRegion.LocationCount; location++)
+                    {
+                        if (ContainsCaseInsensitive(ref dfRegion.MapNames[location], ref pattern))
+                            mapsFound.Add(RegionLocationToKey(region, location), dfRegion.MapNames[location]);
+                    }
                 }
             }
 
@@ -717,10 +818,13 @@ namespace DaggerfallModelling
 
         #region SearchResults Methods
 
-        private void ShowSearchResults()
+        private void ShowSearchResults(string pattern)
         {
             // Clear existing search results
             SearchResultsTreeView.Nodes.Clear();
+
+            // Reapply default alpha sort
+            SearchResultsTreeView.Sort();
 
             // Create results nodes
             TreeNode modelsNode, blocksNode, mapsNode;
@@ -754,9 +858,6 @@ namespace DaggerfallModelling
                     SearchResultsImageList.Images.IndexOfKey("find"));
                 ShowLocationsFound(ref mapsNode);
             }
-
-            // Sort results tree
-            SearchResultsTreeView.Sort();
         }
 
         private void ShowModelsFound(ref TreeNode node)
@@ -777,6 +878,9 @@ namespace DaggerfallModelling
 
                 // Populate filtered models
                 modelsArray[index++] = model.Value;
+
+                // Tick events
+                Application.DoEvents();
             }
 
             // Assign filtered array to content view
@@ -1144,6 +1248,208 @@ namespace DaggerfallModelling
             // Toggle panel and menu check state
             TimeOfDayPanel.Visible = !TimeOfDayPanel.Visible;
             AdjustSkyToolStripMenuItem.Checked = TimeOfDayPanel.Visible;
+        }
+
+        #endregion
+
+        #region Quick Search Methods
+
+        private void clearSearchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Clear map block browser
+            AutoMapViewer.Clear();
+
+            // Clear search text
+            SearchTextBox.Text = String.Empty;
+
+            // Clear existing search results
+            SearchResultsTreeView.Nodes.Clear();
+
+            // Clear filtered model array and switch back to thumbnails
+            ContentViewer.FilteredModelsArray = null;
+            ContentViewer.ShowThumbnailsView();
+
+            // Clear available view
+            blockViewAvailable = false;
+            locationViewAvailable = false;
+            UpdateAvailableViews();
+        }
+
+        private void allModelsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = true;
+            searchBlocks = false;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = true;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = false;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search
+            DoSearch(WildcardChar);
+        }
+
+        private void allBlocksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = true;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = true;
+            SearchLocationsToolStripButton.Checked = false;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search
+            DoSearch(WildcardChar);
+        }
+
+        private void allLocationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search
+            DoSearch(WildcardChar);
+        }
+
+        private void exteriorBlocksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = true;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = true;
+            SearchLocationsToolStripButton.Checked = false;
+            SearchTextBox.Text = RmbPattern;
+
+            // Run wildcard search
+            DoSearch(RmbPattern);
+        }
+
+        private void dungeonBlocksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = true;
+            searchLocations = false;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = true;
+            SearchLocationsToolStripButton.Checked = false;
+            SearchTextBox.Text = RdbPattern;
+
+            // Run wildcard search
+            DoSearch(RdbPattern);
+        }
+
+        private void citiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Cities;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
+        }
+
+        private void dungeonsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Dungeons;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
+        }
+
+        private void graveyardsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Graveyards;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
+        }
+
+        private void homesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Homes;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
+        }
+
+        private void religionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Religions;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
+        }
+
+        private void tavernsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Set control states
+            searchModels = false;
+            searchBlocks = false;
+            searchLocations = true;
+            SearchModelsToolStripButton.Checked = false;
+            SearchBlocksToolStripButton.Checked = false;
+            SearchLocationsToolStripButton.Checked = true;
+            SearchTextBox.Text = WildcardChar;
+
+            // Run wildcard search with filter
+            searchFilter = SearchFilters.Taverns;
+            DoSearch(WildcardChar);
+            searchFilter = SearchFilters.All;
         }
 
         #endregion

@@ -857,6 +857,11 @@ namespace XNALibrary
                     action.Magnitude = 512;
                     action.Duration = 60;
                     break;
+                case "WHE":         // Wheel
+                    action.Axis = DFBlock.RdbActionAxes.PositiveY;
+                    action.Magnitude = 2000;
+                    action.Duration = 67;
+                    break;
                 case "LID":         // Coffin lid in Scourg Barrow
                     action.Axis = DFBlock.RdbActionAxes.NegativeZ;
                     action.Magnitude = 512;
