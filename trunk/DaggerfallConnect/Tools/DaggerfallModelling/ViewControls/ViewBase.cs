@@ -32,7 +32,7 @@ namespace DaggerfallModelling.ViewControls
 
         protected ViewHost host = null;
         private CameraModes cameraMode = CameraModes.None;
-        private DFLocation.ClimateType climateType = DFLocation.ClimateType.None;
+        private DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
 
         #endregion
 
@@ -66,7 +66,7 @@ namespace DaggerfallModelling.ViewControls
         /// Gets or sets climate type. Each view will maintain a
         /// preferred climate type.
         /// </summary>
-        public DFLocation.ClimateType Climate
+        public DFLocation.ClimateBaseType Climate
         {
             get { return climateType; }
             set { climateType = value; }

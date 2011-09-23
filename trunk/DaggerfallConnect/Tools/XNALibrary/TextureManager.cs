@@ -21,12 +21,6 @@ using DaggerfallConnect.Arena2;
 
 namespace XNALibrary
 {
-
-    // Use climate enums in this namespace
-    using ClimateType = DFLocation.ClimateType;
-    using ClimateSet = DFLocation.ClimateSet;
-    using ClimateWeather = DFLocation.ClimateWeather;
-
     // Differentiate between Color types
     using GDIColor = System.Drawing.Color;
     using XNAColor = Microsoft.Xna.Framework.Graphics.Color;
@@ -65,8 +59,8 @@ namespace XNALibrary
         private Dictionary<int, Texture2D> winterTextureDict;
 
         // Climate and weather
-        ClimateType climateType = ClimateType.None;
-        ClimateWeather climateWeather = ClimateWeather.Normal;
+        DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
+        DFLocation.ClimateWeather climateWeather = DFLocation.ClimateWeather.Normal;
 
         #endregion
 
@@ -127,7 +121,7 @@ namespace XNALibrary
         /// </summary>
         private struct AtlasParams
         {
-            public ClimateType climate;
+            public DFLocation.ClimateBaseType climate;
             public Dictionary<int, RectangleF> dictionary;
             public int format;
             public int width;
@@ -163,7 +157,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets current climate type for swaps.
         /// </summary>
-        public ClimateType ClimateType
+        public DFLocation.ClimateBaseType ClimateType
         {
             get { return climateType; }
             set { SetClimate(value, climateWeather); }
@@ -172,7 +166,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets current weather for swaps.
         /// </summary>
-        public ClimateWeather Weather
+        public DFLocation.ClimateWeather Weather
         {
             get { return climateWeather; }
             set { SetClimate(climateType, value); }
@@ -240,7 +234,7 @@ namespace XNALibrary
         {
             // Load based on flags
             if (TextureCreateFlags.ApplyClimate == (flags & TextureCreateFlags.ApplyClimate) &&
-                climateType != ClimateType.None)
+                climateType != DFLocation.ClimateBaseType.None)
             {
                 return LoadTextureWithClimate(archive, record, flags);
             }
@@ -264,7 +258,7 @@ namespace XNALibrary
                 return GetTerrainAtlas();
 
             // Try to return winter texture when required
-            if (this.climateWeather == ClimateWeather.Winter)
+            if (this.climateWeather == DFLocation.ClimateWeather.Winter)
             {
                 if (winterTextureDict.ContainsKey(key))
                     return winterTextureDict[key];
@@ -286,7 +280,7 @@ namespace XNALibrary
         public RectangleF GetTerrainSubTextureRect(int record)
         {
             // Get the subtexture rectangle
-            int key = GetAtlasTextureKey(ClimateSet.Exterior_Terrain, climateWeather, record);
+            int key = GetAtlasTextureKey(DFLocation.ClimateTextureSet.Exterior_Terrain, climateWeather, record);
             if (!terrainAtlasDict.ContainsKey(key))
                 return terrainAtlasDict[0];
             else
@@ -353,7 +347,7 @@ namespace XNALibrary
         /// <param name="climateSet">Climate set.</param>
         /// <param name="record">Record index.</param>
         /// <returns>Texture key.</returns>
-        private int GetTextureKey(ClimateType climateType, ClimateSet climateSet, int record)
+        private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record)
         {
             return 1000000 + ((int)climateType * 100000) + ((int)climateSet * 1000) + record;
         }
@@ -365,7 +359,7 @@ namespace XNALibrary
         /// <param name="weather">Climate weather.</param>
         /// <param name="record">Record index.</param>
         /// <returns>Climate texture key.</returns>
-        private int GetAtlasTextureKey(ClimateSet set, ClimateWeather weather, int record)
+        private int GetAtlasTextureKey(DFLocation.ClimateTextureSet set, DFLocation.ClimateWeather weather, int record)
         {
             return (int)set * 10000 + (int)weather * 100 + record;
         }
@@ -399,28 +393,28 @@ namespace XNALibrary
         {
             // Get the base set this archive belongs to regardless of climate
             bool supportsWinter, supportsRain;
-            ClimateSet climateSet = GetClimateSet(archive, out supportsWinter, out supportsRain);
+            DFLocation.ClimateTextureSet climateSet = GetClimateSet(archive, out supportsWinter, out supportsRain);
 
             // Load non-climate-aware textures without climate processing
-            if (ClimateSet.None == climateSet)
+            if (DFLocation.ClimateTextureSet.None == climateSet)
             {
                 return LoadTextureNoClimate(archive, record, flags);
             }
 
             // Handle missing Swamp textures
-            if (climateType == ClimateType.Swamp)
+            if (climateType == DFLocation.ClimateBaseType.Swamp)
             {
                 switch (climateSet)
                 {
-                    case ClimateSet.Interior_TempleInt:
-                    case ClimateSet.Interior_MarbleFloors:
+                    case DFLocation.ClimateTextureSet.Interior_TempleInt:
+                    case DFLocation.ClimateTextureSet.Interior_MarbleFloors:
                         return LoadTextureNoClimate(archive, record, flags);
                 }
             }
 
             // Check if key already exists
             int key = GetTextureKey(climateType, climateSet, record);
-            if (this.climateWeather == ClimateWeather.Winter)
+            if (this.climateWeather == DFLocation.ClimateWeather.Winter)
             {
                 if (winterTextureDict.ContainsKey(key))
                     return key;
@@ -432,12 +426,13 @@ namespace XNALibrary
             }
 
             // Handle specific climate sets with missing winter textures
-            if (climateType == ClimateType.Desert || climateType == ClimateType.Swamp)
+            if (climateType == DFLocation.ClimateBaseType.Desert ||
+                climateType == DFLocation.ClimateBaseType.Swamp)
             {
                 switch (climateSet)
                 {
-                    case ClimateSet.Exterior_Castle:
-                    case ClimateSet.Exterior_MagesGuild:
+                    case DFLocation.ClimateTextureSet.Exterior_Castle:
+                    case DFLocation.ClimateTextureSet.Exterior_MagesGuild:
                         supportsWinter = false;
                         break;
                 }
@@ -551,13 +546,13 @@ namespace XNALibrary
         {
             switch (this.climateType)
             {
-                case ClimateType.Desert:
+                case DFLocation.ClimateBaseType.Desert:
                     return desertAtlas;
-                case ClimateType.Mountain:
+                case DFLocation.ClimateBaseType.Mountain:
                     return mountainAtlas;
-                case ClimateType.Temperate:
+                case DFLocation.ClimateBaseType.Temperate:
                     return temperateAtlas;
-                case ClimateType.Swamp:
+                case DFLocation.ClimateBaseType.Swamp:
                     return swampAtlas;
                 default:
                     return temperateAtlas;
@@ -700,11 +695,11 @@ namespace XNALibrary
         /// </summary>
         /// <param name="climate">Climate type.</param>
         /// <param name="weather">Weather type.</param>
-        private void SetClimate(ClimateType climate, ClimateWeather weather)
+        private void SetClimate(DFLocation.ClimateBaseType climate, DFLocation.ClimateWeather weather)
         {
             // Load new terrain atlas, using temperate when none specified
-            if (climate == ClimateType.None)
-                BuildTerrainAtlas(ClimateType.Temperate);
+            if (climate == DFLocation.ClimateBaseType.None)
+                BuildTerrainAtlas(DFLocation.ClimateBaseType.Temperate);
             else
                 BuildTerrainAtlas(climate);
 
@@ -720,70 +715,70 @@ namespace XNALibrary
         /// <param name="supportsWinter">True if there is a winter version of this set.</param>
         /// <param name="supportsRain">True if there is a rain version of this set.</param>
         /// <returns>Derived ClimateSet.</returns>
-        private ClimateSet GetClimateSet(int archive, out bool supportsWinter, out bool supportsRain)
+        private DFLocation.ClimateTextureSet GetClimateSet(int archive, out bool supportsWinter, out bool supportsRain)
         {
             // Get climate set
             supportsWinter = false;
             supportsRain = false;
-            ClimateSet set = (ClimateSet)(archive - (archive / 100) * 100);
+            DFLocation.ClimateTextureSet set = (DFLocation.ClimateTextureSet)(archive - (archive / 100) * 100);
             switch (set)
             {
                 //
                 // Terrain sets
                 //
-                case ClimateSet.Exterior_Terrain:
+                case DFLocation.ClimateTextureSet.Exterior_Terrain:
                     supportsWinter = true;
                     supportsRain = true;
                     break;
                 //
                 // Exterior sets
                 //
-                case ClimateSet.Exterior_Castle:
-                case ClimateSet.Exterior_CityA:
-                case ClimateSet.Exterior_CityB:
-                case ClimateSet.Exterior_CityWalls:
-                case ClimateSet.Exterior_Farm:
-                case ClimateSet.Exterior_Fences:
-                case ClimateSet.Exterior_MagesGuild:
-                case ClimateSet.Exterior_Manor:
-                case ClimateSet.Exterior_MerchantHomes:
-                case ClimateSet.Exterior_Roofs:
-                case ClimateSet.Exterior_Ruins:
-                case ClimateSet.Exterior_TavernExteriors:
-                case ClimateSet.Exterior_TempleExteriors:
-                case ClimateSet.Exterior_Village:
+                case DFLocation.ClimateTextureSet.Exterior_Castle:
+                case DFLocation.ClimateTextureSet.Exterior_CityA:
+                case DFLocation.ClimateTextureSet.Exterior_CityB:
+                case DFLocation.ClimateTextureSet.Exterior_CityWalls:
+                case DFLocation.ClimateTextureSet.Exterior_Farm:
+                case DFLocation.ClimateTextureSet.Exterior_Fences:
+                case DFLocation.ClimateTextureSet.Exterior_MagesGuild:
+                case DFLocation.ClimateTextureSet.Exterior_Manor:
+                case DFLocation.ClimateTextureSet.Exterior_MerchantHomes:
+                case DFLocation.ClimateTextureSet.Exterior_Roofs:
+                case DFLocation.ClimateTextureSet.Exterior_Ruins:
+                case DFLocation.ClimateTextureSet.Exterior_TavernExteriors:
+                case DFLocation.ClimateTextureSet.Exterior_TempleExteriors:
+                case DFLocation.ClimateTextureSet.Exterior_Village:
                     supportsWinter = true;
                     break;
                 //
                 // Interior sets
                 //
-                case ClimateSet.Interior_Caves:
-                case ClimateSet.Interior_CityInt:
-                case ClimateSet.Interior_CryptA:
-                case ClimateSet.Interior_CryptB:
-                case ClimateSet.Interior_Doors:
-                case ClimateSet.Interior_DungeonsA:
-                case ClimateSet.Interior_DungeonsB:
-                case ClimateSet.Interior_DungeonsC:
-                case ClimateSet.Interior_DungeonsNEWCs:
-                case ClimateSet.Interior_FarmInt:
-                case ClimateSet.Interior_MagesGuildInt:
-                case ClimateSet.Interior_ManorInt:
-                case ClimateSet.Interior_MarbleFloors:
-                case ClimateSet.Interior_MerchantHomesInt:
-                case ClimateSet.Interior_Mines:
-                case ClimateSet.Interior_Paintings:
-                case ClimateSet.Interior_PalaceInt:
-                case ClimateSet.Interior_Sewer:
-                case ClimateSet.Interior_TavernInt:
-                case ClimateSet.Interior_TempleInt:
-                case ClimateSet.Interior_VillageInt:
+                case DFLocation.ClimateTextureSet.Interior_Caves:
+                case DFLocation.ClimateTextureSet.Interior_CityInt:
+                case DFLocation.ClimateTextureSet.Interior_CryptA:
+                case DFLocation.ClimateTextureSet.Interior_CryptB:
+                case DFLocation.ClimateTextureSet.Interior_Doors:
+                case DFLocation.ClimateTextureSet.Interior_DungeonsA:
+                case DFLocation.ClimateTextureSet.Interior_DungeonsB:
+                case DFLocation.ClimateTextureSet.Interior_DungeonsC:
+                case DFLocation.ClimateTextureSet.Interior_DungeonsNEWCs:
+                case DFLocation.ClimateTextureSet.Interior_FarmInt:
+                case DFLocation.ClimateTextureSet.Interior_MagesGuildInt:
+                case DFLocation.ClimateTextureSet.Interior_ManorInt:
+                case DFLocation.ClimateTextureSet.Interior_MarbleFloors:
+                case DFLocation.ClimateTextureSet.Interior_MerchantHomesInt:
+                case DFLocation.ClimateTextureSet.Interior_Mines:
+                case DFLocation.ClimateTextureSet.Interior_Paintings:
+                case DFLocation.ClimateTextureSet.Interior_PalaceInt:
+                case DFLocation.ClimateTextureSet.Interior_Sewer:
+                case DFLocation.ClimateTextureSet.Interior_TavernInt:
+                case DFLocation.ClimateTextureSet.Interior_TempleInt:
+                case DFLocation.ClimateTextureSet.Interior_VillageInt:
                     break;
                 //
                 // All other results
                 //
                 default:
-                    return ClimateSet.None;
+                    return DFLocation.ClimateTextureSet.None;
             }
 
             // Confirmed valid set
@@ -800,21 +795,21 @@ namespace XNALibrary
         /// </summary>
         /// <param name="climate">Climate type.</param>
         /// <returns>True if successful.</returns>
-        private bool BuildTerrainAtlas(ClimateType climate)
+        private bool BuildTerrainAtlas(DFLocation.ClimateBaseType climate)
         {
             // Return true if atlas already built
             switch (climate)
             {
-                case ClimateType.Desert:
+                case DFLocation.ClimateBaseType.Desert:
                     if (desertAtlas != null) return true;
                     break;
-                case ClimateType.Mountain:
+                case DFLocation.ClimateBaseType.Mountain:
                     if (mountainAtlas != null) return true;
                     break;
-                case ClimateType.Temperate:
+                case DFLocation.ClimateBaseType.Temperate:
                     if (temperateAtlas != null) return true;
                     break;
-                case ClimateType.Swamp:
+                case DFLocation.ClimateBaseType.Swamp:
                     if (swampAtlas != null) return true;
                     break;
             }
@@ -835,25 +830,25 @@ namespace XNALibrary
 
             // Add textures to atlas
             //AddErrorBitmap(ref ap);
-            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Normal, ref ap);
-            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Winter, ref ap);
-            AddTextureFile(ClimateSet.Exterior_Terrain, ClimateWeather.Rain, ref ap);
+            AddTextureFile(DFLocation.ClimateTextureSet.Exterior_Terrain, DFLocation.ClimateWeather.Normal, ref ap);
+            AddTextureFile(DFLocation.ClimateTextureSet.Exterior_Terrain, DFLocation.ClimateWeather.Winter, ref ap);
+            AddTextureFile(DFLocation.ClimateTextureSet.Exterior_Terrain, DFLocation.ClimateWeather.Rain, ref ap);
 
             // Create texture from atlas buffer
             Texture2D atlasTexture = new Texture2D(graphicsDevice, atlasWidth, atlasHeight, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
             atlasTexture.SetData<byte>(ap.buffer);
             switch (climate)
             {
-                case ClimateType.Desert:
+                case DFLocation.ClimateBaseType.Desert:
                     desertAtlas = atlasTexture;
                     break;
-                case ClimateType.Mountain:
+                case DFLocation.ClimateBaseType.Mountain:
                     mountainAtlas = atlasTexture;
                     break;
-                case ClimateType.Temperate:
+                case DFLocation.ClimateBaseType.Temperate:
                     temperateAtlas = atlasTexture;
                     break;
-                case ClimateType.Swamp:
+                case DFLocation.ClimateBaseType.Swamp:
                     swampAtlas = atlasTexture;
                     break;
             }
@@ -875,7 +870,7 @@ namespace XNALibrary
         /// <param name="set">Climate set to add.</param>
         /// <param name="weather">Weather set to add.</param>
         /// <param name="ap">AtlasParams.</param>
-        private void AddTextureFile(ClimateSet set, ClimateWeather weather, ref AtlasParams ap)
+        private void AddTextureFile(DFLocation.ClimateTextureSet set, DFLocation.ClimateWeather weather, ref AtlasParams ap)
         {
             // Resolve climate set and weather to filename
             string filename = ImageFileReader.GetClimateTextureFileName(ap.climate, set, weather);

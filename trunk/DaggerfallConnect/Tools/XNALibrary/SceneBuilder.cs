@@ -214,12 +214,9 @@ namespace XNALibrary
         /// Creates a new block node.
         /// </summary>
         /// <param name="name">Block name.</param>
-        /// <param name="worldClimate">
-        /// World climate value. Valid range is 223-232 or NULL for default.
-        ///  This is currently ignored for RDB blocks.
-        /// </param>
+        /// <param name="climate">Climate settings.</param>
         /// <returns>BlockNode.</returns>
-        public BlockNode CreateBlockNode(string name, int? worldClimate)
+        public BlockNode CreateBlockNode(string name, DFLocation.ClimateSettings? climate)
         {
             // Load block
             DFBlock block;
@@ -227,29 +224,19 @@ namespace XNALibrary
                 return null;
 
             // Set default world climate
-            if (worldClimate == null)
-                worldClimate = defaultWorldClimate;
-
-            // Get world climate settings
-            DFLocation.ClimateType climateType;
-            int rmbSceneryArchive;
-            int skyArchive;
-            MapsFile.GetWorldClimateSettings(
-                worldClimate.Value,
-                out climateType,
-                out rmbSceneryArchive,
-                out skyArchive);
+            if (climate == null)
+                climate = MapsFile.GetWorldClimateSettings(defaultWorldClimate);
             
             // Build node
             BlockNode node = null;
             switch (block.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    textureManager.ClimateType = climateType;
-                    node = BuildRMBNode(ref block, rmbSceneryArchive);
+                    textureManager.ClimateType = climate.Value.ClimateType;
+                    node = BuildRMBNode(ref block, climate.Value.SceneryArchive);
                     break;
                 case DFBlock.BlockTypes.Rdb:
-                    textureManager.ClimateType = DFLocation.ClimateType.None;
+                    textureManager.ClimateType = DFLocation.ClimateBaseType.None;
                     node = BuildRDBNode(ref block);
                     break;
             }

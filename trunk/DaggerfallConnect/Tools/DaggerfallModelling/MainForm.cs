@@ -219,12 +219,12 @@ namespace DaggerfallModelling
                 switch ((string)node.Tag)
                 {
                     case ModelTag:
-                        ContentViewer.ShowModelView(uint.Parse(node.Text), DFLocation.ClimateType.None);
+                        ContentViewer.ShowModelView(uint.Parse(node.Text), DFLocation.ClimateBaseType.None);
                         break;
                     case BlockTag:
                         // Show view
                         blockViewAvailable = true;
-                        ContentViewer.ShowBlockView(node.Text, DFLocation.ClimateType.None);
+                        ContentViewer.ShowBlockView(node.Text, DFLocation.ClimateBaseType.None);
                         break;
                     case LocationTag:
                         int key, region, location;
@@ -427,7 +427,7 @@ namespace DaggerfallModelling
                 ContentViewer.ViewMode != ViewHost.ViewModes.DungeonView)
             {
                 // Get climate type
-                DFLocation.ClimateType climate = DFLocation.ClimateType.None;
+                DFLocation.ClimateBaseType climate = DFLocation.ClimateBaseType.None;
                 if (locationViewAvailable && AutoMapViewer.ViewMode == AutoMapView.ViewModes.Exterior)
                     climate = ContentViewer.LocationClimate;
 

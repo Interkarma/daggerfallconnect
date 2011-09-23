@@ -279,7 +279,11 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             // Set texture manager climate
-            host.TextureManager.ClimateType = base.Climate;
+            if (this.sceneType == SceneTypes.Exterior ||
+                this.SceneType == SceneTypes.Block)
+                host.TextureManager.ClimateType = base.Climate;
+            else
+                host.TextureManager.ClimateType = DFLocation.ClimateBaseType.None;
 
             // Clear scroll velocity
             cameraVelocity = Vector3.Zero;
@@ -331,7 +335,7 @@ namespace DaggerfallModelling.ViewControls
         /// Builds a new scene containing a single RMB or RDB block.
         /// </summary>
         /// <param name="blockName">Block name.</param>
-        public void CreateBlockScene(string blockName)
+        public void CreateBlockScene(string blockName, DFLocation.ClimateBaseType climateType)
         {
             // Check if resulting scene will be the same
             if (this.block.Name == blockName &&
@@ -349,6 +353,7 @@ namespace DaggerfallModelling.ViewControls
             // Store data
             this.block = node.Block;
             this.sceneType = SceneTypes.Block;
+            base.Climate = climateType;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -419,6 +424,7 @@ namespace DaggerfallModelling.ViewControls
             // Store data
             this.location = node.Location;
             this.sceneType = SceneTypes.Exterior;
+            base.Climate = location.Climate.ClimateType;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -480,6 +486,7 @@ namespace DaggerfallModelling.ViewControls
             // Store data
             this.location = node.Location;
             this.sceneType = SceneTypes.Dungeon;
+            base.Climate = DFLocation.ClimateBaseType.None;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -515,6 +522,7 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="name">Name of block.</param>
         public void MoveToBlock(int x, int z)
         {
+            cameraVelocity = Vector3.Zero;
             Vector3 pos = renderer.Camera.Position;
             if (sceneType == SceneTypes.Exterior)
             {

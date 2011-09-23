@@ -290,7 +290,7 @@ namespace DaggerfallModelling.ViewControls
         /// <summary>
         /// Gets location climate, or None if no location loaded.
         /// </summary>
-        public DFLocation.ClimateType LocationClimate
+        public DFLocation.ClimateBaseType LocationClimate
         {
             get { return GetLocationClimate(); }
         }
@@ -747,7 +747,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="id">ModelID of model to show.</param>
         /// <param name="climate">ClimateType.</param>
-        public void ShowModelView(uint? id, DFLocation.ClimateType climate)
+        public void ShowModelView(uint? id, DFLocation.ClimateBaseType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -768,7 +768,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="name">Block name.</param>
         /// <param name="climate">Climate of block.</param>
-        public void ShowBlockView(string name, DFLocation.ClimateType climate)
+        public void ShowBlockView(string name, DFLocation.ClimateBaseType climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -779,7 +779,7 @@ namespace DaggerfallModelling.ViewControls
             {
                 name = name.ToUpper();
                 LocationView view = (LocationView)viewClients[ViewModes.BlockView];
-                view.CreateBlockScene(name);
+                view.CreateBlockScene(name, climate);
             }
 
             // Set view mode
@@ -1071,10 +1071,10 @@ namespace DaggerfallModelling.ViewControls
         /// Gets climate of current location.
         /// </summary>
         /// <returns>Location climate, or None if no location loaded.</returns>
-        private DFLocation.ClimateType GetLocationClimate()
+        private DFLocation.ClimateBaseType GetLocationClimate()
         {
             if (!isReady)
-                return DFLocation.ClimateType.None;
+                return DFLocation.ClimateBaseType.None;
 
             return viewClients[ViewModes.LocationView].Climate;
         }

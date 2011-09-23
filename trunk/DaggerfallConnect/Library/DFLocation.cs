@@ -52,9 +52,9 @@ namespace DaggerfallConnect
         public LocationDungeon Dungeon;
 
         /// <summary>
-        /// Climate of this location (range is 223-232).
+        /// Climate settings for this location.
         /// </summary>
-        public int Climate;
+        public ClimateSettings Climate;
 
         /// <summary>
         /// Political alignment of this location (equal to region index + 128).
@@ -76,9 +76,9 @@ namespace DaggerfallConnect
         #region Climate Enumerations
 
         /// <summary>
-        /// Climate type enumeration for climate-swapping textures.
+        /// Climate base type enumeration for climate-swapping textures.
         /// </summary>
-        public enum ClimateType
+        public enum ClimateBaseType
         {
             /// <summary>No climate type.</summary>
             None = -1,
@@ -95,7 +95,7 @@ namespace DaggerfallConnect
         /// <summary>
         /// Climate texture sets for climate-swapping textures.
         /// </summary>
-        public enum ClimateSet
+        public enum ClimateTextureSet
         {
             //
             // General sets
@@ -195,6 +195,31 @@ namespace DaggerfallConnect
             Winter = 1,
             /// <summary>Ground wet from rain (only valid with ClimateSet.Terrain).</summary>
             Rain = 2,
+        }
+
+        #endregion
+
+        #region Climate Structures
+
+        /// <summary>
+        /// Contains settings for various climate data.
+        /// </summary>
+        public struct ClimateSettings
+        {
+            /// <summary>World climate value from CLIMATE.PAK. Ranges from 223-232.</summary>
+            public int WorldClimate;
+
+            /// <summary>Base climate type.</summary>
+            public ClimateBaseType ClimateType;
+
+            /// <summary>Texture archive index for ground plane.</summary>
+            public int GroundArchive;
+
+            /// <summary>Texture archive index for ground scenery (rocks, trees, etc.).</summary>
+            public int SceneryArchive;
+
+            /// <summary>Texture archive index for sky background.</summary>
+            public int SkyArchive;
         }
 
         #endregion
