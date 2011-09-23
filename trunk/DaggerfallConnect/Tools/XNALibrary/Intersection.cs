@@ -31,6 +31,57 @@ namespace XNALibrary
 
         #endregion
 
+        #region SubClasses
+
+        /// <summary>
+        /// Describes a node that has intersected with pointer.
+        /// </summary>
+        public class NodeIntersection : IComparable<NodeIntersection>
+        {
+            // Variables
+            private float? distance;
+            private SceneNode node;
+
+            // Properties
+            public float? Distance
+            {
+                get { return distance; }
+                set { distance = value; }
+            }
+            public SceneNode Node
+            {
+                get { return node; }
+                set { node = value; }
+            }
+
+            // Constructors
+            public NodeIntersection()
+            {
+                this.distance = null;
+                this.node = null;
+            }
+            public NodeIntersection(
+                float? distance,
+                SceneNode node)
+            {
+                this.distance = distance;
+                this.node = node;
+            }
+
+            // IComparable
+            public int CompareTo(NodeIntersection other)
+            {
+                int returnValue = -1;
+                if (other.Distance < this.Distance)
+                    returnValue = 1;
+                else if (other.Distance == this.Distance)
+                    returnValue = 0;
+                return returnValue;
+            }
+        }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>

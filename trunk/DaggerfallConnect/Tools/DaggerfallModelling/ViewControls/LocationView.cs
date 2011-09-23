@@ -38,6 +38,7 @@ namespace DaggerfallModelling.ViewControls
         // XNALibrary
         private Input input;
         private Renderer renderer;
+        private Collision collision;
 
         // Cameras
         private Camera topDownCamera = new Camera();
@@ -86,6 +87,14 @@ namespace DaggerfallModelling.ViewControls
             get { return sceneType; }
         }
 
+        /// <summary>
+        /// Gets active camera.
+        /// </summary>
+        public Camera ActiveCamera
+        {
+            get { return renderer.Camera; }
+        }
+
         #endregion
 
         #region Constructors
@@ -117,6 +126,9 @@ namespace DaggerfallModelling.ViewControls
             input.ActiveDevices = Input.DeviceFlags.None;
             input.InvertMouseLook = false;
             input.InvertGamePadLook = true;
+
+            // Initialise collision subsystem
+            collision = new Collision();
 
             // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
@@ -152,9 +164,14 @@ namespace DaggerfallModelling.ViewControls
             input.ActiveDevices = flags;
             input.Update(host.ElapsedTime);
 
-            // Apply input to camera and update scene
-            input.Apply(renderer.Camera);
+            // Update scene
             renderer.Scene.Update(host.ElapsedTime);
+
+            // Test collision
+            collision.TestSceneCameraIntersections(renderer.Scene, renderer.Camera);
+
+            // Apply input to camera
+            input.Apply(renderer.Camera);
         }
 
         /// <summary>

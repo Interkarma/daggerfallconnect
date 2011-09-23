@@ -137,6 +137,14 @@ namespace XNALibrary
             get { return mouseState; }
         }
 
+        /// <summary>
+        /// Gets movement delta.
+        /// </summary>
+        public Vector3 MovementDelta
+        {
+            get { return movement; }
+        }
+
         #endregion
 
         #region Constructors

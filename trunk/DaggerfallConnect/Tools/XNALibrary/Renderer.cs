@@ -54,7 +54,7 @@ namespace XNALibrary
         // Picking
         private Ray pointerRay = new Ray();
         private const int defaultIntersectionCapacity = 35;
-        private List<NodeIntersection> pointerNodeIntersections;
+        private List<Intersection.NodeIntersection> pointerNodeIntersections;
         private ModelNode pointerOverModelNode = null;
 
         // Line drawing
@@ -201,57 +201,6 @@ namespace XNALibrary
 
         #endregion
 
-        #region SubClasses
-
-        /// <summary>
-        /// Describes a node that has intersected with pointer.
-        /// </summary>
-        public class NodeIntersection : IComparable<NodeIntersection>
-        {
-            // Variables
-            private float? distance;
-            private SceneNode node;
-
-            // Properties
-            public float? Distance
-            {
-                get { return distance; }
-                set { distance = value; }
-            }
-            public SceneNode Node
-            {
-                get { return node; }
-                set { node = value; }
-            }
-
-            // Constructors
-            public NodeIntersection()
-            {
-                this.distance = null;
-                this.node = null;
-            }
-            public NodeIntersection(
-                float? distance,
-                SceneNode node)
-            {
-                this.distance = distance;
-                this.node = node;
-            }
-
-            // IComparable
-            public int CompareTo(NodeIntersection other)
-            {
-                int returnValue = -1;
-                if (other.Distance < this.Distance)
-                    returnValue = 1;
-                else if (other.Distance == this.Distance)
-                    returnValue = 0;
-                return returnValue;
-            }
-        }
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -281,7 +230,7 @@ namespace XNALibrary
             renderableBounds = new RenderableBoundingSphere(graphicsDevice);
 
             // Create intersections list
-            pointerNodeIntersections = new List<NodeIntersection>();
+            pointerNodeIntersections = new List<Intersection.NodeIntersection>();
 
             // Setup components
             billboardManager = new BillboardManager(graphicsDevice);
@@ -490,7 +439,7 @@ namespace XNALibrary
             // Iterate intersections
             float? intersection = null;
             float? closestIntersection = null;
-            NodeIntersection closestModelIntersection = null;
+            Intersection.NodeIntersection closestModelIntersection = null;
             foreach (var ni in pointerNodeIntersections)
             {
                 // Ensure node is a ModelNode
@@ -687,7 +636,8 @@ namespace XNALibrary
                 BatchModelNode((ModelNode)node);
                 if (pointerIntersects)
                 {
-                    NodeIntersection ni =  new NodeIntersection(intersectDistance, node);
+                    Intersection.NodeIntersection ni =
+                        new Intersection.NodeIntersection(intersectDistance, node);
                     pointerNodeIntersections.Add(ni);
                 }
             }
