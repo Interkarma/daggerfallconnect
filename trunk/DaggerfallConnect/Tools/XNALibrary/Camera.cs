@@ -350,7 +350,7 @@ namespace XNALibrary
         private void SetPosition(Vector3 position)
         {
             cameraPosition.X = position.X;
-            cameraPosition.Y = position.Y + eyeHeight;
+            cameraPosition.Y = position.Y;
             cameraPosition.Z = position.Z;
             EnforceBounds();
             cameraTarget = cameraPosition + cameraReference;

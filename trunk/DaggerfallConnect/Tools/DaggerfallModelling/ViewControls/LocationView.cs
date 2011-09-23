@@ -509,6 +509,27 @@ namespace DaggerfallModelling.ViewControls
             SetFreeCameraBackground();
         }
 
+        /// <summary>
+        /// Moves active camera to X-Z origin of specified block.
+        /// </summary>
+        /// <param name="name">Name of block.</param>
+        public void MoveToBlock(int x, int z)
+        {
+            Vector3 pos = renderer.Camera.Position;
+            if (sceneType == SceneTypes.Exterior)
+            {
+                pos.X = x * SceneBuilder.RMBSide + SceneBuilder.RMBSide / 2;
+                pos.Z = -z * SceneBuilder.RMBSide - SceneBuilder.RMBSide / 2;
+                renderer.Camera.Position = pos;
+            }
+            else if (sceneType == SceneTypes.Dungeon)
+            {
+                pos.X = x * SceneBuilder.RDBSide + SceneBuilder.RDBSide / 2;
+                pos.Z = -z * SceneBuilder.RDBSide - SceneBuilder.RDBSide / 2;
+                renderer.Camera.Position = pos;
+            }
+        }
+
         #endregion
 
         #region Private Methods

@@ -388,21 +388,21 @@ namespace DaggerfallModelling
         private void ExteriorModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Exterior);
-            ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
-            //if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
-            //    ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
-            //else
-            //    ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView ||
+                ContentViewer.ViewMode == ViewHost.ViewModes.DungeonView)
+                ContentViewer.ShowLocationExterior(AutoMapViewer.DFLocation);
+            else
+                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void DungeonModeToolStripButton_Click(object sender, EventArgs e)
         {
             AutoMapViewer.SetViewMode(AutoMapView.ViewModes.Dungeon);
-            ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
-            //if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView)
-            //    ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
-            //else
-            //    ContentViewer.LoadBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
+            if (ContentViewer.ViewMode == ViewHost.ViewModes.LocationView ||
+                ContentViewer.ViewMode == ViewHost.ViewModes.DungeonView)
+                ContentViewer.ShowLocationDungeon(AutoMapViewer.DFLocation);
+            else
+                ContentViewer.ShowBlockView(AutoMapViewer.SelectedBlockName, ContentViewer.LocationClimate);
         }
 
         private void AutoMapView_MouseOverBlockChanged(object sender, AutoMapView.BlockEventArgs e)
@@ -423,7 +423,8 @@ namespace DaggerfallModelling
         private void AutoMapView_SelectedBlockChanged(object sender, AutoMapView.BlockEventArgs e)
         {
             // Display single block only if not in location mode
-            if (ContentViewer.ViewMode != ViewHost.ViewModes.LocationView)
+            if (ContentViewer.ViewMode != ViewHost.ViewModes.LocationView &&
+                ContentViewer.ViewMode != ViewHost.ViewModes.DungeonView)
             {
                 // Get climate type
                 DFLocation.ClimateType climate = DFLocation.ClimateType.None;
@@ -436,9 +437,11 @@ namespace DaggerfallModelling
 
                 return;
             }
-
-            // Move to block location
-            ContentViewer.MoveToBlock(e.X, e.Y);
+            else
+            {
+                // Move to block location
+                ContentViewer.MoveToBlock(e.X, e.Y);
+            }
         }
 
         private void AboutToolStripButton_Click(object sender, EventArgs e)

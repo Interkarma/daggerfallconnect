@@ -841,8 +841,16 @@ namespace DaggerfallModelling.ViewControls
                 return;
 
             // Move to block
-            LocationView view = (LocationView)viewClients[ViewModes.LocationView];
-            //view.MoveToBlock(x, z);
+            if (viewMode == ViewModes.LocationView)
+            {
+                LocationView view = (LocationView)viewClients[ViewModes.LocationView];
+                view.MoveToBlock(x, z);
+            }
+            else if (viewMode == ViewModes.DungeonView)
+            {
+                LocationView view = (LocationView)viewClients[ViewModes.DungeonView];
+                view.MoveToBlock(x, z);
+            }
         }
 
         /// <summary>
