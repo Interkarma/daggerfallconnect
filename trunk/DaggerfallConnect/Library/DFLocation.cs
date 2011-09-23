@@ -61,16 +61,6 @@ namespace DaggerfallConnect
         /// </summary>
         public int Politic;
 
-        /// <summary>
-        /// Texture archive index for RMB scenery.
-        /// </summary>
-        public int RMBSceneryArchive;
-
-        /// <summary>
-        /// Sky archive index.
-        /// </summary>
-        public int SkyArchive;
-
         #endregion
 
         #region Climate Enumerations

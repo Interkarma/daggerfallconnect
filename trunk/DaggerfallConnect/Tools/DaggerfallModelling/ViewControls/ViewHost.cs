@@ -288,9 +288,9 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets location climate, or None if no location loaded.
+        /// Gets location climate, or null if no location loaded.
         /// </summary>
-        public DFLocation.ClimateBaseType LocationClimate
+        public DFLocation.ClimateSettings? LocationClimate
         {
             get { return GetLocationClimate(); }
         }
@@ -747,7 +747,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="id">ModelID of model to show.</param>
         /// <param name="climate">ClimateType.</param>
-        public void ShowModelView(uint? id, DFLocation.ClimateBaseType climate)
+        public void ShowModelView(uint? id, DFLocation.ClimateSettings? climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -768,7 +768,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         /// <param name="name">Block name.</param>
         /// <param name="climate">Climate of block.</param>
-        public void ShowBlockView(string name, DFLocation.ClimateBaseType climate)
+        public void ShowBlockView(string name, DFLocation.ClimateSettings? climate)
         {
             // Exit if not ready
             if (!isReady)
@@ -1071,10 +1071,10 @@ namespace DaggerfallModelling.ViewControls
         /// Gets climate of current location.
         /// </summary>
         /// <returns>Location climate, or None if no location loaded.</returns>
-        private DFLocation.ClimateBaseType GetLocationClimate()
+        private DFLocation.ClimateSettings? GetLocationClimate()
         {
             if (!isReady)
-                return DFLocation.ClimateBaseType.None;
+                return null;
 
             return viewClients[ViewModes.LocationView].Climate;
         }

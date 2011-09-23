@@ -281,7 +281,7 @@ namespace DaggerfallModelling.ViewControls
             // Set texture manager climate
             if (this.sceneType == SceneTypes.Exterior ||
                 this.SceneType == SceneTypes.Block)
-                host.TextureManager.ClimateType = base.Climate;
+                host.TextureManager.ClimateType = ClimateType;
             else
                 host.TextureManager.ClimateType = DFLocation.ClimateBaseType.None;
 
@@ -304,19 +304,18 @@ namespace DaggerfallModelling.ViewControls
             base.OnChangeCameraMode(cameraMode);
 
             // Set camera
+            SetCameraBackground();
             switch (cameraMode)
             {
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
                     renderer.Options = Renderer.RendererOptions.Picking;
-                    SetTopDownCameraBackground();
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
                     renderer.Options = Renderer.RendererOptions.Flats | Renderer.RendererOptions.Picking;
                     if (sceneType == SceneTypes.Exterior)
                         renderer.Options |= Renderer.RendererOptions.SkyPlane;
-                    SetFreeCameraBackground();
                     break;
             }
 
@@ -335,7 +334,7 @@ namespace DaggerfallModelling.ViewControls
         /// Builds a new scene containing a single RMB or RDB block.
         /// </summary>
         /// <param name="blockName">Block name.</param>
-        public void CreateBlockScene(string blockName, DFLocation.ClimateBaseType climateType)
+        public void CreateBlockScene(string blockName, DFLocation.ClimateSettings? climate)
         {
             // Check if resulting scene will be the same
             if (this.block.Name == blockName &&
@@ -346,14 +345,14 @@ namespace DaggerfallModelling.ViewControls
 
             // Create block node
             renderer.Scene.ResetScene();
-            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, null);
+            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, climate);
             if (node == null)
                 return;
 
             // Store data
             this.block = node.Block;
             this.sceneType = SceneTypes.Block;
-            base.Climate = climateType;
+            base.Climate = climate;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -395,8 +394,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Set background
-            SetTopDownCameraBackground();
-            SetFreeCameraBackground();
+            SetCameraBackground();
         }
 
         /// <summary>
@@ -424,7 +422,7 @@ namespace DaggerfallModelling.ViewControls
             // Store data
             this.location = node.Location;
             this.sceneType = SceneTypes.Exterior;
-            base.Climate = location.Climate.ClimateType;
+            base.Climate = location.Climate;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -451,14 +449,11 @@ namespace DaggerfallModelling.ViewControls
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
 
             // Set background
-            SetTopDownCameraBackground();
-            SetFreeCameraBackground();
+            SetCameraBackground();
 
             // Set sky
             if (renderer.Sky != null)
-            {
-                renderer.Sky.SkyIndex = node.Location.SkyArchive;
-            }
+                renderer.Sky.SkyIndex = node.Location.Climate.SkyArchive;
         }
 
         /// <summary>
@@ -486,7 +481,7 @@ namespace DaggerfallModelling.ViewControls
             // Store data
             this.location = node.Location;
             this.sceneType = SceneTypes.Dungeon;
-            base.Climate = DFLocation.ClimateBaseType.None;
+            base.Climate = null;
 
             // Add node to scene
             renderer.Scene.AddNode(null, node);
@@ -498,8 +493,8 @@ namespace DaggerfallModelling.ViewControls
             Vector3 center = renderer.Scene.Root.TransformedBounds.Center;
             float radius = renderer.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
-                new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
-                new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
+                new Vector3(center.X - radius, center.Y - radius, center.Z - radius),
+                new Vector3(center.X + radius, center.Y + radius, center.Z + radius));
             topDownCamera.MovementBounds = movementBounds;
             freeCamera.MovementBounds = movementBounds;
 
@@ -507,13 +502,14 @@ namespace DaggerfallModelling.ViewControls
             topDownCamera.CentreInBounds(topDownCameraStartHeight);
 
             // Position free camera
-            freeCamera.CentreInBounds(freeCamera.EyeHeight);
+            freeCamera.Reference = Vector3.Forward;
             freeCamera.Position = new Vector3(
-                    freeCamera.Position.X, freeCamera.Position.Y, 0f);
+                    center.X + SceneBuilder.RDBSide / 2,
+                    center.Y,
+                    movementBounds.Max.Z - SceneBuilder.RDBSide / 2);
 
             // Set background
-            SetTopDownCameraBackground();
-            SetFreeCameraBackground();
+            SetCameraBackground();
         }
 
         /// <summary>
@@ -543,18 +539,9 @@ namespace DaggerfallModelling.ViewControls
         #region Private Methods
 
         /// <summary>
-        /// Sets background colours for top down camera.
+        /// Sets background colours.
         /// </summary>
-        private void SetTopDownCameraBackground()
-        {
-            // Always use general in top down mode
-            renderer.BackgroundColor = generalBackgroundColor;
-        }
-
-        /// <summary>
-        /// Sets background sky/colours for free camera.
-        /// </summary>
-        private void SetFreeCameraBackground()
+        private void SetCameraBackground()
         {
             if (sceneType == SceneTypes.Dungeon)
                 renderer.BackgroundColor = dungeonBackgroundColor;

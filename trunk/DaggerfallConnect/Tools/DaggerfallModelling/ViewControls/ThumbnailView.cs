@@ -250,7 +250,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Send selected model to model view
             if (mouseOverThumb != null)
-                host.ShowModelView(mouseOverThumb.Value, DFLocation.ClimateBaseType.None);
+                host.ShowModelView(mouseOverThumb.Value, null);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace DaggerfallModelling.ViewControls
         public override void ResumeView()
         {
             // Thumbnails use native textures only
-            base.Climate = DFLocation.ClimateBaseType.None;
+            base.Climate = null;
             base.ResumeView();
 
             // Check filtered models list is active.

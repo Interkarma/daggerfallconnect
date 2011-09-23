@@ -32,7 +32,7 @@ namespace DaggerfallModelling.ViewControls
 
         protected ViewHost host = null;
         private CameraModes cameraMode = CameraModes.None;
-        private DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
+        private DFLocation.ClimateSettings? climate = null;
 
         #endregion
 
@@ -63,13 +63,22 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets or sets climate type. Each view will maintain a
-        /// preferred climate type.
+        /// Gets or sets climate type.
+        ///  Each view will maintain a preferred climate type.
+        ///  Returns null if no climate set.
         /// </summary>
-        public DFLocation.ClimateBaseType Climate
+        public DFLocation.ClimateSettings? Climate
         {
-            get { return climateType; }
-            set { climateType = value; }
+            get { return climate; }
+            set { climate = value; }
+        }
+
+        /// <summary>
+        /// Gets climate base type.
+        /// </summary>
+        public DFLocation.ClimateBaseType ClimateType
+        {
+            get { return (climate == null) ? DFLocation.ClimateBaseType.None : climate.Value.ClimateType; }
         }
 
         #endregion
@@ -95,7 +104,7 @@ namespace DaggerfallModelling.ViewControls
         public virtual void ResumeView()
         {
             // Set preferred climate for this view
-            host.TextureManager.ClimateType = this.climateType;
+            host.TextureManager.ClimateType = ClimateType;
         }
 
         /// <summary>
