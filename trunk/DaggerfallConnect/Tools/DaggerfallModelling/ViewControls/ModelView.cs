@@ -168,7 +168,7 @@ namespace DaggerfallModelling.ViewControls
             // Update mouse ray
             host.UpdateMouseRay(e.X, e.Y, viewMatrix, projectionMatrix);
 
-            if (host.LeftMouseDown)
+            if (host.RightMouseDown)
             {
                 // Adjust model rotation
                 float modelYaw = MathHelper.ToRadians((float)host.MousePosDelta.X * spinRate);
@@ -176,7 +176,7 @@ namespace DaggerfallModelling.ViewControls
                 Matrix rotation = Matrix.CreateRotationY(modelYaw) * Matrix.CreateRotationX(modelPitch);
                 modelRotation *= rotation;
             }
-            else if (host.RightMouseDown)
+            else if (host.MiddleMouseDown)
             {
                 // Adjust camera X-Y translation
                 TranslateCamera(
@@ -500,10 +500,6 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="id">ModelID.</param>
         private void LoadModel(uint? id)
         {
-            // Do nothing if model already loaded
-            if (currentModel.DFMesh.ObjectId == id)
-                return;
-
             // Load the model
             currentModel = host.ModelManager.GetModelData(id.Value);
 

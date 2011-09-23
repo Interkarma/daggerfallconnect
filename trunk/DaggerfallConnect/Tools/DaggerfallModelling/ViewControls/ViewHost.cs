@@ -45,6 +45,7 @@ namespace DaggerfallModelling.ViewControls
         private bool mouseInClientArea = false;
         private bool leftMouseDown = false;
         private bool rightMouseDown = false;
+        private bool middleMouseDown = false;
         private Vector2 mouseVelocity;
 
         // Timing
@@ -267,6 +268,14 @@ namespace DaggerfallModelling.ViewControls
         public bool RightMouseDown
         {
             get { return rightMouseDown; }
+        }
+
+        /// <summary>
+        /// Gets state of middle mouse button.
+        /// </summary>
+        public bool MiddleMouseDown
+        {
+            get { return middleMouseDown; }
         }
 
         /// <summary>
@@ -556,6 +565,9 @@ namespace DaggerfallModelling.ViewControls
                 case MouseButtons.Right:
                     rightMouseDown = true;
                     break;
+                case MouseButtons.Middle:
+                    middleMouseDown = true;
+                    break;
             }
 
             // Send to view
@@ -579,6 +591,9 @@ namespace DaggerfallModelling.ViewControls
                     break;
                 case MouseButtons.Right:
                     rightMouseDown = false;
+                    break;
+                case MouseButtons.Middle:
+                    middleMouseDown = false;
                     break;
             }
 

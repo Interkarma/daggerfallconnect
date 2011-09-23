@@ -256,6 +256,14 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
+            if (renderer.PointerOverNode != null)
+            {
+                if (renderer.PointerOverNode is ModelNode)
+                {
+                    ModelNode node = (ModelNode)renderer.PointerOverNode;
+                    host.ShowModelView(node.Model.DFMesh.ObjectId, Climate);
+                }
+            }
         }
 
         /// <summary>
@@ -395,6 +403,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set background
             SetCameraBackground();
+
+            // Set status message
+            currentStatus = string.Format("Exploring block {0}.", blockName);
         }
 
         /// <summary>
@@ -454,6 +465,9 @@ namespace DaggerfallModelling.ViewControls
             // Set sky
             if (renderer.Sky != null)
                 renderer.Sky.SkyIndex = node.Location.Climate.SkyArchive;
+
+            // Set status message
+            currentStatus = string.Format("Exploring {0} (Exterior).", locationName);
         }
 
         /// <summary>
@@ -510,6 +524,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set background
             SetCameraBackground();
+
+            // Set status message
+            currentStatus = string.Format("Exploring {0} (Dungeon).", locationName);
         }
 
         /// <summary>
