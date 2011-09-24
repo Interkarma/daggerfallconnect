@@ -1237,7 +1237,7 @@ namespace DaggerfallModelling
                 return;
 
             // Set new value
-            //ContentViewer.LocationView.SkyManager.SkyFrame = TimeOfDayTrackBar.Value;
+            ContentViewer.LocationView.Sky.SkyFrame = TimeOfDayTrackBar.Value;
         }
 
         private void AdjustSkyToolStripMenuItem_Click(object sender, EventArgs e)

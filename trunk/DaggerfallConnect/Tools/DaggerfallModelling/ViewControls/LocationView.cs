@@ -95,6 +95,14 @@ namespace DaggerfallModelling.ViewControls
             get { return renderer.Camera; }
         }
 
+        /// <summary>
+        /// Gets sky manager.
+        /// </summary>
+        public Sky Sky
+        {
+            get { return renderer.Sky; }
+        }
+
         #endregion
 
         #region Constructors
@@ -119,8 +127,9 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Initialise renderer sky
+            // Initialise renderer sky and compass
             renderer.InitialiseSky(host.Arena2Path);
+            renderer.InitialiseCompass(host.Arena2Path);
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
@@ -168,7 +177,7 @@ namespace DaggerfallModelling.ViewControls
             renderer.Scene.Update(host.ElapsedTime);
 
             // Test collision
-            collision.TestSceneCameraIntersections(renderer.Scene, renderer.Camera);
+            collision.Update(renderer.Camera, input, renderer.Scene);
 
             // Apply input to camera
             input.Apply(renderer.Camera);
@@ -338,7 +347,10 @@ namespace DaggerfallModelling.ViewControls
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
-                    renderer.Options = Renderer.RendererOptions.Flats | Renderer.RendererOptions.Picking;
+                    renderer.Options =
+                        Renderer.RendererOptions.Flats |
+                        Renderer.RendererOptions.Picking |
+                        Renderer.RendererOptions.Compass;
                     if (sceneType == SceneTypes.Exterior)
                         renderer.Options |= Renderer.RendererOptions.SkyPlane;
                     break;

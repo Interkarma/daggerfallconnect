@@ -38,7 +38,6 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchLabel = new System.Windows.Forms.Label();
             this.LayoutPanel = new System.Windows.Forms.Panel();
-            this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
             this.AutoMapToolStrip = new System.Windows.Forms.ToolStrip();
             this.ExteriorModeToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.DungeonModeToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -100,12 +99,15 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
-            this.ContentViewer = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.Arena2PathStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            this.inputSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
+            this.AutoMapViewer = new DaggerfallModelling.ViewControls.AutoMapView();
+            this.ContentViewer = new DaggerfallModelling.ViewControls.ViewHost();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -236,21 +238,6 @@
             this.LayoutPanel.Name = "LayoutPanel";
             this.LayoutPanel.Size = new System.Drawing.Size(322, 347);
             this.LayoutPanel.TabIndex = 3;
-            // 
-            // AutoMapViewer
-            // 
-            this.AutoMapViewer.BackColor = System.Drawing.Color.Gray;
-            this.AutoMapViewer.BlocksFile = null;
-            this.AutoMapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AutoMapViewer.Location = new System.Drawing.Point(0, 25);
-            this.AutoMapViewer.MapsFile = null;
-            this.AutoMapViewer.Name = "AutoMapViewer";
-            this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
-            this.AutoMapViewer.TabIndex = 2;
-            this.AutoMapViewer.Text = "AutoMapViewer";
-            this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
-            this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
-            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             // 
             // AutoMapToolStrip
             // 
@@ -643,6 +630,8 @@
             // 
             this.OptionsDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.OptionsDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.inputSettingsToolStripMenuItem,
+            this.toolStripSeparator14,
             this.skyPlaneToolStripMenuItem,
             this.groundPlaneExteriorToolStripMenuItem,
             this.miscFlatsToolStripMenuItem,
@@ -662,6 +651,7 @@
             // 
             this.skyPlaneToolStripMenuItem.Checked = true;
             this.skyPlaneToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.skyPlaneToolStripMenuItem.Enabled = false;
             this.skyPlaneToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.camera;
             this.skyPlaneToolStripMenuItem.Name = "skyPlaneToolStripMenuItem";
             this.skyPlaneToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -671,6 +661,7 @@
             // 
             this.groundPlaneExteriorToolStripMenuItem.Checked = true;
             this.groundPlaneExteriorToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.groundPlaneExteriorToolStripMenuItem.Enabled = false;
             this.groundPlaneExteriorToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.camera;
             this.groundPlaneExteriorToolStripMenuItem.Name = "groundPlaneExteriorToolStripMenuItem";
             this.groundPlaneExteriorToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -680,6 +671,7 @@
             // 
             this.miscFlatsToolStripMenuItem.Checked = true;
             this.miscFlatsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miscFlatsToolStripMenuItem.Enabled = false;
             this.miscFlatsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.camera;
             this.miscFlatsToolStripMenuItem.Name = "miscFlatsToolStripMenuItem";
             this.miscFlatsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -687,6 +679,9 @@
             // 
             // editorFlatsToolStripMenuItem
             // 
+            this.editorFlatsToolStripMenuItem.Checked = true;
+            this.editorFlatsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.editorFlatsToolStripMenuItem.Enabled = false;
             this.editorFlatsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.camera;
             this.editorFlatsToolStripMenuItem.Name = "editorFlatsToolStripMenuItem";
             this.editorFlatsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -701,6 +696,7 @@
             // 
             this.mousePickingToolStripMenuItem.Checked = true;
             this.mousePickingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.mousePickingToolStripMenuItem.Enabled = false;
             this.mousePickingToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.mouse;
             this.mousePickingToolStripMenuItem.Name = "mousePickingToolStripMenuItem";
             this.mousePickingToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -708,6 +704,7 @@
             // 
             // controllerPickingToolStripMenuItem
             // 
+            this.controllerPickingToolStripMenuItem.Enabled = false;
             this.controllerPickingToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.controller;
             this.controllerPickingToolStripMenuItem.Name = "controllerPickingToolStripMenuItem";
             this.controllerPickingToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
@@ -746,7 +743,7 @@
             // 
             // TimeOfDayPanel
             // 
-            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.TimeOfDayPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeOfDayPanel.BackColor = System.Drawing.SystemColors.Control;
             this.TimeOfDayPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -756,7 +753,7 @@
             this.TimeOfDayPanel.Controls.Add(this.pictureBox1);
             this.TimeOfDayPanel.Controls.Add(this.pictureBox2);
             this.TimeOfDayPanel.Controls.Add(this.TimeOfDayTrackBar);
-            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 658);
+            this.TimeOfDayPanel.Location = new System.Drawing.Point(0, 0);
             this.TimeOfDayPanel.Name = "TimeOfDayPanel";
             this.TimeOfDayPanel.Size = new System.Drawing.Size(852, 55);
             this.TimeOfDayPanel.TabIndex = 7;
@@ -825,24 +822,8 @@
             this.TimeOfDayTrackBar.Size = new System.Drawing.Size(850, 45);
             this.TimeOfDayTrackBar.TabIndex = 3;
             this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.TimeOfDayTrackBar.Value = 30;
+            this.TimeOfDayTrackBar.Value = 22;
             this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
-            // 
-            // ContentViewer
-            // 
-            this.ContentViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.ContentViewer.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
-            this.ContentViewer.FilteredModelsArray = null;
-            this.ContentViewer.Location = new System.Drawing.Point(0, 0);
-            this.ContentViewer.Name = "ContentViewer";
-            this.ContentViewer.Size = new System.Drawing.Size(862, 713);
-            this.ContentViewer.StatusMessage = null;
-            this.ContentViewer.TabIndex = 0;
-            this.ContentViewer.Text = "ContentViewer";
-            this.ContentViewer.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
-            this.ContentViewer.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
             // MainStatusStrip
             // 
@@ -886,6 +867,50 @@
             this.MainTips.InitialDelay = 500;
             this.MainTips.IsBalloon = true;
             this.MainTips.ReshowDelay = 100;
+            // 
+            // inputSettingsToolStripMenuItem
+            // 
+            this.inputSettingsToolStripMenuItem.Enabled = false;
+            this.inputSettingsToolStripMenuItem.Image = global::DaggerfallModelling.Properties.Resources.cog;
+            this.inputSettingsToolStripMenuItem.Name = "inputSettingsToolStripMenuItem";
+            this.inputSettingsToolStripMenuItem.Size = new System.Drawing.Size(169, 22);
+            this.inputSettingsToolStripMenuItem.Text = "Input Settings";
+            // 
+            // toolStripSeparator14
+            // 
+            this.toolStripSeparator14.Name = "toolStripSeparator14";
+            this.toolStripSeparator14.Size = new System.Drawing.Size(166, 6);
+            // 
+            // AutoMapViewer
+            // 
+            this.AutoMapViewer.BackColor = System.Drawing.Color.Gray;
+            this.AutoMapViewer.BlocksFile = null;
+            this.AutoMapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.AutoMapViewer.Location = new System.Drawing.Point(0, 25);
+            this.AutoMapViewer.MapsFile = null;
+            this.AutoMapViewer.Name = "AutoMapViewer";
+            this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
+            this.AutoMapViewer.TabIndex = 2;
+            this.AutoMapViewer.Text = "AutoMapViewer";
+            this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
+            this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
+            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
+            // 
+            // ContentViewer
+            // 
+            this.ContentViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.ContentViewer.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
+            this.ContentViewer.FilteredModelsArray = null;
+            this.ContentViewer.Location = new System.Drawing.Point(0, 0);
+            this.ContentViewer.Name = "ContentViewer";
+            this.ContentViewer.Size = new System.Drawing.Size(862, 713);
+            this.ContentViewer.StatusMessage = null;
+            this.ContentViewer.TabIndex = 0;
+            this.ContentViewer.Text = "ContentViewer";
+            this.ContentViewer.StatusMessageChanged += new DaggerfallModelling.ViewControls.ViewHost.StatusMessageChangedEventHandler(this.ContentView_StatusMessageChanged);
+            this.ContentViewer.ViewModeChanged += new DaggerfallModelling.ViewControls.ViewHost.ViewModeChangedEventHandler(this.ContentView_ViewModeChanged);
             // 
             // MainForm
             // 
@@ -1011,6 +1036,8 @@
         private System.Windows.Forms.ToolStripMenuItem tavernsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearSearchToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem inputSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
     }
 }
 

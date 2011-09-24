@@ -34,7 +34,7 @@ namespace XNALibrary
         #region Class Variables
 
         // Daggerfall
-        string arena2Path = string.Empty;
+        private string arena2Path = string.Empty;
 
         // Sky images
         private SkyFile skyFile;

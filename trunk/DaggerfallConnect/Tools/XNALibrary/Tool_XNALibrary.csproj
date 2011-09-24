@@ -78,6 +78,7 @@
     <Compile Include="BillboardManager.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Collision.cs" />
+    <Compile Include="Compass.cs" />
     <Compile Include="Component.cs" />
     <Compile Include="ContentHelper.cs" />
     <Compile Include="Input.cs" />

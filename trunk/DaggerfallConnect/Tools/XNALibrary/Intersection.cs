@@ -34,7 +34,7 @@ namespace XNALibrary
         #region SubClasses
 
         /// <summary>
-        /// Describes a node that has intersected with pointer.
+        /// Describes a node intersection.
         /// </summary>
         public class NodeIntersection : IComparable<NodeIntersection>
         {

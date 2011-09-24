@@ -69,6 +69,7 @@ namespace XNALibrary
 
         // Sub-Components
         Sky sky = null;
+        Compass compass = null;
         BillboardManager billboardManager = null;
 
         #endregion
@@ -101,11 +102,14 @@ namespace XNALibrary
             /// <summary>Render sky behind scene.</summary>
             SkyPlane = 1,
 
+            /// <summary>Render compass.</summary>
+            Compass = 2,
+
             /// <summary>Render flats (e.g. trees, rocks, animals).</summary>
-            Flats = 2,
+            Flats = 4,
 
             /// <summary>Highlights model under pointer.</summary>
-            Picking = 4,
+            Picking = 8,
         }
 
         #endregion
@@ -232,7 +236,7 @@ namespace XNALibrary
             // Create intersections list
             pointerNodeIntersections = new List<Intersection.NodeIntersection>();
 
-            // Setup components
+            // Setup billboard component
             billboardManager = new BillboardManager(graphicsDevice);
             billboardManager.TextureManager = textureManager;
 
@@ -308,6 +312,16 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Initialse compass component for this renderer.
+        ///  Must be called before a compass can be drawn.
+        /// </summary>
+        /// <param name="arena2Path">Path to Arena2 folder.</param>
+        public void InitialiseCompass(string arena2Path)
+        {
+            compass = new Compass(graphicsDevice, arena2Path);
+        }
+
+        /// <summary>
         /// Render active scene.
         /// </summary>
         public void Draw()
@@ -339,6 +353,12 @@ namespace XNALibrary
             if (HasOptionsFlags(RendererOptions.Flats))
             {
                 billboardManager.Draw(camera);
+            }
+
+            // Draw compass
+            if (HasOptionsFlags(RendererOptions.Compass))
+            {
+                compass.Draw(camera);
             }
         }
 
