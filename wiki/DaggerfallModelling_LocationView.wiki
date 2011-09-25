@@ -44,7 +44,7 @@ Both exterior and dungeon modes use the same control setup, which differ dependi
  * Pres the *R* key while the pointer is over an action group (blue outline) to trigger the action.
  * If you leave the location view, use *backspace* or *xbutton1* (back button) on your mouse to swap between views.
 
-==== GamePad Controller ====
+==== !GamePad Controller ====
 
  * Use *Left Thumbstick* to move forwards, backwards, left, and right.
  * Use *Right Thumbstick* to aim camera.
