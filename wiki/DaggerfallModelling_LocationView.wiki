@@ -33,10 +33,20 @@ Both exterior and dungeon modes use the same control setup, which differ dependi
 
 === Free Camera ===
 
+==== Keyboard ====
+
  * Use *W, S, A, D* to move forwards, backwards, left, and right.
  * Use *Q, E* to look left and right.
  * You can also use *Up, Down, Left, Right* arrows to move forwards, backwards, left, and right.
  * *Hold down* the *right mouse button* and move the mouse *up, down, left, or right* to *mouse look*.
  * *Hold down* the *middle mouse button* and move the mouse *up, down, left, or right* to move around the scene.
  * *Double-click* a model to open it in the [DaggerfallModelling_ModelView Model View]. The climate textures of your location will be used in the model view.
+ * Pres the *R* key while the pointer is over an action group (blue outline) to trigger the action.
  * If you leave the location view, use *backspace* or *xbutton1* (back button) on your mouse to swap between views.
+
+==== GamePad Controller ====
+
+ * Use *Left Thumbstick* to move forwards, backwards, left, and right.
+ * Use *Right Thumbstick* to aim camera.
+ * Use the *Directional Pad* to move up, down, left, and right.
+ * Press the *A* button while the crosshair is over an action group (blue outline) to trigger the action.
