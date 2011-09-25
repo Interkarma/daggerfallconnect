@@ -17,4 +17,4 @@ http://www.dfworkshop.net/wp-content/uploads/2011/04/wiki_modelview.png
  * *Hold down* the *right mouse button* and move the mouse *up, down, left, or right* to rotate the model.
  * *Hold down* the *mouse wheel button* and move the mouse *up, down, left, or right* to move the model.
  * *Scroll* the *mouse wheel* to zoom in and out.
- * Use *backspace* or *xbutton1* on your mouse to swap between this and the previous view.
+ * Use *backspace* or *xbutton1* (back button) on your mouse to swap between this and the previous view.
