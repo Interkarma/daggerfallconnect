@@ -1,6 +1,6 @@
 #summary Using the Block View in Daggerfall Modelling.
 
-_Alpha Version 0.6.8_
+_Beta Version 0.8.0_
 
 = Block View =
 
