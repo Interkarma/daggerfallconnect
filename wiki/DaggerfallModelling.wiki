@@ -1,13 +1,13 @@
 #summary Getting started with Daggerfall Modelling.
 #labels Featured
 
-_Alpha Version 0.6.8_
+_Alpha Version 0.8.0_
 
 = Summary =
 
 Daggerfall Modelling is a 3D model explorer/exporter for Bethesda's 1996 RPG Daggerfall.
 
-Currently in Alpha, Daggerfall Modelling can explore 3D resources used to build all cities and dungeons in the Illiac Bay. Exporting single models to Collada format is supported from 0.6.8.
+Currently in Beta, Daggerfall Modelling can explore 3D resources used to build all cities and dungeons in the Illiac Bay. Exporting single models to Collada format is supported from 0.6.8 onwards.
 
 == Supported Operating Systems ==
 
@@ -17,7 +17,7 @@ Currently in Alpha, Daggerfall Modelling can explore 3D resources used to build 
 
 _NOTE:_ Daggerfall Modelling also runs in VMWare Workstation 7.x using the above operating systems as guests with VMWare Tools installed and 3D acceleration enabled.
 
-== Other Prerequisites ==
+== Prerequisites ==
 
  * Installed version of Daggerfall patched to 2.13.
  * [http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b2c0358-915b-4eb5-9b1d-10e506da9d0f Microsoft .NET Framework 2.0 SP2] (Required by Windows XP only).
