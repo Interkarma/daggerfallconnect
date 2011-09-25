@@ -19,7 +19,7 @@ namespace DaggerfallModelling.Classes
 
     /// <summary>
     /// Manges application settings for Daggerfall Modelling. Settings are stored in an XML
-    ///  document in path %appdat%.
+    ///  document in path %appdata%.
     /// </summary>
     class AppSettings
     {
@@ -37,6 +37,8 @@ namespace DaggerfallModelling.Classes
         // Application settings (as saved and loaded in "Settings.xml"
         private const string Setting_Arena2Path = "Arena2Path";
         private const string Setting_IsMaximised = "IsMaximised";
+        private const string Setting_InvertMouseY = "InvertMouseY";
+        private const string Setting_InvertGamePadY = "InvertGamePadY";
         private const string Setting_ColladaExportPath = "ColladaExportPath";
         private const string Setting_ColladaExportOrientation = "ColladaExportOrientation";
         private const string Setting_ColladaExportImageFormat = "ColladaExportImageFormat";
@@ -44,6 +46,8 @@ namespace DaggerfallModelling.Classes
         // Application defaults (deployed first time "Settings.xml" is created
         private const string Default_Arena2Path = "C:\\dosgames\\DAGGER\\ARENA2";
         private const int Default_IsMaximised = 1;
+        private const int Default_InvertMouseY = 0;
+        private const int Default_InvertGamePadY = 0;
         private const string Default_ColladaExportPath = "";
         private const int Default_ColladaExportOrientation = 2;
         private const int Default_ColladaExportImageFormat = 1;
@@ -51,6 +55,8 @@ namespace DaggerfallModelling.Classes
         // Application settings states (as read from "Settings.xml")
         private string State_Arena2Path;
         private int State_IsMaximised;
+        private int State_InvertMouseY;
+        private int State_InvertGamePadY;
         private string State_ColladaExportPath;
         private int State_ColladaExportOrientation;
         private int State_ColladaExportImageFormat;
@@ -88,6 +94,24 @@ namespace DaggerfallModelling.Classes
         {
             get { return State_IsMaximised; }
             set { State_IsMaximised = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets InvertMouseY setting.
+        /// </summary>
+        public int InvertMouseY
+        {
+            get { return State_InvertMouseY; }
+            set { State_InvertMouseY = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets InvertGamePadY setting.
+        /// </summary>
+        public int InvertGamePadY
+        {
+            get { return State_InvertGamePadY; }
+            set { State_InvertGamePadY = value; }
         }
 
         /// <summary>
@@ -153,6 +177,8 @@ namespace DaggerfallModelling.Classes
                 // Append default settings
                 helper.AppendElement(SettingsXml, null, Setting_Arena2Path, Default_Arena2Path);
                 helper.AppendElement(SettingsXml, null, Setting_IsMaximised, Default_IsMaximised.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_InvertMouseY, Default_InvertMouseY.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_InvertGamePadY, Default_InvertGamePadY.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportPath, Default_ColladaExportPath);
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportOrientation, Default_ColladaExportOrientation.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportImageFormat, Default_ColladaExportImageFormat.ToString());
@@ -201,6 +227,14 @@ namespace DaggerfallModelling.Classes
                 nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
                 State_IsMaximised = int.Parse(nodes.Item(0).InnerText);
 
+                // Read InvertMouseY
+                nodes = SettingsXml.GetElementsByTagName(Setting_InvertMouseY);
+                State_InvertMouseY = int.Parse(nodes.Item(0).InnerText);
+
+                // Read InvertGamePadY
+                nodes = SettingsXml.GetElementsByTagName(Setting_InvertGamePadY);
+                State_InvertGamePadY = int.Parse(nodes.Item(0).InnerText);
+
                 // Read ColladaExportPath
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);
                 State_ColladaExportPath = nodes.Item(0).InnerText;
@@ -245,6 +279,14 @@ namespace DaggerfallModelling.Classes
                 // Write IsMaximised
                 nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
                 nodes.Item(0).InnerText = State_IsMaximised.ToString();
+
+                // Write InvertMouseY
+                nodes = SettingsXml.GetElementsByTagName(Setting_InvertMouseY);
+                nodes.Item(0).InnerText = State_InvertMouseY.ToString();
+
+                // Write InvertGamePadY
+                nodes = SettingsXml.GetElementsByTagName(Setting_InvertGamePadY);
+                nodes.Item(0).InnerText = State_InvertGamePadY.ToString();
 
                 // Write ColladaExportPath
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);

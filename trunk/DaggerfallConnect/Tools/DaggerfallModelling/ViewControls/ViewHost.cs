@@ -48,6 +48,10 @@ namespace DaggerfallModelling.ViewControls
         private bool middleMouseDown = false;
         private Vector2 mouseVelocity;
 
+        // Input
+        private bool invertMouseY = false;
+        private bool invertGamePadY = false;
+
         // Timing
         private bool update = false;
         private Stopwatch stopwatch = Stopwatch.StartNew();
@@ -284,6 +288,24 @@ namespace DaggerfallModelling.ViewControls
         public bool MouseInClientArea
         {
             get { return mouseInClientArea; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether mouse should be inverted.
+        /// </summary>
+        public bool InvertMouseY
+        {
+            get { return invertMouseY; }
+            set { invertMouseY = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether gamepad should be inverted.
+        /// </summary>
+        public bool InvertGamePadY
+        {
+            get { return invertGamePadY; }
+            set { invertGamePadY = value; }
         }
 
         /// <summary>

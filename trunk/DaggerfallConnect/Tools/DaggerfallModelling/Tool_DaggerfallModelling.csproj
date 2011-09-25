@@ -68,6 +68,12 @@
     <Compile Include="Dialogs\BrowseExportModelDialog.designer.cs">
       <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\InputSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\InputSettingsDialog.designer.cs">
+      <DependentUpon>InputSettingsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -98,6 +104,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\BrowseExportModelDialog.resx">
       <DependentUpon>BrowseExportModelDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\InputSettingsDialog.resx">
+      <DependentUpon>InputSettingsDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">

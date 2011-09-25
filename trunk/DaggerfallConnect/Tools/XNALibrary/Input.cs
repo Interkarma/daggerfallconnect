@@ -36,12 +36,13 @@ namespace XNALibrary
 
         // GamePad movement
         private bool gamePadConnected = false;
+        private bool gamePadInputReceived = false;
         private const float gamePadSpinRate = 180f;
         private const float gamePadMoveRate = 1100f;
 
         // Look options
         private bool invertMouseLookY = false;
-        private bool invertGamePadLookY = true;
+        private bool invertGamePadLookY = false;
 
         // Mouse
         private Point lastMousePos = Point.Zero;
@@ -57,6 +58,7 @@ namespace XNALibrary
         private DeviceFlags activeDevices = DeviceFlags.None;
 
         // Input state
+        private GamePadState gamePadState;
         private KeyboardState keyboardState;
         private MouseState mouseState;
 
@@ -93,6 +95,14 @@ namespace XNALibrary
         public bool GamePadConnected
         {
             get { return gamePadConnected; }
+        }
+
+        /// <summary>
+        /// Gets flag set if GamePad input received last update.
+        /// </summary>
+        public bool GamePadInputReceived
+        {
+            get { return gamePadInputReceived; }
         }
 
         /// <summary>
@@ -135,6 +145,14 @@ namespace XNALibrary
         public MouseState MouseState
         {
             get { return mouseState; }
+        }
+
+        /// <summary>
+        /// Gets GamePad state at time of last update.
+        /// </summary>
+        public GamePadState GamePadState
+        {
+            get { return gamePadState; }
         }
 
         /// <summary>
@@ -224,7 +242,7 @@ namespace XNALibrary
             }
 
             // Get player 1 gamepad state
-            GamePadState gamePadState = GamePad.GetState(0);
+            gamePadState = GamePad.GetState(0);
             if (gamePadState.IsConnected)
             {
                 gamePadConnected = true;
@@ -239,7 +257,10 @@ namespace XNALibrary
             {
                 if (gamePadState.IsConnected)
                 {
-                    gamePadConnected = true;
+                    // Get start states
+                    float startYaw = yaw;
+                    float startPitch = pitch;
+                    Vector3 startMovement = movement;
 
                     // Look left and right
                     if (gamePadState.ThumbSticks.Right.X < 0)
@@ -284,6 +305,18 @@ namespace XNALibrary
                         movement.X -= gamePadMoveRate * timeDelta;
                     if (gamePadState.DPad.Right == ButtonState.Pressed)
                         movement.X += gamePadMoveRate * timeDelta;
+
+                    // Determine if gamepad used
+                    if (yaw != startYaw ||
+                        pitch != startPitch ||
+                        movement != startMovement)
+                    {
+                        gamePadInputReceived = true;
+                    }
+                    else
+                    {
+                        gamePadInputReceived = false;
+                    }
                 }
             }
         }

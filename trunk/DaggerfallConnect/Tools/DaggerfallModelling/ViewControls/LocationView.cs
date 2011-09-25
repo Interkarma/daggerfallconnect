@@ -59,6 +59,9 @@ namespace DaggerfallModelling.ViewControls
         private Color generalBackgroundColor = Color.LightGray;
         private Color dungeonBackgroundColor = Color.Black;
 
+        // Textures
+        private Texture2D crosshairTexture = null;
+
         #endregion
 
         #region Class Structures
@@ -133,8 +136,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
-            input.InvertMouseLook = false;
-            input.InvertGamePadLook = true;
 
             // Initialise collision subsystem
             collision = new Collision();
@@ -144,6 +145,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Set top-down camera reference
             topDownCamera.Reference = new Vector3(0f, -1.0f, -0.01f);
+
+            // Load crosshair texture
+            LoadCrosshairTexture();
         }
 
         /// <summary>
@@ -171,7 +175,28 @@ namespace DaggerfallModelling.ViewControls
 
             // Gather input
             input.ActiveDevices = flags;
+            input.InvertMouseLook = host.InvertMouseY;
+            input.InvertGamePadLook = host.InvertGamePadY;
             input.Update(host.ElapsedTime);
+
+            // GamePad stuff
+            if (input.GamePadConnected)
+            {
+                // Update gamepad ray
+                if (input.GamePadInputReceived)
+                {
+                    Point pos;
+                    pos.X = host.GraphicsDevice.Viewport.Width / 2;
+                    pos.Y = host.GraphicsDevice.Viewport.Height / 2;
+                    renderer.UpdatePointerRay(pos.X, pos.Y);
+                }
+
+                // Handle triggering action record from controller
+                if (input.GamePadState.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    RunActionRecord();
+                }
+            }
 
             // Update scene
             renderer.Scene.Update(host.ElapsedTime);
@@ -190,6 +215,10 @@ namespace DaggerfallModelling.ViewControls
         {
             // Render scene
             renderer.Draw();
+
+            // Draw crosshair if gamepad connected
+            if (input.GamePadConnected && renderer.Camera == freeCamera)
+                DrawCrosshair();
         }
 
         /// <summary>
@@ -635,6 +664,56 @@ namespace DaggerfallModelling.ViewControls
         {
             // Set the message
             host.StatusMessage = currentStatus;
+        }
+
+        /// <summary>
+        /// Load crosshair texture.
+        /// </summary>
+        private void LoadCrosshairTexture()
+        {
+            // Load crosshair image
+            ImageFileReader reader = new ImageFileReader(host.Arena2Path);
+            reader.LibraryType = LibraryTypes.Cif;
+            DFImageFile crosshair = reader.GetImageFile("PNTER.CIF");
+            DFBitmap crosshairBitmap = crosshair.GetBitmapFormat(4, 0, 0, DFBitmap.Formats.ARGB);
+
+            // Create texture
+            crosshairTexture = new Texture2D(
+                host.GraphicsDevice,
+                crosshairBitmap.Width,
+                crosshairBitmap.Height,
+                1,
+                TextureUsage.None,
+                SurfaceFormat.Color);
+
+            // Set data
+            crosshairTexture.SetData<byte>(
+                0,
+                null,
+                crosshairBitmap.Data,
+                0,
+                crosshairBitmap.Width * crosshairBitmap.Height * 4,
+                SetDataOptions.None);
+        }
+
+        /// <summary>
+        /// Draws crosshair in centre of viewport.
+        /// </summary>
+        private void DrawCrosshair()
+        {
+            // Get centre of viewport
+            Vector2 pos;
+            pos.X = host.GraphicsDevice.Viewport.Width / 2 - 6;
+            pos.Y = host.GraphicsDevice.Viewport.Height / 2 - 6;
+
+            // Begin drawing
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+
+            // Draw crosshair
+            host.SpriteBatch.Draw(crosshairTexture, pos, Color.White);
+
+            // End drawing
+            host.SpriteBatch.End();
         }
 
         #endregion
