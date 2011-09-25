@@ -746,10 +746,36 @@ namespace DaggerfallConnect.Arena2
                 Records[Record].PureMesh.Planes[plane].Points = new FaceUVTool.DFPurePoint[pointCount];
                 for (int point = 0; point < pointCount; point++)
                 {
-                    // Read planePoint data
+                    // Read offset
                     int pointOffset = reader.ReadInt32();
-                    Records[Record].PureMesh.Planes[plane].Points[point].u = reader.ReadInt16();
-                    Records[Record].PureMesh.Planes[plane].Points[point].v = reader.ReadInt16();
+
+                    // Read UV data
+                    Int16 u = reader.ReadInt16();
+                    Int16 v = reader.ReadInt16();
+
+                    // Fix certain UV coordinates that are
+                    // packed oddly, or aligned outside of poly.
+                    int threshold = 0x2000;
+                    while (u > threshold)
+                    {
+                        u = (Int16)(0x4000 - u);
+                    }
+                    while (u < -threshold)
+                    {
+                        u = (Int16)(0x4000 + u);
+                    }
+                    while (v > threshold)
+                    {
+                        v = (Int16)(0x4000 - v);
+                    }
+                    while (v < -threshold)
+                    {
+                        v = (Int16)(0x4000 + v);
+                    }
+
+                    // Store UV coordinates
+                    Records[Record].PureMesh.Planes[plane].Points[point].u = u;
+                    Records[Record].PureMesh.Planes[plane].Points[point].v = v;
 
                     // Get point position
                     long pointPosition = Records[Record].Header.PointListOffset;
