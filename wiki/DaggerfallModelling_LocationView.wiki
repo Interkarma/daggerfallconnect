@@ -51,3 +51,7 @@ Both exterior and dungeon modes use the same control setup, which differ dependi
  * Use *Right Thumbstick* to aim camera.
  * Use the *Directional Pad* to move up, down, left, and right.
  * Press the *A* button while the crosshair is over an action group (blue outline) to trigger the action.
+
+==== Note ====
+
+You can invert mouse and controller aiming to suit your preference. Click *Options* on the toolbar, then *Input Options*.
