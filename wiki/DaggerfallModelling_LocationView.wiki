@@ -8,6 +8,8 @@ The Location view is for exploring a full exterior location or dungeon.
 
 Every location has an exterior, but only some describe a dungeon. When exploring a location, use the toolbar above the Auto Map to set which layout you wish to explore. Below is the 'Wayrest' auto map, supporting both exterior and dungeon exploration.
 
+Besides switching between exterior and dungeon maps, you can click on the individual blocks in the Auto Map layout. If you are in Block View, the block will be opened. If you are in Location View, you will be moved to that block in the scene. You can freely switch between block and location views when you have a location loaded without losing your place.
+
 http://www.dfworkshop.net/wp-content/uploads/2011/04/wiki_exterior-and-dungeon.png
 
 The following screenshot shows Wayrest in *Exterior* mode using the *Top-Down Camera*. You can select a block in the auto map to quickly move to that block in the scene.
