@@ -215,12 +215,6 @@ namespace XNALibrary
                     pitch -= ((invertMouseLookY) ? -mouseDelta.Y : mouseDelta.Y) * mouseSpinRate * timeDelta;
                 }
 
-                // Movement with right-button pressed
-                //if (mouseState.RightButton == ButtonState.Pressed)
-                //{
-                //    movement.Z += (mouseDelta.Y * mouseMoveRate) * timeDelta;
-                //}
-
                 // Movement with middle-button pressed
                 if (mouseState.MiddleButton == ButtonState.Pressed)
                 {
@@ -235,55 +229,63 @@ namespace XNALibrary
             {
                 gamePadConnected = true;
             }
-
-            /*
-            // GamePad input
-            if ((flags & Flags.GamePad) == Flags.GamePad)
+            else
             {
-                if (cs.IsConnected)
+                gamePadConnected = false;
+            }
+
+            // GamePad input
+            if ((activeDevices & DeviceFlags.GamePad) == DeviceFlags.GamePad)
+            {
+                if (gamePadState.IsConnected)
                 {
                     gamePadConnected = true;
 
                     // Look left and right
-                    if (cs.ThumbSticks.Right.X < 0)
-                        cameraYaw += (controllerSpinRate * -cs.ThumbSticks.Right.X) * timeDelta;
-                    if (cs.ThumbSticks.Right.X > 0)
-                        cameraYaw -= (controllerSpinRate * cs.ThumbSticks.Right.X) * timeDelta;
+                    if (gamePadState.ThumbSticks.Right.X < 0)
+                        yaw += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.X) * timeDelta;
+                    if (gamePadState.ThumbSticks.Right.X > 0)
+                        yaw -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.X) * timeDelta;
 
                     // Look up and down
-                    if (invertControllerLookY)
+                    if (invertGamePadLookY)
                     {
-                        if (cs.ThumbSticks.Right.Y < 0)
-                            cameraPitch += (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
-                        if (cs.ThumbSticks.Right.Y > 0)
-                            cameraPitch -= (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+                        if (gamePadState.ThumbSticks.Right.Y < 0)
+                            pitch += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                        if (gamePadState.ThumbSticks.Right.Y > 0)
+                            pitch -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * timeDelta;
                     }
                     else
                     {
-                        if (cs.ThumbSticks.Right.Y < 0)
-                            cameraPitch -= (controllerSpinRate * -cs.ThumbSticks.Right.Y) * timeDelta;
-                        if (cs.ThumbSticks.Right.Y > 0)
-                            cameraPitch += (controllerSpinRate * cs.ThumbSticks.Right.Y) * timeDelta;
+                        if (gamePadState.ThumbSticks.Right.Y < 0)
+                            pitch -= (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                        if (gamePadState.ThumbSticks.Right.Y > 0)
+                            pitch += (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * timeDelta;
                     }
 
                     // Move forward and backward
-                    if (cs.ThumbSticks.Left.Y > 0)
-                        movement.Z -= (controllerMoveRate * cs.ThumbSticks.Left.Y) * timeDelta;
-                    if (cs.ThumbSticks.Left.Y < 0)
-                        movement.Z += (controllerMoveRate * -cs.ThumbSticks.Left.Y) * timeDelta;
+                    if (gamePadState.ThumbSticks.Left.Y > 0)
+                        movement.Z -= (gamePadMoveRate * gamePadState.ThumbSticks.Left.Y) * timeDelta;
+                    if (gamePadState.ThumbSticks.Left.Y < 0)
+                        movement.Z += (gamePadMoveRate * -gamePadState.ThumbSticks.Left.Y) * timeDelta;
 
                     // Move left and right
-                    if (cs.ThumbSticks.Left.X > 0)
-                        movement.X -= (controllerMoveRate * -cs.ThumbSticks.Left.X) * timeDelta;
-                    if (cs.ThumbSticks.Left.X < 0)
-                        movement.X += (controllerMoveRate * cs.ThumbSticks.Left.X) * timeDelta;
-                }
-                else
-                {
-                    controllerConnected = false;
+                    if (gamePadState.ThumbSticks.Left.X > 0)
+                        movement.X -= (gamePadMoveRate * -gamePadState.ThumbSticks.Left.X) * timeDelta;
+                    if (gamePadState.ThumbSticks.Left.X < 0)
+                        movement.X += (gamePadMoveRate * gamePadState.ThumbSticks.Left.X) * timeDelta;
+
+                    // Move up, down, left, and right with d-pad
+                    if (gamePadState.DPad.Up == ButtonState.Pressed)
+                        movement.Y += gamePadMoveRate * timeDelta;
+                    if (gamePadState.DPad.Down == ButtonState.Pressed)
+                        movement.Y -= gamePadMoveRate * timeDelta;
+                    if (gamePadState.DPad.Left == ButtonState.Pressed)
+                        movement.X -= gamePadMoveRate * timeDelta;
+                    if (gamePadState.DPad.Right == ButtonState.Pressed)
+                        movement.X += gamePadMoveRate * timeDelta;
                 }
             }
-            */
         }
 
         /// <summary>
