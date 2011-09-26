@@ -219,6 +219,11 @@ namespace DaggerfallModelling.ViewControls
             // Draw crosshair if gamepad connected
             if (input.GamePadConnected && renderer.Camera == freeCamera)
                 DrawCrosshair();
+
+            // Draw performance text
+#if DEBUG
+            DrawPerformanceString();
+#endif
         }
 
         /// <summary>
@@ -715,6 +720,24 @@ namespace DaggerfallModelling.ViewControls
             // End drawing
             host.SpriteBatch.End();
         }
+
+#if DEBUG
+        /// <summary>
+        /// Draws performance string
+        /// </summary>
+        private void DrawPerformanceString()
+        {
+            string performance = string.Format(
+                "Scene.Update Time: {0}ms, Renderer.Draw Time: {1}ms, FPS: {2}",
+                renderer.Scene.UpdateTime,
+                renderer.DrawTime,
+                host.FPS);
+
+            host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+            host.SpriteBatch.DrawString(host.SmallFont, performance, Vector2.Zero, Color.White);
+            host.SpriteBatch.End();
+        }
+#endif
 
         #endregion
 

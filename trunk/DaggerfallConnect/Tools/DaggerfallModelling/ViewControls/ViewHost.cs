@@ -1008,14 +1008,6 @@ namespace DaggerfallModelling.ViewControls
                 frameCount = 0;
                 timeSinceLastFPSUpdate -= 1000;
             }
-
-#if DEBUG
-            // Show timing status
-            //StatusMessage = string.Format(
-            //"TickTime={0:000}ms, FPS={1:000}",
-            //elapsedTime.Milliseconds,
-            //fps);
-#endif
         }
 
         /// <summary>

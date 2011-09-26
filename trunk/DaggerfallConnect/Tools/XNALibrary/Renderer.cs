@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
@@ -71,6 +72,12 @@ namespace XNALibrary
         Sky sky = null;
         Compass compass = null;
         BillboardManager billboardManager = null;
+
+#if DEBUG
+        // Performance
+        Stopwatch stopwatch = new Stopwatch();
+        long drawTime = 0;
+#endif
 
         #endregion
 
@@ -203,6 +210,16 @@ namespace XNALibrary
             get { return pointerOverModelNode; }
         }
 
+#if DEBUG
+        /// <summary>
+        /// Gets last draw time in milliseconds.
+        /// </summary>
+        public long DrawTime
+        {
+            get { return drawTime; }
+        }
+#endif
+
         #endregion
 
         #region Constructors
@@ -326,6 +343,12 @@ namespace XNALibrary
         /// </summary>
         public void Draw()
         {
+#if DEBUG
+            // Start timing
+            stopwatch.Reset();
+            stopwatch.Start();
+#endif
+
             // Reset intersections
             pointerNodeIntersections.Clear();
             pointerNodeIntersections.Capacity = defaultIntersectionCapacity;
@@ -360,6 +383,12 @@ namespace XNALibrary
             {
                 compass.Draw(camera);
             }
+
+#if DEBUG
+            // End timing
+            stopwatch.Stop();
+            drawTime = stopwatch.ElapsedMilliseconds;
+#endif
         }
 
         /// <summary>

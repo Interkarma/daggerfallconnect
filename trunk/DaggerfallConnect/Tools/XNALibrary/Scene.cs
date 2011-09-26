@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
@@ -35,6 +36,12 @@ namespace XNALibrary
         // Appearance
         private Color defaultRootBoundsColor = Color.Red;
 
+#if DEBUG
+        // Performance
+        Stopwatch stopwatch = new Stopwatch();
+        long updateTime = 0;
+#endif
+
         #endregion
 
         #region Properties
@@ -46,6 +53,16 @@ namespace XNALibrary
         {
             get { return root; }
         }
+
+#if DEBUG
+        /// <summary>
+        /// Gets last update time in milliseconds.
+        /// </summary>
+        public long UpdateTime
+        {
+            get { return updateTime; }
+        }
+#endif
 
         #endregion
 
@@ -79,8 +96,20 @@ namespace XNALibrary
         /// <param name="elapsedTime">Elapsed time since last frame.</param>
         public void Update(TimeSpan elapsedTime)
         {
+#if DEBUG
+            // Start timing
+            stopwatch.Reset();
+            stopwatch.Start();
+#endif
+
             // Update nodes
             UpdateNode(root, Matrix.Identity, elapsedTime);
+
+#if DEBUG
+            // End timing
+            stopwatch.Stop();
+            updateTime = stopwatch.ElapsedMilliseconds;
+#endif
         }
 
         /// <summary>
