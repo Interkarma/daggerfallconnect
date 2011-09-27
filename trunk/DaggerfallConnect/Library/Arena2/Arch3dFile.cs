@@ -755,7 +755,7 @@ namespace DaggerfallConnect.Arena2
 
                     // Fix certain UV coordinates that are
                     // packed oddly, or aligned outside of poly.
-                    int threshold = 0x2000;
+                    int threshold = 0x3000;
                     while (u > threshold)
                     {
                         u = (Int16)(0x4000 - u);

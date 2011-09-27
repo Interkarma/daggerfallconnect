@@ -145,19 +145,21 @@ namespace DaggerfallModelling
             ContentViewer.InvertMouseY = (appSettings.InvertMouseY == 1);
             ContentViewer.InvertGamePadY = (appSettings.InvertGamePadY == 1);
 
+#if DEBUG
             // TEST: Set a specific view while testing content
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //DFLocation dfLocation = mapsFile.GetLocation("Dragontail Mountains", "Scourg Barrow");
-            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
             //DFLocation dfLocation = mapsFile.GetLocation("Sentinel", "Sentinel");
-            //ContentViewer.ShowLocationExterior(dfLocation);
+            ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.ShowBlockView("MAGEAA13.RMB", DFLocation.ClimateType.None);
-            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
-            //UpdateActiveCameraMode();
+            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            UpdateActiveCameraMode();
+#endif
 
             // Show thumbnails view
-            ContentViewer.ShowThumbnailsView();
+            //ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()

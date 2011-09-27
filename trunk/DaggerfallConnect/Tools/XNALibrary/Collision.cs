@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -38,9 +39,26 @@ namespace XNALibrary
         private Input input;
         private Scene scene;
 
+#if DEBUG
+        // Performance
+        Stopwatch stopwatch = new Stopwatch();
+        long updateTime = 0;
+#endif
+
         #endregion
 
         #region Properties
+
+#if DEBUG
+        /// <summary>
+        /// Gets last update time in milliseconds.
+        /// </summary>
+        public long UpdateTime
+        {
+            get { return updateTime; }
+        }
+#endif
+
         #endregion
 
         #region Constructors
@@ -66,6 +84,12 @@ namespace XNALibrary
         /// <param name="scene">Scene.</param>
         public void Update(Camera camera, Input input, Scene scene)
         {
+#if DEBUG
+            // Start timing
+            stopwatch.Reset();
+            stopwatch.Start();
+#endif
+
             // Store test classes
             this.camera = camera;
             this.input = input;
@@ -73,6 +97,12 @@ namespace XNALibrary
 
             // Test camera against scene
             TestCameraSceneIntersections();
+
+#if DEBUG
+            // End timing
+            stopwatch.Stop();
+            updateTime = stopwatch.ElapsedMilliseconds;
+#endif
         }
 
         #endregion
