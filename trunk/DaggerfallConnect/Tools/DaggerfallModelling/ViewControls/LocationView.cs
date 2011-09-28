@@ -155,57 +155,17 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Update()
         {
-            // Determine input flags
-            Input.DeviceFlags flags = Input.DeviceFlags.None;
-            if (CameraMode == CameraModes.Free)
-            {
-                // Always enable controller
-                flags |= Input.DeviceFlags.GamePad;
-
-                // Only enable keyboard and mouse if host has focus
-                if (host.Focused)
-                {
-                    flags |= Input.DeviceFlags.Keyboard;
-                    flags |= Input.DeviceFlags.Mouse;
-                }
-            }
-
-            // Apply top-down camera velocity
-            topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
-
-            // Gather input
-            input.ActiveDevices = flags;
-            input.InvertMouseLook = host.InvertMouseY;
-            input.InvertGamePadLook = host.InvertGamePadY;
-            input.Update(host.ElapsedTime);
-
-            // GamePad stuff
-            if (input.GamePadConnected)
-            {
-                // Update gamepad ray
-                if (input.GamePadInputReceived)
-                {
-                    Point pos;
-                    pos.X = host.GraphicsDevice.Viewport.Width / 2;
-                    pos.Y = host.GraphicsDevice.Viewport.Height / 2;
-                    renderer.UpdatePointerRay(pos.X, pos.Y);
-                }
-
-                // Handle triggering action record from controller
-                if (input.GamePadState.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
-                {
-                    RunActionRecord();
-                }
-            }
+            // Update input
+            UpdateInput();
 
             // Update scene
             renderer.Scene.Update(host.ElapsedTime);
 
             // Update collision
-            collision.Update(renderer.Camera, input, renderer.Scene);
+            collision.Update(renderer.Camera, renderer.Scene, input);
 
-            // Apply final input to camera
-            input.Apply(renderer.Camera);
+            // Update camera
+            renderer.Camera.Update();
         }
 
         /// <summary>
@@ -721,6 +681,55 @@ namespace DaggerfallModelling.ViewControls
             host.SpriteBatch.End();
         }
 
+        /// <summary>
+        /// Collect input.
+        /// </summary>
+        private void UpdateInput()
+        {
+            // Determine input flags
+            Input.DeviceFlags flags = Input.DeviceFlags.None;
+            if (CameraMode == CameraModes.Free)
+            {
+                // Always enable controller
+                flags |= Input.DeviceFlags.GamePad;
+
+                // Only enable keyboard and mouse if host has focus
+                if (host.Focused)
+                {
+                    flags |= Input.DeviceFlags.Keyboard;
+                    flags |= Input.DeviceFlags.Mouse;
+                }
+            }
+
+            // Apply top-down camera velocity
+            topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
+
+            // Gather input
+            input.ActiveDevices = flags;
+            input.InvertMouseLook = host.InvertMouseY;
+            input.InvertGamePadLook = host.InvertGamePadY;
+            input.Update(host.ElapsedTime);
+
+            // GamePad stuff
+            if (input.GamePadConnected)
+            {
+                // Update gamepad ray
+                if (input.GamePadInputReceived)
+                {
+                    Point pos;
+                    pos.X = host.GraphicsDevice.Viewport.Width / 2;
+                    pos.Y = host.GraphicsDevice.Viewport.Height / 2;
+                    renderer.UpdatePointerRay(pos.X, pos.Y);
+                }
+
+                // Handle triggering action record from controller
+                if (input.GamePadState.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                {
+                    RunActionRecord();
+                }
+            }
+        }
+
 #if DEBUG
         /// <summary>
         /// Draws performance string
@@ -728,11 +737,12 @@ namespace DaggerfallModelling.ViewControls
         private void DrawPerformanceString()
         {
             string performance = string.Format(
-                "Scene: {0}ms, Renderer: {1}ms, Collision: {2}ms, FPS: {3}",
+                "Scene: {0}ms, Renderer: {1}ms, Collision: {2}ms, FPS: {3}, GCPS: {4:0.00}",
                 renderer.Scene.UpdateTime,
                 renderer.DrawTime,
                 collision.UpdateTime,
-                host.FPS);
+                host.FPS,
+                (float)host.GarbageCollectionCount / (float)host.Timer.Elapsed.Seconds);
 
             host.SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
             host.SpriteBatch.DrawString(host.SmallFont, performance, Vector2.One, Color.Black);

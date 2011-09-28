@@ -124,7 +124,7 @@ namespace XNASeries_4
 
             // Update input
             input.Update(gameTime.ElapsedGameTime);
-            input.Apply(renderer.Camera);
+            input.Apply(renderer.Camera, true);
 
             // Space pressed
             if (

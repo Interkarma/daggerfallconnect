@@ -63,6 +63,12 @@ namespace DaggerfallModelling.ViewControls
         private long timeSinceLastFPSUpdate = 0;
         private int fps = 0;
 
+#if DEBUG
+        // Garbage counter
+        WeakReference gcTracker = new WeakReference(new object());
+        private int garbageCount = 0;
+#endif
+
         // XNA
         private SpriteBatch spriteBatch;
 
@@ -233,6 +239,16 @@ namespace DaggerfallModelling.ViewControls
         {
             get { return fps; }
         }
+
+#if DEBUG
+        /// <summary>
+        /// Gets garbage collection count.
+        /// </summary>
+        public float GarbageCollectionCount
+        {
+            get { return garbageCount; }
+        }
+#endif
 
         /// <summary>
         /// Gets current mouse position.
@@ -1008,6 +1024,15 @@ namespace DaggerfallModelling.ViewControls
                 frameCount = 0;
                 timeSinceLastFPSUpdate -= 1000;
             }
+
+#if DEBUG
+            // Calculate garbage collections per second
+            if (!gcTracker.IsAlive)
+            {
+                garbageCount++;
+                gcTracker = new WeakReference(new object());
+            }
+#endif
         }
 
         /// <summary>

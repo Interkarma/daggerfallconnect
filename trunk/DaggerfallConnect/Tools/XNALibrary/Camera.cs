@@ -33,13 +33,14 @@ namespace XNALibrary
         private float farPlaneDistance = 50000.0f;
 
         // Matrices
+        private Matrix rotation = Matrix.Identity;
         private Matrix projectionMatrix = Matrix.Identity;
         private Matrix viewMatrix = Matrix.Identity;
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
         private float eyeHeight = 70f;
-        private float bodyRadius = 24f;
+        private float bodyRadius = 16f;
         private float cameraYaw = 0.0f;
         private float cameraPitch = 0.0f;
         private BoundingBox cameraMovementBounds;
@@ -216,9 +217,49 @@ namespace XNALibrary
             ResetReference();
         }
 
+        /// <summary>
+        /// Copy constructor (shallow).
+        /// </summary>
+        /// <param name="camera">Source Camera.</param>
+        public Camera(Camera camera)
+        {
+            Copy(camera, this);
+        }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Copy the source camera to the destination camera.
+        ///  This is a shallow copy. Class-based members will be
+        ///  copied by reference. Other members will be copied
+        ///  by value.
+        /// </summary>
+        /// <param name="src">Source Camera.</param>
+        /// <param name="dst">Destination Camera.</param>
+        static public void Copy(Camera src, Camera dst)
+        {
+            // Copy all variables from source camera.
+            dst.nearPlaneDistance = src.nearPlaneDistance;
+            dst.farPlaneDistance = src.farPlaneDistance;
+            dst.projectionMatrix = src.projectionMatrix;
+            dst.viewMatrix = src.viewMatrix;
+            dst.worldMatrix = src.worldMatrix;
+            dst.eyeHeight = src.eyeHeight;
+            dst.bodyRadius = src.bodyRadius;
+            dst.rotation = src.rotation;
+            dst.cameraYaw = src.cameraYaw;
+            dst.cameraPitch = src.cameraPitch;
+            dst.cameraMovementBounds = src.cameraMovementBounds;
+            dst.cameraBoundingSphere = src.cameraBoundingSphere;
+            dst.cameraPosition = src.cameraPosition;
+            dst.cameraReference = src.cameraReference;
+            dst.cameraUpVector = src.cameraUpVector;
+            dst.cameraTransformedReference = src.cameraTransformedReference;
+            dst.cameraTarget = src.cameraTarget;
+            dst.viewFrustum = src.viewFrustum;
+        }
 
         /// <summary>
         /// Updates view and frustum matrices.
@@ -240,6 +281,7 @@ namespace XNALibrary
             cameraYaw = 0f;
             cameraPitch = 0f;
             cameraReference = Vector3.Forward;
+            cameraTransformedReference = cameraReference;
         }
 
         /// <summary>
@@ -254,7 +296,7 @@ namespace XNALibrary
             cameraPosition.Y = cameraPosition.Y + Y;
             cameraPosition.Z = cameraPosition.Z + Z;
             EnforceBounds();
-            cameraTarget = cameraPosition + cameraReference;
+            UpdateTarget();
         }
 
         /// <summary>
@@ -265,7 +307,7 @@ namespace XNALibrary
         {
             cameraPosition += translation;
             EnforceBounds();
-            cameraTarget = cameraPosition + cameraReference;
+            UpdateTarget();
         }
 
         /// <summary>
@@ -291,7 +333,6 @@ namespace XNALibrary
                 cameraPitch = -89;
 
             // Apply rotation
-            Matrix rotation = Matrix.Identity;
             Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
             rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
 
@@ -304,11 +345,10 @@ namespace XNALibrary
             // Update position
             cameraPosition += movement;
             EnforceBounds();
-            cameraTarget = cameraPosition + cameraReference;
 
             // Transform camera
             Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
-            Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
+            UpdateTarget();
         }
 
         /// <summary>
@@ -320,7 +360,7 @@ namespace XNALibrary
             cameraPosition.Y = height;
             cameraPosition.Z = cameraMovementBounds.Min.Z + (cameraMovementBounds.Max.Z - cameraMovementBounds.Min.Z) / 2;
             EnforceBounds();
-            cameraTarget = cameraPosition + cameraReference;
+            UpdateTarget();
         }
 
         /// <summary>
@@ -353,7 +393,7 @@ namespace XNALibrary
             cameraPosition.Y = position.Y;
             cameraPosition.Z = position.Z;
             EnforceBounds();
-            cameraTarget = cameraPosition + cameraReference;
+            UpdateTarget();
         }
 
         /// <summary>
@@ -364,7 +404,15 @@ namespace XNALibrary
         {
             ResetReference();
             cameraReference = reference;
-            cameraTarget = cameraPosition + cameraReference;
+            UpdateTarget();
+        }
+
+        /// <summary>
+        /// Sets new camera target.
+        /// </summary>
+        private void UpdateTarget()
+        {
+            Vector3.Add(ref cameraPosition, ref cameraTransformedReference, out cameraTarget);
         }
 
         /// <summary>

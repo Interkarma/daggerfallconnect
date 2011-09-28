@@ -30,9 +30,10 @@ namespace XNALibrary
         #region Class Variables
 
         // Intersections
+        private Camera testCamera = new Camera();
         private Intersection intersection = new Intersection();
-        private const int defaultIntersectionCapacity = 35;
-        private List<Intersection.NodeIntersection> cameraSceneIntersections;
+        private const int defaultIntersectionCapacity = 50;
+        private List<Intersection.NodeIntersection> sceneIntersections;
 
         // Collision test classes
         private Camera camera;
@@ -68,7 +69,7 @@ namespace XNALibrary
         /// </summary>
         public Collision()
         {
-            cameraSceneIntersections = 
+            sceneIntersections = 
                 new List<Intersection.NodeIntersection>(defaultIntersectionCapacity);
         }
 
@@ -78,11 +79,14 @@ namespace XNALibrary
 
         /// <summary>
         /// Update collision subsystem.
+        ///  Tests camera against scene and will modify
+        ///  input to prevent camera from passing through scene.
+        ///  Final input will be applied to camera.
         /// </summary>
         /// <param name="camera">Camera.</param>
         /// <param name="input">Input.</param>
         /// <param name="scene">Scene.</param>
-        public void Update(Camera camera, Input input, Scene scene)
+        public void Update(Camera camera, Scene scene, Input input)
         {
 #if DEBUG
             // Start timing
@@ -90,13 +94,23 @@ namespace XNALibrary
             stopwatch.Start();
 #endif
 
-            // Store test classes
+            // Store classes
             this.camera = camera;
-            this.input = input;
             this.scene = scene;
+            this.input = input;
+
+            // Update test camera
+            Camera.Copy(camera, testCamera);
+            input.Apply(testCamera, true);
+
+            // Test movement against scene
+            TestMovementSceneIntersections();
 
             // Test camera against scene
             TestCameraSceneIntersections();
+
+            // Set live camera
+            Camera.Copy(testCamera, camera);
 
 #if DEBUG
             // End timing
@@ -107,156 +121,268 @@ namespace XNALibrary
 
         #endregion
 
-        #region Private Methods
-        #endregion
-
-        #region Collision Tests
+        #region Movement Collision Tests
 
         /// <summary>
-        /// Test camera for scene intersections at a
-        ///  course bounding volume level.
+        /// Test movement vector for scene intersections at a
+        ///  course bounding volume level. This will create
+        ///  a short list of possible models we might collide with.
+        /// </summary>
+        private void TestMovementSceneIntersections()
+        {
+            // Get movement ray
+            Ray movementRay;
+            Vector3 movement = testCamera.Position - camera.Position;
+            movementRay.Position = camera.Position;
+            movementRay.Direction = Vector3.Normalize(movement);
+
+            // Nothing to do if no movement
+            if (movement == Vector3.Zero)
+                return;
+
+            // Reset intersections list
+            sceneIntersections.Clear();
+            sceneIntersections.Capacity = defaultIntersectionCapacity;
+
+            // Build list of movement node intersections
+            TestMovementNodeIntersection(scene.Root, ref movementRay);
+
+            // Find model intersections
+            TestMovementModelIntersections(ref movementRay, ref movement);
+        }
+
+        /// <summary>
+        /// Test node for movement intersections.
+        /// </summary>
+        /// <param name="node">SceneNode.</param>
+        /// <param name="movementRay">Ray.</param>
+        private void TestMovementNodeIntersection(SceneNode node, ref Ray movementRay)
+        {
+            // Test movement against node
+            float? distance = movementRay.Intersects(node.TransformedBounds);
+            if (distance != null)
+            {
+                sceneIntersections.Add(
+                    new Intersection.NodeIntersection(distance, node));
+
+                // Test child nodes
+                foreach (SceneNode child in node.Children)
+                {
+                    TestMovementNodeIntersection(child, ref movementRay);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tests movement for model leaf node intersections.
+        /// </summary>
+        /// <param name="movementRay">Ray.</param>
+        /// <param name="movement">Total movement.</param>
+        private void TestMovementModelIntersections(ref Ray movementRay, ref Vector3 movement)
+        {
+            // Nothing to do if zero intersections
+            if (sceneIntersections.Count == 0)
+                return;
+
+            // Sort intersections by distance
+            sceneIntersections.Sort();
+
+            // Work through all intersections
+            foreach (var si in sceneIntersections)
+            {
+                // Skip if not a leaf model node
+                if (false == (si.Node is ModelNode))
+                    continue;
+
+                // Test model
+                TestMovementModel((ModelNode)si.Node, ref movementRay, ref movement);
+            }
+        }
+
+        /// <summary>
+        /// Tests movement for model intersection.
+        /// </summary>
+        /// <param name="node">ModelNode.</param>
+        /// <param name="movementRay">Ray.</param>
+        /// <param name="movement">Total movement.</param>
+        private void TestMovementModel(ModelNode node, ref Ray movementRay, ref Vector3 movement)
+        {
+            // Ignore open doors
+            if (IsOpenDoor(node))
+                return;
+
+            // Test movement ray against model
+            int subMeshResult, planeResult;
+            float? distance = Intersection.RayIntersectsDFMesh(
+                movementRay,
+                node.Matrix,
+                node.Model,
+                out subMeshResult,
+                out planeResult);
+
+            // Handle ray intersection
+            if (distance != null)
+            {
+                float totalDistance = Vector3.Distance(Vector3.Zero, movement);
+                float validDistance = distance.Value - camera.BodyRadius / 2;
+                if (totalDistance > validDistance)
+                {
+                    // Move camera back along movement ray by penetration distance
+                    float penetrationDistance = totalDistance - validDistance;
+                    Vector3 position = testCamera.Position;
+                    Matrix m = Matrix.CreateTranslation(-movementRay.Direction * penetrationDistance);
+                    Vector3.Transform(ref position, ref m, out position);
+                    testCamera.Position = position;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Local Collision Tests
+
+        /// <summary>
+        /// Test local camera volume for scene intersections at a
+        ///  course bounding volume level. This will create
+        ///  a short list of possible models we might collide with.
         /// </summary>
         private void TestCameraSceneIntersections()
         {
-            // Reset scene-camera intersection lists
-            cameraSceneIntersections.Clear();
-            cameraSceneIntersections.Capacity = defaultIntersectionCapacity;
+            // Reset intersections list
+            sceneIntersections.Clear();
+            sceneIntersections.Capacity = defaultIntersectionCapacity;
 
-            // Build list of scene-camera intersections
-            TestCameraNodeIntersections(scene.Root);
+            // Build list of camera node intersections
+            TestCameraNodeIntersection(scene.Root);
 
             // Find model intersections
             TestCameraModelIntersections();
         }
 
         /// <summary>
-        /// Test camera for node intersections.
+        /// Test node for node intersections.
         /// </summary>
-        private void TestCameraNodeIntersections(SceneNode node)
+        /// <param name="node">SceneNode.</param>
+        private void TestCameraNodeIntersection(SceneNode node)
         {
-            // Test node against camera
-            if (node.TransformedBounds.Intersects(camera.BoundingSphere))
+            // Test camera against node
+            if (camera.BoundingSphere.Intersects(node.TransformedBounds))
             {
-                // Get distance between camera and model bounds
-                float? distance = 
-                    Vector3.Distance(camera.BoundingSphere.Center, node.TransformedBounds.Center);
-
-                // Add intersection
-                cameraSceneIntersections.Add(
-                    new Intersection.NodeIntersection(distance, node));
+                sceneIntersections.Add(
+                    new Intersection.NodeIntersection(0f, node));
 
                 // Test child nodes
                 foreach (SceneNode child in node.Children)
                 {
-                    TestCameraNodeIntersections(child);
+                    TestCameraNodeIntersection(child);
                 }
             }
         }
 
         /// <summary>
-        /// Tests camera for model leaf node intersections.
+        /// Tests camera for model intersection.
         /// </summary>
         private void TestCameraModelIntersections()
         {
-            // Nothing to do if zero scene intersections
-            if (cameraSceneIntersections.Count == 0)
+            // Nothing to do if zero intersections
+            if (sceneIntersections.Count == 0)
                 return;
 
             // Sort intersections by distance
-            cameraSceneIntersections.Sort();
+            sceneIntersections.Sort();
 
             // Work through all intersections
-            foreach (var ni in cameraSceneIntersections)
+            foreach (var si in sceneIntersections)
             {
                 // Skip if not a leaf model node
-                if (false == (ni.Node is ModelNode))
+                if (false == (si.Node is ModelNode))
                     continue;
 
                 // Test model
-                TestModelNode((ModelNode)ni.Node);
+                TestCameraModel((ModelNode)si.Node);
             }
         }
 
-        private void TestModelNode(ModelNode node)
-        {
-            // Get model
-            ModelManager.ModelData model = node.Model;
-
-            // Get motion ray
-            //Vector3 step = input.MovementDelta;
-            //step = camera.NextPosition - camera.Position;
-            //Ray motionRay;
-            //motionRay.Position = camera.Position;
-            //motionRay.Direction = Vector3.Normalize(step);
-            //distance = Intersection.RayIntersectsDFMesh(
-            //    motionRay,
-            //    mi.ModelMatrix,
-            //    ref model,
-            //    out subMeshResult,
-            //    out planeResult);
-
-            // Ensure camera does not move beyond obstacle
-            /*
-            if (distance != null)
-            {
-                // If distance to move is greater than distance to collision
-                // then something is in the way.
-                float totalDistance = Vector3.Distance(Vector3.Zero, step);
-                float validDistance = distance.Value - camera.BodyRadius / 2;
-                if (totalDistance > validDistance)
-                {
-                    // Move valid amount along movement vector
-                    Matrix m = Matrix.CreateTranslation(motionRay.Direction * validDistance);
-                    //camera.NextPosition = Vector3.Transform(camera.Position, m);
-                }
-
-                // Test sphere intersection
-                sphereResult = intersection.SphereIntersectDFMesh(
-                    camera.BoundingSphere.Center,
-                    camera.BoundingSphere.Radius,
-                    mi.ModelMatrix,
-                    ref model);
-
-                // Refine next camera position using sphere intersection
-                if (sphereResult.Hit)
-                {
-                    distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
-                    float difference = camera.BodyRadius - distance.Value;
-                    Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, mi.ModelMatrix);
-                    Matrix m = Matrix.CreateTranslation(normal * difference);
-                    //camera.NextPosition = Vector3.Transform(camera.NextPosition, m);
-                }
-            }
-            */
-        }
-
-        /*
         /// <summary>
-        /// Simple down ray test to keep camera above models.
+        /// Tests camera against a model node.
         /// </summary>
-        private void TestDownRay(ModelNode node)
+        /// <param name="node"></param>
+        private void TestCameraModel(ModelNode node)
         {
+            // Ignore open doors
+            if (IsOpenDoor(node))
+                return;
+
+            // Test sphere intersection
+            Intersection.CollisionResult sphereResult;
+            sphereResult = intersection.SphereIntersectDFMesh(
+                camera.BoundingSphere.Center,
+                camera.BoundingSphere.Radius,
+                node.Matrix,
+                node.Model);
+
+            // Refine next camera position using sphere intersection
+            float? distance;
+            if (sphereResult.Hit)
+            {
+                // Bump camera backwards along plane normal
+                Vector3 position = testCamera.Position;
+                distance = (float)Math.Sqrt(sphereResult.DistanceSquared);
+                float difference = camera.BodyRadius - distance.Value;
+                Vector3 normal = Vector3.TransformNormal(sphereResult.Normal, node.Matrix);
+                Matrix m = Matrix.CreateTranslation(normal * difference);
+                Vector3.Transform(ref position, ref m, out position);
+                testCamera.Position = position;
+            }
+
+            // Test down ray against model
             Ray downRay;
-            downRay.Position = camera.Position + input.MovementDelta;
+            downRay.Position = testCamera.Position;
             downRay.Direction = Vector3.Down;
-            
-            ModelManager.ModelData model = node.Model;
             int subMeshResult, planeResult;
-            float? distance = Intersection.RayIntersectsDFMesh(
+            distance = Intersection.RayIntersectsDFMesh(
                 downRay,
                 node.Matrix,
-                ref model,
+                node.Model,
                 out subMeshResult,
                 out planeResult);
-            if (distance != null && distance < camera.EyeHeight)
+
+            // Handle ray intersection
+            if (distance != null)
             {
-                Vector3 nextPosition = downRay.Position;
-                nextPosition.Y += camera.EyeHeight - distance.Value;
-                input.MovementDelta = downRay.Position + nextPosition;
-                //camera.NextPosition = nextPosition;
+                if (distance.Value < testCamera.EyeHeight)
+                {
+                    // Keep camera at eye height
+                    float penetrationDistance = testCamera.EyeHeight - distance.Value;
+                    Vector3 position = testCamera.Position;
+                    Matrix m = Matrix.CreateTranslation(Vector3.Up * penetrationDistance);
+                    Vector3.Transform(ref position, ref m, out position);
+                    testCamera.Position = position;
+                }
             }
         }
-        */
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Check if this is an open (or opening) door.
+        ///  These are ignored by the collision system.
+        /// </summary>
+        /// <param name="node">ModelNode.</param>
+        /// <returns>True if door open.</returns>
+        private bool IsOpenDoor(ModelNode node)
+        {
+            // Ignore doors that are not closed
+            if (node.Action.ModelDescription == "DOR" &&
+                node.Action.ActionState != SceneNode.ActionState.Start)
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         #endregion
 

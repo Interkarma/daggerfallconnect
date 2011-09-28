@@ -106,7 +106,7 @@ namespace XNALibrary
         public CollisionResult SphereIntersectDFMesh(Vector3 position,
                                         float radius,
                                         Matrix modelTransform,
-                                        ref ModelManager.ModelData model)
+                                        ModelManager.ModelData model)
         {
             // Transform sphere position back to object space
             Matrix inverseTransform = Matrix.Invert(modelTransform);
@@ -416,7 +416,7 @@ namespace XNALibrary
         /// <returns>Distance to intersection, or NULL if miss.</returns>
         public static float? RayIntersectsDFMesh(Ray ray,
                                             Matrix modelTransform,
-                                            ref ModelManager.ModelData model,
+                                            ModelManager.ModelData model,
                                             out int subMeshResult,
                                             out int planeResult)
         {

@@ -325,17 +325,26 @@ namespace XNALibrary
         /// Apply pending changes to specified camera.
         /// </summary>
         /// <param name="camera">Camera to receive input.</param>
-        public void Apply(Camera camera)
+        /// <param name="reset">True to reset changes after being applied to camera.</param>
+        public void Apply(Camera camera, bool reset)
         {
             // Transform camera by changes
             if (camera != null)
             {
                 camera.Transform(yaw, pitch, movement);
-                camera.Update();
-                yaw = 0.0f;
-                pitch = 0.0f;
-                movement = Vector3.Zero;
+                if (reset)
+                    Reset();
             }
+        }
+
+        /// <summary>
+        /// Clear any pending input.
+        /// </summary>
+        public void Reset()
+        {
+            yaw = 0.0f;
+            pitch = 0.0f;
+            movement = Vector3.Zero;
         }
 
         #endregion
