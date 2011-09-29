@@ -21,10 +21,13 @@ namespace DaggerfallModelling.Classes
     /// Manges application settings for Daggerfall Modelling. Settings are stored in an XML
     ///  document in path %appdata%.
     /// </summary>
-    class AppSettings
+    public class AppSettings
     {
 
         #region Variables
+
+        // XML helper
+        XmlHelper helper = new XmlHelper();
 
         // Application constants
         private const string AppName = "DaggerfallModelling";
@@ -39,6 +42,8 @@ namespace DaggerfallModelling.Classes
         private const string Setting_IsMaximised = "IsMaximised";
         private const string Setting_InvertMouseY = "InvertMouseY";
         private const string Setting_InvertGamePadY = "InvertGamePadY";
+        private const string Setting_EnableGravity = "EnableGravity";
+        private const string Setting_EnableCollision = "EnableCollision";
         private const string Setting_ColladaExportPath = "ColladaExportPath";
         private const string Setting_ColladaExportOrientation = "ColladaExportOrientation";
         private const string Setting_ColladaExportImageFormat = "ColladaExportImageFormat";
@@ -48,6 +53,8 @@ namespace DaggerfallModelling.Classes
         private const int Default_IsMaximised = 1;
         private const int Default_InvertMouseY = 0;
         private const int Default_InvertGamePadY = 0;
+        private const int Default_EnableGravity = 0;
+        private const int Default_EnableCollision = 0;
         private const string Default_ColladaExportPath = "";
         private const int Default_ColladaExportOrientation = 2;
         private const int Default_ColladaExportImageFormat = 1;
@@ -57,6 +64,8 @@ namespace DaggerfallModelling.Classes
         private int State_IsMaximised;
         private int State_InvertMouseY;
         private int State_InvertGamePadY;
+        private int State_EnableGravity;
+        private int State_EnableCollision;
         private string State_ColladaExportPath;
         private int State_ColladaExportOrientation;
         private int State_ColladaExportImageFormat;
@@ -90,28 +99,46 @@ namespace DaggerfallModelling.Classes
         /// <summary>
         /// Gets or sets IsMaximised setting.
         /// </summary>
-        public int IsMaximised
+        public bool IsMaximised
         {
-            get { return State_IsMaximised; }
-            set { State_IsMaximised = value; }
+            get { return (true == (State_IsMaximised == 1)); }
+            set { State_IsMaximised = (value) ? 1 : 0; }
         }
 
         /// <summary>
         /// Gets or sets InvertMouseY setting.
         /// </summary>
-        public int InvertMouseY
+        public bool InvertMouseY
         {
-            get { return State_InvertMouseY; }
-            set { State_InvertMouseY = value; }
+            get { return (true == (State_InvertMouseY == 1)); }
+            set { State_InvertMouseY = (value) ? 1 : 0; }
         }
 
         /// <summary>
         /// Gets or sets InvertGamePadY setting.
         /// </summary>
-        public int InvertGamePadY
+        public bool InvertGamePadY
         {
-            get { return State_InvertGamePadY; }
-            set { State_InvertGamePadY = value; }
+            get { return (true == (State_InvertGamePadY == 1)); }
+            set { State_InvertGamePadY = (value) ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// Gets or sets EnableGravity setting.
+        /// </summary>
+        public bool EnableCollision
+        {
+            get { return (true == (State_EnableCollision == 1)); }
+            set { State_EnableCollision = (value) ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// Gets or sets EnableGravity setting.
+        /// </summary>
+        public bool EnableGravity
+        {
+            get { return (true == (State_EnableGravity == 1)); }
+            set { State_EnableGravity = (value) ? 1 : 0; }
         }
 
         /// <summary>
@@ -171,7 +198,6 @@ namespace DaggerfallModelling.Classes
                     Directory.CreateDirectory(AppDataFolder);
 
                 // Create new settings file
-                XmlHelper helper = new XmlHelper();
                 XmlDocument SettingsXml = helper.CreateXmlDocument(AppName, SettingsFilePath);
 
                 // Append default settings
@@ -179,6 +205,8 @@ namespace DaggerfallModelling.Classes
                 helper.AppendElement(SettingsXml, null, Setting_IsMaximised, Default_IsMaximised.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_InvertMouseY, Default_InvertMouseY.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_InvertGamePadY, Default_InvertGamePadY.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_EnableCollision, Default_EnableCollision.ToString());
+                helper.AppendElement(SettingsXml, null, Setting_EnableGravity, Default_EnableGravity.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportPath, Default_ColladaExportPath);
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportOrientation, Default_ColladaExportOrientation.ToString());
                 helper.AppendElement(SettingsXml, null, Setting_ColladaExportImageFormat, Default_ColladaExportImageFormat.ToString());
@@ -221,35 +249,91 @@ namespace DaggerfallModelling.Classes
 
                 // Read Arena2Path
                 XmlNodeList nodes = SettingsXml.GetElementsByTagName(Setting_Arena2Path);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_Arena2Path, Default_Arena2Path);
+                    nodes = SettingsXml.GetElementsByTagName(Setting_Arena2Path);
+                }
                 State_Arena2Path = nodes.Item(0).InnerText;
 
                 // Read IsMaximised
                 nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_IsMaximised, Default_IsMaximised.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_IsMaximised);
+                }
                 State_IsMaximised = int.Parse(nodes.Item(0).InnerText);
 
                 // Read InvertMouseY
                 nodes = SettingsXml.GetElementsByTagName(Setting_InvertMouseY);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_InvertMouseY, Default_InvertMouseY.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_InvertMouseY);
+                }
                 State_InvertMouseY = int.Parse(nodes.Item(0).InnerText);
 
                 // Read InvertGamePadY
                 nodes = SettingsXml.GetElementsByTagName(Setting_InvertGamePadY);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_InvertGamePadY, Default_InvertGamePadY.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_InvertGamePadY);
+                }
                 State_InvertGamePadY = int.Parse(nodes.Item(0).InnerText);
+
+                // Read EnableCollision
+                nodes = SettingsXml.GetElementsByTagName(Setting_EnableCollision);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_EnableCollision, Default_EnableCollision.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_EnableCollision);
+                }
+                State_EnableCollision = int.Parse(nodes.Item(0).InnerText);
+
+                // Read EnableGravity
+                nodes = SettingsXml.GetElementsByTagName(Setting_EnableGravity);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_EnableGravity, Default_EnableGravity.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_EnableGravity);
+                }
+                State_EnableGravity = int.Parse(nodes.Item(0).InnerText);
 
                 // Read ColladaExportPath
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_ColladaExportPath, Default_ColladaExportPath);
+                    nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);
+                }
                 State_ColladaExportPath = nodes.Item(0).InnerText;
 
                 // Read ColladaExportOrientation
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportOrientation);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_ColladaExportOrientation, Default_ColladaExportOrientation.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportOrientation);
+                }
                 State_ColladaExportOrientation = int.Parse(nodes.Item(0).InnerText);
 
                 // Read ColladaExportImageFormat
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportImageFormat);
+                if (nodes.Count == 0)
+                {
+                    helper.AppendElement(SettingsXml, null, Setting_ColladaExportImageFormat, Default_ColladaExportImageFormat.ToString());
+                    nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportImageFormat);
+                }
                 State_ColladaExportImageFormat = int.Parse(nodes.Item(0).InnerText);
 
                 // Ensure Arena2Path exists
                 if (!Directory.Exists(State_Arena2Path))
                     throw new Exception(string.Format("'{0}' does not exist.", State_Arena2Path));
+
+                // Update settings
+                SettingsXml.Save(SettingsFilePath);
             }
             catch (Exception e)
             {
@@ -287,6 +371,14 @@ namespace DaggerfallModelling.Classes
                 // Write InvertGamePadY
                 nodes = SettingsXml.GetElementsByTagName(Setting_InvertGamePadY);
                 nodes.Item(0).InnerText = State_InvertGamePadY.ToString();
+
+                // Write EnableCollision
+                nodes = SettingsXml.GetElementsByTagName(Setting_EnableCollision);
+                nodes.Item(0).InnerText = State_EnableCollision.ToString();
+
+                // Write EnableGravity
+                nodes = SettingsXml.GetElementsByTagName(Setting_EnableGravity);
+                nodes.Item(0).InnerText = State_EnableGravity.ToString();
 
                 // Write ColladaExportPath
                 nodes = SettingsXml.GetElementsByTagName(Setting_ColladaExportPath);

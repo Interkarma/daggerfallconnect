@@ -141,6 +141,9 @@ namespace XNASeries_4
             }
 
             oldKeyboardState = input.KeyboardState;
+
+            // Update camera
+            renderer.Camera.Update();
         }
 
         /// <summary>

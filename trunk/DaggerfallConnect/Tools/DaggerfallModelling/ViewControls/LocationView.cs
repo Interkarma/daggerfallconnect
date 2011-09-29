@@ -119,6 +119,7 @@ namespace DaggerfallModelling.ViewControls
             // Create XNALibrary subsystems
             input = new Input();
             renderer = new Renderer(host.TextureManager);
+            collision = new Collision();
         }
 
         #endregion
@@ -136,9 +137,6 @@ namespace DaggerfallModelling.ViewControls
 
             // Initialise input subsystem
             input.ActiveDevices = Input.DeviceFlags.None;
-
-            // Initialise collision subsystem
-            collision = new Collision();
 
             // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
@@ -162,7 +160,10 @@ namespace DaggerfallModelling.ViewControls
             renderer.Scene.Update(host.ElapsedTime);
 
             // Update collision
-            collision.Update(renderer.Camera, renderer.Scene, input);
+            if (host.AppSettings.EnableCollision)
+                collision.Update(renderer.Camera, renderer.Scene, input);
+            else
+                input.Apply(renderer.Camera, true);
 
             // Update camera
             renderer.Camera.Update();
@@ -297,6 +298,12 @@ namespace DaggerfallModelling.ViewControls
                 e.KeyCode == Keys.Enter)
             {
                 RunActionRecord();
+            }
+
+            // Jump in free camera mode
+            if (e.KeyCode == Keys.Space &&
+                renderer.Camera == freeCamera)
+            {
             }
         }
 
@@ -706,8 +713,8 @@ namespace DaggerfallModelling.ViewControls
 
             // Gather input
             input.ActiveDevices = flags;
-            input.InvertMouseLook = host.InvertMouseY;
-            input.InvertGamePadLook = host.InvertGamePadY;
+            input.InvertMouseLook = host.AppSettings.InvertMouseY;
+            input.InvertGamePadLook = host.AppSettings.InvertGamePadY;
             input.Update(host.ElapsedTime);
 
             // GamePad stuff

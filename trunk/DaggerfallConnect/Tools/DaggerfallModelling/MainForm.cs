@@ -142,8 +142,7 @@ namespace DaggerfallModelling
 
             // Initialise content host
             ContentViewer.SetArena2Path(appSettings.Arena2Path);
-            ContentViewer.InvertMouseY = (appSettings.InvertMouseY == 1);
-            ContentViewer.InvertGamePadY = (appSettings.InvertGamePadY == 1);
+            ContentViewer.AppSettings = appSettings;
 
 #if DEBUG
             // TEST: Set a specific view while testing content
@@ -578,20 +577,16 @@ namespace DaggerfallModelling
         {
             // Setup dialog
             Dialogs.InputSettingsDialog dlg = new Dialogs.InputSettingsDialog();
-            dlg.InvertMouseY = (appSettings.InvertMouseY == 1);
-            dlg.InvertGamePadY = (appSettings.InvertGamePadY == 1);
+            dlg.InvertMouseY = appSettings.InvertMouseY;
+            dlg.InvertGamePadY = appSettings.InvertGamePadY;
 
             // Show dialog
             if (dlg.ShowDialog() != DialogResult.OK)
                 return;
 
             // Save settings
-            appSettings.InvertMouseY = (dlg.InvertMouseY) ? 1 : 0;
-            appSettings.InvertGamePadY = (dlg.InvertGamePadY) ? 1 : 0;
-
-            // Set in host
-            ContentViewer.InvertMouseY = dlg.InvertMouseY;
-            ContentViewer.InvertGamePadY = dlg.InvertGamePadY;
+            appSettings.InvertMouseY = dlg.InvertMouseY;
+            appSettings.InvertGamePadY = dlg.InvertGamePadY;
         }
 
         #endregion

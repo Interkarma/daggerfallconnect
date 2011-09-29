@@ -40,6 +40,9 @@ namespace XNALibrary
         private Input input;
         private Scene scene;
 
+        // Distances
+        private float distanceToGround = 0f;
+
 #if DEBUG
         // Performance
         Stopwatch stopwatch = new Stopwatch();
@@ -49,6 +52,14 @@ namespace XNALibrary
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets distance to ground.
+        /// </summary>
+        public float DistanceToGround
+        {
+            get { return distanceToGround; }
+        }
 
 #if DEBUG
         /// <summary>
@@ -102,6 +113,9 @@ namespace XNALibrary
             // Update test camera
             Camera.Copy(camera, testCamera);
             input.Apply(testCamera, true);
+
+            // Set initial distance to ground
+            distanceToGround = camera.Position.Y - testCamera.MovementBounds.Min.Y;
 
             // Test movement against scene
             TestMovementSceneIntersections();
@@ -358,6 +372,11 @@ namespace XNALibrary
                     Matrix m = Matrix.CreateTranslation(Vector3.Up * penetrationDistance);
                     Vector3.Transform(ref position, ref m, out position);
                     testCamera.Position = position;
+                    distanceToGround = testCamera.EyeHeight;
+                }
+                else
+                {
+                    distanceToGround = distance.Value;
                 }
             }
         }

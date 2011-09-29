@@ -126,6 +126,9 @@ namespace XNASeries_2
             // Update input
             input.Update(gameTime.ElapsedGameTime);
             input.Apply(renderer.Camera, true);
+
+            // Update camera
+            renderer.Camera.Update();
         }
 
         /// <summary>

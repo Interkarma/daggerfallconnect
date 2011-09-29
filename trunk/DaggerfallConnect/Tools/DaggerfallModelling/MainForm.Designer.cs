@@ -856,8 +856,6 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.ContentViewer.CameraMode = DaggerfallModelling.ViewControls.ViewBase.CameraModes.None;
             this.ContentViewer.FilteredModelsArray = null;
-            this.ContentViewer.InvertGamePadY = false;
-            this.ContentViewer.InvertMouseY = false;
             this.ContentViewer.Location = new System.Drawing.Point(0, 0);
             this.ContentViewer.Name = "ContentViewer";
             this.ContentViewer.Size = new System.Drawing.Size(862, 713);

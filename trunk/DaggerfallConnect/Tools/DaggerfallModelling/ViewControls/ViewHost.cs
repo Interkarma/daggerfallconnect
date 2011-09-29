@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using DaggerfallModelling.Classes;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using XNALibrary;
@@ -36,6 +37,7 @@ namespace DaggerfallModelling.ViewControls
         // Resources
         private bool isReady = false;
         private string arena2Path = string.Empty;
+        private AppSettings appSettings;
 
         // Mouse
         private Point mousePos;
@@ -47,10 +49,6 @@ namespace DaggerfallModelling.ViewControls
         private bool rightMouseDown = false;
         private bool middleMouseDown = false;
         private Vector2 mouseVelocity;
-
-        // Input
-        private bool invertMouseY = false;
-        private bool invertGamePadY = false;
 
         // Timing
         private bool update = false;
@@ -129,6 +127,15 @@ namespace DaggerfallModelling.ViewControls
         public string Arena2Path
         {
             get { return arena2Path; }
+        }
+
+        /// <summary>
+        /// Gets or sets application settings helper.
+        /// </summary>
+        public AppSettings AppSettings
+        {
+            get { return appSettings; }
+            set { appSettings = value; }
         }
 
         /// <summary>
@@ -304,24 +311,6 @@ namespace DaggerfallModelling.ViewControls
         public bool MouseInClientArea
         {
             get { return mouseInClientArea; }
-        }
-
-        /// <summary>
-        /// Gets or sets whether mouse should be inverted.
-        /// </summary>
-        public bool InvertMouseY
-        {
-            get { return invertMouseY; }
-            set { invertMouseY = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets whether gamepad should be inverted.
-        /// </summary>
-        public bool InvertGamePadY
-        {
-            get { return invertGamePadY; }
-            set { invertGamePadY = value; }
         }
 
         /// <summary>

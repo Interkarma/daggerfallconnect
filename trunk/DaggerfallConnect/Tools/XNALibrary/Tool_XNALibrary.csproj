@@ -81,6 +81,7 @@
     <Compile Include="Compass.cs" />
     <Compile Include="Component.cs" />
     <Compile Include="ContentHelper.cs" />
+    <Compile Include="Gravity.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Intersection.cs" />
     <Compile Include="ModelManager.cs" />
