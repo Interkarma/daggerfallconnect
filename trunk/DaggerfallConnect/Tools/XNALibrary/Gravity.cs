@@ -26,8 +26,8 @@ namespace XNALibrary
         #region Class Variables
 
         // Starting values
-        private Vector3 gravityVector = new Vector3(0f, -20f, 0f);
-        private Vector3 jumpVector = new Vector3(0f, 900f, 0f);
+        private Vector3 gravityVector = new Vector3(0f, -25f, 0f);
+        private Vector3 jumpVector = new Vector3(0f, 500f, 0f);
         private bool jump = false;
 
         // Velocity

@@ -656,6 +656,10 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnMouseDoubleClick(e);
 
+            // Only handle left mouse double-clicks
+            if (e.Button != MouseButtons.Left)
+                return;
+
             // Send to view
             if (isReady && viewMode != ViewModes.None)
                 viewClients[viewMode].OnMouseDoubleClick(e);

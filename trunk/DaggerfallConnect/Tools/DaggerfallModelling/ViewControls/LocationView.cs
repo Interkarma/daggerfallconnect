@@ -39,6 +39,7 @@ namespace DaggerfallModelling.ViewControls
         private Input input;
         private Renderer renderer;
         private Collision collision;
+        private Gravity gravity;
 
         // Cameras
         private Camera topDownCamera = new Camera();
@@ -120,6 +121,7 @@ namespace DaggerfallModelling.ViewControls
             input = new Input();
             renderer = new Renderer(host.TextureManager);
             collision = new Collision();
+            gravity = new Gravity();
         }
 
         #endregion
@@ -158,6 +160,17 @@ namespace DaggerfallModelling.ViewControls
 
             // Update scene
             renderer.Scene.Update(host.ElapsedTime);
+
+            // Update gravity
+            if (host.AppSettings.EnableGravity)
+            {
+                freeCamera.RestrictVertical = true;
+                gravity.Update(host.ElapsedTime, freeCamera, collision);
+            }
+            else
+            {
+                freeCamera.RestrictVertical = false;
+            }
 
             // Update collision
             if (host.AppSettings.EnableCollision)
@@ -304,6 +317,7 @@ namespace DaggerfallModelling.ViewControls
             if (e.KeyCode == Keys.Space &&
                 renderer.Camera == freeCamera)
             {
+                gravity.Jump();
             }
         }
 

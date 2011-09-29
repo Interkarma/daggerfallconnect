@@ -33,12 +33,12 @@ namespace XNALibrary
         private float farPlaneDistance = 50000.0f;
 
         // Matrices
-        private Matrix rotation = Matrix.Identity;
         private Matrix projectionMatrix = Matrix.Identity;
         private Matrix viewMatrix = Matrix.Identity;
         private Matrix worldMatrix = Matrix.Identity;
 
         // Camera
+        private bool restrictVertical = false;
         private float eyeHeight = 70f;
         private float bodyRadius = 16f;
         private float cameraYaw = 0.0f;
@@ -55,6 +55,15 @@ namespace XNALibrary
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets flag to restrict vertical movement.
+        /// </summary>
+        public bool RestrictVertical
+        {
+            get { return restrictVertical; }
+            set { restrictVertical = value; }
+        }
 
         /// <summary>
         /// Gets or sets camera movement bounds.
@@ -241,6 +250,7 @@ namespace XNALibrary
         static public void Copy(Camera src, Camera dst)
         {
             // Copy all variables from source camera.
+            dst.restrictVertical = src.restrictVertical;
             dst.nearPlaneDistance = src.nearPlaneDistance;
             dst.farPlaneDistance = src.farPlaneDistance;
             dst.projectionMatrix = src.projectionMatrix;
@@ -248,7 +258,6 @@ namespace XNALibrary
             dst.worldMatrix = src.worldMatrix;
             dst.eyeHeight = src.eyeHeight;
             dst.bodyRadius = src.bodyRadius;
-            dst.rotation = src.rotation;
             dst.cameraYaw = src.cameraYaw;
             dst.cameraPitch = src.cameraPitch;
             dst.cameraMovementBounds = src.cameraMovementBounds;
@@ -332,22 +341,35 @@ namespace XNALibrary
             if (cameraPitch < -89)
                 cameraPitch = -89;
 
-            // Apply rotation
-            Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out rotation);
-            rotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * rotation;
+            // Look rotation
+            Matrix lookRotation = Matrix.Identity;
+            Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out lookRotation);
+            lookRotation = Matrix.CreateRotationX(MathHelper.ToRadians(cameraPitch)) * lookRotation;
 
             // Apply movement
             if (movement != Vector3.Zero)
             {
-                Vector3.Transform(ref movement, ref rotation, out movement);
+                if (restrictVertical)
+                {
+                    // Restrict camera to X-Z dimensions
+                    movement.Y = 0f;
+                    Matrix moveRotation = Matrix.Identity;
+                    Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out moveRotation);
+                    Vector3.Transform(ref movement, ref moveRotation, out movement);
+                    cameraPosition += movement;
+                    EnforceBounds();
+                }
+                else
+                {
+                    // Camera can move freely in all dimensions
+                    Vector3.Transform(ref movement, ref lookRotation, out movement);
+                    cameraPosition += movement;
+                    EnforceBounds();
+                }
             }
 
-            // Update position
-            cameraPosition += movement;
-            EnforceBounds();
-
-            // Transform camera
-            Vector3.Transform(ref cameraReference, ref rotation, out cameraTransformedReference);
+            // Transform camera target
+            Vector3.Transform(ref cameraReference, ref lookRotation, out cameraTransformedReference);
             UpdateTarget();
         }
 
