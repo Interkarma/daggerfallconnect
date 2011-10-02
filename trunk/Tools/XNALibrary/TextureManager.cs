@@ -818,6 +818,37 @@ namespace XNALibrary
             return (0.16666666666666666667 * (a - (4.0 * b) + (6.0 * c) - (4.0 * d)));
         }
 
+        /// <summary>
+        /// Clones a RenderTarget2D to Texture2D.
+        /// </summary>
+        /// <param name="renderTarget">RenderTarget2D.</param>
+        /// <returns>Texture2D</returns>
+        public Texture2D CloneRenderTarget2DToTexture2D(RenderTarget2D renderTarget)
+        {
+            // Create target texture
+            Texture2D clone = new Texture2D(
+                graphicsDevice,
+                renderTarget.Width,
+                renderTarget.Height,
+                (renderTarget.LevelCount > 1) ? true : false,
+                SurfaceFormat.Color);
+
+            // Clone each level
+            for (int level = 0; level < renderTarget.LevelCount; level++)
+            {
+                // Get source data
+                int width = PowerOfTwo.MipMapSize(renderTarget.Width, level);
+                int height = PowerOfTwo.MipMapSize(renderTarget.Height, level);
+                Color[] srcData = new Color[width * height];
+                renderTarget.GetData<Color>(level, null, srcData, 0, width * height);
+
+                // Set destination data
+                clone.SetData<Color>(level, null, srcData, 0, width * height);
+            }
+
+            return clone;
+        }
+
         #endregion
 
         #region Climate Swaps
@@ -920,19 +951,19 @@ namespace XNALibrary
         /// </summary>
         /// <param name="block">DFBlock.</param>
         /// <param name="groundArchive">Ground texture archive index.</param>
-        public Texture2D CreateBlockGroundTexture(ref DFBlock block, int groundArchive)
+        public RenderTarget2D CreateBlockGroundTexture(ref DFBlock block, int groundArchive)
         {
-            // Create texture
-            RenderTarget2D texture = new RenderTarget2D(
+            // Create render target
+            RenderTarget2D renderTarget = new RenderTarget2D(
                 graphicsDevice,
                 groundTextureWidth,
                 groundTextureHeight,
                 true,
-                SurfaceFormat.Color,
+                graphicsDevice.DisplayMode.Format,
                 DepthFormat.Depth16);
 
             // Begin rendering
-            graphicsDevice.SetRenderTarget(texture);
+            graphicsDevice.SetRenderTarget(renderTarget);
             spriteBatch.Begin();
 
             // Draw tiles
@@ -996,10 +1027,10 @@ namespace XNALibrary
             // TEST: Save texture for review
             //string filename = string.Format("D:\\Test\\{0}.png", block.Name);
             //FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
-            //texture.SaveAsPng(fs, texture.Width, texture.Height);
+            //renderTarget.SaveAsPng(fs, renderTarget.Width, renderTarget.Height);
             //fs.Close();
 
-            return texture;
+            return renderTarget;
         }
 
         #endregion

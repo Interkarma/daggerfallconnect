@@ -500,14 +500,14 @@ namespace XNALibrary
             BlockNode blockNode = new BlockNode(block);
 
             // Create ground texture
-            Texture2D groundTexture = textureManager.CreateBlockGroundTexture(
+            RenderTarget2D groundTexture = textureManager.CreateBlockGroundTexture(
                 ref block,
                 climate.GroundArchive);
 
             // Add child nodes
             AddRMBModels(ref block, blockNode);
             AddRMBMiscModels(ref block, blockNode);
-            AddRMBGroundPlane(ref block, blockNode, groundTexture);
+            AddRMBGroundPlane(ref block, blockNode, groundTexture, climate.GroundArchive);
             AddRMBMiscFlats(ref block, blockNode);
             AddRMBSceneryFlats(ref block, blockNode, climate.SceneryArchive);
 
@@ -571,11 +571,12 @@ namespace XNALibrary
         /// <param name="block">DFBlock</param>
         /// <param name="blockNode">BlockNode.</param>
         /// <param name="texture">Texture2D.</param>
-        private void AddRMBGroundPlane(ref DFBlock block, BlockNode blockNode, Texture2D texture)
+        private void AddRMBGroundPlane(ref DFBlock block, BlockNode blockNode, RenderTarget2D texture, int groundArchive)
         {
             // Add ground plane node
             GroundPlaneNode groundNode = new GroundPlaneNode(
                 textureManager.GraphicsDevice,
+                groundArchive,
                 texture);
             groundNode.Position = new Vector3(0f, groundHeight, 0f);
             blockNode.Add(groundNode);

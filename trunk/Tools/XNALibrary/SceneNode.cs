@@ -495,11 +495,12 @@ namespace XNALibrary
         private const float radius = 2920f;
 
         // Variables
-        private Texture2D texture;
+        private RenderTarget2D texture;
         private VertexBuffer vertexBuffer;
+        private int groundArchive;
 
         // Properties
-        public Texture2D Texture
+        public RenderTarget2D Texture
         {
             get { return texture; }
             set { texture = value; }
@@ -512,14 +513,20 @@ namespace XNALibrary
         {
             get { return vertexBuffer; }
         }
+        public int GroundArchive
+        {
+            get { return groundArchive; }
+        }
 
         // Constructors
         public GroundPlaneNode(
-            GraphicsDevice graphicsDevice)
+            GraphicsDevice graphicsDevice,
+            int groundArchive)
             : base()
         {
             this.texture = null;
             this.vertexBuffer = null;
+            this.groundArchive = groundArchive;
 
             // Build plane rectangle
            
@@ -564,8 +571,9 @@ namespace XNALibrary
         }
         public GroundPlaneNode(
             GraphicsDevice graphicsDevice,
-            Texture2D texture)
-            : this(graphicsDevice)
+            int groundArchive,
+            RenderTarget2D texture)
+            : this(graphicsDevice, groundArchive)
         {
             this.texture = texture;
         }

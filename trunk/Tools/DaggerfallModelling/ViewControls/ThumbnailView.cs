@@ -624,7 +624,7 @@ namespace DaggerfallModelling.ViewControls
                 thumbWidth,
                 thumbHeight,
                 false,
-                host.GraphicsDevice.DisplayMode.Format,
+                SurfaceFormat.Color,
                 DepthFormat.Depth16);
             host.GraphicsDevice.SetRenderTarget(renderTarget);
 
@@ -639,7 +639,7 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SetRenderTarget(null);
 
             // Store updated values
-            thumb.texture = renderTarget;
+            thumb.texture = host.TextureManager.CloneRenderTarget2DToTexture2D(renderTarget);
         }
 
         /// <summary>
