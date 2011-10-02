@@ -254,349 +254,6 @@
             Gets byte array when using FileUsage.UseMemory.
             </summary>
         </member>
-        <member name="T:DaggerfallConnect.Arena2.CifRciFile">
-            <summary>
-            Connects to a *.CIF or *.RCI file to enumerate and extract image data.
-             Each CIF file may contain one or more images, including animated records with multiple frames.
-             Each RCI file may contain one or more images, but never animated records.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFImageFile">
-            <summary>
-            Provides base image handling for all Daggerfall image files.
-             This class is inherited from and extended by Arena2.TextureFile, Arena2.ImgFile, etc.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFImageFile.MyPalette">
-            <summary>
-            Palette for building image data
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFImageFile.ManagedFile">
-            <summary>
-            Managed file.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Loads an image file.
-            </summary>
-            <param name="FilePath">Absolute path to file</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
-            <summary>
-            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
-            </summary>
-            <param name="Width">Width of preview surface.</param>
-            <param name="Height">Height of preview surface.</param>
-            <param name="Background">Colour of background.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetFrameCount(System.Int32)">
-            <summary>
-            Gets number of frames in specified record.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Number of frames.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetSize(System.Int32)">
-            <summary>
-            Gets width and height of specified record. All frames of this record are the same dimensions.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetDFBitmap(System.Int32,System.Int32)">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <param name="Frame">Index of frame.</param>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.LoadPalette(System.String)">
-            <summary>
-            Loads a Daggerfall palette that will be used for building images.
-            </summary>
-            <param name="FilePath">Absolute path to Daggerfall palette.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetBitmapFormat(System.Int32,System.Int32,System.Byte,DaggerfallConnect.DFBitmap.Formats)">
-            <summary>
-            Get raw bytes for specified record and frame using a custom pixel format.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <param name="Frame">Index of frame.</param>
-            <param name="AlphaIndex">Index of alpha colour.</param>
-            <param name="Format">Specified pixel format to use.</param>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.GetManagedBitmap(DaggerfallConnect.DFBitmap@,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified indexed image buffer.
-             The currently loaded palette will be used for index to RGB matching.
-            </summary>
-            <param name="DFBitmap">Object containing source indexed bitmap data.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make image transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.DFImageFile.ReadImgFileHeader(System.IO.BinaryReader@,DaggerfallConnect.DFImageFile.ImgFileHeader@)">
-            <summary>
-            Reads a standard IMG file header from the source stream into the desination header struct.
-             This header is found in multiple image files which is why it's implemented here in the base.
-            </summary>
-            <param name="Reader">Source reader positioned at start of header data.</param>
-            <param name="Header">Destination header structure.</param>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.FilePath">
-            <summary>
-            Gets full path of managed file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.FileName">
-            <summary>
-            Gets file name only of managed file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.Palette">
-            <summary>
-            Gets or sets palette for building images.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.RecordCount">
-            <summary>
-            Gets total number of records in this file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.Description">
-            <summary>
-            Gets description of this file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.DFImageFile.PaletteName">
-            <summary>
-            Gets correct palette name for this file.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFImageFile.CompressionFormats">
-            <summary>
-            Compression formats enumeration. This is shared as internal as most image formats use some kind of compression.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFImageFile.ImgFileHeader">
-            <summary>
-            IMG File header. This is shared as internal as the IMG structure is also used in CIF files.
-             The CifFile class will use this file header while reading most records.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.CifRciFile.Records">
-            <summary>
-            Record array. This is pre-sized to 64 objects as CIF files do not contain a master header and
-             it's necessary to read through the file to count the number of image records.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.CifRciFile.TotalRecords">
-            <summary>
-            Total number of records in this file. Any records past this count in Records array are not valid.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
-            <summary>
-            Load constructor with palette assignment.
-            </summary>
-            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="Palette">Palette to use when building images.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
-            <summary>
-            Load constructor that also loads a palette.
-            </summary>
-            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Loads a CIF or RCI file.
-            </summary>
-            <param name="FilePath">Absolute path to *.CIF or *.RCI file</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetFrameCount(System.Int32)">
-            <summary>
-            Gets number of frames in specified record.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Number of frames.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetSize(System.Int32)">
-            <summary>
-            Gets width and height of specified record. All frames of this record are the same dimensions.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetDFBitmap(System.Int32,System.Int32)">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <param name="Frame">Index of frame.</param>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
-            <summary>
-            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
-            </summary>
-            <param name="Width">Width of preview surface.</param>
-            <param name="Height">Height of preview surface.</param>
-            <param name="Background">Colour of background.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.Read">
-            <summary>
-            Read file.
-            </summary>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRecords(System.IO.BinaryReader@)">
-            <summary>
-            Reads records and formats Records array.
-            </summary>
-            <param name="Reader">Source reader.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRci(System.IO.BinaryReader@,System.String)">
-            <summary>
-            Special handling for RCI files.
-            </summary>
-            <param name="Reader">Source reader.</param>
-            <param name="Filename">Name of this file without path.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadWeaponCif(System.IO.BinaryReader@,System.String)">
-            <summary>
-            Special handling for WEAPON CIF files.
-            </summary>
-            <param name="Reader">Source reader.</param>
-            <param name="Filename">Name of this file without path.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadImageData(System.Int32,System.Int32)">
-            <summary>
-            Reads image data for specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadImage(System.Int32,System.Int32)">
-            <summary>
-            Read uncompressed record.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadWeaponImage(System.Int32,System.Int32)">
-            <summary>
-            Reads image data for specified weapon-type record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRleImage(System.Int32,System.Int32)">
-            <summary>
-            Read a RLE record.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRleData(System.IO.BinaryReader@,System.Int32,System.IO.BinaryWriter@)">
-            <summary>
-            Reads RLE compressed data from source reader to destination writer.
-            </summary>
-            <param name="Reader">Source reader positioned at start of input data.</param>
-            <param name="Length">Length of source data.</param>
-            <param name="Writer">Destination writer positioned at start of output data.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.CifRciFile.PaletteName">
-            <summary>
-            Return correct palette name for this file (always ART_PAL.COL for CIF and RCI files).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.CifRciFile.RecordCount">
-            <summary>
-            Number of image records in this Cif or Rci file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.CifRciFile.Description">
-            <summary>
-            Description of this file.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.CifRciFile.RecordType">
-            <summary>
-            Types of records found in this file.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.CifRciFile.Record">
-            <summary>
-            Record data.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.CifRciFile.AnimationHeader">
-            <summary>
-            Animation header for weapon files.
-            </summary>
-        </member>
         <member name="T:DaggerfallConnect.LibraryTypes">
             <summary>
             Image library types enumeration.
@@ -979,117 +636,472 @@
             Collates image file information.
             </summary>
         </member>
-        <member name="T:DaggerfallConnect.DFPalette">
+        <member name="T:DaggerfallConnect.DFBitmap">
             <summary>
-            Describes a 256-colour Daggerfall palette. Supports loading .PAL and .COL files.
-             Palette is initialised to all 0xff0000 (red) to make it obvious when palette isn't loaded.
+            Stores raw bitmap data. The binary format of the image data will depend on the method which returned the DFBitmap object.
             </summary>
         </member>
-        <member name="F:DaggerfallConnect.DFPalette.HeaderLength">
+        <member name="F:DaggerfallConnect.DFBitmap.Format">
+            <summary>Format of the image.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Width">
+            <summary>Width of the image in pixels.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Height">
+            <summary>Height of the image in pixels.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Stride">
+            <summary>Stride (bytes per horizontal row) of the image.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Data">
+            <summary>Image byte array in specified format.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFBitmap.Formats">
             <summary>
-            Length of header in bytes for supporting .COL files.
+            Bitmap formats enumeration.
             </summary>
         </member>
-        <member name="F:DaggerfallConnect.DFPalette.PaletteBuffer">
+        <member name="F:DaggerfallConnect.DFBitmap.Formats.Indexed">
+            <summary>Indexed image. 1 byte per pixel. Each byte is an index into the palette colour data.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Formats.ARGB">
+            <summary>Colour channels in order alpha, red, green, blue. 4 bytes per pixel.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Formats.RGBA">
+            <summary>Colour channels in order red, green, blue, alpha. 4 bytes per pixel.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Formats.ABGR">
+            <summary>Colour channels in order alpha, blue, green, red. 4 bytes per pixel.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFBitmap.Formats.BGRA">
+            <summary>Colour channels in order blue, green, red, alpha. 4 bytes per pixel.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile">
             <summary>
-            Array of 256x RGB values. Includes 8-byte header for supporting .COL files.
+            Connects to a TEXTURE.??? file to enumerate and extract image data.
+             Each texture file may contain one or more images, including animated records with multiple frames.
+             Textures will only be converted from the source binary file when needed. This allows you to extract
+             individual records and frames without the overhead of converting unwanted images.
+             Combine this with a texture caching scheme when loading large 3D scenes to avoid unnecessary load time.
             </summary>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.#ctor">
+        <member name="T:DaggerfallConnect.DFImageFile">
             <summary>
-            Default constructor. Palette is initialised with red.
+            Provides base image handling for all Daggerfall image files.
+             This class is inherited from and extended by Arena2.TextureFile, Arena2.ImgFile, etc.
             </summary>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.#ctor(System.String)">
+        <member name="F:DaggerfallConnect.DFImageFile.MyPalette">
             <summary>
-            Load constructor (supports both .PAL and .COL files).
+            Palette for building image data
             </summary>
-            <param name="FilePath">Absolute path to palette file.</param>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Load(System.String)">
+        <member name="F:DaggerfallConnect.DFImageFile.ManagedFile">
             <summary>
-            Loads a Daggerfall palette file (supports both .PAL and .COL files).
+            Managed file.
             </summary>
-            <param name="FilePath">Absolute path to palette file.</param>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Loads an image file.
+            </summary>
+            <param name="FilePath">Absolute path to file</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
             <returns>True if successful, otherwise false.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Read(System.IO.BinaryReader@)">
+        <member name="M:DaggerfallConnect.DFImageFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
             <summary>
-            Read palette information from a binary reader.
-             Palette must be a 768-byte PalFile structure (256x 24-bit RGB values).
+            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
             </summary>
-            <param name="Reader">Source reader positioned at start of palette data.</param>
+            <param name="Width">Width of preview surface.</param>
+            <param name="Height">Height of preview surface.</param>
+            <param name="Background">Colour of background.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.GetFrameCount(System.Int32)">
+            <summary>
+            Gets number of frames in specified record.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Number of frames.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.GetSize(System.Int32)">
+            <summary>
+            Gets width and height of specified record. All frames of this record are the same dimensions.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.GetDFBitmap(System.Int32,System.Int32)">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <param name="Frame">Index of frame.</param>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Gets managed bitmap from specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.LoadPalette(System.String)">
+            <summary>
+            Loads a Daggerfall palette that will be used for building images.
+            </summary>
+            <param name="FilePath">Absolute path to Daggerfall palette.</param>
             <returns>True if successful, otherwise false.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Fill(System.Byte,System.Byte,System.Byte)">
+        <member name="M:DaggerfallConnect.DFImageFile.GetBitmapFormat(System.Int32,System.Int32,System.Byte,DaggerfallConnect.DFBitmap.Formats)">
             <summary>
-            Fills entire palette with specified RGB value.
+            Get raw bytes for specified record and frame using a custom pixel format.
             </summary>
-            <param name="R">Red component.</param>
-            <param name="G">Green component.</param>
-            <param name="B">Blue component.</param>
+            <param name="Record">Index of record.</param>
+            <param name="Frame">Index of frame.</param>
+            <param name="AlphaIndex">Index of alpha colour.</param>
+            <param name="Format">Specified pixel format to use.</param>
+            <returns>DFBitmap object.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.MakeGrayscale">
+        <member name="M:DaggerfallConnect.DFImageFile.GetManagedBitmap(DaggerfallConnect.DFBitmap@,System.Boolean,System.Boolean)">
             <summary>
-            Fills entire palette with grayscale values.
+            Gets managed bitmap from specified indexed image buffer.
+             The currently loaded palette will be used for index to RGB matching.
+            </summary>
+            <param name="DFBitmap">Object containing source indexed bitmap data.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make image transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFImageFile.ReadImgFileHeader(System.IO.BinaryReader@,DaggerfallConnect.DFImageFile.ImgFileHeader@)">
+            <summary>
+            Reads a standard IMG file header from the source stream into the desination header struct.
+             This header is found in multiple image files which is why it's implemented here in the base.
+            </summary>
+            <param name="Reader">Source reader positioned at start of header data.</param>
+            <param name="Header">Destination header structure.</param>
+        </member>
+        <member name="P:DaggerfallConnect.DFImageFile.FilePath">
+            <summary>
+            Gets full path of managed file.
             </summary>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.MakeAutomap">
+        <member name="P:DaggerfallConnect.DFImageFile.FileName">
             <summary>
-            Fills palette with AutoMap colours. The AutoMap colour index is equal to BuildingTypes value + 1.
+            Gets file name only of managed file.
             </summary>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Get(System.Int32)">
+        <member name="P:DaggerfallConnect.DFImageFile.Palette">
             <summary>
-            Gets colour at specified index.
+            Gets or sets palette for building images.
             </summary>
-            <param name="Index">Index into colour array.</param>
-            <returns>Color object.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.GetRed(System.Int32)">
+        <member name="P:DaggerfallConnect.DFImageFile.RecordCount">
             <summary>
-            Gets red colour value at index.
+            Gets total number of records in this file.
             </summary>
-            <param name="Index">Index into colour array.</param>
-            <returns>Red value byte.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.GetGreen(System.Int32)">
+        <member name="P:DaggerfallConnect.DFImageFile.Description">
             <summary>
-            Gets green colour value at index.
+            Gets description of this file.
             </summary>
-            <param name="Index">Index into colour array.</param>
-            <returns>Green value byte.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.GetBlue(System.Int32)">
+        <member name="P:DaggerfallConnect.DFImageFile.PaletteName">
             <summary>
-            Gets blue colour value at index.
+            Gets correct palette name for this file.
             </summary>
-            <param name="Index">Index into colour array.</param>
-            <returns>Blue value byte.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Set(System.Int32,System.Byte,System.Byte,System.Byte)">
+        <member name="T:DaggerfallConnect.DFImageFile.CompressionFormats">
             <summary>
-            Sets index to specified RGB values.
+            Compression formats enumeration. This is shared as internal as most image formats use some kind of compression.
             </summary>
-            <param name="Index">Index into colour array.</param>
-            <param name="R">Red component.</param>
-            <param name="G">Green component.</param>
-            <param name="B">Blue component.</param>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.Find(System.Byte,System.Byte,System.Byte)">
+        <member name="T:DaggerfallConnect.DFImageFile.ImgFileHeader">
             <summary>
-            Finds index with specified RGB values.
+            IMG File header. This is shared as internal as the IMG structure is also used in CIF files.
+             The CifFile class will use this file header while reading most records.
             </summary>
-            <param name="R">Red component.</param>
-            <param name="G">Green component.</param>
-            <param name="B">Blue component.</param>
-            <returns>Index of found RGB value.</returns>
         </member>
-        <member name="M:DaggerfallConnect.DFPalette.GetManagedColorPalette">
+        <member name="F:DaggerfallConnect.Arena2.TextureFile.SolidSize">
             <summary>
-            Gets a managed colour palette.
+            Width and height of solid images.
             </summary>
-            <returns>ColorPalette object.</returns>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.TextureFile.SolidType">
+            <summary>
+            Type of solid image.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.TextureFile.Header">
+            <summary>
+            File header.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.TextureFile.RecordHeaders">
+            <summary>
+            Record header array
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.TextureFile.Records">
+            <summary>
+            Record array.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
+            <summary>
+            Load constructor with palette assignment.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="Palette">Palette to use when building images.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
+            <summary>
+            Load constructor that also loads a palette.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.IsFilenameSupported(System.String)">
+            <summary>
+            Tests if a filename is supported.
+            </summary>
+            <param name="Filename">Name of TEXTURE.* file.</param>
+            <returns>True if supported, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Loads a texture file.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetFrameCount(System.Int32)">
+            <summary>
+            Gets number of frames in specified record.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Number of frames.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetSize(System.Int32)">
+            <summary>
+            Gets width and height of specified record. All frames of this record are the same dimensions.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetScale(System.Int32)">
+            <summary>
+            Get the width and height scale to apply to image in scene. These values are divided by 256
+             to obtain a value between -1.0 - 0.0, and presumably 0.0 - 1.0. This is the scale of pixels
+             for enlarging or shrinking the image.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Scale values for X and Y in Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetWidth(System.Int32)">
+            <summary>
+            Gets width of this image.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Width of image in pixels.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetHeight(System.Int32)">
+            <summary>
+            Gets the height of this image.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Height of image in pixels.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetDFBitmap(System.Int32,System.Int32)">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <param name="Frame">Index of frame.</param>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Gets managed bitmap from specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
+            <summary>
+            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
+            </summary>
+            <param name="Width">Width of preview surface.</param>
+            <param name="Height">Height of preview surface.</param>
+            <param name="Background">Colour of background.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.IndexToFileName(System.Int32)">
+            <summary>
+            Returns a TEXTURE.nnn filename based on index.
+             This is needed when loading textures for 3D objects that reference textures by index rather than filename.
+             If the index is not valid, the returned filename will also be invalid.
+            </summary>
+            <param name="ArchiveIndex">Index of texture archive.</param>
+            <returns>Texture filename in the format TEXTURE.nnn.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.QuickSize(System.String,System.Int32)">
+            <summary>
+            Gets size of an unloaded texture quickly with minimum overhead.
+             This is useful for mesh loading where the texture dimensions need to be known,
+             but you may not need to load the entire texture file at that time.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file</param>
+            <param name="Record">Index of record.</param>
+            <returns>Size.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.QuickScale(System.String,System.Int32)">
+            <summary>
+            Gets scale of an unloaded texture quickly with minimum overhead.
+             This is useful for flat loading where the texture scale needs to be known,
+             but you may not need to load the entire texture file at that time.
+            </summary>
+            <param name="FilePath">Absolute path to TEXTURE.* file</param>
+            <param name="Record">Index of record.</param>
+            <returns>Size.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.Read">
+            <summary>
+            Read file.
+            </summary>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadHeader(System.IO.BinaryReader@)">
+            <summary>
+            Reads file header.
+            </summary>
+            <param name="Reader">Source reader.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRecordHeaders(System.IO.BinaryReader@)">
+            <summary>
+            Reads record headers.
+            </summary>
+            <param name="Reader">Source reader.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRecords(System.IO.BinaryReader@)">
+            <summary>
+            Reads records.
+            </summary>
+            <param name="Reader">Source reader.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadImageData(System.Int32,System.Int32)">
+            <summary>
+            Reads image data for specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadSolid(System.Int32)">
+            <summary>
+            Create a solid image type.
+            </summary>
+            <param name="Record">Record index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadImage(System.Int32,System.Int32)">
+            <summary>
+            Read uncompressed record.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRle(System.Int32,System.Int32)">
+            <summary>
+            Read a RecordRle record.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.TextureFile.Description">
+            <summary>
+            Gets description of texture file.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.TextureFile.UnsupportedFilenames">
+            <summary>
+            Gets unsupported filenames. The three texture filenames returned have no image data or are otherwise invalid.
+            </summary>
+            <returns>Array of unsupported filenames.</returns>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.TextureFile.PaletteName">
+            <summary>
+            Gets correct palette name for this file (always ART_PAL.COL for texture files).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.TextureFile.RecordCount">
+            <summary>
+            Number of image records in this file.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.SolidTypes">
+            <summary>
+            Solid types enumeration.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.RowEncoding">
+            <summary>
+            Row encoding used for the SpecialFrameHeader of RecordRle archives.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.FileHeader">
+            <summary>
+            File header.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.RecordHeader">
+            <summary>
+            Record header.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.Record">
+            <summary>
+            Record data.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.TextureFile.SpecialRowHeader">
+            <summary>
+            Used to decode RecordRle archives.
+            </summary>
         </member>
         <member name="T:DaggerfallConnect.Arena2.MapsFile">
             <summary>
@@ -1528,6 +1540,318 @@
             A number record directory descriptor.
             </summary>
         </member>
+        <member name="T:DaggerfallConnect.Arena2.CifRciFile">
+            <summary>
+            Connects to a *.CIF or *.RCI file to enumerate and extract image data.
+             Each CIF file may contain one or more images, including animated records with multiple frames.
+             Each RCI file may contain one or more images, but never animated records.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.CifRciFile.Records">
+            <summary>
+            Record array. This is pre-sized to 64 objects as CIF files do not contain a master header and
+             it's necessary to read through the file to count the number of image records.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.CifRciFile.TotalRecords">
+            <summary>
+            Total number of records in this file. Any records past this count in Records array are not valid.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
+            <summary>
+            Load constructor with palette assignment.
+            </summary>
+            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="Palette">Palette to use when building images.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
+            <summary>
+            Load constructor that also loads a palette.
+            </summary>
+            <param name="FilePath">Absolute path to *.CIF or *.RCI file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Loads a CIF or RCI file.
+            </summary>
+            <param name="FilePath">Absolute path to *.CIF or *.RCI file</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetFrameCount(System.Int32)">
+            <summary>
+            Gets number of frames in specified record.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Number of frames.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetSize(System.Int32)">
+            <summary>
+            Gets width and height of specified record. All frames of this record are the same dimensions.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetDFBitmap(System.Int32,System.Int32)">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <param name="Frame">Index of frame.</param>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Gets managed bitmap from specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
+            <summary>
+            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
+            </summary>
+            <param name="Width">Width of preview surface.</param>
+            <param name="Height">Height of preview surface.</param>
+            <param name="Background">Colour of background.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.Read">
+            <summary>
+            Read file.
+            </summary>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRecords(System.IO.BinaryReader@)">
+            <summary>
+            Reads records and formats Records array.
+            </summary>
+            <param name="Reader">Source reader.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRci(System.IO.BinaryReader@,System.String)">
+            <summary>
+            Special handling for RCI files.
+            </summary>
+            <param name="Reader">Source reader.</param>
+            <param name="Filename">Name of this file without path.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadWeaponCif(System.IO.BinaryReader@,System.String)">
+            <summary>
+            Special handling for WEAPON CIF files.
+            </summary>
+            <param name="Reader">Source reader.</param>
+            <param name="Filename">Name of this file without path.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadImageData(System.Int32,System.Int32)">
+            <summary>
+            Reads image data for specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadImage(System.Int32,System.Int32)">
+            <summary>
+            Read uncompressed record.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadWeaponImage(System.Int32,System.Int32)">
+            <summary>
+            Reads image data for specified weapon-type record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRleImage(System.Int32,System.Int32)">
+            <summary>
+            Read a RLE record.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.CifRciFile.ReadRleData(System.IO.BinaryReader@,System.Int32,System.IO.BinaryWriter@)">
+            <summary>
+            Reads RLE compressed data from source reader to destination writer.
+            </summary>
+            <param name="Reader">Source reader positioned at start of input data.</param>
+            <param name="Length">Length of source data.</param>
+            <param name="Writer">Destination writer positioned at start of output data.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.CifRciFile.PaletteName">
+            <summary>
+            Return correct palette name for this file (always ART_PAL.COL for CIF and RCI files).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.CifRciFile.RecordCount">
+            <summary>
+            Number of image records in this Cif or Rci file.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.CifRciFile.Description">
+            <summary>
+            Description of this file.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.CifRciFile.RecordType">
+            <summary>
+            Types of records found in this file.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.CifRciFile.Record">
+            <summary>
+            Record data.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.CifRciFile.AnimationHeader">
+            <summary>
+            Animation header for weapon files.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.SkyFile">
+            <summary>
+            Connects to a SKY??.DAT file to enumerate and extract image data.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.SkyFile.Palettes">
+            <summary>
+            Palette array.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.SkyFile.Bitmaps">
+            <summary>
+            Bitmap array.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to SKY??.DAT file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Loads a SKY file.
+            </summary>
+            <param name="FilePath">Absolute path to SKY??.DAT file</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetDFPalette(System.Int32)">
+            <summary>
+            Gets palette data for specified record and frame.
+            </summary>
+            <param name="Frame">Index of frame.</param>
+            <returns>DFPalette object or null.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetDFBitmap(System.Int32,System.Int32)">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <param name="Frame">Index of frame.</param>
+            <returns>DFBitmap object. Check DFBitmap.Data for null on failure.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetFrameCount(System.Int32)">
+            <summary>
+            Gets number of frames in specified record. Always 32 for SKY files.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Number of frames or -1 on error.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetSize(System.Int32)">
+            <summary>
+            Gets width and height of specified record. All frames of this record are the same dimensions.
+            </summary>
+            <param name="Record">Index of record.</param>
+            <returns>Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Gets managed bitmap from specified record and frame.
+            </summary>
+            <param name="Record">Record index.</param>
+            <param name="Frame">Frame index.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
+            <summary>
+            Get a preview of the file. Unlike other image previews, this method will only render frame 20 of record 1.
+             This is because all sky images look virtually identical at dawn and only look truly unique around half way through daytime on the brightest side.
+             The goal is to create a snapshot unique to each sky palette.
+            </summary>
+            <param name="Width">Width of preview surface.</param>
+            <param name="Height">Height of preview surface.</param>
+            <param name="Background">Colour of background.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.ReadPalette(System.Int32)">
+            <summary>
+            Read palette for specified record.
+            </summary>
+            <param name="Index">Index of palette.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.SkyFile.ReadImageData(System.Int32)">
+            <summary>
+            Reads image data.
+            </summary>
+            <param name="Index">Index of image.</param>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.SkyFile.RecordCount">
+            <summary>
+            Number of records in this Sky file. Always 2 for a SKY file (one animation each for east and west sky).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.SkyFile.PaletteName">
+            <summary>
+            SKY files are fully palettized per frame.
+             This method always returns string.Empty and is implemented only to satisfy abstract base class DFImage.
+             Use GetDFPalette(Frame) instead.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.SkyFile.Description">
+            <summary>
+            Description of this file (always "SKY File" as the game files contain no text descriptions for this file type).
+            </summary>
+        </member>
         <member name="T:DaggerfallConnect.Arena2.BlocksFile">
             <summary>
             Connects to BLOCKS.BSA to enumerate and extract city and dungeon blocks.
@@ -1774,122 +2098,6 @@
         <member name="T:DaggerfallConnect.Arena2.BlocksFile.BlockRecord">
             <summary>
             Represents a single block record.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.SkyFile">
-            <summary>
-            Connects to a SKY??.DAT file to enumerate and extract image data.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.SkyFile.Palettes">
-            <summary>
-            Palette array.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.SkyFile.Bitmaps">
-            <summary>
-            Bitmap array.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to SKY??.DAT file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Loads a SKY file.
-            </summary>
-            <param name="FilePath">Absolute path to SKY??.DAT file</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetDFPalette(System.Int32)">
-            <summary>
-            Gets palette data for specified record and frame.
-            </summary>
-            <param name="Frame">Index of frame.</param>
-            <returns>DFPalette object or null.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetDFBitmap(System.Int32,System.Int32)">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <param name="Frame">Index of frame.</param>
-            <returns>DFBitmap object. Check DFBitmap.Data for null on failure.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetFrameCount(System.Int32)">
-            <summary>
-            Gets number of frames in specified record. Always 32 for SKY files.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Number of frames or -1 on error.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetSize(System.Int32)">
-            <summary>
-            Gets width and height of specified record. All frames of this record are the same dimensions.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
-            <summary>
-            Get a preview of the file. Unlike other image previews, this method will only render frame 20 of record 1.
-             This is because all sky images look virtually identical at dawn and only look truly unique around half way through daytime on the brightest side.
-             The goal is to create a snapshot unique to each sky palette.
-            </summary>
-            <param name="Width">Width of preview surface.</param>
-            <param name="Height">Height of preview surface.</param>
-            <param name="Background">Colour of background.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.ReadPalette(System.Int32)">
-            <summary>
-            Read palette for specified record.
-            </summary>
-            <param name="Index">Index of palette.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.SkyFile.ReadImageData(System.Int32)">
-            <summary>
-            Reads image data.
-            </summary>
-            <param name="Index">Index of image.</param>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.SkyFile.RecordCount">
-            <summary>
-            Number of records in this Sky file. Always 2 for a SKY file (one animation each for east and west sky).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.SkyFile.PaletteName">
-            <summary>
-            SKY files are fully palettized per frame.
-             This method always returns string.Empty and is implemented only to satisfy abstract base class DFImage.
-             Use GetDFPalette(Frame) instead.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.SkyFile.Description">
-            <summary>
-            Description of this file (always "SKY File" as the game files contain no text descriptions for this file type).
             </summary>
         </member>
         <member name="T:Vector3">
@@ -2836,6 +3044,526 @@
             Thrown if the array argument does not contain exactly three components 
             </exception>
         </member>
+        <member name="T:DaggerfallConnect.Arena2.PakFile">
+            <summary>
+            Connects to CLIMATE.PAK or POLITIC.PAK to extract and read meta-data about the Daggerfall world map.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.PakFile.PakRowCountValue">
+            <summary>Number of PAK rows.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.PakFile.PakRowLengthValue">
+            <summary>Length of each PAK row.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.PakFile.PakBufferLengthValue">
+            <summary>Memory length of extracted PAK file.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.PakFile.ManagedFile">
+            <summary>Abstracts PAK file to a managed disk or memory stream.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.PakFile.PakExtractedBuffer">
+            <summary>Extracted PAK file buffer.</summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.#ctor(System.String)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to PAK file.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.Load(System.String)">
+            <summary>
+            Load PAK file.
+            </summary>
+            <param name="FilePath">Absolute path to PAK file.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.GetDFBitmap">
+            <summary>
+            Get extracted PAK data as an indexed image.
+            </summary>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.GetManagedBitmap">
+            <summary>
+            Get extracted PAK data as a managed bitmap.
+            </summary>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.PakFile.GetValue(System.Int32,System.Int32)">
+            <summary>
+            Gets value for specified position in world map.
+            </summary>
+            <param name="x">X position in world map. 0 to PakRowLength-1.</param>
+            <param name="y">Y position in world map. 0 to PakRowCount-1.</param>
+            <returns>Value of pak data if valid, -1 if invalid.</returns>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.PakFile.Buffer">
+            <summary>
+            Obtain a copy of extracted PAK data.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.PakFile.PakRowCount">
+            <summary>
+            Number of rows in PAK file (always 500).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.PakFile.PakRowLength">
+            <summary>
+            Number of bytes per PAK row (always 1001).
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFPalette">
+            <summary>
+            Describes a 256-colour Daggerfall palette. Supports loading .PAL and .COL files.
+             Palette is initialised to all 0xff0000 (red) to make it obvious when palette isn't loaded.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFPalette.HeaderLength">
+            <summary>
+            Length of header in bytes for supporting .COL files.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFPalette.PaletteBuffer">
+            <summary>
+            Array of 256x RGB values. Includes 8-byte header for supporting .COL files.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.#ctor">
+            <summary>
+            Default constructor. Palette is initialised with red.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.#ctor(System.String)">
+            <summary>
+            Load constructor (supports both .PAL and .COL files).
+            </summary>
+            <param name="FilePath">Absolute path to palette file.</param>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Load(System.String)">
+            <summary>
+            Loads a Daggerfall palette file (supports both .PAL and .COL files).
+            </summary>
+            <param name="FilePath">Absolute path to palette file.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Read(System.IO.BinaryReader@)">
+            <summary>
+            Read palette information from a binary reader.
+             Palette must be a 768-byte PalFile structure (256x 24-bit RGB values).
+            </summary>
+            <param name="Reader">Source reader positioned at start of palette data.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Fill(System.Byte,System.Byte,System.Byte)">
+            <summary>
+            Fills entire palette with specified RGB value.
+            </summary>
+            <param name="R">Red component.</param>
+            <param name="G">Green component.</param>
+            <param name="B">Blue component.</param>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.MakeGrayscale">
+            <summary>
+            Fills entire palette with grayscale values.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.MakeAutomap">
+            <summary>
+            Fills palette with AutoMap colours. The AutoMap colour index is equal to BuildingTypes value + 1.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Get(System.Int32)">
+            <summary>
+            Gets colour at specified index.
+            </summary>
+            <param name="Index">Index into colour array.</param>
+            <returns>Color object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.GetRed(System.Int32)">
+            <summary>
+            Gets red colour value at index.
+            </summary>
+            <param name="Index">Index into colour array.</param>
+            <returns>Red value byte.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.GetGreen(System.Int32)">
+            <summary>
+            Gets green colour value at index.
+            </summary>
+            <param name="Index">Index into colour array.</param>
+            <returns>Green value byte.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.GetBlue(System.Int32)">
+            <summary>
+            Gets blue colour value at index.
+            </summary>
+            <param name="Index">Index into colour array.</param>
+            <returns>Blue value byte.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Set(System.Int32,System.Byte,System.Byte,System.Byte)">
+            <summary>
+            Sets index to specified RGB values.
+            </summary>
+            <param name="Index">Index into colour array.</param>
+            <param name="R">Red component.</param>
+            <param name="G">Green component.</param>
+            <param name="B">Blue component.</param>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.Find(System.Byte,System.Byte,System.Byte)">
+            <summary>
+            Finds index with specified RGB values.
+            </summary>
+            <param name="R">Red component.</param>
+            <param name="G">Green component.</param>
+            <param name="B">Blue component.</param>
+            <returns>Index of found RGB value.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.DFPalette.GetManagedColorPalette">
+            <summary>
+            Gets a managed colour palette.
+            </summary>
+            <returns>ColorPalette object.</returns>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.ImgFile">
+            <summary>
+            Connects to a *.IMG file to enumerate and extract image data. Each IMG file contains a single image.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.ImgFile.Header">
+            <summary>
+            File header.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.ImgFile.ImgRecord">
+            <summary>
+            The image data for this image. Each IMG file only contains a single image.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.ImgFile.IsPalettizedValue">
+            <summary>
+            Specifies if this IMG file defines its own palette.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.ImgFile.PaletteDataPosition">
+            <summary>
+            Start of palettized data in file. Only valid when IsPalettized is true;
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.ImgFile.ImageDataPosition">
+            <summary>
+            Start of image data in file.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to *.IMG file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
+            <summary>
+            Load constructor with palette assignment.
+            Some IMG files contain palette information, this will overwrite the specified palette.
+            </summary>
+            <param name="FilePath">Absolute path to *.IMG file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="Palette">Palette to use when building images.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
+            <summary>
+            Load constructor that also loads a palette.
+            Some IMG files contain palette information, this will overwrite the specified palette.
+            </summary>
+            <param name="FilePath">Absolute path to *.IMG file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.UnsupportedFilenames">
+            <summary>
+            Gets unsupported filenames. The three IMG filenames returned have no image data or are otherwise invalid.
+            </summary>
+            <returns>Array of unsupported filenames.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.IsFilenameSupported(System.String)">
+            <summary>
+            Tests if a filename is supported.
+            </summary>
+            <param name="Filename">Name of *.IMG file.</param>
+            <returns>True if supported, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Loads an IMG file.
+            </summary>
+            <param name="FilePath">Absolute path to *.IMG file</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetDFBitmap">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array.
+            </summary>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetDFBitmap(System.Int32,System.Int32)">
+            <summary>
+            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
+             This method is an override for abstract method in parent class DFImageFile.
+             As IMG files only have 1 image the Record and Frame indices must always be 0
+             when calling this method.
+            </summary>
+            <param name="Record">Index of record. Must be 0.</param>
+            <param name="Frame">Index of frame. Must be 0.</param>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetFrameCount(System.Int32)">
+            <summary>
+            Gets number of frames in specified record.
+            </summary>
+            <param name="Record">Index of record. Must be 0 for Img files.</param>
+            <returns>Number of frames. Always 1 for loaded Img files.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetSize(System.Int32)">
+            <summary>
+            Gets width and height of specified record. As IMG files only have 1 record,
+             this must be 0.
+            </summary>
+            <param name="Record">Index of record. Must be 0.</param>
+            <returns>Size object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Gets managed bitmap from specified record and frame.
+            </summary>
+            <param name="Record">Record index. Must be 0 for Img files.</param>
+            <param name="Frame">Frame index. Must be 0 for Img files.</param>
+            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
+            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
+            <summary>
+            Get a preview of the file.
+            </summary>
+            <param name="Width">Width of preview surface.</param>
+            <param name="Height">Height of preview surface.</param>
+            <param name="Background">Colour of background.</param>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetHeaderlessFileImageDimensions">
+            <summary>
+            IMG files have a fixed width and height not specified in a header.
+             This method returns the correct dimensions of images inside these files.
+            </summary>
+            <returns>Dimensions of image.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.Read">
+            <summary>
+            Read file.
+            </summary>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadHeader(System.IO.BinaryReader@)">
+            <summary>
+            Reads file header.
+            </summary>
+            <param name="Reader">Source reader.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadImageData">
+            <summary>
+            Reads image data.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadImage(System.IO.BinaryReader@)">
+            <summary>
+            Read uncompressed image data.
+            </summary>
+            <param name="Reader">Source reader positioned at start of image data.</param>
+            <returns>True if succeeded, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadPalette(System.IO.BinaryReader@)">
+            <summary>
+            Some IMG files contain palette information following the image data.
+             This palette will replace any previosuly specified palette.
+            </summary>
+            <param name="Reader">Source reader positioned at end of image data.</param>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.ImgFile.IsPalettized">
+            <summary>
+            Specifies if this IMG file defines its own palette.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.ImgFile.PaletteName">
+            <summary>
+            IMG files use a variety of palettes. This property returns the correct palette filename to use for this image.
+             Palettized images (check IsPalettized flag) will return String.Emtpy for the palette filename.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.ImgFile.RecordCount">
+            <summary>
+            Number of image records in this Img file.
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.ImgFile.Description">
+            <summary>
+            Description of this file (always "IMG File" as the game files contain no text descriptions for this file type).
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.WoodsFile">
+            <summary>
+            Reads data from WOODS.WLD.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapWidthValue">
+            <summary>Width of heightmap in bytes.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapHeightValue">
+            <summary>Height of heightmap in bytes.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapBufferLengthValue">
+            <summary>Memory length of heightmap in bytes.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.ManagedFile">
+            <summary>
+            Abstracts WOODS.WLD file to a managed disk or memory stream.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.Header">
+            <summary>
+            Contains the WOODS.WLD file header data.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.DataOffsets">
+            <summary>
+            Offsets to CellData structures. There are 1000*500 offsets that correspond to
+             the standard 1000x500 world map structure.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.DataSection1Data">
+            <summary>
+            UNUSED.
+             Unknown data.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.Arena2.WoodsFile.HeightMapBuffer">
+            <summary>
+            Height map data.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load constructor.
+            </summary>
+            <param name="FilePath">Absolute path to WOODS.WLD.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
+            <summary>
+            Load WOODS.WLD file.
+            </summary>
+            <param name="FilePath">Absolute path to WOODS.WLD file.</param>
+            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
+            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapDFBitmap">
+            <summary>
+            Get extracted heightmap data as an indexed image.
+            </summary>
+            <returns>DFBitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapManagedBitmap">
+            <summary>
+            Get extracted heightmap data as a managed bitmap.
+            </summary>
+            <returns>Bitmap object.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapValue(System.Int32,System.Int32)">
+            <summary>
+            Gets value for specified position in heightmap.
+            </summary>
+            <param name="x">X position in heightmap. 0 to MapWidth-1.</param>
+            <param name="y">Y position in heightmap. 0 to MapHeight-1.</param>
+            <returns>Value of heightmap data if valid, -1 if invalid.</returns>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.Read">
+            <summary>
+            Read file.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadHeader(System.IO.BinaryReader)">
+            <summary>
+            Read header data.
+            </summary>
+            <param name="Reader">Reader to stream.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadDataOffsets(System.IO.BinaryReader)">
+            <summary>
+            Read data offsets.
+            </summary>
+            <param name="Reader">Reader to stream, positioned at start of offset data.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadDataSection1(System.IO.BinaryReader)">
+            <summary>
+            Read DataSection1 data.
+             The purpose of this data is currently unknown.
+            </summary>
+            <param name="Reader">Reader to stream.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadHeightMap(System.IO.BinaryReader)">
+            <summary>
+            Read heightmap data.
+            </summary>
+            <param name="Reader">Reader to stream.</param>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.WoodsFile.MapWidth">
+            <summary>
+            Width of heightmap data (always 1000).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.WoodsFile.MapHeight">
+            <summary>
+            Height of heightmap data (always 500).
+            </summary>
+        </member>
+        <member name="P:DaggerfallConnect.Arena2.WoodsFile.Buffer">
+            <summary>
+            Gets a copy of extracted heightmap data.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.WoodsFile.FileHeader">
+            <summary>
+            Represents WOODS.WLD file header.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Arena2.WoodsFile.DataSection1">
+            <summary>
+            UNUSED.
+             Represents DataSection1 data.
+             The purpose of this data is currently unknown.
+            </summary>
+        </member>
         <member name="T:DaggerfallConnect.DFBlock">
             <summary>
             Stores information about a block record. This is fundamentally equivalent to native block data,
@@ -3658,6 +4386,185 @@
             512 bytes of unknown data.
             </summary>
         </member>
+        <member name="T:DaggerfallConnect.Utility.DFModTool">
+            <summary>
+            Class for modifying certain values in Daggerfall's files
+             to aid research.
+             These methods are special-purpose, and not intended for general editing.
+             Do not use unless you know exactly what you
+             are doing and always make a backup of your game files beforehand.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Utility.DFModTool.#ctor(System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="arena2Path">Path to ARENA2 folder..</param>
+        </member>
+        <member name="M:DaggerfallConnect.Utility.DFModTool.ModActionRecord(System.String,System.Int64,System.Byte,System.UInt16,System.UInt16)">
+            <summary>
+            Changes action record at specified position.
+            </summary>
+            <param name="blockName">Name of block file.</param>
+            <param name="position">Start position of action record.</param>
+            <param name="axis">Rotation axis.</param>
+            <param name="duration">Duration of action.</param>
+            <param name="magnitude">Magnitude of action.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Utility.DFModTool.ModPlaneTexture(System.UInt32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            ARCH3D.BSA: Modify base texture assigned to plane.
+            </summary>
+            <param name="MeshID">ID of mesh.</param>
+            <param name="planeIndex">Plane index.</param>
+            <param name="textureArchive">New texture archive index to set.</param>
+            <param name="textureRecord">New texture record inex to set.</param>
+        </member>
+        <member name="M:DaggerfallConnect.Utility.DFModTool.WritePakFile(System.Byte[],System.String)">
+            <summary>
+            *.PAK: Writes a PAK file from the specified buffer.
+             Source buffer must be 1001x500 (500500) bytes.
+            </summary>
+            <param name="buffer">Source buffer to save in PAK format.</param>
+            <param name="path">Destination path and filename.</param>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.DFModTool.PakRun">
+            <summary>
+            Pak chunk.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.FaceUVTool">
+            <summary>
+            This class is based on Dave Humphrey's DF_3DSTex.CPP.
+             Modified for Daggerfall Connect Library by Gavin Clayton "Interkarma" (www.dfworkshop.net).
+             For original version download DFTo3DS at www.uesp.net.
+            </summary>
+        </member>
+        <member name="M:DaggerfallConnect.Utility.FaceUVTool.ComputeFaceUVCoordinates(DaggerfallConnect.Utility.FaceUVTool.DFPurePoint[]@,DaggerfallConnect.Utility.FaceUVTool.DFPurePoint[]@)">
+            <summary>
+            Calculates absolute UV values for all points of a face.
+            </summary>
+            <param name="FaceVertsIn">Source array of native point values.</param>
+            <param name="FaceVertsOut">Destination array for calculated UV values.</param>
+            <returns>True if successful, otherwise false.</returns>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.FaceUVTool.DFPurePoint">
+            <summary>
+            Describes a single Daggerfall-native vertex.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.FaceUVTool.DF2DPoint">
+            <summary>
+            Used to store a 2D point.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.FaceUVTool.df3duvparams_lt">
+            <summary>
+            Local type for matrix conversion parameters.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.Utility.FaceUVTool.df3duvmatrix_t">
+            <summary>
+            Used to convert XYZ point coordinates to DF UV coordinates.
+            </summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFMesh">
+            <summary>
+            Stores decomposed mesh data. A mesh is made up of one or more submeshes (DFSubMesh). Each submesh has a unique texture.
+             All faces sharing a texture have been grouped into the appropriate submesh. Each submesh contains one
+             or more planes (DFPlane). A plane is a collection of points (DFPoint) in a fan radiating from point 0.
+             Planes with 3 points can be written as triangles to your 3D engine, however planes with 4 or more points must be
+             written based on your needs. For example, if you wanted to write a triangle list then write the first triangle from
+             the first three points (indices 0, 1, 2), then increment the second two point indices (0, 2, 3, then 0, 3, 4, and so on)
+             until all points have been read. This structure has been chosen as a half-way point between native Daggerfall formats
+             and modern 3D engines. How the data is used will depend on the engine chosen for visualisation.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.ObjectId">
+            <summary>Object ID of the mesh. This ID is referenced by higher level structures such as blocks.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.TotalVertices">
+            <summary>Total number of vertices across all submeshes. Helpful for allocating vertex buffers.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.TotalTriangles">
+            <summary>Total number of triangles across all subeshes. Helpful for allocating index buffers.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.SubMeshes">
+            <summary>Submesh array. Each submesh contains DFPlane structures grouped by texture.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFMesh.UVGenerationMethods">
+            <summary>
+            These are methods by which the UV coordinates are generated. This is for troubleshooting only and can be ignored.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.Unknown">
+            <summary>An unknown method.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.TriangleOnly">
+            <summary>Face has three points only.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.ModifedMatrixGenerator">
+            <summary>Using FaceUVTool matrix generator.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFMesh.DFSubMesh">
+            <summary>
+            Stores mesh submesh data. Each submesh has a unique texture.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TextureArchive">
+            <summary>Texture archive index. Used to determine which texture file to load (e.g. TEXTURE.210).</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TextureRecord">
+            <summary>Texture record index. Used to determine which texture record (index) to load from archive.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TotalTriangles">
+            <summary>Total number of triangles in this submesh. Helpful for allocating index buffers.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.Planes">
+            <summary>Array of faces sharing the same texture.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFMesh.DFPlane">
+            <summary>
+            Stores plane data. The point array is stored in a left-handed counter-clockwise fashion.
+             Adjust winding and invert based on your destination engine. Planes are grouped under a submesh
+             based on their texture. Each plane is a triangle fan.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPlane.Points">
+            <summary>Array of vertices.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPlane.UVGenerationMethod">
+            <summary>The UV generation method used for this plane. This is for troubleshooting only and can be ignored.</summary>
+        </member>
+        <member name="T:DaggerfallConnect.DFMesh.DFPoint">
+            <summary>
+            Describes a single vertex. Normals and texture coordinates have been read from native mesh format.
+            </summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.X">
+            <summary>X position.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.Y">
+            <summary>Y position.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.Z">
+            <summary>Z position.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NX">
+            <summary>X component of normal.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NY">
+            <summary>Y component of normal.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NZ">
+            <summary>Z component of normal.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.U">
+            <summary>U coordinate of texture.</summary>
+        </member>
+        <member name="F:DaggerfallConnect.DFMesh.DFPoint.V">
+            <summary>V coordinate of texture.</summary>
+        </member>
         <member name="T:DaggerfallConnect.DFManualImage">
             <summary>
             Used to constructs manual images from DFImage. Provides all the base handling from DFImageFile, and all the benefits
@@ -3771,449 +4678,6 @@
         <member name="P:DaggerfallConnect.DFManualImage.DFBitmap">
             <summary>
             Gets or sets DFBitmap object.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.WoodsFile">
-            <summary>
-            Reads data from WOODS.WLD.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapWidthValue">
-            <summary>Width of heightmap in bytes.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapHeightValue">
-            <summary>Height of heightmap in bytes.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.MapBufferLengthValue">
-            <summary>Memory length of heightmap in bytes.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.ManagedFile">
-            <summary>
-            Abstracts WOODS.WLD file to a managed disk or memory stream.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.Header">
-            <summary>
-            Contains the WOODS.WLD file header data.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.DataOffsets">
-            <summary>
-            Offsets to CellData structures. There are 1000*500 offsets that correspond to
-             the standard 1000x500 world map structure.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.DataSection1Data">
-            <summary>
-            UNUSED.
-             Unknown data.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.WoodsFile.HeightMapBuffer">
-            <summary>
-            Height map data.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to WOODS.WLD.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load WOODS.WLD file.
-            </summary>
-            <param name="FilePath">Absolute path to WOODS.WLD file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapDFBitmap">
-            <summary>
-            Get extracted heightmap data as an indexed image.
-            </summary>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapManagedBitmap">
-            <summary>
-            Get extracted heightmap data as a managed bitmap.
-            </summary>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.GetHeightMapValue(System.Int32,System.Int32)">
-            <summary>
-            Gets value for specified position in heightmap.
-            </summary>
-            <param name="x">X position in heightmap. 0 to MapWidth-1.</param>
-            <param name="y">Y position in heightmap. 0 to MapHeight-1.</param>
-            <returns>Value of heightmap data if valid, -1 if invalid.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.Read">
-            <summary>
-            Read file.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadHeader(System.IO.BinaryReader)">
-            <summary>
-            Read header data.
-            </summary>
-            <param name="Reader">Reader to stream.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadDataOffsets(System.IO.BinaryReader)">
-            <summary>
-            Read data offsets.
-            </summary>
-            <param name="Reader">Reader to stream, positioned at start of offset data.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadDataSection1(System.IO.BinaryReader)">
-            <summary>
-            Read DataSection1 data.
-             The purpose of this data is currently unknown.
-            </summary>
-            <param name="Reader">Reader to stream.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.WoodsFile.ReadHeightMap(System.IO.BinaryReader)">
-            <summary>
-            Read heightmap data.
-            </summary>
-            <param name="Reader">Reader to stream.</param>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.WoodsFile.MapWidth">
-            <summary>
-            Width of heightmap data (always 1000).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.WoodsFile.MapHeight">
-            <summary>
-            Height of heightmap data (always 500).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.WoodsFile.Buffer">
-            <summary>
-            Gets a copy of extracted heightmap data.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.WoodsFile.FileHeader">
-            <summary>
-            Represents WOODS.WLD file header.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.WoodsFile.DataSection1">
-            <summary>
-            UNUSED.
-             Represents DataSection1 data.
-             The purpose of this data is currently unknown.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.PakFile">
-            <summary>
-            Connects to CLIMATE.PAK or POLITIC.PAK to extract and read meta-data about the Daggerfall world map.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.PakFile.PakRowCountValue">
-            <summary>Number of PAK rows.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.PakFile.PakRowLengthValue">
-            <summary>Length of each PAK row.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.PakFile.PakBufferLengthValue">
-            <summary>Memory length of extracted PAK file.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.PakFile.ManagedFile">
-            <summary>Abstracts PAK file to a managed disk or memory stream.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.PakFile.PakExtractedBuffer">
-            <summary>Extracted PAK file buffer.</summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.#ctor(System.String)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to PAK file.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.Load(System.String)">
-            <summary>
-            Load PAK file.
-            </summary>
-            <param name="FilePath">Absolute path to PAK file.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.GetDFBitmap">
-            <summary>
-            Get extracted PAK data as an indexed image.
-            </summary>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.GetManagedBitmap">
-            <summary>
-            Get extracted PAK data as a managed bitmap.
-            </summary>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.PakFile.GetValue(System.Int32,System.Int32)">
-            <summary>
-            Gets value for specified position in world map.
-            </summary>
-            <param name="x">X position in world map. 0 to PakRowLength-1.</param>
-            <param name="y">Y position in world map. 0 to PakRowCount-1.</param>
-            <returns>Value of pak data if valid, -1 if invalid.</returns>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.PakFile.Buffer">
-            <summary>
-            Obtain a copy of extracted PAK data.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.PakFile.PakRowCount">
-            <summary>
-            Number of rows in PAK file (always 500).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.PakFile.PakRowLength">
-            <summary>
-            Number of bytes per PAK row (always 1001).
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.FaceUVTool">
-            <summary>
-            This class is based on Dave Humphrey's DF_3DSTex.CPP.
-             Modified for Daggerfall Connect Library by Gavin Clayton "Interkarma" (www.dfworkshop.net).
-             For original version download DFTo3DS at www.uesp.net.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Utility.FaceUVTool.ComputeFaceUVCoordinates(DaggerfallConnect.Utility.FaceUVTool.DFPurePoint[]@,DaggerfallConnect.Utility.FaceUVTool.DFPurePoint[]@)">
-            <summary>
-            Calculates absolute UV values for all points of a face.
-            </summary>
-            <param name="FaceVertsIn">Source array of native point values.</param>
-            <param name="FaceVertsOut">Destination array for calculated UV values.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.FaceUVTool.DFPurePoint">
-            <summary>
-            Describes a single Daggerfall-native vertex.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.FaceUVTool.DF2DPoint">
-            <summary>
-            Used to store a 2D point.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.FaceUVTool.df3duvparams_lt">
-            <summary>
-            Local type for matrix conversion parameters.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.FaceUVTool.df3duvmatrix_t">
-            <summary>
-            Used to convert XYZ point coordinates to DF UV coordinates.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.ImgFile">
-            <summary>
-            Connects to a *.IMG file to enumerate and extract image data. Each IMG file contains a single image.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.ImgFile.Header">
-            <summary>
-            File header.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.ImgFile.ImgRecord">
-            <summary>
-            The image data for this image. Each IMG file only contains a single image.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.ImgFile.IsPalettizedValue">
-            <summary>
-            Specifies if this IMG file defines its own palette.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.ImgFile.PaletteDataPosition">
-            <summary>
-            Start of palettized data in file. Only valid when IsPalettized is true;
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.ImgFile.ImageDataPosition">
-            <summary>
-            Start of image data in file.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to *.IMG file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
-            <summary>
-            Load constructor with palette assignment.
-            Some IMG files contain palette information, this will overwrite the specified palette.
-            </summary>
-            <param name="FilePath">Absolute path to *.IMG file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="Palette">Palette to use when building images.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
-            <summary>
-            Load constructor that also loads a palette.
-            Some IMG files contain palette information, this will overwrite the specified palette.
-            </summary>
-            <param name="FilePath">Absolute path to *.IMG file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.UnsupportedFilenames">
-            <summary>
-            Gets unsupported filenames. The three IMG filenames returned have no image data or are otherwise invalid.
-            </summary>
-            <returns>Array of unsupported filenames.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.IsFilenameSupported(System.String)">
-            <summary>
-            Tests if a filename is supported.
-            </summary>
-            <param name="Filename">Name of *.IMG file.</param>
-            <returns>True if supported, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Loads an IMG file.
-            </summary>
-            <param name="FilePath">Absolute path to *.IMG file</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetDFBitmap">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array.
-            </summary>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetDFBitmap(System.Int32,System.Int32)">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
-             This method is an override for abstract method in parent class DFImageFile.
-             As IMG files only have 1 image the Record and Frame indices must always be 0
-             when calling this method.
-            </summary>
-            <param name="Record">Index of record. Must be 0.</param>
-            <param name="Frame">Index of frame. Must be 0.</param>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetFrameCount(System.Int32)">
-            <summary>
-            Gets number of frames in specified record.
-            </summary>
-            <param name="Record">Index of record. Must be 0 for Img files.</param>
-            <returns>Number of frames. Always 1 for loaded Img files.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetSize(System.Int32)">
-            <summary>
-            Gets width and height of specified record. As IMG files only have 1 record,
-             this must be 0.
-            </summary>
-            <param name="Record">Index of record. Must be 0.</param>
-            <returns>Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified record and frame.
-            </summary>
-            <param name="Record">Record index. Must be 0 for Img files.</param>
-            <param name="Frame">Frame index. Must be 0 for Img files.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
-            <summary>
-            Get a preview of the file.
-            </summary>
-            <param name="Width">Width of preview surface.</param>
-            <param name="Height">Height of preview surface.</param>
-            <param name="Background">Colour of background.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.GetHeaderlessFileImageDimensions">
-            <summary>
-            IMG files have a fixed width and height not specified in a header.
-             This method returns the correct dimensions of images inside these files.
-            </summary>
-            <returns>Dimensions of image.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.Read">
-            <summary>
-            Read file.
-            </summary>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadHeader(System.IO.BinaryReader@)">
-            <summary>
-            Reads file header.
-            </summary>
-            <param name="Reader">Source reader.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadImageData">
-            <summary>
-            Reads image data.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadImage(System.IO.BinaryReader@)">
-            <summary>
-            Read uncompressed image data.
-            </summary>
-            <param name="Reader">Source reader positioned at start of image data.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.ImgFile.ReadPalette(System.IO.BinaryReader@)">
-            <summary>
-            Some IMG files contain palette information following the image data.
-             This palette will replace any previosuly specified palette.
-            </summary>
-            <param name="Reader">Source reader positioned at end of image data.</param>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.ImgFile.IsPalettized">
-            <summary>
-            Specifies if this IMG file defines its own palette.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.ImgFile.PaletteName">
-            <summary>
-            IMG files use a variety of palettes. This property returns the correct palette filename to use for this image.
-             Palettized images (check IsPalettized flag) will return String.Emtpy for the palette filename.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.ImgFile.RecordCount">
-            <summary>
-            Number of image records in this Img file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.ImgFile.Description">
-            <summary>
-            Description of this file (always "IMG File" as the game files contain no text descriptions for this file type).
             </summary>
         </member>
         <member name="T:DaggerfallConnect.DFRegion">
@@ -4432,53 +4896,6 @@
         </member>
         <member name="F:DaggerfallConnect.DFRegion.RegionMapTable.Unknown3">
             <summary>Unknown.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.DFModTool">
-            <summary>
-            Class for modifying certain values in Daggerfall's files
-             to aid research.
-             These methods are special-purpose, and not intended for general editing.
-             Do not use unless you know exactly what you
-             are doing and always make a backup of your game files beforehand.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Utility.DFModTool.#ctor(System.String)">
-            <summary>
-            Constructor.
-            </summary>
-            <param name="arena2Path">Path to ARENA2 folder..</param>
-        </member>
-        <member name="M:DaggerfallConnect.Utility.DFModTool.ModActionRecord(System.String,System.Int64,System.Byte,System.UInt16,System.UInt16)">
-            <summary>
-            Changes action record at specified position.
-            </summary>
-            <param name="blockName">Name of block file.</param>
-            <param name="position">Start position of action record.</param>
-            <param name="axis">Rotation axis.</param>
-            <param name="duration">Duration of action.</param>
-            <param name="magnitude">Magnitude of action.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Utility.DFModTool.ModPlaneTexture(System.UInt32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            ARCH3D.BSA: Modify base texture assigned to plane.
-            </summary>
-            <param name="MeshID">ID of mesh.</param>
-            <param name="planeIndex">Plane index.</param>
-            <param name="textureArchive">New texture archive index to set.</param>
-            <param name="textureRecord">New texture record inex to set.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Utility.DFModTool.WritePakFile(System.Byte[],System.String)">
-            <summary>
-            *.PAK: Writes a PAK file from the specified buffer.
-             Source buffer must be 1001x500 (500500) bytes.
-            </summary>
-            <param name="buffer">Source buffer to save in PAK format.</param>
-            <param name="path">Destination path and filename.</param>
-        </member>
-        <member name="T:DaggerfallConnect.Utility.DFModTool.PakRun">
-            <summary>
-            Pak chunk.
-            </summary>
         </member>
         <member name="T:DaggerfallConnect.DFLocation">
             <summary>
@@ -4950,423 +5367,6 @@
         </member>
         <member name="F:DaggerfallConnect.DFLocation.DungeonBlock.BlockName">
             <summary>Name of RDB block.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFBitmap">
-            <summary>
-            Stores raw bitmap data. The binary format of the image data will depend on the method which returned the DFBitmap object.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Format">
-            <summary>Format of the image.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Width">
-            <summary>Width of the image in pixels.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Height">
-            <summary>Height of the image in pixels.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Stride">
-            <summary>Stride (bytes per horizontal row) of the image.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Data">
-            <summary>Image byte array in specified format.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFBitmap.Formats">
-            <summary>
-            Bitmap formats enumeration.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Formats.Indexed">
-            <summary>Indexed image. 1 byte per pixel. Each byte is an index into the palette colour data.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Formats.ARGB">
-            <summary>Colour channels in order alpha, red, green, blue. 4 bytes per pixel.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Formats.RGBA">
-            <summary>Colour channels in order red, green, blue, alpha. 4 bytes per pixel.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Formats.ABGR">
-            <summary>Colour channels in order alpha, blue, green, red. 4 bytes per pixel.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFBitmap.Formats.BGRA">
-            <summary>Colour channels in order blue, green, red, alpha. 4 bytes per pixel.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFMesh">
-            <summary>
-            Stores decomposed mesh data. A mesh is made up of one or more submeshes (DFSubMesh). Each submesh has a unique texture.
-             All faces sharing a texture have been grouped into the appropriate submesh. Each submesh contains one
-             or more planes (DFPlane). A plane is a collection of points (DFPoint) in a fan radiating from point 0.
-             Planes with 3 points can be written as triangles to your 3D engine, however planes with 4 or more points must be
-             written based on your needs. For example, if you wanted to write a triangle list then write the first triangle from
-             the first three points (indices 0, 1, 2), then increment the second two point indices (0, 2, 3, then 0, 3, 4, and so on)
-             until all points have been read. This structure has been chosen as a half-way point between native Daggerfall formats
-             and modern 3D engines. How the data is used will depend on the engine chosen for visualisation.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.ObjectId">
-            <summary>Object ID of the mesh. This ID is referenced by higher level structures such as blocks.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.TotalVertices">
-            <summary>Total number of vertices across all submeshes. Helpful for allocating vertex buffers.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.TotalTriangles">
-            <summary>Total number of triangles across all subeshes. Helpful for allocating index buffers.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.SubMeshes">
-            <summary>Submesh array. Each submesh contains DFPlane structures grouped by texture.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFMesh.UVGenerationMethods">
-            <summary>
-            These are methods by which the UV coordinates are generated. This is for troubleshooting only and can be ignored.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.Unknown">
-            <summary>An unknown method.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.TriangleOnly">
-            <summary>Face has three points only.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.UVGenerationMethods.ModifedMatrixGenerator">
-            <summary>Using FaceUVTool matrix generator.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFMesh.DFSubMesh">
-            <summary>
-            Stores mesh submesh data. Each submesh has a unique texture.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TextureArchive">
-            <summary>Texture archive index. Used to determine which texture file to load (e.g. TEXTURE.210).</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TextureRecord">
-            <summary>Texture record index. Used to determine which texture record (index) to load from archive.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.TotalTriangles">
-            <summary>Total number of triangles in this submesh. Helpful for allocating index buffers.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFSubMesh.Planes">
-            <summary>Array of faces sharing the same texture.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFMesh.DFPlane">
-            <summary>
-            Stores plane data. The point array is stored in a left-handed counter-clockwise fashion.
-             Adjust winding and invert based on your destination engine. Planes are grouped under a submesh
-             based on their texture. Each plane is a triangle fan.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPlane.Points">
-            <summary>Array of vertices.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPlane.UVGenerationMethod">
-            <summary>The UV generation method used for this plane. This is for troubleshooting only and can be ignored.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.DFMesh.DFPoint">
-            <summary>
-            Describes a single vertex. Normals and texture coordinates have been read from native mesh format.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.X">
-            <summary>X position.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.Y">
-            <summary>Y position.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.Z">
-            <summary>Z position.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NX">
-            <summary>X component of normal.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NY">
-            <summary>Y component of normal.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.NZ">
-            <summary>Z component of normal.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.U">
-            <summary>U coordinate of texture.</summary>
-        </member>
-        <member name="F:DaggerfallConnect.DFMesh.DFPoint.V">
-            <summary>V coordinate of texture.</summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile">
-            <summary>
-            Connects to a TEXTURE.??? file to enumerate and extract image data.
-             Each texture file may contain one or more images, including animated records with multiple frames.
-             Textures will only be converted from the source binary file when needed. This allows you to extract
-             individual records and frames without the overhead of converting unwanted images.
-             Combine this with a texture caching scheme when loading large 3D scenes to avoid unnecessary load time.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.TextureFile.SolidSize">
-            <summary>
-            Width and height of solid images.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.TextureFile.SolidType">
-            <summary>
-            Type of solid image.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.TextureFile.Header">
-            <summary>
-            File header.
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.TextureFile.RecordHeaders">
-            <summary>
-            Record header array
-            </summary>
-        </member>
-        <member name="F:DaggerfallConnect.Arena2.TextureFile.Records">
-            <summary>
-            Record array.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Load constructor.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,DaggerfallConnect.DFPalette,System.Boolean)">
-            <summary>
-            Load constructor with palette assignment.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="Palette">Palette to use when building images.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.#ctor(System.String,DaggerfallConnect.FileUsage,System.String,System.Boolean)">
-            <summary>
-            Load constructor that also loads a palette.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file.</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="PaletteFilePath">Absolute path to Daggerfall palette file.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.IsFilenameSupported(System.String)">
-            <summary>
-            Tests if a filename is supported.
-            </summary>
-            <param name="Filename">Name of TEXTURE.* file.</param>
-            <returns>True if supported, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.Load(System.String,DaggerfallConnect.FileUsage,System.Boolean)">
-            <summary>
-            Loads a texture file.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file</param>
-            <param name="Usage">Specify if file will be accessed from disk, or loaded into RAM.</param>
-            <param name="ReadOnly">File will be read-only if true, read-write if false.</param>
-            <returns>True if successful, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetFrameCount(System.Int32)">
-            <summary>
-            Gets number of frames in specified record.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Number of frames.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetSize(System.Int32)">
-            <summary>
-            Gets width and height of specified record. All frames of this record are the same dimensions.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetScale(System.Int32)">
-            <summary>
-            Get the width and height scale to apply to image in scene. These values are divided by 256
-             to obtain a value between -1.0 - 0.0, and presumably 0.0 - 1.0. This is the scale of pixels
-             for enlarging or shrinking the image.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Scale values for X and Y in Size object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetWidth(System.Int32)">
-            <summary>
-            Gets width of this image.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Width of image in pixels.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetHeight(System.Int32)">
-            <summary>
-            Gets the height of this image.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <returns>Height of image in pixels.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetDFBitmap(System.Int32,System.Int32)">
-            <summary>
-            Gets bitmap data as indexed 8-bit byte array for specified record and frame.
-            </summary>
-            <param name="Record">Index of record.</param>
-            <param name="Frame">Index of frame.</param>
-            <returns>DFBitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetManagedBitmap(System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Gets managed bitmap from specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <param name="IndexedColour">True to maintain idexed colour, false to return RGB bitmap.</param>
-            <param name="MakeTransparent">True to make colour 0x000000 transparent, otherwise false.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.GetPreview(System.Int32,System.Int32,System.Drawing.Color)">
-            <summary>
-            Get a preview of the file. As many images as possible will be laid out onto the preview surface.
-            </summary>
-            <param name="Width">Width of preview surface.</param>
-            <param name="Height">Height of preview surface.</param>
-            <param name="Background">Colour of background.</param>
-            <returns>Bitmap object.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.IndexToFileName(System.Int32)">
-            <summary>
-            Returns a TEXTURE.nnn filename based on index.
-             This is needed when loading textures for 3D objects that reference textures by index rather than filename.
-             If the index is not valid, the returned filename will also be invalid.
-            </summary>
-            <param name="ArchiveIndex">Index of texture archive.</param>
-            <returns>Texture filename in the format TEXTURE.nnn.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.QuickSize(System.String,System.Int32)">
-            <summary>
-            Gets size of an unloaded texture quickly with minimum overhead.
-             This is useful for mesh loading where the texture dimensions need to be known,
-             but you may not need to load the entire texture file at that time.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file</param>
-            <param name="Record">Index of record.</param>
-            <returns>Size.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.QuickScale(System.String,System.Int32)">
-            <summary>
-            Gets scale of an unloaded texture quickly with minimum overhead.
-             This is useful for flat loading where the texture scale needs to be known,
-             but you may not need to load the entire texture file at that time.
-            </summary>
-            <param name="FilePath">Absolute path to TEXTURE.* file</param>
-            <param name="Record">Index of record.</param>
-            <returns>Size.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.Read">
-            <summary>
-            Read file.
-            </summary>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadHeader(System.IO.BinaryReader@)">
-            <summary>
-            Reads file header.
-            </summary>
-            <param name="Reader">Source reader.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRecordHeaders(System.IO.BinaryReader@)">
-            <summary>
-            Reads record headers.
-            </summary>
-            <param name="Reader">Source reader.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRecords(System.IO.BinaryReader@)">
-            <summary>
-            Reads records.
-            </summary>
-            <param name="Reader">Source reader.</param>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadImageData(System.Int32,System.Int32)">
-            <summary>
-            Reads image data for specified record and frame.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadSolid(System.Int32)">
-            <summary>
-            Create a solid image type.
-            </summary>
-            <param name="Record">Record index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadImage(System.Int32,System.Int32)">
-            <summary>
-            Read uncompressed record.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="M:DaggerfallConnect.Arena2.TextureFile.ReadRle(System.Int32,System.Int32)">
-            <summary>
-            Read a RecordRle record.
-            </summary>
-            <param name="Record">Record index.</param>
-            <param name="Frame">Frame index.</param>
-            <returns>True if succeeded, otherwise false.</returns>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.TextureFile.Description">
-            <summary>
-            Gets description of texture file.
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.TextureFile.UnsupportedFilenames">
-            <summary>
-            Gets unsupported filenames. The three texture filenames returned have no image data or are otherwise invalid.
-            </summary>
-            <returns>Array of unsupported filenames.</returns>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.TextureFile.PaletteName">
-            <summary>
-            Gets correct palette name for this file (always ART_PAL.COL for texture files).
-            </summary>
-        </member>
-        <member name="P:DaggerfallConnect.Arena2.TextureFile.RecordCount">
-            <summary>
-            Number of image records in this file.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.SolidTypes">
-            <summary>
-            Solid types enumeration.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.RowEncoding">
-            <summary>
-            Row encoding used for the SpecialFrameHeader of RecordRle archives.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.FileHeader">
-            <summary>
-            File header.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.RecordHeader">
-            <summary>
-            Record header.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.Record">
-            <summary>
-            Record data.
-            </summary>
-        </member>
-        <member name="T:DaggerfallConnect.Arena2.TextureFile.SpecialRowHeader">
-            <summary>
-            Used to decode RecordRle archives.
-            </summary>
         </member>
         <member name="T:DaggerfallConnect.Arena2.Arch3dFile">
             <summary>

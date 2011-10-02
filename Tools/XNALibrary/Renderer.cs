@@ -723,6 +723,15 @@ namespace XNALibrary
         /// <param name="node">GroundPlaneNode.</param>
         private void BatchGroundPlaneNode(GroundPlaneNode node)
         {
+            // Recreate ground texture if lost
+            if (node.Texture.IsContentLost)
+            {
+                // Ground plane is always direct child of a block
+                BlockNode parent = (BlockNode)node.Parent;
+                DFBlock block = parent.Block;
+                node.Texture = textureManager.CreateBlockGroundTexture(ref block, node.GroundArchive);
+            }
+
             // Batch ground plane
             BatchItem batchItem;
             batchItem.Indexed = false;
