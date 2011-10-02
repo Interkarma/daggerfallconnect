@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12 PM">
+</Property><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12:36 PM">
+</Property><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12:38 PM">
+</Property><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12:39 PM">
+</Property><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12:41 PM">
+</Property><Property Name="Solution" Value="DaggerfallConnect">
+</Property><Property Name="Solution File" Value="D:\Development\Projects\Current\DaggerfallConnect-XNA4\DaggerfallConnect\DaggerfallConnect.sln">
+</Property><Property Name="Date" Value="Friday, 30 September 2011">
+</Property><Property Name="Time" Value="14:12:43 PM">
+</Property></Properties><Event ErrorLevel="0" Project="DaggerfallConnect" Source="Library\DaggerfallConnect.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="DaggerfallConnect" Source="Library\DaggerfallConnect.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tool_DaggerfallImaging2" Source="Tools\DaggerfallImaging2\Tool_DaggerfallImaging2.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tool_DaggerfallImaging2" Source="Tools\DaggerfallImaging2\Tool_DaggerfallImaging2.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_2" Source="Tutorials\BasicSeries_2\Tutorial_BasicSeries_2.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_BasicSeries_2" Source="Tutorials\BasicSeries_2\Tutorial_BasicSeries_2.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_3" Source="Tutorials\BasicSeries_3\Tutorial_BasicSeries_3.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_BasicSeries_3" Source="Tutorials\BasicSeries_3\Tutorial_BasicSeries_3.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_4" Source="Tutorials\BasicSeries_4\Tutorial_BasicSeries_4.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_BasicSeries_4" Source="Tutorials\BasicSeries_4\Tutorial_BasicSeries_4.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_IntermediateSeries_1" Source="Tutorials\IntermediateSeries_1\Tutorial_IntermediateSeries_1.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_IntermediateSeries_1" Source="Tutorials\IntermediateSeries_1\Tutorial_IntermediateSeries_1.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_IntermediateSeries_2" Source="Tutorials\IntermediateSeries_2\Tutorial_IntermediateSeries_2.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_IntermediateSeries_2" Source="Tutorials\IntermediateSeries_2\Tutorial_IntermediateSeries_2.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_1" Source="Tutorials\BasicSeries_1\Tutorial_BasicSeries_1.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Tutorial_BasicSeries_1" Source="Tutorials\BasicSeries_1\Tutorial_BasicSeries_1.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Tool_XNALibrary" Source="Tools\XNALibrary\Tool_XNALibrary.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Tool_XNALibrary" Source="Tools\XNALibrary\Tool_XNALibrary.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tool_XNALibrary" Source="Tools\XNALibrary\Tool_XNALibrary.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tool_DaggerfallModelling" Source="Tools\DaggerfallModelling\Tool_DaggerfallModelling.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tool_DaggerfallModelling" Source="Tools\DaggerfallModelling\Tool_DaggerfallModelling.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_1" Source="Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_1" Source="Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tutorial_XNASeries_1" Source="Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_2" Source="Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_2" Source="Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tutorial_XNASeries_2" Source="Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_5" Source="Tutorials\BasicSeries_5\Tutorial_BasicSeries_5.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tutorial_BasicSeries_5" Source="Tutorials\BasicSeries_5\Tutorial_BasicSeries_5.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_3" Source="Tutorials\XNASeries_3\Tutorial_XNASeries_3.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_3" Source="Tutorials\XNASeries_3\Tutorial_XNASeries_3.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tutorial_XNASeries_3" Source="Tutorials\XNASeries_3\Tutorial_XNASeries_3.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_4" Source="Tutorials\XNASeries_4\Tutorial_XNASeries_4.csproj" Description="Upgraded XNA Game Studio project to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_4" Source="Tutorials\XNASeries_4\Tutorial_XNASeries_4.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Tutorial_XNASeries_4" Source="Tutorials\XNASeries_4\Tutorial_XNASeries_4.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="DaggerfallConnect.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="DaggerfallConnect.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Tool_XNALibrary" Source="Tools\XNALibrary\Tool_XNALibrary.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tool_XNALibrary" Source="Tools\XNALibrary\Tool_XNALibrary.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="XNALibraryContent" Source="Tools\XNALibrary\Content\XNALibraryContent.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event><Event ErrorLevel="0" Project="Tool_DaggerfallModelling" Source="Tools\DaggerfallModelling\Tool_DaggerfallModelling.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_1" Source="Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_1" Source="Tutorials\XNASeries_1\Tutorial_XNASeries_1.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="XNASeries_1Content" Source="Tutorials\XNASeries_1\Content\XNASeries_1Content.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_2" Source="Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_2" Source="Tutorials\XNASeries_2\Tutorial_XNASeries_2.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="XNASeries_2Content" Source="Tutorials\XNASeries_2\Content\XNASeries_2Content.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event><Event ErrorLevel="0" Project="Tutorial_BasicSeries_5" Source="Tutorials\BasicSeries_5\Tutorial_BasicSeries_5.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_3" Source="Tutorials\XNASeries_3\Tutorial_XNASeries_3.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_3" Source="Tutorials\XNASeries_3\Tutorial_XNASeries_3.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="XNASeries_3Content" Source="Tutorials\XNASeries_3\Content\XNASeries_3Content.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_4" Source="Tutorials\XNASeries_4\Tutorial_XNASeries_4.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="Tutorial_XNASeries_4" Source="Tutorials\XNASeries_4\Tutorial_XNASeries_4.csproj" Description="Upgraded XNA Framework references to XNA Framework 4.0.">
+</Event><Event ErrorLevel="0" Project="XNASeries_4Content" Source="Tutorials\XNASeries_4\Content\XNASeries_4Content.contentproj" Description="Upgraded XNA Game Studio nested content projects to XNA Framework 4.0 and promoted to sibling project.">
+</Event></UpgradeLog>
