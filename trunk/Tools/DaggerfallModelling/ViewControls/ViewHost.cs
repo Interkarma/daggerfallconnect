@@ -29,7 +29,7 @@ namespace DaggerfallModelling.ViewControls
     /// <summary>
     /// Serves different views to the user from a single control.
     /// </summary>
-    public class ViewHost : WinFormsGraphicsDevice.GraphicsDeviceControl
+    public class ViewHost : GraphicsDeviceControl
     {
 
         #region Class Variables

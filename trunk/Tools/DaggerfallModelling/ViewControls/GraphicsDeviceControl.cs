@@ -12,9 +12,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework.Graphics;
+using XNALibrary;
 #endregion
 
-namespace WinFormsGraphicsDevice
+namespace DaggerfallModelling
 {
     // System.Drawing and the XNA Framework both define Color and Rectangle
     // types. To avoid conflicts, we specify exactly which ones to use.

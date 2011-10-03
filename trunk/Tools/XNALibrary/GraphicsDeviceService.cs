@@ -19,7 +19,7 @@ using Microsoft.Xna.Framework.Graphics;
 // we don't care so we just disable this warning.
 #pragma warning disable 67
 
-namespace WinFormsGraphicsDevice
+namespace XNALibrary
 {
     /// <summary>
     /// Helper class responsible for creating and managing the GraphicsDevice.
@@ -29,7 +29,7 @@ namespace WinFormsGraphicsDevice
     /// interface, which provides notification events for when the device is reset
     /// or disposed.
     /// </summary>
-    class GraphicsDeviceService : IGraphicsDeviceService
+    public class GraphicsDeviceService : IGraphicsDeviceService
     {
         #region Fields
 

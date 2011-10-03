@@ -86,6 +86,9 @@
     <Compile Include="ViewControls\AutoMapView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ViewControls\GraphicsDeviceControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ViewControls\ViewBase.cs" />
     <Compile Include="ViewControls\ViewHost.cs">
       <SubType>Component</SubType>
@@ -93,8 +96,6 @@
     <Compile Include="ViewControls\LocationView.cs" />
     <Compile Include="ViewControls\ModelView.cs" />
     <Compile Include="ViewControls\ThumbnailView.cs" />
-    <Compile Include="XNAClasses\GraphicsDeviceService.cs" />
-    <Compile Include="XNAClasses\ServiceContainer.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -141,9 +142,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="XNAControls\GraphicsDeviceControl.cs">
-      <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

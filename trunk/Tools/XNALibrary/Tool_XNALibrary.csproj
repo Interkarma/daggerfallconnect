@@ -117,11 +117,13 @@
   <ItemGroup>
     <Compile Include="BillboardManager.cs" />
     <Compile Include="Camera.cs" />
+    <Compile Include="Core.cs" />
     <Compile Include="Collision.cs" />
     <Compile Include="Compass.cs" />
     <Compile Include="Component.cs" />
     <Compile Include="ContentHelper.cs" />
     <Compile Include="DeferredRenderer.cs" />
+    <Compile Include="GraphicsDeviceService.cs" />
     <Compile Include="Gravity.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Intersection.cs" />
@@ -134,6 +136,7 @@
     <Compile Include="SceneBuilder.cs" />
     <Compile Include="Scene.cs" />
     <Compile Include="SceneNode.cs" />
+    <Compile Include="ServiceContainer.cs" />
     <Compile Include="Sky.cs" />
     <Compile Include="TextureManager.cs" />
   </ItemGroup>
