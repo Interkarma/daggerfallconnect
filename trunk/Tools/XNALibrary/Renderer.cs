@@ -785,26 +785,22 @@ namespace XNALibrary
 
                 // Set texture
                 if (batch.Key != TextureManager.GroundBatchKey)
-                {
                     basicEffect.Texture = textureManager.GetTexture(batch.Key);
-                    basicEffect.CurrentTechnique.Passes[0].Apply();
-                }
 
                 // Iterate batch items
                 foreach (var batchItem in batch.Value)
                 {
-                    // Handle terrain textures
+                    // Handle ground textures
                     if (batch.Key == TextureManager.GroundBatchKey)
-                    {
                         basicEffect.Texture = batchItem.Texture;
-                        basicEffect.CurrentTechnique.Passes[0].Apply();
-                    }
 
                     // Set vertex buffer
                     graphicsDevice.SetVertexBuffer(batchItem.VertexBuffer);
 
-                    // Set transform
+                    // Set world transform
                     basicEffect.World = batchItem.Matrix;
+
+                    // Apply changes
                     basicEffect.CurrentTechnique.Passes[0].Apply();
 
                     // Draw based on indexed flag
