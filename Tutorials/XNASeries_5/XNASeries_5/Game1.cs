@@ -24,6 +24,7 @@ namespace XNASeries_5
         GraphicsDeviceManager graphics;
 
         // XNALibrary
+        Core core;
         SceneBuilder sceneBuilder;
         DeferredRenderer renderer;
         Input input;
@@ -36,7 +37,8 @@ namespace XNASeries_5
         string locationName = "Daggerfall";
 
         // Camera
-        Vector3 cameraPos = new Vector3(22450, 230, -21350);
+        Vector3 cameraPos = new Vector3(0, 300, 4000);
+        //Vector3 cameraPos = new Vector3(22450, 230, -21350);
 
         // Options
         bool invertMouseLook = false;
@@ -54,6 +56,9 @@ namespace XNASeries_5
             graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
+
+            // Create engine core
+            core = new Core(arena2Path, this.Services);
         }
 
         /// <summary>
@@ -86,6 +91,17 @@ namespace XNASeries_5
         /// </summary>
         protected override void LoadContent()
         {
+            // Add a model node
+            ModelNode node1 = sceneBuilder.CreateModelNode(456);
+            node1.Position = new Vector3(1000f, 0f, 0f);
+            renderer.Scene.AddNode(null, node1);
+
+            // Add a second model node
+            ModelNode node2 = sceneBuilder.CreateModelNode(343);
+            node2.Position = new Vector3(-1000f, 0f, 0f);
+            renderer.Scene.AddNode(null, node2);
+
+            /*
             // Create location node
             SceneNode node =
                 sceneBuilder.CreateExteriorLocationNode(
@@ -94,6 +110,7 @@ namespace XNASeries_5
 
             // Add to scene
             renderer.Scene.AddNode(null, node);
+            */
         }
 
         /// <summary>

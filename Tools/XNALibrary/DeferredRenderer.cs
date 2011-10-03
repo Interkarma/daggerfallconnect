@@ -27,6 +27,21 @@ namespace XNALibrary
     /// </summary>
     public class DeferredRenderer : Renderer
     {
+        #region Class Variables
+
+        // Effects
+        Effect GBuffer;
+        Effect clear;
+        Effect compose;
+        Effect directionLight;
+
+        // States
+        BlendState lightMapBS;
+
+        // GBuffer targets
+        RenderTargetBinding[] GBufferTargets;
+
+        #endregion
 
         #region Constructors
 
