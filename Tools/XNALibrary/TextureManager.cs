@@ -119,7 +119,6 @@ namespace XNALibrary
             public int groundArchive;
             public RenderTarget2D texture;
             public DFBlock.RmbGroundTiles[,] tiles;
-            
         }
 
         #endregion
@@ -369,18 +368,6 @@ namespace XNALibrary
         private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record)
         {
             return 1000000 + ((int)climateType * 100000) + ((int)climateSet * 1000) + record;
-        }
-
-        /// <summary>
-        /// Gets unique key for atlas sub-textures.
-        /// </summary>
-        /// <param name="set">Climate set.</param>
-        /// <param name="weather">Climate weather.</param>
-        /// <param name="record">Record index.</param>
-        /// <returns>Climate texture key.</returns>
-        private int GetAtlasTextureKey(DFLocation.ClimateTextureSet set, DFLocation.ClimateWeather weather, int record)
-        {
-            return (int)set * 10000 + (int)weather * 100 + record;
         }
 
         /// <summary>

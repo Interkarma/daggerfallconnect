@@ -41,6 +41,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XNASeries_4Content", "Tutor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallModelling", "Tools\DaggerfallModelling\Tool_DaggerfallModelling.csproj", "{7E721B19-62EE-4C6F-BCE8-A8A973662D19}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial_XNASeries_5", "Tutorials\XNASeries_5\XNASeries_5\Tutorial_XNASeries_5.csproj", "{12D489F0-D9D5-49E3-854D-B673C45E9755}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "XNASeries_5Content", "Tutorials\XNASeries_5\XNASeries_5Content\XNASeries_5Content.contentproj", "{7B290AE3-725D-4682-B01D-CE72E15CD747}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,6 +235,22 @@ Global
 		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7E721B19-62EE-4C6F-BCE8-A8A973662D19}.Release|x86.ActiveCfg = Release|Any CPU
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Debug|x86.ActiveCfg = Debug|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Debug|x86.Build.0 = Debug|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Release|Any CPU.ActiveCfg = Release|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Release|Mixed Platforms.Build.0 = Release|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Release|x86.ActiveCfg = Release|x86
+		{12D489F0-D9D5-49E3-854D-B673C45E9755}.Release|x86.Build.0 = Release|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Debug|x86.ActiveCfg = Debug|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Release|Any CPU.ActiveCfg = Release|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{7B290AE3-725D-4682-B01D-CE72E15CD747}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
