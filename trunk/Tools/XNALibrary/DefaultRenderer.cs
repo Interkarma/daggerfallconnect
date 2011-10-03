@@ -24,7 +24,7 @@ namespace XNALibrary
     /// <summary>
     /// Draws a scene as visualised by a camera.
     /// </summary>
-    public class Renderer
+    public class DefaultRenderer
     {
         #region Class Variables
 
@@ -59,7 +59,6 @@ namespace XNALibrary
 
         // Line drawing
         private BasicEffect lineEffect;
-        private VertexDeclaration lineVertexDeclaration;
         private VertexPositionColor[] planeLines = new VertexPositionColor[64];
         private VertexPositionColor[] actionLines = new VertexPositionColor[64];
 
@@ -228,7 +227,7 @@ namespace XNALibrary
         /// Constructor.
         /// </summary>
         /// <param name="textureManager">TextureManager.</param>
-        public Renderer(TextureManager textureManager)
+        public DefaultRenderer(TextureManager textureManager)
         {
             // Renderer uses same graphics device as texture manager
             this.graphicsDevice = textureManager.GraphicsDevice;
@@ -258,8 +257,6 @@ namespace XNALibrary
             CreateDefaultSceneCamera();
 
             // Setup line drawing
-            lineVertexDeclaration = new VertexDeclaration(
-                VertexPositionColor.VertexDeclaration.GetVertexElements());
             lineEffect = new BasicEffect(graphicsDevice);
             lineEffect.LightingEnabled = false;
             lineEffect.TextureEnabled = false;

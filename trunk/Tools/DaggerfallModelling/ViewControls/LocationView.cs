@@ -37,7 +37,7 @@ namespace DaggerfallModelling.ViewControls
 
         // XNALibrary
         private Input input;
-        private Renderer renderer;
+        private DefaultRenderer renderer;
         private Collision collision;
         private Gravity gravity;
 
@@ -119,7 +119,7 @@ namespace DaggerfallModelling.ViewControls
         {
             // Create XNALibrary subsystems
             input = new Input();
-            renderer = new Renderer(host.TextureManager);
+            renderer = new DefaultRenderer(host.TextureManager);
             collision = new Collision();
             gravity = new Gravity();
         }
@@ -358,16 +358,16 @@ namespace DaggerfallModelling.ViewControls
             {
                 case CameraModes.TopDown:
                     renderer.Camera = topDownCamera;
-                    renderer.Options = Renderer.RendererOptions.Picking;
+                    renderer.Options = DefaultRenderer.RendererOptions.Picking;
                     break;
                 case CameraModes.Free:
                     renderer.Camera = freeCamera;
                     renderer.Options =
-                        Renderer.RendererOptions.Flats |
-                        Renderer.RendererOptions.Picking |
-                        Renderer.RendererOptions.Compass;
+                        DefaultRenderer.RendererOptions.Flats |
+                        DefaultRenderer.RendererOptions.Picking |
+                        DefaultRenderer.RendererOptions.Compass;
                     if (sceneType == SceneTypes.Exterior)
-                        renderer.Options |= Renderer.RendererOptions.SkyPlane;
+                        renderer.Options |= DefaultRenderer.RendererOptions.SkyPlane;
                     break;
             }
 

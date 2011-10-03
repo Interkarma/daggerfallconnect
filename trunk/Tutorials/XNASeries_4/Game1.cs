@@ -26,7 +26,7 @@ namespace XNASeries_4
 
         // XNALibrary
         SceneBuilder sceneBuilder;
-        Renderer renderer;
+        DefaultRenderer renderer;
         Input input;
 
         // Daggerfall path
@@ -72,10 +72,10 @@ namespace XNASeries_4
             sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
 
             // Create renderer
-            renderer = new Renderer(sceneBuilder.TextureManager);
+            renderer = new DefaultRenderer(sceneBuilder.TextureManager);
 
             // Enable picking
-            renderer.Options |= Renderer.RendererOptions.Picking;
+            renderer.Options |= DefaultRenderer.RendererOptions.Picking;
 
             // Create input
             input = new Input();
