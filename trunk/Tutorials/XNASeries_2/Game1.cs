@@ -92,12 +92,12 @@ namespace XNASeries_2
             BlockNode node;
             if (showDungeonBlock)
             {
-                node = sceneBuilder.CreateBlockNode(rdbBlockName, null);
+                node = sceneBuilder.CreateBlockNode(rdbBlockName, null, false);
                 renderer.Camera.Position = rdbCameraPos;
             }
             else
             {
-                node = sceneBuilder.CreateBlockNode(rmbBlockName, null);
+                node = sceneBuilder.CreateBlockNode(rmbBlockName, null, false);
                 renderer.Camera.Position = rmbCameraPos;
             }
 

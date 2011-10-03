@@ -215,8 +215,9 @@ namespace XNALibrary
         /// </summary>
         /// <param name="name">Block name.</param>
         /// <param name="climate">Climate settings.</param>
+        /// <param name="clearGroundTextures">Clear ground plane texture dictionary.</param>
         /// <returns>BlockNode.</returns>
-        public BlockNode CreateBlockNode(string name, DFLocation.ClimateSettings? climate)
+        public BlockNode CreateBlockNode(string name, DFLocation.ClimateSettings? climate, bool clearGroundTextures)
         {
             // Load block
             DFBlock block;
@@ -226,6 +227,10 @@ namespace XNALibrary
             // Set default world climate
             if (climate == null)
                 climate = MapsFile.GetWorldClimateSettings(defaultWorldClimate);
+
+            // Reset ground plane texture cache
+            if (clearGroundTextures)
+                textureManager.ClearGroundTextures();
             
             // Build node
             BlockNode node = null;
@@ -262,6 +267,9 @@ namespace XNALibrary
                 return null;
             }
 
+            // Reset ground plane texture cache
+            textureManager.ClearGroundTextures();
+
             // Create location node
             LocationNode locationNode = new LocationNode(location);
 
@@ -279,7 +287,7 @@ namespace XNALibrary
                         mapsFile.GetRmbBlockName(ref location, x, y));
 
                     // Create block position data
-                    SceneNode blockNode = CreateBlockNode(name, location.Climate);
+                    SceneNode blockNode = CreateBlockNode(name, location.Climate, false);
                     blockNode.Position = new Vector3(
                         x * rmbSide,
                         0f,
@@ -324,7 +332,7 @@ namespace XNALibrary
                 // TODO: Handle duplicate block coordinates (e.g. Orsinium)
 
                 // Create block position data
-                SceneNode blockNode = CreateBlockNode(block.BlockName, null);
+                SceneNode blockNode = CreateBlockNode(block.BlockName, null, false);
                 blockNode.Position = new Vector3(
                     block.X * rdbSide,
                     0f,
@@ -499,15 +507,10 @@ namespace XNALibrary
             // Create parent block node
             BlockNode blockNode = new BlockNode(block);
 
-            // Create ground texture
-            RenderTarget2D groundTexture = textureManager.CreateBlockGroundTexture(
-                ref block,
-                climate.GroundArchive);
-
             // Add child nodes
             AddRMBModels(ref block, blockNode);
             AddRMBMiscModels(ref block, blockNode);
-            AddRMBGroundPlane(ref block, blockNode, groundTexture, climate.GroundArchive);
+            AddRMBGroundPlane(ref block, blockNode, climate);
             AddRMBMiscFlats(ref block, blockNode);
             AddRMBSceneryFlats(ref block, blockNode, climate.SceneryArchive);
 
@@ -569,15 +572,13 @@ namespace XNALibrary
         /// Adds RMB ground plane to block node.
         /// </summary>
         /// <param name="block">DFBlock</param>
-        /// <param name="blockNode">BlockNode.</param>
-        /// <param name="texture">Texture2D.</param>
-        private void AddRMBGroundPlane(ref DFBlock block, BlockNode blockNode, RenderTarget2D texture, int groundArchive)
+        /// <param name="climate">ClimateSettings.</param>
+        private void AddRMBGroundPlane(ref DFBlock block, BlockNode blockNode, DFLocation.ClimateSettings climate)
         {
             // Add ground plane node
             GroundPlaneNode groundNode = new GroundPlaneNode(
                 textureManager.GraphicsDevice,
-                groundArchive,
-                texture);
+                textureManager.LoadGroundPlaneTexture(ref block, climate));
             groundNode.Position = new Vector3(0f, groundHeight, 0f);
             blockNode.Add(groundNode);
         }

@@ -38,15 +38,17 @@ namespace XNALibrary
         private TextureFile textureFile;
 
         // Texture dictionaries
-        private const int atlasTextureKey = -1000000;
+        private const int groundBatchKey = -1000000;
         private Dictionary<int, Texture2D> generalTextureDict;
         private Dictionary<int, Texture2D> winterTextureDict;
+        private Dictionary<string, GroundPlaneTexture> groundPlaneTextureDict;
 
         // Climate and weather
         DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
         DFLocation.ClimateWeather climateWeather = DFLocation.ClimateWeather.Normal;
 
         // Constants
+        private const int defaultWorldClimate = 231;
         private const int formatWidth = 4;
         private const int tileSide = 64;
         private const int groundTextureWidth = 1024;
@@ -108,6 +110,18 @@ namespace XNALibrary
             MipMaps = 16,
         }
 
+        /// <summary>
+        /// Stores a ground plane texture and information
+        ///  to rebuild when lost.
+        /// </summary>
+        private struct GroundPlaneTexture
+        {
+            public int groundArchive;
+            public RenderTarget2D texture;
+            public DFBlock.RmbGroundTiles[,] tiles;
+            
+        }
+
         #endregion
 
         #region Properties
@@ -147,11 +161,11 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets reserved key for terrain textures.
+        /// Gets reserved key for batching ground textures.
         /// </summary>
-        public static int TerrainAtlasKey
+        public static int GroundBatchKey
         {
-            get { return atlasTextureKey; }
+            get { return groundBatchKey; }
         }
 
         /// <summary>
@@ -183,6 +197,7 @@ namespace XNALibrary
             // Create dictionaries
             generalTextureDict = new Dictionary<int, Texture2D>();
             winterTextureDict = new Dictionary<int, Texture2D>();
+            groundPlaneTextureDict = new Dictionary<string, GroundPlaneTexture>();
 
             // Set default climate
             SetClimate(climateType, climateWeather);
@@ -219,8 +234,36 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Loads ground plane texture for the specified block.
+        /// </summary>
+        /// <param name="block">DFBlock.</param>
+        /// <param name="DFLocation.ClimateSettings">Climate settings.</param>
+        /// <returns>Texture key.</returns>
+        public string LoadGroundPlaneTexture(ref DFBlock block, DFLocation.ClimateSettings? climate)
+        {
+            // Check if already exists
+            if (groundPlaneTextureDict.ContainsKey(block.Name))
+                return block.Name;
+
+            // Get climate
+            if (climate == null)
+                climate = MapsFile.GetWorldClimateSettings(defaultWorldClimate);
+
+            // Create ground plane texture
+            GroundPlaneTexture gp;
+            gp.tiles = block.RmbBlock.FldHeader.GroundData.GroundTiles;
+            gp.groundArchive = climate.Value.GroundArchive;
+            gp.texture = null;
+            CreateBlockGroundTexture(ref gp);
+
+            // Add to dictionary
+            groundPlaneTextureDict.Add(block.Name, gp);
+
+            return block.Name;
+        }
+
+        /// <summary>
         /// Gets texture by key.
-        ///  Use static TerrainAtlasKey property for terrain key.
         ///  Manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="key">Texture key.</param>
@@ -239,6 +282,29 @@ namespace XNALibrary
                 return null;
             else
                 return generalTextureDict[key];
+        }
+
+        /// <summary>
+        /// Gets a ground plane texture by key.
+        ///  Manager will return NULL if texture does not exist.
+        /// </summary>
+        /// <param name="key">Texture key.</param>
+        /// <returns>Texture2D.</returns>
+        public Texture2D GetGroundPlaneTexture(string key)
+        {
+            // Check if exists
+            if (!groundPlaneTextureDict.ContainsKey(key))
+                return null;
+
+            // Get ground plane texture and rebuild if needed
+            GroundPlaneTexture gp = groundPlaneTextureDict[key];
+            if (gp.texture.IsContentLost)
+            {
+                CreateBlockGroundTexture(ref gp);
+                groundPlaneTextureDict[key] = gp;
+            }
+
+            return gp.texture;
         }
 
         /// <summary>
@@ -266,6 +332,16 @@ namespace XNALibrary
             // Remove general and winter dictionaries
             generalTextureDict.Clear();
             winterTextureDict.Clear();
+        }
+
+        /// <summary>
+        /// Clears all ground plane textures.
+        ///  This should be done whenever loading a new map.
+        /// </summary>
+        public void ClearGroundTextures()
+        {
+            // Remove dictionary
+            groundPlaneTextureDict.Clear();
         }
 
         #endregion
@@ -948,10 +1024,10 @@ namespace XNALibrary
 
         /// <summary>
         /// Builds ground plane texture for a single block.
+        ///  Also used to rebuild when render-target texture is lost.
         /// </summary>
-        /// <param name="block">DFBlock.</param>
-        /// <param name="groundArchive">Ground texture archive index.</param>
-        public RenderTarget2D CreateBlockGroundTexture(ref DFBlock block, int groundArchive)
+        /// <param name="groundPlaneTexture">GroundPlaneTexture.</param>
+        private void CreateBlockGroundTexture(ref GroundPlaneTexture groundPlaneTexture)
         {
             // Create render target
             RenderTarget2D renderTarget = new RenderTarget2D(
@@ -974,9 +1050,9 @@ namespace XNALibrary
                 {
                     // Get tile texture
                     DFBlock.RmbGroundTiles tile =
-                        block.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
+                        groundPlaneTexture.tiles[x, y];
                     int textureKey = LoadTexture(
-                        groundArchive,
+                        groundPlaneTexture.groundArchive,
                         (tile.TextureRecord < 56) ? tile.TextureRecord : 2,
                         TextureCreateFlags.None);
                     Texture2D tileTexture = GetTexture(textureKey);
@@ -1024,13 +1100,14 @@ namespace XNALibrary
             spriteBatch.End();
             graphicsDevice.SetRenderTarget(null);
 
+            // Store new texture
+            groundPlaneTexture.texture = renderTarget;
+
             // TEST: Save texture for review
             //string filename = string.Format("D:\\Test\\{0}.png", block.Name);
             //FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
             //renderTarget.SaveAsPng(fs, renderTarget.Width, renderTarget.Height);
             //fs.Close();
-
-            return renderTarget;
         }
 
         #endregion

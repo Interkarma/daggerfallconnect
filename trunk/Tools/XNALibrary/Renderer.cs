@@ -723,15 +723,6 @@ namespace XNALibrary
         /// <param name="node">GroundPlaneNode.</param>
         private void BatchGroundPlaneNode(GroundPlaneNode node)
         {
-            // Recreate ground texture if lost
-            if (node.Texture.IsContentLost)
-            {
-                // Ground plane is always direct child of a block
-                BlockNode parent = (BlockNode)node.Parent;
-                DFBlock block = parent.Block;
-                node.Texture = textureManager.CreateBlockGroundTexture(ref block, node.GroundArchive);
-            }
-
             // Batch ground plane
             BatchItem batchItem;
             batchItem.Indexed = false;
@@ -741,8 +732,8 @@ namespace XNALibrary
             batchItem.IndexBuffer = null;
             batchItem.StartIndex = 0;
             batchItem.PrimitiveCount = node.PrimitiveCount;
-            batchItem.Texture = node.Texture;
-            AddBatch(TextureManager.TerrainAtlasKey, batchItem);
+            batchItem.Texture = textureManager.GetGroundPlaneTexture(node.TextureKey);
+            AddBatch(TextureManager.GroundBatchKey, batchItem);
         }
 
         /// <summary>
@@ -798,7 +789,7 @@ namespace XNALibrary
                     continue;
 
                 // Set texture
-                if (batch.Key != TextureManager.TerrainAtlasKey)
+                if (batch.Key != TextureManager.GroundBatchKey)
                 {
                     basicEffect.Texture = textureManager.GetTexture(batch.Key);
                     basicEffect.CurrentTechnique.Passes[0].Apply();
@@ -808,7 +799,7 @@ namespace XNALibrary
                 foreach (var batchItem in batch.Value)
                 {
                     // Handle terrain textures
-                    if (batch.Key == TextureManager.TerrainAtlasKey)
+                    if (batch.Key == TextureManager.GroundBatchKey)
                     {
                         basicEffect.Texture = batchItem.Texture;
                         basicEffect.CurrentTechnique.Passes[0].Apply();
