@@ -397,7 +397,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Create block node
             renderer.Scene.ResetScene();
-            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, climate);
+            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, climate, true);
             if (node == null)
                 return;
 

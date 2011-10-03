@@ -493,18 +493,14 @@ namespace XNALibrary
         private const int primitiveCount = 2;
         private const float side = 4096f;
         private const float radius = 2920f;
+        private const float uv0 = 0.01f;
+        private const float uv1 = 0.99f;
 
         // Variables
-        private RenderTarget2D texture;
         private VertexBuffer vertexBuffer;
-        private int groundArchive;
+        private string textureKey;
 
         // Properties
-        public RenderTarget2D Texture
-        {
-            get { return texture; }
-            set { texture = value; }
-        }
         public int PrimitiveCount
         {
             get { return primitiveCount; }
@@ -513,35 +509,34 @@ namespace XNALibrary
         {
             get { return vertexBuffer; }
         }
-        public int GroundArchive
+        public string TextureKey
         {
-            get { return groundArchive; }
+            get { return textureKey; }
         }
 
         // Constructors
         public GroundPlaneNode(
             GraphicsDevice graphicsDevice,
-            int groundArchive)
+            string textureKey)
             : base()
         {
-            this.texture = null;
             this.vertexBuffer = null;
-            this.groundArchive = groundArchive;
+            this.textureKey = textureKey;
 
             // Build plane rectangle
             VertexPositionNormalTexture p0, p1, p2, p3;
             p0.Position = new Vector3(0, 0, 0);
             p0.Normal = Vector3.Up;
-            p0.TextureCoordinate = new Vector2(0, 1);
+            p0.TextureCoordinate = new Vector2(uv0, uv1);
             p1.Position = new Vector3(0, 0, -side);
             p1.Normal = Vector3.Up;
-            p1.TextureCoordinate = new Vector2(0, 0);
+            p1.TextureCoordinate = new Vector2(uv0, uv0);
             p2.Position = new Vector3(side, 0, -side);
             p2.Normal = Vector3.Up;
-            p2.TextureCoordinate = new Vector2(1, 0);
+            p2.TextureCoordinate = new Vector2(uv1, uv0);
             p3.Position = new Vector3(side, 0, 0);
             p3.Normal = Vector3.Up;
-            p3.TextureCoordinate = new Vector2(1, 1);
+            p3.TextureCoordinate = new Vector2(uv1, uv1);
             VertexPositionNormalTexture[] groundPlaneVertices = 
             {
                 p0, p1, p2,
@@ -560,14 +555,6 @@ namespace XNALibrary
             base.LocalBounds = new BoundingSphere(
                 new Vector3(side/2, 0f, -side/2),
                 radius);
-        }
-        public GroundPlaneNode(
-            GraphicsDevice graphicsDevice,
-            int groundArchive,
-            RenderTarget2D texture)
-            : this(graphicsDevice, groundArchive)
-        {
-            this.texture = texture;
         }
     }
 

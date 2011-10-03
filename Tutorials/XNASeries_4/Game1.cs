@@ -93,7 +93,7 @@ namespace XNASeries_4
         protected override void LoadContent()
         {
             // Create a block node
-            BlockNode node = sceneBuilder.CreateBlockNode(blockName, null);
+            BlockNode node = sceneBuilder.CreateBlockNode(blockName, null, false);
             renderer.Camera.Position = cameraPos;
 
             // Add to scene
