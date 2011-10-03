@@ -490,7 +490,7 @@ namespace XNALibrary
     public class GroundPlaneNode : SceneNode
     {
         // Constants
-        private const int primitiveCount = 6;
+        private const int primitiveCount = 2;
         private const float side = 4096f;
         private const float radius = 2920f;
 
@@ -529,27 +529,19 @@ namespace XNALibrary
             this.groundArchive = groundArchive;
 
             // Build plane rectangle
-           
-            VertexPositionNormalTexture p0;
+            VertexPositionNormalTexture p0, p1, p2, p3;
             p0.Position = new Vector3(0, 0, 0);
             p0.Normal = Vector3.Up;
             p0.TextureCoordinate = new Vector2(0, 1);
-
-            VertexPositionNormalTexture p1;
             p1.Position = new Vector3(0, 0, -side);
             p1.Normal = Vector3.Up;
             p1.TextureCoordinate = new Vector2(0, 0);
-
-            VertexPositionNormalTexture p2;
             p2.Position = new Vector3(side, 0, -side);
             p2.Normal = Vector3.Up;
             p2.TextureCoordinate = new Vector2(1, 0);
-
-            VertexPositionNormalTexture p3;
             p3.Position = new Vector3(side, 0, 0);
             p3.Normal = Vector3.Up;
             p3.TextureCoordinate = new Vector2(1, 1);
-
             VertexPositionNormalTexture[] groundPlaneVertices = 
             {
                 p0, p1, p2,
