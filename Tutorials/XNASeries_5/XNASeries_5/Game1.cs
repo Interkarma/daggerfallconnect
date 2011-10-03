@@ -56,9 +56,6 @@ namespace XNASeries_5
             graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
-
-            // Create engine core
-            core = new Core(arena2Path, this.Services);
         }
 
         /// <summary>
@@ -69,6 +66,9 @@ namespace XNASeries_5
         /// </summary>
         protected override void Initialize()
         {
+            // Create engine core
+            core = new Core(arena2Path, this.Services);
+
             // Create scene builder
             sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
 

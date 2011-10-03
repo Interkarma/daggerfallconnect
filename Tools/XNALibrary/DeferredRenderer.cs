@@ -25,7 +25,7 @@ namespace XNALibrary
     /// <summary>
     /// Extends basic renderer with deferred shading.
     /// </summary>
-    public class DeferredRenderer : Renderer
+    public class DeferredRenderer : DefaultRenderer
     {
         #region Class Variables
 
