@@ -29,13 +29,13 @@ namespace XNALibrary
         #region Class Variables
 
         // Scene
-        Scene scene;
+        protected Scene scene;
 
         // Camera
-        Camera camera;
+        protected Camera camera;
 
         // Batches
-        private Dictionary<int, List<BatchItem>> batches;
+        protected Dictionary<int, List<BatchItem>> batches;
 
         // Bounds
         private RenderableBoundingSphere renderableBounds;
@@ -43,14 +43,13 @@ namespace XNALibrary
         // XNA
         private GraphicsDevice graphicsDevice;
         private Color backgroundColor;
-        private VertexDeclaration vertexDeclaration;
         private BasicEffect basicEffect;
 
         // Textures
         private TextureManager textureManager;
 
         // Options
-        RendererOptions rendererOptions = RendererOptions.Flats;
+        private RendererOptions rendererOptions = RendererOptions.Flats;
 
         // Picking
         private Ray pointerRay = new Ray();
@@ -61,22 +60,22 @@ namespace XNALibrary
         // Line drawing
         private BasicEffect lineEffect;
         private VertexDeclaration lineVertexDeclaration;
-        VertexPositionColor[] planeLines = new VertexPositionColor[64];
-        VertexPositionColor[] actionLines = new VertexPositionColor[64];
+        private VertexPositionColor[] planeLines = new VertexPositionColor[64];
+        private VertexPositionColor[] actionLines = new VertexPositionColor[64];
 
         // Appearance
         private Color modelHighlightColor = Color.Gold;
         private Color actionHighlightColor = Color.CornflowerBlue;
 
         // Sub-Components
-        Sky sky = null;
-        Compass compass = null;
-        BillboardManager billboardManager = null;
+        protected Sky sky = null;
+        protected Compass compass = null;
+        protected BillboardManager billboardManager = null;
 
 #if DEBUG
         // Performance
-        Stopwatch stopwatch = new Stopwatch();
-        long drawTime = 0;
+        private Stopwatch stopwatch = new Stopwatch();
+        private long drawTime = 0;
 #endif
 
         #endregion
@@ -86,7 +85,7 @@ namespace XNALibrary
         /// <summary>
         /// Renderable item.
         /// </summary>
-        private struct BatchItem
+        protected struct BatchItem
         {
             public bool Indexed;
             public Matrix Matrix;
@@ -237,10 +236,6 @@ namespace XNALibrary
 
             // Create null scene manager
             scene = new Scene();
-
-            // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(
-                VertexPositionNormalTexture.VertexDeclaration.GetVertexElements());
 
             // Create batching dictionary
             batches = new Dictionary<int, List<BatchItem>>();
@@ -613,7 +608,7 @@ namespace XNALibrary
         /// <summary>
         /// Clears any batched data from previous frame.
         /// </summary>
-        private void ClearBatches()
+        protected void ClearBatches()
         {
             // Clear local batches
             foreach (var batch in batches)
@@ -632,7 +627,7 @@ namespace XNALibrary
         /// Add batch item.
         /// </summary>
         /// <param name="textureKey">Texture key.</param>
-        private void AddBatch(int textureKey, BatchItem batchItem)
+        protected void AddBatch(int textureKey, BatchItem batchItem)
         {
             // Start new batch if required
             if (!batches.ContainsKey(textureKey))
@@ -649,7 +644,7 @@ namespace XNALibrary
         /// </summary>
         /// <param name="node">Start node.</param>
         /// <param name="pointerIntersects">True if pointer intersects.</param>
-        private void BatchNode(SceneNode node, bool pointerIntersects)
+        protected void BatchNode(SceneNode node, bool pointerIntersects)
         {
             // Do nothing if not visible
             if (!node.Visible)
@@ -699,7 +694,7 @@ namespace XNALibrary
         /// Batch a model node for rendering.
         /// </summary>
         /// <param name="node">ModelNode.</param>
-        private void BatchModelNode(ModelNode node)
+        protected void BatchModelNode(ModelNode node)
         {
             // Batch submeshes
             BatchItem batchItem;
@@ -721,7 +716,7 @@ namespace XNALibrary
         /// Batch a ground plane node for rendering.
         /// </summary>
         /// <param name="node">GroundPlaneNode.</param>
-        private void BatchGroundPlaneNode(GroundPlaneNode node)
+        protected void BatchGroundPlaneNode(GroundPlaneNode node)
         {
             // Batch ground plane
             BatchItem batchItem;
@@ -740,7 +735,7 @@ namespace XNALibrary
         /// Batch a billboard node for rendering.
         /// </summary>
         /// <param name="node">BillboardNode.</param>
-        private void BatchBillboardNode(BillboardNode node)
+        protected void BatchBillboardNode(BillboardNode node)
         {
             // Batch billboard
             billboardManager.AddBatch(camera, node);
@@ -753,7 +748,7 @@ namespace XNALibrary
         /// <summary>
         /// Clears device and renders a background.
         /// </summary>
-        private void DrawBackground()
+        protected void DrawBackground()
         {
             if (sky != null && HasOptionsFlags(RendererOptions.SkyPlane))
             {
@@ -769,7 +764,7 @@ namespace XNALibrary
         /// <summary>
         /// Renders batches of visible geometry.
         /// </summary>
-        private void DrawBatches()
+        protected void DrawBatches()
         {
             // Update view and projection matrices
             basicEffect.View = camera.View;
@@ -845,7 +840,7 @@ namespace XNALibrary
         /// <param name="color">Line color.</param>
         /// <param name="model">ModelManager.Model.</param>
         /// <param name="matrix">Matrix.</param>
-        private void DrawNativeMesh(Color color, ref ModelManager.ModelData model, Matrix matrix)
+        protected void DrawNativeMesh(Color color, ref ModelManager.ModelData model, Matrix matrix)
         {
             // Scale up just a little to make outline visually pop
             matrix = Matrix.CreateScale(1.015f) * matrix;
@@ -871,7 +866,7 @@ namespace XNALibrary
         /// <param name="color">Line color.</param>
         /// <param name="points">DFMesh.DFPoint.</param>
         /// <param name="matrix">Matrix.</param>
-        private void DrawNativeFace(Color color, DFMesh.DFPoint[] points, Matrix matrix)
+        protected void DrawNativeFace(Color color, DFMesh.DFPoint[] points, Matrix matrix)
         {
             // Build line primitives for this face
             int lineCount = 0;
