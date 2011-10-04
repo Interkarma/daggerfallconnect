@@ -30,12 +30,12 @@ namespace XNASeries_1
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
         // Camera
-        Vector3 cameraPos = new Vector3(0, 300, 4000);
+        Vector3 cameraPos = new Vector3(0, 300, 1500);
 
         // Options
         bool invertMouseLook = false;
         bool invertGamePadLook = true;
-        bool drawBounds = true;
+        bool drawBounds = false;
 
         /// <summary>
         /// Constructor.
@@ -79,13 +79,8 @@ namespace XNASeries_1
         {
             // Add a model node
             ModelNode node1 = core.SceneBuilder.CreateModelNode(456);
-            node1.Position = new Vector3(1000f, 0f, 0f);
+            node1.Position = new Vector3(0f, 0f, 0f);
             core.Scene.AddNode(null, node1);
-
-            // Add a second model node
-            ModelNode node2 = core.SceneBuilder.CreateModelNode(343);
-            node2.Position = new Vector3(-1000f, 0f, 0f);
-            core.Scene.AddNode(null, node2);
         }
 
         /// <summary>

@@ -38,14 +38,38 @@ namespace XNALibrary
 
         // XNALibrary
         bool deferredRendering = false;
+        DefaultRenderer defaultRenderer = null;
+        DeferredRenderer deferredRenderer = null;
         SceneBuilder sceneBuilder;
-        DefaultRenderer defaultRenderer;
-        DeferredRenderer deferredRenderer;
         Collision collision;
         Gravity gravity;
         Input input;
         Scene scene;
         Camera camera;
+
+        // Constants
+        private const string contentRootDirectory = "XNALibraryContent";
+        private const GraphicsProfile graphicsProfile = GraphicsProfile.HiDef;
+
+        #endregion
+
+        #region Static Properties
+
+        /// <summary>
+        /// Gets content root directory for XNALibrary content.
+        /// </summary>
+        static public string ContentRootDirectory
+        {
+            get { return contentRootDirectory; }
+        }
+
+        /// <summary>
+        /// Gets graphics profile in use by this version.
+        /// </summary>
+        static public GraphicsProfile GraphicsProfile
+        {
+            get { return graphicsProfile; }
+        }
 
         #endregion
 
@@ -139,7 +163,6 @@ namespace XNALibrary
         public bool DeferredRendering
         {
             get { return deferredRendering; }
-            set { deferredRendering = value; }
         }
 
         #endregion
@@ -156,6 +179,9 @@ namespace XNALibrary
             // Store values
             this.arena2Path = arena2Path;
             this.serviceProvider = serviceProvider;
+            
+            // Enable deferred rendering
+            deferredRendering = (Core.GraphicsProfile == GraphicsProfile.HiDef) ? true : false;
 
             // Get graphics
             IGraphicsDeviceService graphicsDeviceService =
@@ -163,7 +189,7 @@ namespace XNALibrary
             this.graphicsDevice = graphicsDeviceService.GraphicsDevice;
 
             // Create content manager
-            contentManager = new ContentManager(serviceProvider, "Content");
+            contentManager = new ContentManager(serviceProvider, contentRootDirectory);
 
             // Create engine components
             sceneBuilder = new SceneBuilder(graphicsDevice, arena2Path);
@@ -172,9 +198,13 @@ namespace XNALibrary
             scene = new Scene();
             camera = new Camera();
 
-            // Create renderers
-            defaultRenderer = new DefaultRenderer(TextureManager);
-            deferredRenderer = new DeferredRenderer(TextureManager);
+            // Create renderer
+            if (deferredRendering)
+                deferredRenderer = new DeferredRenderer(TextureManager);
+            else
+                defaultRenderer = new DefaultRenderer(TextureManager);
+            Renderer.Initialise();
+            Renderer.LoadContent(contentManager);
             Resize();
 
             // Create input
@@ -209,10 +239,9 @@ namespace XNALibrary
         public void Draw()
         {
             // Draw
-            DefaultRenderer renderer = this.Renderer;
-            renderer.Camera = camera;
-            renderer.Scene = scene;
-            renderer.Draw();
+            Renderer.Camera = camera;
+            Renderer.Scene = scene;
+            Renderer.Draw();
         }
 
         /// <summary>
@@ -220,13 +249,9 @@ namespace XNALibrary
         /// </summary>
         public void Resize()
         {
-            // Update default renderer
-            defaultRenderer.Camera = camera;
-            defaultRenderer.UpdateCameraAspectRatio(-1, -1);
-
-            // Update deferred renderer
-            deferredRenderer.Camera = camera;
-            deferredRenderer.UpdateCameraAspectRatio(-1, -1);
+            // Update renderer
+            Renderer.Camera = camera;
+            Renderer.UpdateCameraAspectRatio(-1, -1);
         }
 
         #endregion
