@@ -10,13 +10,12 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DaggerfallConnect;
-using DaggerfallConnect.Arena2;
 using XNALibrary;
 
 namespace XNASeries_5
 {
     /// <summary>
-    /// Currently a deferred rendrering testbed.
+    /// Currently a deferred renderering testbed.
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
@@ -25,24 +24,16 @@ namespace XNASeries_5
 
         // XNALibrary
         Core core;
-        SceneBuilder sceneBuilder;
-        DeferredRenderer renderer;
-        Input input;
 
         // Daggerfall path
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
-        // Content
-        string regionName = "Daggerfall";
-        string locationName = "Daggerfall";
-
         // Camera
-        Vector3 cameraPos = new Vector3(0, 300, 4000);
-        //Vector3 cameraPos = new Vector3(22450, 230, -21350);
+        Vector3 cameraPos = new Vector3(0, 300, 1500);
 
         // Options
         bool invertMouseLook = false;
-        bool invertControllerLook = true;
+        bool invertGamePadLook = true;
         bool drawBounds = false;
 
         /// <summary>
@@ -51,8 +42,8 @@ namespace XNASeries_5
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1440;
-            graphics.PreferredBackBufferHeight = 900;
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
             graphics.ApplyChanges();
             Content.RootDirectory = "Content";
             this.IsMouseVisible = true;
@@ -66,21 +57,15 @@ namespace XNASeries_5
         /// </summary>
         protected override void Initialize()
         {
-            // Create engine core
+            // Create engine
             core = new Core(arena2Path, this.Services);
 
-            // Create scene builder
-            sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
+            // Set camera position
+            core.Camera.Position = cameraPos;
 
-            // Create renderer
-            renderer = new DeferredRenderer(sceneBuilder.TextureManager);
-            renderer.Camera.Position = cameraPos;
-
-            // Create input
-            input = new Input();
-            input.ActiveDevices = Input.DeviceFlags.All;
-            input.InvertMouseLook = invertMouseLook;
-            input.InvertGamePadLook = invertControllerLook;
+            // Set input preferences
+            core.Input.InvertMouseLook = invertMouseLook;
+            core.Input.InvertGamePadLook = invertGamePadLook;
 
             base.Initialize();
         }
@@ -92,25 +77,9 @@ namespace XNASeries_5
         protected override void LoadContent()
         {
             // Add a model node
-            ModelNode node1 = sceneBuilder.CreateModelNode(456);
-            node1.Position = new Vector3(1000f, 0f, 0f);
-            renderer.Scene.AddNode(null, node1);
-
-            // Add a second model node
-            ModelNode node2 = sceneBuilder.CreateModelNode(343);
-            node2.Position = new Vector3(-1000f, 0f, 0f);
-            renderer.Scene.AddNode(null, node2);
-
-            /*
-            // Create location node
-            SceneNode node =
-                sceneBuilder.CreateExteriorLocationNode(
-                regionName,
-                locationName);
-
-            // Add to scene
-            renderer.Scene.AddNode(null, node);
-            */
+            ModelNode node1 = core.SceneBuilder.CreateModelNode(456);
+            node1.Position = new Vector3(0f, 0f, 0f);
+            core.Scene.AddNode(null, node1);
         }
 
         /// <summary>
@@ -129,18 +98,7 @@ namespace XNASeries_5
         protected override void Update(GameTime gameTime)
         {
             // Update scene
-            renderer.Scene.Update(gameTime.ElapsedGameTime);
-
-            // Update pointer ray with mouse position
-            Point mousePos = input.MousePos;
-            renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
-
-            // Update input
-            input.Update(gameTime.ElapsedGameTime);
-            input.Apply(renderer.Camera, true);
-
-            // Update camera
-            renderer.Camera.Update();
+            core.Update(gameTime.ElapsedGameTime);
         }
 
         /// <summary>
@@ -149,12 +107,12 @@ namespace XNASeries_5
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            // Draw scene
-            renderer.Draw();
+            // Draw
+            core.Draw();
 
             // Draw bounds
             if (drawBounds)
-                renderer.DrawBounds();
+                core.Renderer.DrawBounds();
         }
     }
 }

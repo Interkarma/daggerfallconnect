@@ -593,6 +593,13 @@ namespace XNALibrary
             // Iterate through all misc flat records
             foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.RmbBlock.MiscFlatObjectRecords)
             {
+                // Flags
+                TextureManager.TextureCreateFlags flags =
+                    TextureManager.TextureCreateFlags.Dilate |
+                    TextureManager.TextureCreateFlags.PreMultiplyAlpha;
+                if (Core.GraphicsProfile == GraphicsProfile.HiDef)
+                    flags |= TextureManager.TextureCreateFlags.MipMaps;
+
                 // Load flat
                 int textureKey;
                 Vector2 startSize;
@@ -600,8 +607,7 @@ namespace XNALibrary
                 if (true == LoadDaggerfallFlat(
                     obj.TextureArchive,
                     obj.TextureRecord,
-                    TextureManager.TextureCreateFlags.Dilate |
-                    TextureManager.TextureCreateFlags.PreMultiplyAlpha,
+                    flags,
                     out textureKey,
                     out startSize,
                     out finalSize))
@@ -631,6 +637,13 @@ namespace XNALibrary
         /// <param name="sceneryArchive">Scenery texture archive index.</param>
         private void AddRMBSceneryFlats(ref DFBlock block, BlockNode blockNode, int sceneryArchive)
         {
+            // Flags
+            TextureManager.TextureCreateFlags flags =
+                TextureManager.TextureCreateFlags.Dilate |
+                TextureManager.TextureCreateFlags.PreMultiplyAlpha;
+            if (Core.GraphicsProfile == GraphicsProfile.HiDef)
+                flags |= TextureManager.TextureCreateFlags.MipMaps;
+
             // Add block scenery
             for (int y = 0; y < 16; y++)
             {
@@ -650,8 +663,7 @@ namespace XNALibrary
                         if (true == LoadDaggerfallFlat(
                             sceneryArchive,
                             scenery.TextureRecord,
-                            TextureManager.TextureCreateFlags.Dilate |
-                            TextureManager.TextureCreateFlags.PreMultiplyAlpha,
+                            flags,
                             out textureKey,
                             out startSize,
                             out finalSize))

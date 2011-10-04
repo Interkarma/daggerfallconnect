@@ -15,6 +15,7 @@ using System.IO;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 #endregion
@@ -37,16 +38,19 @@ namespace XNALibrary
         // Batches
         protected Dictionary<int, List<BatchItem>> batches;
 
+        //  Sprites
+        protected SpriteBatch spriteBatch;
+
         // Bounds
         private RenderableBoundingSphere renderableBounds;
 
         // XNA
-        private GraphicsDevice graphicsDevice;
-        private Color backgroundColor;
-        private BasicEffect basicEffect;
+        protected GraphicsDevice graphicsDevice;
+        protected BasicEffect basicEffect;
+        protected Color backgroundColor;
 
         // Textures
-        private TextureManager textureManager;
+        protected TextureManager textureManager;
 
         // Options
         private RendererOptions rendererOptions = RendererOptions.Flats;
@@ -233,6 +237,9 @@ namespace XNALibrary
             this.graphicsDevice = textureManager.GraphicsDevice;
             this.textureManager = textureManager;
 
+            // Create sprite batch
+            spriteBatch = new SpriteBatch(graphicsDevice);
+
             // Create null scene manager
             scene = new Scene();
 
@@ -266,6 +273,21 @@ namespace XNALibrary
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Called when the renderer should initialise.
+        /// </summary>
+        public virtual void Initialise()
+        {
+        }
+
+        /// <summary>
+        /// Called when the render should load content.
+        /// </summary>
+        /// <param name="content">ContentManager.</param>
+        public virtual void LoadContent(ContentManager content)
+        {
+        }
 
         /// <summary>
         /// Updates camera aspect ratio after viewport changes size.
@@ -334,7 +356,7 @@ namespace XNALibrary
         /// <summary>
         /// Render active scene.
         /// </summary>
-        public void Draw()
+        public virtual void Draw()
         {
 #if DEBUG
             // Start timing

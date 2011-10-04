@@ -726,7 +726,7 @@ namespace DaggerfallModelling.ViewControls
                 this.arena2Path = arena2Path;
                 contentHelper = new ContentHelper(
                     Services,
-                    Path.Combine(Application.StartupPath, "Content"));
+                    Path.Combine(Application.StartupPath, Core.ContentRootDirectory));
 
                 // Initialise scene builder
                 sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
