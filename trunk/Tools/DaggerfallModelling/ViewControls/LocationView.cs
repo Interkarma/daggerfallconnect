@@ -35,12 +35,6 @@ namespace DaggerfallModelling.ViewControls
         private DFLocation location;
         private SceneTypes sceneType = SceneTypes.None;
 
-        // XNALibrary
-        private Input input;
-        private DefaultRenderer renderer;
-        private Collision collision;
-        private Gravity gravity;
-
         // Cameras
         private Camera topDownCamera = new Camera();
         private Camera freeCamera = new Camera();
@@ -96,7 +90,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public Camera ActiveCamera
         {
-            get { return renderer.Camera; }
+            get { return host.Core.Renderer.Camera; }
         }
 
         /// <summary>
@@ -104,7 +98,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public Sky Sky
         {
-            get { return renderer.Sky; }
+            get { return host.Core.Renderer.Sky; }
         }
 
         #endregion
@@ -117,11 +111,6 @@ namespace DaggerfallModelling.ViewControls
         public LocationView(ViewHost host)
             : base(host)
         {
-            // Create XNALibrary subsystems
-            input = new Input();
-            renderer = new DefaultRenderer(host.TextureManager);
-            collision = new Collision();
-            gravity = new Gravity();
         }
 
         #endregion
@@ -134,11 +123,11 @@ namespace DaggerfallModelling.ViewControls
         public override void Initialize()
         {
             // Initialise renderer sky and compass
-            renderer.InitialiseSky(host.Arena2Path);
-            renderer.InitialiseCompass(host.Arena2Path);
+            host.Core.Renderer.InitialiseSky(host.Arena2Path);
+            host.Core.Renderer.InitialiseCompass(host.Arena2Path);
 
             // Initialise input subsystem
-            input.ActiveDevices = Input.DeviceFlags.None;
+            host.Core.Input.ActiveDevices = Input.DeviceFlags.None;
 
             // Start in top-down camera mode
             CameraMode = CameraModes.TopDown;
@@ -159,13 +148,13 @@ namespace DaggerfallModelling.ViewControls
             UpdateInput();
 
             // Update scene
-            renderer.Scene.Update(host.ElapsedTime);
+            host.Core.Renderer.Scene.Update(host.ElapsedTime);
 
             // Update gravity
             if (host.AppSettings.EnableGravity)
             {
                 freeCamera.RestrictVertical = true;
-                gravity.Update(host.ElapsedTime, freeCamera, collision);
+                host.Core.Gravity.Update(host.ElapsedTime, freeCamera, host.Core.Collision);
             }
             else
             {
@@ -174,12 +163,21 @@ namespace DaggerfallModelling.ViewControls
 
             // Update collision
             if (host.AppSettings.EnableCollision)
-                collision.Update(renderer.Camera, renderer.Scene, input);
+            {
+                host.Core.Collision.Update(
+                    host.Core.Renderer.Camera,
+                    host.Core.Renderer.Scene,
+                    host.Core.Input);
+            }
             else
-                input.Apply(renderer.Camera, true);
+            {
+                host.Core.Input.Apply(
+                    host.Core.Renderer.Camera,
+                    true);
+            }
 
             // Update camera
-            renderer.Camera.Update();
+            host.Core.Renderer.Camera.Update();
         }
 
         /// <summary>
@@ -188,11 +186,14 @@ namespace DaggerfallModelling.ViewControls
         public override void Draw()
         {
             // Render scene
-            renderer.Draw();
+            host.Core.Renderer.Draw();
 
             // Draw crosshair if gamepad connected
-            if (input.GamePadConnected && renderer.Camera == freeCamera)
+            if (host.Core.Input.GamePadConnected &&
+                host.Core.Renderer.Camera == freeCamera)
+            {
                 DrawCrosshair();
+            }
 
 #if DEBUG
             // Draw performance text
@@ -205,7 +206,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Resize()
         {
-            renderer.UpdateCameraAspectRatio(host.Width, host.Height);
+            host.Core.Renderer.UpdateCameraAspectRatio(host.Width, host.Height);
         }
 
         #endregion
@@ -219,7 +220,7 @@ namespace DaggerfallModelling.ViewControls
         public override void OnMouseMove(MouseEventArgs e)
         {
             // Update mouse ray
-            renderer.UpdatePointerRay(e.X, e.Y);
+            host.Core.Renderer.UpdatePointerRay(e.X, e.Y);
 
             // Top down camera movement
             if (CameraMode == CameraModes.TopDown)
@@ -227,7 +228,7 @@ namespace DaggerfallModelling.ViewControls
                 // Scene dragging
                 if (host.RightMouseDown)
                 {
-                    renderer.Camera.Translate(
+                    host.Core.Renderer.Camera.Translate(
                         (float)-host.MousePosDelta.X * cameraStep,
                         0f,
                         (float)-host.MousePosDelta.Y * cameraStep);
@@ -290,11 +291,11 @@ namespace DaggerfallModelling.ViewControls
         /// <param name="e">MouseEventArgs.</param>
         public override void OnMouseDoubleClick(MouseEventArgs e)
         {
-            if (renderer.PointerOverNode != null)
+            if (host.Core.Renderer.PointerOverNode != null)
             {
-                if (renderer.PointerOverNode is ModelNode)
+                if (host.Core.Renderer.PointerOverNode is ModelNode)
                 {
-                    ModelNode node = (ModelNode)renderer.PointerOverNode;
+                    ModelNode node = (ModelNode)host.Core.Renderer.PointerOverNode;
                     host.ShowModelView(node.Model.DFMesh.ObjectId, Climate);
                 }
             }
@@ -315,9 +316,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Jump in free camera mode
             if (e.KeyCode == Keys.Space &&
-                renderer.Camera == freeCamera)
+                host.Core.Renderer.Camera == freeCamera)
             {
-                gravity.Jump();
+                host.Core.Gravity.Jump();
             }
         }
 
@@ -357,22 +358,22 @@ namespace DaggerfallModelling.ViewControls
             switch (cameraMode)
             {
                 case CameraModes.TopDown:
-                    renderer.Camera = topDownCamera;
-                    renderer.Options = DefaultRenderer.RendererOptions.Picking;
+                    host.Core.Renderer.Camera = topDownCamera;
+                    host.Core.Renderer.Options = DefaultRenderer.RendererOptions.Picking;
                     break;
                 case CameraModes.Free:
-                    renderer.Camera = freeCamera;
-                    renderer.Options =
+                    host.Core.Renderer.Camera = freeCamera;
+                    host.Core.Renderer.Options =
                         DefaultRenderer.RendererOptions.Flats |
                         DefaultRenderer.RendererOptions.Picking |
                         DefaultRenderer.RendererOptions.Compass;
                     if (sceneType == SceneTypes.Exterior)
-                        renderer.Options |= DefaultRenderer.RendererOptions.SkyPlane;
+                        host.Core.Renderer.Options |= DefaultRenderer.RendererOptions.SkyPlane;
                     break;
             }
 
             // Upadate camera
-            renderer.UpdateCameraAspectRatio(-1, -1);
+            host.Core.Renderer.UpdateCameraAspectRatio(-1, -1);
 
             // Clear camera velocity
             cameraVelocity = Vector3.Zero;
@@ -396,8 +397,8 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create block node
-            renderer.Scene.ResetScene();
-            BlockNode node = host.SceneBuilder.CreateBlockNode(blockName, climate, true);
+            host.Core.Renderer.Scene.ResetScene();
+            BlockNode node = host.Core.SceneBuilder.CreateBlockNode(blockName, climate, true);
             if (node == null)
                 return;
 
@@ -407,10 +408,10 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = climate;
 
             // Add node to scene
-            renderer.Scene.AddNode(null, node);
+            host.Core.Renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
 
             // Get centre position for this block.
             // This is worked out using static block dimensions to get a
@@ -420,7 +421,7 @@ namespace DaggerfallModelling.ViewControls
             Vector3 center = new Vector3(side / 2, 0, -side / 2);
 
             // Set custom movement bounds
-            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
                 new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
@@ -468,9 +469,9 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create location node
-            renderer.Scene.ResetScene();
-            renderer.BackgroundColor = generalBackgroundColor;
-            LocationNode node = host.SceneBuilder.CreateExteriorLocationNode(regionName, locationName);
+            host.Core.Renderer.Scene.ResetScene();
+            host.Core.Renderer.BackgroundColor = generalBackgroundColor;
+            LocationNode node = host.Core.SceneBuilder.CreateExteriorLocationNode(regionName, locationName);
             if (node == null)
                 return;
 
@@ -480,14 +481,14 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = location.Climate;
 
             // Add node to scene
-            renderer.Scene.AddNode(null, node);
+            host.Core.Renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
 
             // Set custom movement bounds
-            Vector3 center = renderer.Scene.Root.TransformedBounds.Center;
-            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            Vector3 center = host.Core.Renderer.Scene.Root.TransformedBounds.Center;
+            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
                 new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
@@ -507,8 +508,8 @@ namespace DaggerfallModelling.ViewControls
             SetCameraBackground();
 
             // Set sky
-            if (renderer.Sky != null)
-                renderer.Sky.SkyIndex = node.Location.Climate.SkyArchive;
+            if (host.Core.Renderer.Sky != null)
+                host.Core.Renderer.Sky.SkyIndex = node.Location.Climate.SkyArchive;
 
             // Set status message
             currentStatus = string.Format("Exploring {0} (Exterior).", locationName);
@@ -530,9 +531,9 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create location node
-            renderer.Scene.ResetScene();
-            renderer.BackgroundColor = generalBackgroundColor;
-            LocationNode node = host.SceneBuilder.CreateDungeonLocationNode(regionName, locationName);
+            host.Core.Renderer.Scene.ResetScene();
+            host.Core.Renderer.BackgroundColor = generalBackgroundColor;
+            LocationNode node = host.Core.SceneBuilder.CreateDungeonLocationNode(regionName, locationName);
             if (node == null)
                 return;
 
@@ -542,14 +543,14 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = null;
 
             // Add node to scene
-            renderer.Scene.AddNode(null, node);
+            host.Core.Renderer.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
 
             // Set custom movement bounds
-            Vector3 center = renderer.Scene.Root.TransformedBounds.Center;
-            float radius = renderer.Scene.Root.TransformedBounds.Radius;
+            Vector3 center = host.Core.Renderer.Scene.Root.TransformedBounds.Center;
+            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, center.Y - radius, center.Z - radius),
                 new Vector3(center.X + radius, center.Y + radius, center.Z + radius));
@@ -580,18 +581,18 @@ namespace DaggerfallModelling.ViewControls
         public void MoveToBlock(int x, int z)
         {
             cameraVelocity = Vector3.Zero;
-            Vector3 pos = renderer.Camera.Position;
+            Vector3 pos = host.Core.Renderer.Camera.Position;
             if (sceneType == SceneTypes.Exterior)
             {
                 pos.X = x * SceneBuilder.RMBSide + SceneBuilder.RMBSide / 2;
                 pos.Z = -z * SceneBuilder.RMBSide - SceneBuilder.RMBSide / 2;
-                renderer.Camera.Position = pos;
+                host.Core.Renderer.Camera.Position = pos;
             }
             else if (sceneType == SceneTypes.Dungeon)
             {
                 pos.X = x * SceneBuilder.RDBSide + SceneBuilder.RDBSide / 2;
                 pos.Z = -z * SceneBuilder.RDBSide - SceneBuilder.RDBSide / 2;
-                renderer.Camera.Position = pos;
+                host.Core.Renderer.Camera.Position = pos;
             }
         }
 
@@ -605,9 +606,9 @@ namespace DaggerfallModelling.ViewControls
         private void SetCameraBackground()
         {
             if (sceneType == SceneTypes.Dungeon)
-                renderer.BackgroundColor = dungeonBackgroundColor;
+                host.Core.Renderer.BackgroundColor = dungeonBackgroundColor;
             else
-                renderer.BackgroundColor = generalBackgroundColor;
+                host.Core.Renderer.BackgroundColor = generalBackgroundColor;
         }
 
         /// <summary>
@@ -616,7 +617,7 @@ namespace DaggerfallModelling.ViewControls
         private void RunActionRecord()
         {
             // Exit if nothing under pointer
-            SceneNode node = renderer.PointerOverNode;
+            SceneNode node = host.Core.Renderer.PointerOverNode;
             if (node == null)
                 return;
 
@@ -691,13 +692,13 @@ namespace DaggerfallModelling.ViewControls
             pos.Y = host.GraphicsDevice.Viewport.Height / 2 - 6;
 
             // Begin drawing
-            host.SpriteBatch.Begin();
+            host.Core.SpriteBatch.Begin();
 
             // Draw crosshair
-            host.SpriteBatch.Draw(crosshairTexture, pos, Color.White);
+            host.Core.SpriteBatch.Draw(crosshairTexture, pos, Color.White);
 
             // End drawing
-            host.SpriteBatch.End();
+            host.Core.SpriteBatch.End();
         }
 
         /// <summary>
@@ -724,33 +725,33 @@ namespace DaggerfallModelling.ViewControls
             topDownCamera.Translate(cameraVelocity.X, 0f, cameraVelocity.Z);
 
             // Gather input
-            input.ActiveDevices = flags;
-            input.InvertMouseLook = host.AppSettings.InvertMouseY;
-            input.InvertGamePadLook = host.AppSettings.InvertGamePadY;
-            input.Update(host.ElapsedTime);
+            host.Core.Input.ActiveDevices = flags;
+            host.Core.Input.InvertMouseLook = host.AppSettings.InvertMouseY;
+            host.Core.Input.InvertGamePadLook = host.AppSettings.InvertGamePadY;
+            host.Core.Input.Update(host.ElapsedTime);
 
             // GamePad stuff
-            if (input.GamePadConnected)
+            if (host.Core.Input.GamePadConnected)
             {
                 // Update gamepad ray
-                if (input.GamePadInputReceived)
+                if (host.Core.Input.GamePadInputReceived)
                 {
                     Point pos;
                     pos.X = host.GraphicsDevice.Viewport.Width / 2;
                     pos.Y = host.GraphicsDevice.Viewport.Height / 2;
-                    renderer.UpdatePointerRay(pos.X, pos.Y);
+                    host.Core.Renderer.UpdatePointerRay(pos.X, pos.Y);
                 }
 
                 // Handle triggering action record from controller
-                if (input.GamePadState.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                if (host.Core.Input.GamePadState.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                 {
                     RunActionRecord();
                 }
 
                 // Handle jumping from controller
-                if (input.GamePadState.Buttons.Y == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                if (host.Core.Input.GamePadState.Buttons.Y == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                 {
-                    gravity.Jump();
+                    host.Core.Gravity.Jump();
                 }
             }
         }
@@ -763,16 +764,16 @@ namespace DaggerfallModelling.ViewControls
         {
             string performance = string.Format(
                 "Scene: {0}ms, Renderer: {1}ms, Collision: {2}ms, FPS: {3}, GCPS: {4:0.00}",
-                renderer.Scene.UpdateTime,
-                renderer.DrawTime,
-                collision.UpdateTime,
+                host.Core.Scene.UpdateTime,
+                host.Core.Renderer.DrawTime,
+                host.Core.Collision.UpdateTime,
                 host.FPS,
                 (float)host.GarbageCollectionCount / (float)host.Timer.Elapsed.Seconds);
 
-            host.SpriteBatch.Begin();
-            host.SpriteBatch.DrawString(host.SmallFont, performance, Vector2.One, Color.Black);
-            host.SpriteBatch.DrawString(host.SmallFont, performance, Vector2.Zero, Color.Yellow);
-            host.SpriteBatch.End();
+            host.Core.SpriteBatch.Begin();
+            host.Core.SpriteBatch.DrawString(host.Core.SmallFont, performance, Vector2.One, Color.Black);
+            host.Core.SpriteBatch.DrawString(host.Core.SmallFont, performance, Vector2.Zero, Color.Yellow);
+            host.Core.SpriteBatch.End();
         }
 #endif
 

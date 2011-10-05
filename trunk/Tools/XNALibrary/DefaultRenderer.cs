@@ -77,8 +77,8 @@ namespace XNALibrary
 
 #if DEBUG
         // Performance
-        private Stopwatch stopwatch = new Stopwatch();
-        private long drawTime = 0;
+        protected Stopwatch stopwatch = new Stopwatch();
+        protected long drawTime = 0;
 #endif
 
         #endregion
