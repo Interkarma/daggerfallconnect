@@ -1,16 +1,16 @@
 float4x4 World;
 float4x4 View;
 float4x4 Projection;
-float specularIntensity = 0.8f;
+float specularIntensity = 0.1f;
 float specularPower = 0.5f; 
 
 texture Texture;
 sampler diffuseSampler = sampler_state
 {
     Texture = (Texture);
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    MIPFILTER = LINEAR;
+    //MAGFILTER = LINEAR;
+    //MINFILTER = LINEAR;
+    //MIPFILTER = LINEAR;
     AddressU = Wrap;
     AddressV = Wrap;
 };

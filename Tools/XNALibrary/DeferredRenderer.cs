@@ -34,7 +34,7 @@ namespace XNALibrary
     {
         #region QuadRenderer
 
-        private class QuadRenderer
+        protected class QuadRenderer
         {
             // Variables
             VertexBuffer vb;
@@ -112,11 +112,11 @@ namespace XNALibrary
         private Effect finalCombineEffect;
 
         // GBuffer textures
-        private Texture2D nullNormalTexture;
-        private Texture2D nullSpecularTexture;
+        //private Texture2D nullNormalTexture;
+        //private Texture2D nullSpecularTexture;
 
         // Lighting geometry
-        private Model sphereModel;          // Point ligt volume
+        private Model sphereModel;          // Point light volume
 
         // GBuffer size
         private Vector2 size;
@@ -188,6 +188,8 @@ namespace XNALibrary
             directionalLightEffect = content.Load<Effect>(@"Effects\DirectionalLight");
             finalCombineEffect = content.Load<Effect>(@"Effects\CombineFinal");
             pointLightEffect = content.Load<Effect>(@"Effects\PointLight");
+
+            // Load models
             sphereModel = content.Load<Model>(@"Models\sphere");
 
             // Load textures
@@ -222,10 +224,20 @@ namespace XNALibrary
             // Resolve gbuffer
             ResolveGBuffer();
 
-            // Draw debug version
-            DrawDebug();
+            // Draw lights
+            DrawLights();
 
-            // TODO: Draw lights
+            // Combine final image
+            Finalise();
+
+            // Draw billboard batches
+            if (HasOptionsFlags(RendererOptions.Flats))
+            {
+                billboardManager.Draw(camera);
+            }
+
+            // Draw debug version
+            //DrawDebug();
         }
 
         #endregion
@@ -253,6 +265,7 @@ namespace XNALibrary
         /// </summary>
         private void ClearGBuffer()
         {
+            graphicsDevice.BlendState = BlendState.Opaque;
             clearBufferEffect.Techniques[0].Passes[0].Apply();
             quadRenderer.Draw(graphicsDevice);
         }
@@ -274,6 +287,7 @@ namespace XNALibrary
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[0] = SamplerState.AnisotropicWrap;
 
             // Iterate batches
             foreach (var batch in batches)
@@ -342,7 +356,11 @@ namespace XNALibrary
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, null, null);
 
             //Set up Drawing Rectangle
-            Rectangle rect = new Rectangle(0, 0, width, height);
+            Rectangle rect;
+            rect.X = 0;
+            rect.Y = 0;
+            rect.Width = width;
+            rect.Height = height;
 
             // Draw color
             spriteBatch.Draw(colorRT, rect, Color.White);
@@ -355,8 +373,85 @@ namespace XNALibrary
             rect.Y += height;
             spriteBatch.Draw(depthRT, rect, Color.White);
 
+            // Draw light
+            rect.Y += height;
+            spriteBatch.Draw(lightRT, rect, Color.White);
+
             // End sprite batch
             spriteBatch.End();
+        }
+
+        /// <summary>
+        /// Combines render targets to back buffer.
+        /// </summary>
+        protected void Finalise()
+        {
+            // Set render states
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            // Set values
+            finalCombineEffect.Parameters["colorMap"].SetValue(colorRT);
+            finalCombineEffect.Parameters["lightMap"].SetValue(lightRT);
+            finalCombineEffect.Parameters["depthMap"].SetValue(depthRT);
+            finalCombineEffect.Parameters["halfPixel"].SetValue(halfPixel);
+
+            // Apply changes and draw
+            finalCombineEffect.Techniques[0].Passes[0].Apply();
+            quadRenderer.Draw(graphicsDevice);
+        }
+
+        #endregion
+
+        #region Lighting
+
+        /// <summary>
+        /// Draws lights.
+        /// </summary>
+        protected void DrawLights()
+        {
+            // Set render states
+            graphicsDevice.SetRenderTarget(lightRT);
+            graphicsDevice.Clear(Color.Transparent);
+            graphicsDevice.BlendState = BlendState.AlphaBlend;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
+
+            // Draw directional lighting
+            DrawDirectionalLight(Vector3.Left, Color.White);
+            DrawDirectionalLight(Vector3.Right, Color.White);
+            DrawDirectionalLight(Vector3.Forward, Color.White);
+            DrawDirectionalLight(Vector3.Down, Color.White);
+
+            // Reset render target
+            graphicsDevice.SetRenderTarget(null);
+        }
+
+        /// <summary>
+        /// Draws directional light.
+        /// </summary>
+        private void DrawDirectionalLight(Vector3 lightDirection, Color lightColor)
+        {
+            // Set GBuffer
+            directionalLightEffect.Parameters["colorMap"].SetValue(colorRT);
+            directionalLightEffect.Parameters["normalMap"].SetValue(normalRT);
+            directionalLightEffect.Parameters["depthMap"].SetValue(depthRT);
+
+            // Set light properties
+            directionalLightEffect.Parameters["lightDirection"].SetValue(lightDirection);
+            directionalLightEffect.Parameters["Color"].SetValue(lightColor.ToVector3());
+
+            // Set camera
+            directionalLightEffect.Parameters["cameraPosition"].SetValue(camera.Position);
+            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(camera.View * camera.Projection));
+
+            // Set size
+            directionalLightEffect.Parameters["halfPixel"].SetValue(halfPixel);
+
+            // Apply changes
+            directionalLightEffect.Techniques[0].Passes[0].Apply();
+
+            // Draw
+            quadRenderer.Draw(graphicsDevice);
         }
 
         #endregion
