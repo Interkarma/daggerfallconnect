@@ -210,6 +210,12 @@ namespace XNALibrary
         /// </summary>
         public override void Draw()
         {
+#if DEBUG
+            // Start timing
+            stopwatch.Reset();
+            stopwatch.Start();
+#endif
+
             // Batch scene
             ClearBatches();
             BatchNode(scene.Root, true);
@@ -236,8 +242,20 @@ namespace XNALibrary
                 billboardManager.Draw(camera);
             }
 
+            // Draw compass
+            if (HasOptionsFlags(RendererOptions.Compass))
+            {
+                compass.Draw(camera);
+            }
+
             // Draw debug version
             //DrawDebug();
+
+#if DEBUG
+            // End timing
+            stopwatch.Stop();
+            drawTime = stopwatch.ElapsedMilliseconds;
+#endif
         }
 
         #endregion

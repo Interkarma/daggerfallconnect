@@ -59,7 +59,6 @@ namespace XNALibrary
             parameters.DepthStencilFormat = DepthFormat.Depth24;
             parameters.DeviceWindowHandle = windowHandle;
             parameters.PresentationInterval = PresentInterval.One;
-            parameters.MultiSampleCount = (Core.GraphicsProfile == GraphicsProfile.HiDef) ? 8 : 2;
             parameters.IsFullScreen = false;
 
             graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter,

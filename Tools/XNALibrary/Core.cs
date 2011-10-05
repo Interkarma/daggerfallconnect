@@ -40,12 +40,16 @@ namespace XNALibrary
         bool deferredRendering = false;
         DefaultRenderer defaultRenderer = null;
         DeferredRenderer deferredRenderer = null;
+        SpriteBatch spriteBatch;
         SceneBuilder sceneBuilder;
         Collision collision;
         Gravity gravity;
         Input input;
         Scene scene;
         Camera camera;
+
+        // Fonts
+        SpriteFont arialSmallFont;
 
         // Constants
         private const string contentRootDirectory = "XNALibraryContent";
@@ -100,6 +104,22 @@ namespace XNALibrary
         }
 
         /// <summary>
+        /// Gets SpriteBatch.
+        /// </summary>
+        public SpriteBatch SpriteBatch
+        {
+            get { return spriteBatch; }
+        }
+
+        /// <summary>
+        /// Gets small sprite font.
+        /// </summary>
+        public SpriteFont SmallFont
+        {
+            get { return arialSmallFont; }
+        }
+
+        /// <summary>
         /// Gets TextureManager.
         /// </summary>
         public TextureManager TextureManager
@@ -132,11 +152,27 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets input.
+        /// Gets Input.
         /// </summary>
         public Input Input
         {
             get { return input; }
+        }
+
+        /// <summary>
+        /// Gets Collision.
+        /// </summary>
+        public Collision Collision
+        {
+            get { return collision; }
+        }
+
+        /// <summary>
+        /// Gets Gravity.
+        /// </summary>
+        public Gravity Gravity
+        {
+            get { return gravity; }
         }
 
         /// <summary>
@@ -188,8 +224,14 @@ namespace XNALibrary
                 (IGraphicsDeviceService)serviceProvider.GetService(typeof(IGraphicsDeviceService));
             this.graphicsDevice = graphicsDeviceService.GraphicsDevice;
 
+            // Create sprite batch
+            spriteBatch = new SpriteBatch(graphicsDevice);
+
             // Create content manager
             contentManager = new ContentManager(serviceProvider, contentRootDirectory);
+
+            // Load fonts
+            arialSmallFont = contentManager.Load<SpriteFont>(@"Fonts\ArialSmall");
 
             // Create engine components
             sceneBuilder = new SceneBuilder(graphicsDevice, arena2Path);

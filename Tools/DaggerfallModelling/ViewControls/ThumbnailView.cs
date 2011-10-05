@@ -345,31 +345,31 @@ namespace DaggerfallModelling.ViewControls
         {
             // Draw thumbnail sprites
             uint? drawTextKey = null;
-            host.SpriteBatch.Begin();
+            host.Core.SpriteBatch.Begin();
             foreach (var item in thumbDict)
             {
                 // Draw thumbnail
-                host.SpriteBatch.Draw(item.Value.texture, item.Value.rect, Color.White);
+                host.Core.SpriteBatch.Draw(item.Value.texture, item.Value.rect, Color.White);
 
                 // Set key to draw text over thumb
                 if (mouseOverThumb == item.Key)
                     drawTextKey = item.Key;
             }
-            host.SpriteBatch.End();
+            host.Core.SpriteBatch.End();
 
             // Draw thumbnail id text. This is done in a second batch to avoid alpha problems
             // with sprite render on some cards.
-            host.SpriteBatch.Begin();
+            host.Core.SpriteBatch.Begin();
             if (drawTextKey != null)
             {
                 Thumbnails thumb = thumbDict[drawTextKey.Value];
                 string thumbText = string.Format("{0}", thumb.key.ToString());
-                Vector2 thumbTextSize = host.SmallFont.MeasureString(thumbText);
+                Vector2 thumbTextSize = host.Core.SmallFont.MeasureString(thumbText);
                 int textX = (int)thumb.rect.X + (int)(thumb.rect.Width - thumbTextSize.X) / 2;
                 Vector2 textPos = new Vector2(textX, (float)thumb.rect.Bottom - thumbTextSize.Y - 4);
-                host.SpriteBatch.DrawString(host.SmallFont, thumbText, textPos, thumbTextColor);
+                host.Core.SpriteBatch.DrawString(host.Core.SmallFont, thumbText, textPos, thumbTextColor);
             }
-            host.SpriteBatch.End();
+            host.Core.SpriteBatch.End();
         }
 
         private void DrawSingleModel(ref ModelManager.ModelData model)
@@ -630,9 +630,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Render thumbnail components
             host.GraphicsDevice.Clear(thumbViewBackgroundColor);
-            host.SpriteBatch.Begin();
-            host.SpriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
-            host.SpriteBatch.End();
+            host.Core.SpriteBatch.Begin();
+            host.Core.SpriteBatch.Draw(thumbBackgroundTexture, new Rectangle(0, 0, thumbWidth, thumbHeight), Color.White);
+            host.Core.SpriteBatch.End();
             DrawSingleModel(ref thumb.model);
 
             // Restore default render target

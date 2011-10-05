@@ -34,6 +34,9 @@ namespace DaggerfallModelling.ViewControls
 
         #region Class Variables
 
+        // XNALibrary
+        Core core;
+
         // Resources
         private bool isReady = false;
         private string arena2Path = string.Empty;
@@ -66,16 +69,6 @@ namespace DaggerfallModelling.ViewControls
         WeakReference gcTracker = new WeakReference(new object());
         private int garbageCount = 0;
 #endif
-
-        // XNA
-        private SpriteBatch spriteBatch;
-
-        // XNA Content
-        private ContentHelper contentHelper;
-        private SpriteFont arialSmallFont;
-
-        // XNALibrary
-        private SceneBuilder sceneBuilder = null;
 
         // Appearance
         private Color backgroundColour = Color.Gray;
@@ -184,19 +177,11 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets host ContentHelper.
+        /// Gets engine core.
         /// </summary>
-        public ContentHelper ContentHelper
+        public Core Core
         {
-            get { return contentHelper; }
-        }
-
-        /// <summary>
-        /// Gets host SceneBuilder.
-        /// </summary>
-        public SceneBuilder SceneBuilder
-        {
-            get { return sceneBuilder; }
+            get { return core; }
         }
 
         /// <summary>
@@ -204,7 +189,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public TextureManager TextureManager
         {
-            get { return sceneBuilder.TextureManager; }
+            get { return core.SceneBuilder.TextureManager; }
         }
 
         /// <summary>
@@ -212,15 +197,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public ModelManager ModelManager
         {
-            get { return sceneBuilder.ModelManager; }
-        }
-
-        /// <summary>
-        /// Gets host SpriteBatch.
-        /// </summary>
-        public SpriteBatch SpriteBatch
-        {
-            get { return spriteBatch; }
+            get { return core.SceneBuilder.ModelManager; }
         }
 
         /// <summary>
@@ -332,14 +309,6 @@ namespace DaggerfallModelling.ViewControls
         }
 
         /// <summary>
-        /// Gets small sprite font.
-        /// </summary>
-        public SpriteFont SmallFont
-        {
-            get { return arialSmallFont; }
-        }
-
-        /// <summary>
         /// Gets current mouse ray.
         ///  Client view must call UpdateMouseRay() with matrices
         ///  for this to be current.
@@ -443,8 +412,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         protected override void Initialize()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         /// <summary>
@@ -722,16 +689,8 @@ namespace DaggerfallModelling.ViewControls
         {
             if (this.Created)
             {   
-                // Initialise content
-                this.arena2Path = arena2Path;
-                contentHelper = new ContentHelper(
-                    Services,
-                    Path.Combine(Application.StartupPath, Core.ContentRootDirectory));
-
-                // Initialise scene builder
-                sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
-
                 // Initialise view
+                this.arena2Path = arena2Path; 
                 InitialiseView();
             }
             else
@@ -941,6 +900,9 @@ namespace DaggerfallModelling.ViewControls
             if (!this.Created || string.IsNullOrEmpty(arena2Path))
                 return false;
 
+            // Create engine core
+            core = new Core(arena2Path, base.Services);
+
             // Hook idle event to run as fast as possible
             Application.Idle += TickWhileIdle;
             update = true;
@@ -951,9 +913,6 @@ namespace DaggerfallModelling.ViewControls
             BindViewClient(ViewModes.BlockView, new LocationView(this));
             BindViewClient(ViewModes.LocationView, new LocationView(this));
             BindViewClient(ViewModes.DungeonView, new LocationView(this));
-
-            // Load fonts
-            arialSmallFont = contentHelper.ContentManager.Load<SpriteFont>(@"Fonts\ArialSmall");
 
             // Set ready flag
             isReady = true;
