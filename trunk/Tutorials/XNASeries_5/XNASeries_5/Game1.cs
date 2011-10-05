@@ -28,8 +28,12 @@ namespace XNASeries_5
         // Daggerfall path
         string arena2Path = @"C:\dosgames\dagger\arena2";
 
+        // Content
+        string regionName = "Daggerfall";
+        string locationName = "Daggerfall";
+
         // Camera
-        Vector3 cameraPos = new Vector3(0, 300, 1500);
+        Vector3 cameraPos = new Vector3(2048, 400, 1000);
 
         // Options
         bool invertMouseLook = false;
@@ -76,10 +80,14 @@ namespace XNASeries_5
         /// </summary>
         protected override void LoadContent()
         {
-            // Add a model node
-            ModelNode node1 = core.SceneBuilder.CreateModelNode(456);
-            node1.Position = new Vector3(0f, 0f, 0f);
-            core.Scene.AddNode(null, node1);
+            // Create location node
+            SceneNode node =
+                core.SceneBuilder.CreateExteriorLocationNode(
+                regionName,
+                locationName);
+
+            // Add to scene
+            core.Scene.AddNode(null, node);
         }
 
         /// <summary>

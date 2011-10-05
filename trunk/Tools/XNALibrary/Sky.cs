@@ -150,6 +150,7 @@ namespace XNALibrary
         /// <summary>
         /// Called when view component should redraw.
         /// </summary>
+        /// <param name="camera">Camera looking into scene.</param>
         public override void Draw(Camera camera)
         {
             if (this.Enabled && camera != null)

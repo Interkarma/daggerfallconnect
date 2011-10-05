@@ -1022,12 +1022,12 @@ namespace XNALibrary
                 groundTextureWidth,
                 groundTextureHeight,
                 true,
-                graphicsDevice.DisplayMode.Format,
-                DepthFormat.Depth16);
+                SurfaceFormat.Color,
+                DepthFormat.None);
 
             // Begin rendering
             graphicsDevice.SetRenderTarget(renderTarget);
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, null, null);
 
             // Draw tiles
             const int tileCount = 16;
