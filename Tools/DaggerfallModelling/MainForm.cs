@@ -147,7 +147,8 @@ namespace DaggerfallModelling
             // TEST: Set a specific view while testing content
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //DFLocation dfLocation = mapsFile.GetLocation("Dragontail Mountains", "Scourg Barrow");
-            DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
+            DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Daggerfall");
             //DFLocation dfLocation = mapsFile.GetLocation("Sentinel", "Sentinel");
             ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);

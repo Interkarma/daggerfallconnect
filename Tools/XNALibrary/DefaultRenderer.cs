@@ -37,6 +37,7 @@ namespace XNALibrary
 
         // Batches
         protected Dictionary<int, List<BatchItem>> batches;
+        protected List<PointLightNode> pointLightBatch;
 
         //  Sprites
         protected SpriteBatch spriteBatch;
@@ -245,6 +246,9 @@ namespace XNALibrary
 
             // Create batching dictionary
             batches = new Dictionary<int, List<BatchItem>>();
+
+            // Create point light batch list
+            pointLightBatch = new List<PointLightNode>();
 
             // Set default background colour
             backgroundColor = Color.CornflowerBlue;
@@ -638,6 +642,9 @@ namespace XNALibrary
             // Clear billboard batches
             billboardManager.ClearBatch();
 
+            // Clear point light batch
+            pointLightBatch.Clear();
+
             // Clear picked model node
             pointerOverModelNode = null;
         }
@@ -707,6 +714,10 @@ namespace XNALibrary
             {
                 BatchBillboardNode((BillboardNode)node);
             }
+            else if (node is PointLightNode)
+            {
+                BatchPointLightNode((PointLightNode)node);
+            }
         }
 
         /// <summary>
@@ -758,6 +769,15 @@ namespace XNALibrary
         {
             // Batch billboard
             billboardManager.AddBatch(camera, node);
+        }
+
+        /// <summary>
+        /// Batch a point light node for rendering.
+        /// </summary>
+        /// <param name="node">PointLightNode.</param>
+        protected void BatchPointLightNode(PointLightNode node)
+        {
+            pointLightBatch.Add(node);
         }
 
         #endregion

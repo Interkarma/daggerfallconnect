@@ -2,6 +2,9 @@ texture colorMap;
 texture lightMap;
 texture depthMap;
 
+float3 AmbientColor;
+float AmbientIntensity;
+
 sampler colorSampler = sampler_state
 {
     Texture = (colorMap);
@@ -67,7 +70,8 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
     float4 light = tex2D(lightSampler,input.TexCoord);
     float3 diffuseLight = light.rgb;
     float specularLight = light.a;
-    output.Color = float4((diffuseColor * diffuseLight + specularLight),1);
+	float3 ambientLight = diffuseColor * AmbientColor * AmbientIntensity;
+    output.Color = float4((diffuseColor * diffuseLight + specularLight + ambientLight),1);
 
 	// Output Depth
 	// This information is used by forward renderering to insert

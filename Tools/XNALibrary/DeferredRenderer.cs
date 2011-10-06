@@ -125,6 +125,32 @@ namespace XNALibrary
         // Quad drawing
         private QuadRenderer quadRenderer;
 
+        // Lights
+        private AmbientLight ambientLight;
+        private List<DirectionalLight> directionalLights;
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Defines ambient light.
+        /// </summary>
+        public struct AmbientLight
+        {
+            public Color Color;
+            public float Intensity;
+        }
+
+        /// <summary>
+        /// Defines a directional light for the deferred renderer.
+        /// </summary>
+        public struct DirectionalLight
+        {
+            public Vector3 Direction;
+            public Color Color;
+        }
+
         #endregion
 
         #region Properties
@@ -135,6 +161,14 @@ namespace XNALibrary
         public Vector2 Size
         {
             get { return size; }
+        }
+
+        /// <summary>
+        /// Gets list of directional lights.
+        /// </summary>
+        public List<DirectionalLight> DirectionalLights
+        {
+            get { return directionalLights; }
         }
 
         #endregion
@@ -148,8 +182,8 @@ namespace XNALibrary
         public DeferredRenderer(TextureManager textureManager)
             : base(textureManager)
         {
-            // Create quad renderer
             quadRenderer = new QuadRenderer(graphicsDevice);
+            directionalLights = new List<DirectionalLight>();
         }
 
         #endregion
@@ -186,11 +220,21 @@ namespace XNALibrary
             clearBufferEffect = content.Load<Effect>(@"Effects\ClearGBuffer");
             renderBufferEffect = content.Load<Effect>(@"Effects\RenderGBuffer");
             directionalLightEffect = content.Load<Effect>(@"Effects\DirectionalLight");
-            finalCombineEffect = content.Load<Effect>(@"Effects\CombineFinal");
             pointLightEffect = content.Load<Effect>(@"Effects\PointLight");
+            finalCombineEffect = content.Load<Effect>(@"Effects\CombineFinal");
 
             // Load models
             sphereModel = content.Load<Model>(@"Models\sphere");
+
+            // Set default ambient light
+            ambientLight.Color = Color.White;
+            ambientLight.Intensity = 0.1f;
+            
+            // Add default directional lights
+            DirectionalLight d0;
+            d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
+            d0.Color = Color.FromNonPremultiplied(0, 0, 0, 255);
+            directionalLights.Add(d0);
 
             // Load textures
             //nullNormalTexture = content.Load<Texture2D>(@"Textures\null_normal");
@@ -245,7 +289,7 @@ namespace XNALibrary
             // Draw compass
             if (HasOptionsFlags(RendererOptions.Compass))
             {
-                compass.Draw(camera);
+                //compass.Draw(camera);
             }
 
             // Draw debug version
@@ -404,6 +448,9 @@ namespace XNALibrary
         /// </summary>
         protected void Finalise()
         {
+            // Set render target
+            graphicsDevice.SetRenderTarget(null);
+
             // Set render states
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -413,6 +460,8 @@ namespace XNALibrary
             finalCombineEffect.Parameters["lightMap"].SetValue(lightRT);
             finalCombineEffect.Parameters["depthMap"].SetValue(depthRT);
             finalCombineEffect.Parameters["halfPixel"].SetValue(halfPixel);
+            finalCombineEffect.Parameters["AmbientColor"].SetValue(ambientLight.Color.ToVector3());
+            finalCombineEffect.Parameters["AmbientIntensity"].SetValue(ambientLight.Intensity);
 
             // Apply changes and draw
             finalCombineEffect.Techniques[0].Passes[0].Apply();
@@ -434,19 +483,27 @@ namespace XNALibrary
             graphicsDevice.BlendState = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.None;
 
-            // Draw directional lighting
-            DrawDirectionalLight(Vector3.Left, Color.White);
-            DrawDirectionalLight(Vector3.Right, Color.White);
-            DrawDirectionalLight(Vector3.Forward, Color.White);
-            DrawDirectionalLight(Vector3.Down, Color.White);
+            // Draw directional lights
+            foreach (var dl in directionalLights)
+            {
+                DrawDirectionalLight(dl.Direction, dl.Color);
+            }
 
-            // Reset render target
-            graphicsDevice.SetRenderTarget(null);
+            // Draw point lights
+            foreach (var pl in pointLightBatch)
+            {
+                DrawPointLight(pl.TransformedBounds.Center, Color.White, PointLightNode.Radius, 1.0f);
+            }
+
+            // Draw personal light
+            DrawPointLight(camera.Position, Color.White, PointLightNode.Radius, 1.0f);
         }
 
         /// <summary>
-        /// Draws directional light.
+        /// Draws a directional light.
         /// </summary>
+        /// <param name="lightDirection">Light direction.</param>
+        /// <param name="lightColor">Light color.</param>
         private void DrawDirectionalLight(Vector3 lightDirection, Color lightColor)
         {
             // Set GBuffer
@@ -470,6 +527,69 @@ namespace XNALibrary
 
             // Draw
             quadRenderer.Draw(graphicsDevice);
+        }
+
+        /// <summary>
+        /// Draws a point light.
+        /// </summary>
+        /// <param name="lightPosition">Light position.</param>
+        /// <param name="color">Light colour.</param>
+        /// <param name="lightRadius">Light radius.</param>
+        /// <param name="lightIntensity">Light intensity.</param>
+        private void DrawPointLight(Vector3 lightPosition, Color color, float lightRadius, float lightIntensity)
+        {
+            // Set GBuffer
+            pointLightEffect.Parameters["colorMap"].SetValue(colorRT);
+            pointLightEffect.Parameters["normalMap"].SetValue(normalRT);
+            pointLightEffect.Parameters["depthMap"].SetValue(depthRT);
+
+            // Compute the light world matrix.
+            // Scale according to light radius, and translate it to light position.
+            Matrix sphereWorldMatrix = Matrix.CreateScale(lightRadius) * Matrix.CreateTranslation(lightPosition);
+            pointLightEffect.Parameters["World"].SetValue(sphereWorldMatrix);
+            pointLightEffect.Parameters["View"].SetValue(camera.View);
+            pointLightEffect.Parameters["Projection"].SetValue(camera.Projection);
+
+            // Light position
+            pointLightEffect.Parameters["lightPosition"].SetValue(lightPosition);
+
+            // Set the color, radius and intensity
+            pointLightEffect.Parameters["Color"].SetValue(color.ToVector3());
+            pointLightEffect.Parameters["lightRadius"].SetValue(lightRadius);
+            pointLightEffect.Parameters["lightIntensity"].SetValue(lightIntensity);
+
+            // Parameters for specular computations
+            pointLightEffect.Parameters["cameraPosition"].SetValue(camera.Position);
+            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(camera.View * camera.Projection));
+
+            // Size of a halfpixel, for texture coordinates alignment
+            pointLightEffect.Parameters["halfPixel"].SetValue(halfPixel);
+
+            // Calculate the distance between the camera and light center
+            float cameraToCenter = Vector3.Distance(camera.Position, lightPosition);
+
+            // If we are inside the light volume, draw the sphere's inside face
+            if (cameraToCenter < lightRadius)
+                graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+            else
+                graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
+
+            pointLightEffect.Techniques[0].Passes[0].Apply();
+            foreach (ModelMesh mesh in sphereModel.Meshes)
+            {
+                foreach (ModelMeshPart meshPart in mesh.MeshParts)
+                {
+                    graphicsDevice.Indices = meshPart.IndexBuffer;
+                    graphicsDevice.SetVertexBuffer(meshPart.VertexBuffer);
+
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, meshPart.NumVertices, meshPart.StartIndex, meshPart.PrimitiveCount);
+                }
+            }
+
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         #endregion
