@@ -1,7 +1,7 @@
 float4x4 World;
 float4x4 View;
 float4x4 Projection;
-float specularIntensity = 0.1f;
+float specularIntensity = 0.0f;
 float specularPower = 0.5f; 
 
 texture Texture;

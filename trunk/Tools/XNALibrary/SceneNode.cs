@@ -582,9 +582,9 @@ namespace XNALibrary
             /// <summary>Non-player characters, such as quest givers and shop keepers.</summary>
             NPC,
             /// <summary>Flat is also light-source.</summary>
-            Light,
+            Light = 210,
             /// <summary>Editor flats, such as markers for quests, random monters, and treasure.</summary>
-            Editor,
+            Editor = 199,
             /// <summary>Climate-specific scenery in exterior blocks, such as trees and rocks.</summary>
             ClimateScenery,
         }
@@ -625,6 +625,34 @@ namespace XNALibrary
             this.LocalBounds = new BoundingSphere(
                 Vector3.Zero,
                 (size.X > size.Y) ? size.X / 2 : size.Y / 2);
+        }
+    }
+
+    #endregion
+
+    #region PointLightNode
+
+    /// <summary>
+    /// Scene node for a point light source.
+    /// </summary>
+    public class PointLightNode : SceneNode
+    {
+        // Constants
+        private const float radius = 640.0f;
+
+        // Properties
+        static public float Radius
+        {
+            get { return radius; }
+        }
+
+        // Constructors
+        public PointLightNode()
+            : base()
+        {
+            this.LocalBounds = new BoundingSphere(
+                Vector3.Zero,
+                radius);
         }
     }
 

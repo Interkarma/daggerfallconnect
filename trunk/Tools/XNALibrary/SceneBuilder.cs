@@ -593,6 +593,10 @@ namespace XNALibrary
             // Iterate through all misc flat records
             foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.RmbBlock.MiscFlatObjectRecords)
             {
+                // Get flat type
+                BillboardNode.BillboardType billboardType =
+                    GetFlatType(obj.TextureArchive);
+
                 // Flags
                 TextureManager.TextureCreateFlags flags =
                     TextureManager.TextureCreateFlags.Dilate |
@@ -620,11 +624,15 @@ namespace XNALibrary
 
                     // Create billboard node
                     BillboardNode billboardNode = new BillboardNode(
-                        BillboardNode.BillboardType.Decorative,
+                        billboardType,
                         textureKey,
                         finalSize);
                     billboardNode.Position = position;
                     blockNode.Add(billboardNode);
+
+                    // Add point light node
+                    if (billboardType == BillboardNode.BillboardType.Light)
+                        AddPointLight(position, blockNode);
                 }
             }
         }
@@ -796,6 +804,12 @@ namespace XNALibrary
         /// <param name="blockNode">BlockNode.</param>
         private void AddRDBFlat(DFBlock.RdbObject obj, BlockNode blockNode)
         {
+            // Get flat type
+            BillboardNode.BillboardType billboardType =
+                GetFlatType(obj.Resources.FlatResource.TextureArchive);
+
+            // Add light if needed
+
             // Load flat
             int textureKey;
             Vector2 startSize;
@@ -824,12 +838,29 @@ namespace XNALibrary
 
                 // Create billboard node
                 BillboardNode billboardNode = new BillboardNode(
-                    BillboardNode.BillboardType.Decorative,
+                    billboardType,
                     textureKey,
                     finalSize);
                 billboardNode.Position = position;
                 blockNode.Add(billboardNode);
             }
+        }
+
+        #endregion
+
+        #region Light Building
+
+        /// <summary>
+        /// Adds a point light to the scene.
+        /// </summary>
+        /// <param name="position">Position.</param>
+        /// <param name="blockNode">Parent node.</param>
+        private void AddPointLight(Vector3 position, BlockNode blockNode)
+        {
+            // Create light node
+            PointLightNode pointLightNode = new PointLightNode();
+            pointLightNode.Position = position;
+            blockNode.Add(pointLightNode);
         }
 
         #endregion
@@ -991,6 +1022,29 @@ namespace XNALibrary
         {
             // Create action key for this object
             return groupIndex * 1000 + objIndex;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the type of this flat.
+        /// </summary>
+        /// <param name="textureArchive">Texture archive index.</param>
+        /// <returns>BillboardNode.BillboardType.</returns>
+        private BillboardNode.BillboardType GetFlatType(int textureArchive)
+        {
+            // Determine flat type
+            BillboardNode.BillboardType type;
+            if (textureArchive == (int)BillboardNode.BillboardType.Editor)
+                type = BillboardNode.BillboardType.Editor;
+            else if (textureArchive == (int)BillboardNode.BillboardType.Light)
+                type = BillboardNode.BillboardType.Light;
+            else
+                type = BillboardNode.BillboardType.Decorative;
+
+            return type;
         }
 
         #endregion

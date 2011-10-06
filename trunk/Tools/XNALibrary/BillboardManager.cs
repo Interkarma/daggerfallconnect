@@ -176,6 +176,10 @@ namespace XNALibrary
         /// <param name="node">BillboardNode</param>
         public void AddBatch(Camera camera, BillboardNode node)
         {
+            // TEST: Only batch lights for now
+            if (node.Type != BillboardNode.BillboardType.Light)
+                return;
+
             // Create billboard matrix
             Matrix constrainedBillboard = Matrix.CreateConstrainedBillboard(
                 Vector3.Zero,
