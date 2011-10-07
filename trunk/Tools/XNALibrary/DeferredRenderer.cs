@@ -300,18 +300,14 @@ namespace XNALibrary
 
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
-            {
                 billboardManager.Draw(camera);
-            }
 
             // Draw compass
             if (HasOptionsFlags(RendererOptions.Compass))
-            {
                 compass.Draw(camera);
-            }
 
             // Draw debug version
-            DrawDebug();
+            //DrawDebug();
 
 #if DEBUG
             // End timing
@@ -445,7 +441,7 @@ namespace XNALibrary
         /// <summary>
         /// Draw a debug version of GBuffer.
         /// </summary>
-        protected void DrawDebug()
+        protected void DrawDebugBuffers()
         {
             // Width + Height
             int width = (int)size.X / 4;
@@ -485,14 +481,15 @@ namespace XNALibrary
         /// </summary>
         protected void Compose()
         {
-            // Set render target
+            // Set render target and restore viewport
             graphicsDevice.SetRenderTarget(null);
-
-            // Restore viewport
             graphicsDevice.Viewport = viewport;
 
+            // Draw background
+            DrawBackground();
+
             // Set render states
-            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.BlendState = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             // Set values
