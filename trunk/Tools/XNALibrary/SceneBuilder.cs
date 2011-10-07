@@ -632,7 +632,7 @@ namespace XNALibrary
 
                     // Add point light node
                     if (billboardType == BillboardNode.BillboardType.Light)
-                        AddPointLight(position, blockNode);
+                        AddPointLight(position, PointLightNode.ExteriorRadius, blockNode);
                 }
             }
         }
@@ -843,6 +843,10 @@ namespace XNALibrary
                     finalSize);
                 billboardNode.Position = position;
                 blockNode.Add(billboardNode);
+
+                // Add point light node
+                if (billboardType == BillboardNode.BillboardType.Light)
+                    AddPointLight(position, PointLightNode.DungeonRadius, blockNode);
             }
         }
 
@@ -855,10 +859,10 @@ namespace XNALibrary
         /// </summary>
         /// <param name="position">Position.</param>
         /// <param name="blockNode">Parent node.</param>
-        private void AddPointLight(Vector3 position, BlockNode blockNode)
+        private void AddPointLight(Vector3 position, float radius, BlockNode blockNode)
         {
             // Create light node
-            PointLightNode pointLightNode = new PointLightNode();
+            PointLightNode pointLightNode = new PointLightNode(radius);
             pointLightNode.Position = position;
             blockNode.Add(pointLightNode);
         }

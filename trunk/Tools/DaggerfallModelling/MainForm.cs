@@ -153,8 +153,8 @@ namespace DaggerfallModelling
             ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.ShowBlockView("MAGEAA13.RMB", null);
-            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
-            UpdateActiveCameraMode();
+            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            //UpdateActiveCameraMode();
 #endif
 
             // Show thumbnails view
