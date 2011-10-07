@@ -119,6 +119,7 @@ namespace XNALibrary
         private Model sphereModel;          // Point light volume
 
         // GBuffer size
+        Viewport viewport;
         private Vector2 size;
         private Vector2 halfPixel;
 
@@ -188,6 +189,39 @@ namespace XNALibrary
 
         #endregion
 
+        #region Device Events
+
+        /// <summary>
+        /// Called when device is reset and we need to recreate resources.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected override void GraphicsDevice_DeviceReset(object sender, EventArgs e)
+        {
+            // Work around .fx bug in XNA 4.0.
+            // XNA will error if any sampler state has a SurfaceFormat.Single attached,
+            // even if that sampler state is not in use.
+            // In this case, it is SamplerState[2] (depth buffer in deferred renderer).
+            // Source1: http://forums.create.msdn.com/forums/p/61268/438840.aspx
+            // Source2: http://www.gamedev.net/topic/603699-xna-framework-hidef-profile-requires-texturefilter-to-be-point-when-using-texture-format-single/
+            graphicsDevice.SamplerStates[2] = SamplerState.LinearClamp;
+            graphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
+
+            CreateGBuffer();
+        }
+
+        /// <summary>
+        /// Called when device is lost.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected override void GraphicsDevice_DeviceLost(object sender, EventArgs e)
+        {
+            throw new Exception("Not implemented.");
+        }
+
+        #endregion
+
         #region Public Overrides
 
         /// <summary>
@@ -197,17 +231,7 @@ namespace XNALibrary
         {
             base.Initialise();
 
-            // Get size of back buffer
-            int width = graphicsDevice.PresentationParameters.BackBufferWidth;
-            int height = graphicsDevice.PresentationParameters.BackBufferHeight;
-            size = new Vector2(width, height);
-            halfPixel = new Vector2(0.5f / (float)width, 0.5f / (float)height);
-
-            // Create render targets
-            colorRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth24);
-            normalRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
-            depthRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Single, DepthFormat.None);
-            lightRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            CreateGBuffer();
         }
 
         /// <summary>
@@ -228,12 +252,12 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.1f;
+            ambientLight.Intensity = 0.0f;
             
             // Add default directional lights
             DirectionalLight d0;
             d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
-            d0.Color = Color.FromNonPremultiplied(0, 0, 0, 255);
+            d0.Color = Color.FromNonPremultiplied(64, 64, 64, 255);
             directionalLights.Add(d0);
 
             // Load textures
@@ -260,6 +284,13 @@ namespace XNALibrary
             stopwatch.Start();
 #endif
 
+            // Store current viewport.
+            // This is important for WinForms apps as we could
+            // be drawing to a subrect of the total surface.
+            // This viewport needs to be reset every time the render
+            // target changes.
+            viewport = graphicsDevice.Viewport;
+
             // Batch scene
             ClearBatches();
             BatchNode(scene.Root, true);
@@ -279,6 +310,9 @@ namespace XNALibrary
 
             // Combine final image
             Finalise();
+
+            // Restore viewport
+            graphicsDevice.Viewport = viewport;
 
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
@@ -307,11 +341,31 @@ namespace XNALibrary
         #region Private Methods
 
         /// <summary>
+        /// Creates GBuffer.
+        /// </summary>
+        private void CreateGBuffer()
+        {
+            // Get size of back buffer
+            viewport = graphicsDevice.Viewport;
+            int width = graphicsDevice.PresentationParameters.BackBufferWidth;
+            int height = graphicsDevice.PresentationParameters.BackBufferHeight;
+            size = new Vector2(width, height);
+            halfPixel = new Vector2(0.5f / (float)viewport.Width, 0.5f / (float)viewport.Height);
+
+            // Create render targets
+            colorRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth24);
+            normalRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            depthRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Single, DepthFormat.None);
+            lightRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+        }
+
+        /// <summary>
         /// Sets GBuffer render targets.
         /// </summary>
         private void SetGBuffer()
         {
             graphicsDevice.SetRenderTargets(colorRT, normalRT, depthRT);
+            graphicsDevice.Viewport = viewport;
         }
 
         /// <summary>
@@ -320,6 +374,7 @@ namespace XNALibrary
         private void ResolveGBuffer()
         {
             graphicsDevice.SetRenderTargets(null);
+            graphicsDevice.Viewport = viewport;
         }
 
         /// <summary>

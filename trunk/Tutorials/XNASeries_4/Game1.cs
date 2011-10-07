@@ -25,9 +25,7 @@ namespace XNASeries_4
         Microsoft.Xna.Framework.Input.KeyboardState oldKeyboardState;
 
         // XNALibrary
-        SceneBuilder sceneBuilder;
-        DefaultRenderer renderer;
-        Input input;
+        Core core;
 
         // Daggerfall path
         string arena2Path = @"c:\dosgames\dagger\arena2";
@@ -68,20 +66,15 @@ namespace XNASeries_4
         /// </summary>
         protected override void Initialize()
         {
-            // Create scene builder
-            sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
+            // Create engine
+            core = new Core(arena2Path, this.Services);
 
-            // Create renderer
-            renderer = new DefaultRenderer(sceneBuilder.TextureManager);
+            // Set camera position
+            core.Camera.Position = cameraPos;
 
-            // Enable picking
-            renderer.Options |= DefaultRenderer.RendererOptions.Picking;
-
-            // Create input
-            input = new Input();
-            input.ActiveDevices = Input.DeviceFlags.All;
-            input.InvertMouseLook = invertMouseLook;
-            input.InvertGamePadLook = invertGamePadLook;
+            // Set input preferences
+            core.Input.InvertMouseLook = invertMouseLook;
+            core.Input.InvertGamePadLook = invertGamePadLook;
 
             base.Initialize();
         }
@@ -93,11 +86,10 @@ namespace XNASeries_4
         protected override void LoadContent()
         {
             // Create a block node
-            BlockNode node = sceneBuilder.CreateBlockNode(blockName, null, false);
-            renderer.Camera.Position = cameraPos;
+            BlockNode node = core.SceneBuilder.CreateBlockNode(blockName, null, false);
 
             // Add to scene
-            renderer.Scene.AddNode(null, node);
+            core.Scene.AddNode(null, node);
         }
 
         /// <summary>
@@ -116,34 +108,34 @@ namespace XNASeries_4
         protected override void Update(GameTime gameTime)
         {
             // Update scene
-            renderer.Scene.Update(gameTime.ElapsedGameTime);
+            core.Scene.Update(gameTime.ElapsedGameTime);
 
             // Update pointer ray with mouse position
-            Point mousePos = input.MousePos;
-            renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
+            Point mousePos = core.Input.MousePos;
+            core.Renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
 
             // Update input
-            input.Update(gameTime.ElapsedGameTime);
-            input.Apply(renderer.Camera, true);
+            core.Input.Update(gameTime.ElapsedGameTime);
+            core.Input.Apply(core.Camera, true);
 
             // Space pressed
             if (
-                input.KeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space) &&
+                core.Input.KeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space) &&
                 !oldKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space))
             {
                 // Test pointer over node
-                if (renderer.PointerOverNode != null)
+                if (core.Renderer.PointerOverNode != null)
                 {
                     // Test node has action
-                    if (renderer.PointerOverNode.Action.Enabled)
-                        ToggleAction((ModelNode)renderer.PointerOverNode);
+                    if (core.Renderer.PointerOverNode.Action.Enabled)
+                        ToggleAction((ModelNode)core.Renderer.PointerOverNode);
                 }
             }
 
-            oldKeyboardState = input.KeyboardState;
+            oldKeyboardState = core.Input.KeyboardState;
 
             // Update camera
-            renderer.Camera.Update();
+            core.Camera.Update();
         }
 
         /// <summary>
@@ -153,11 +145,11 @@ namespace XNASeries_4
         protected override void Draw(GameTime gameTime)
         {
             // Draw scene
-            renderer.Draw();
+            core.Draw();
 
             // Draw bounds
             if (drawBounds)
-                renderer.DrawBounds();
+                core.Renderer.DrawBounds();
         }
 
         /// <summary>

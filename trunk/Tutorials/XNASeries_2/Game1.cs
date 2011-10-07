@@ -25,9 +25,7 @@ namespace XNASeries_2
         GraphicsDeviceManager graphics;
 
         // XNALibrary
-        SceneBuilder sceneBuilder;
-        DefaultRenderer renderer;
-        Input input;
+        Core core;
 
         // Daggerfall path
         string arena2Path = @"C:\dosgames\dagger\arena2";
@@ -67,17 +65,12 @@ namespace XNASeries_2
         /// </summary>
         protected override void Initialize()
         {
-            // Create scene builder
-            sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
+            // Create engine
+            core = new Core(arena2Path, this.Services);
 
-            // Create renderer
-            renderer = new DefaultRenderer(sceneBuilder.TextureManager);
-
-            // Create input
-            input = new Input();
-            input.ActiveDevices = Input.DeviceFlags.All;
-            input.InvertMouseLook = invertMouseLook;
-            input.InvertGamePadLook = invertGamePadLook;
+            // Set input preferences
+            core.Input.InvertMouseLook = invertMouseLook;
+            core.Input.InvertGamePadLook = invertGamePadLook;
 
             base.Initialize();
         }
@@ -92,17 +85,17 @@ namespace XNASeries_2
             BlockNode node;
             if (showDungeonBlock)
             {
-                node = sceneBuilder.CreateBlockNode(rdbBlockName, null, false);
-                renderer.Camera.Position = rdbCameraPos;
+                node = core.SceneBuilder.CreateBlockNode(rdbBlockName, null, false);
+                core.Camera.Position = rdbCameraPos;
             }
             else
             {
-                node = sceneBuilder.CreateBlockNode(rmbBlockName, null, false);
-                renderer.Camera.Position = rmbCameraPos;
+                node = core.SceneBuilder.CreateBlockNode(rmbBlockName, null, false);
+                core.Camera.Position = rmbCameraPos;
             }
 
             // Add to scene
-            renderer.Scene.AddNode(null, node);
+            core.Scene.AddNode(null, node);
         }
 
         /// <summary>
@@ -121,14 +114,14 @@ namespace XNASeries_2
         protected override void Update(GameTime gameTime)
         {
             // Update scene
-            renderer.Scene.Update(gameTime.ElapsedGameTime);
+            core.Scene.Update(gameTime.ElapsedGameTime);
 
             // Update input
-            input.Update(gameTime.ElapsedGameTime);
-            input.Apply(renderer.Camera, true);
+            core.Input.Update(gameTime.ElapsedGameTime);
+            core.Input.Apply(core.Camera, true);
 
             // Update camera
-            renderer.Camera.Update();
+            core.Camera.Update();
         }
 
         /// <summary>
@@ -138,11 +131,11 @@ namespace XNASeries_2
         protected override void Draw(GameTime gameTime)
         {
             // Draw scene
-            renderer.Draw();
+            core.Draw();
 
             // Draw bounds
             if (drawBounds)
-                renderer.DrawBounds();
+                core.Renderer.DrawBounds();
         }
     }
 }

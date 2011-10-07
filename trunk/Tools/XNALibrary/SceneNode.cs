@@ -284,6 +284,8 @@ namespace XNALibrary
             this.visible = true;
             this.distance = null;
             this.drawBoundsColor = Color.White;
+            this.position = Vector3.Zero;
+            this.rotation = Vector3.Zero;
             this.matrix = Matrix.Identity;
             this.action = new ActionRecord();
             this.parent = null;
@@ -638,7 +640,7 @@ namespace XNALibrary
     public class PointLightNode : SceneNode
     {
         // Constants
-        private const float radius = 640.0f;
+        private const float radius = 1024.0f;
 
         // Properties
         static public float Radius

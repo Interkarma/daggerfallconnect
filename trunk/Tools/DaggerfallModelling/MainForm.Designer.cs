@@ -108,6 +108,7 @@
             this.ContentViewStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTips = new System.Windows.Forms.ToolTip(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
@@ -177,8 +178,8 @@
             this.SearchResultsTreeView.Size = new System.Drawing.Size(322, 332);
             this.SearchResultsTreeView.TabIndex = 2;
             this.SearchResultsTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.SearchResultsTreeView_BeforeExpand);
-            this.SearchResultsTreeView.DoubleClick += new System.EventHandler(this.SearchResultsTreeView_DoubleClick);
             this.SearchResultsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SearchResultsTree_AfterSelect);
+            this.SearchResultsTreeView.DoubleClick += new System.EventHandler(this.SearchResultsTreeView_DoubleClick);
             // 
             // SearchResultsImageList
             // 
@@ -250,9 +251,9 @@
             this.AutoMapViewer.Size = new System.Drawing.Size(320, 320);
             this.AutoMapViewer.TabIndex = 2;
             this.AutoMapViewer.Text = "AutoMapViewer";
+            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             this.AutoMapViewer.MouseOverBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.MouseOverBlockChangedEventHandler(this.AutoMapView_MouseOverBlockChanged);
             this.AutoMapViewer.ModeChanged += new DaggerfallModelling.ViewControls.AutoMapView.ModeChangedEventHandler(this.AutoMapView_ModeChanged);
-            this.AutoMapViewer.SelectedBlockChanged += new DaggerfallModelling.ViewControls.AutoMapView.SelectedBlockChangedEventHandler(this.AutoMapView_SelectedBlockChanged);
             // 
             // AutoMapToolStrip
             // 
@@ -922,13 +923,14 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Daggerfall Modelling (Beta 2)";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.MainSplitContainer.Panel1.ResumeLayout(false);
             this.MainSplitContainer.Panel1.PerformLayout();
             this.MainSplitContainer.Panel2.ResumeLayout(false);
             this.MainSplitContainer.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).EndInit();
             this.MainSplitContainer.ResumeLayout(false);
             this.SearchResultsPanel.ResumeLayout(false);
             this.SearchPanel.ResumeLayout(false);

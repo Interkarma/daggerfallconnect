@@ -90,7 +90,7 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public Camera ActiveCamera
         {
-            get { return host.Core.Renderer.Camera; }
+            get { return GetActiveCamera(); }
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace DaggerfallModelling.ViewControls
             UpdateInput();
 
             // Update scene
-            host.Core.Renderer.Scene.Update(host.ElapsedTime);
+            host.Core.Scene.Update(host.ElapsedTime);
 
             // Update gravity
             if (host.AppSettings.EnableGravity)
@@ -165,19 +165,19 @@ namespace DaggerfallModelling.ViewControls
             if (host.AppSettings.EnableCollision)
             {
                 host.Core.Collision.Update(
-                    host.Core.Renderer.Camera,
-                    host.Core.Renderer.Scene,
+                    host.Core.Camera,
+                    host.Core.Scene,
                     host.Core.Input);
             }
             else
             {
                 host.Core.Input.Apply(
-                    host.Core.Renderer.Camera,
+                    host.Core.Camera,
                     true);
             }
 
             // Update camera
-            host.Core.Renderer.Camera.Update();
+            host.Core.Camera.Update();
         }
 
         /// <summary>
@@ -186,11 +186,11 @@ namespace DaggerfallModelling.ViewControls
         public override void Draw()
         {
             // Render scene
-            host.Core.Renderer.Draw();
+            host.Core.Draw();
 
             // Draw crosshair if gamepad connected
             if (host.Core.Input.GamePadConnected &&
-                host.Core.Renderer.Camera == freeCamera)
+                CameraMode == CameraModes.Free)
             {
                 DrawCrosshair();
             }
@@ -206,7 +206,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Resize()
         {
-            host.Core.Renderer.UpdateCameraAspectRatio(host.Width, host.Height);
         }
 
         #endregion
@@ -228,7 +227,7 @@ namespace DaggerfallModelling.ViewControls
                 // Scene dragging
                 if (host.RightMouseDown)
                 {
-                    host.Core.Renderer.Camera.Translate(
+                    host.Core.Camera.Translate(
                         (float)-host.MousePosDelta.X * cameraStep,
                         0f,
                         (float)-host.MousePosDelta.Y * cameraStep);
@@ -316,7 +315,7 @@ namespace DaggerfallModelling.ViewControls
 
             // Jump in free camera mode
             if (e.KeyCode == Keys.Space &&
-                host.Core.Renderer.Camera == freeCamera)
+                CameraMode == CameraModes.Free)
             {
                 host.Core.Gravity.Jump();
             }
@@ -353,29 +352,8 @@ namespace DaggerfallModelling.ViewControls
         {
             base.OnChangeCameraMode(cameraMode);
 
-            // Set camera
-            SetCameraBackground();
-            switch (cameraMode)
-            {
-                case CameraModes.TopDown:
-                    host.Core.Renderer.Camera = topDownCamera;
-                    host.Core.Renderer.Options = DefaultRenderer.RendererOptions.Picking;
-                    break;
-                case CameraModes.Free:
-                    host.Core.Renderer.Camera = freeCamera;
-                    host.Core.Renderer.Options =
-                        DefaultRenderer.RendererOptions.Flats |
-                        DefaultRenderer.RendererOptions.Picking |
-                        DefaultRenderer.RendererOptions.Compass;
-                    if (sceneType == SceneTypes.Exterior)
-                        host.Core.Renderer.Options |= DefaultRenderer.RendererOptions.SkyPlane;
-                    break;
-            }
-
-            // Upadate camera
-            host.Core.Renderer.UpdateCameraAspectRatio(-1, -1);
-
-            // Clear camera velocity
+            // Update camera settings
+            UpdateCamera();
             cameraVelocity = Vector3.Zero;
         }
 
@@ -397,7 +375,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create block node
-            host.Core.Renderer.Scene.ResetScene();
+            host.Core.Scene.ResetScene();
             BlockNode node = host.Core.SceneBuilder.CreateBlockNode(blockName, climate, true);
             if (node == null)
                 return;
@@ -408,10 +386,10 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = climate;
 
             // Add node to scene
-            host.Core.Renderer.Scene.AddNode(null, node);
+            host.Core.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Scene.Update(TimeSpan.MinValue);
 
             // Get centre position for this block.
             // This is worked out using static block dimensions to get a
@@ -421,7 +399,7 @@ namespace DaggerfallModelling.ViewControls
             Vector3 center = new Vector3(side / 2, 0, -side / 2);
 
             // Set custom movement bounds
-            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
+            float radius = host.Core.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
                 new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
@@ -447,7 +425,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Set background
-            SetCameraBackground();
+            UpdateCamera();
 
             // Set status message
             currentStatus = string.Format("Exploring block {0}.", blockName);
@@ -469,7 +447,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create location node
-            host.Core.Renderer.Scene.ResetScene();
+            host.Core.Scene.ResetScene();
             host.Core.Renderer.BackgroundColor = generalBackgroundColor;
             LocationNode node = host.Core.SceneBuilder.CreateExteriorLocationNode(regionName, locationName);
             if (node == null)
@@ -481,14 +459,14 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = location.Climate;
 
             // Add node to scene
-            host.Core.Renderer.Scene.AddNode(null, node);
+            host.Core.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Scene.Update(TimeSpan.MinValue);
 
             // Set custom movement bounds
-            Vector3 center = host.Core.Renderer.Scene.Root.TransformedBounds.Center;
-            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
+            Vector3 center = host.Core.Scene.Root.TransformedBounds.Center;
+            float radius = host.Core.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, cameraFloorHeight, center.Z - radius),
                 new Vector3(center.X + radius, cameraCeilingHeight, center.Z + radius));
@@ -504,8 +482,8 @@ namespace DaggerfallModelling.ViewControls
             freeCamera.Position = new Vector3(
                     freeCamera.Position.X, freeCamera.Position.Y, 0f);
 
-            // Set background
-            SetCameraBackground();
+            // Update camera
+            UpdateCamera();
 
             // Set sky
             if (host.Core.Renderer.Sky != null)
@@ -531,7 +509,7 @@ namespace DaggerfallModelling.ViewControls
             }
 
             // Create location node
-            host.Core.Renderer.Scene.ResetScene();
+            host.Core.Scene.ResetScene();
             host.Core.Renderer.BackgroundColor = generalBackgroundColor;
             LocationNode node = host.Core.SceneBuilder.CreateDungeonLocationNode(regionName, locationName);
             if (node == null)
@@ -543,14 +521,14 @@ namespace DaggerfallModelling.ViewControls
             base.Climate = null;
 
             // Add node to scene
-            host.Core.Renderer.Scene.AddNode(null, node);
+            host.Core.Scene.AddNode(null, node);
 
             // Update scene so bounds are correct
-            host.Core.Renderer.Scene.Update(TimeSpan.MinValue);
+            host.Core.Scene.Update(TimeSpan.MinValue);
 
             // Set custom movement bounds
-            Vector3 center = host.Core.Renderer.Scene.Root.TransformedBounds.Center;
-            float radius = host.Core.Renderer.Scene.Root.TransformedBounds.Radius;
+            Vector3 center = host.Core.Scene.Root.TransformedBounds.Center;
+            float radius = host.Core.Scene.Root.TransformedBounds.Radius;
             BoundingBox movementBounds = new BoundingBox(
                 new Vector3(center.X - radius, center.Y - radius, center.Z - radius),
                 new Vector3(center.X + radius, center.Y + radius, center.Z + radius));
@@ -567,8 +545,8 @@ namespace DaggerfallModelling.ViewControls
                     center.Y,
                     movementBounds.Max.Z - SceneBuilder.RDBSide / 2);
 
-            // Set background
-            SetCameraBackground();
+            // Update camera
+            UpdateCamera();
 
             // Set status message
             currentStatus = string.Format("Exploring {0} (Dungeon).", locationName);
@@ -581,24 +559,71 @@ namespace DaggerfallModelling.ViewControls
         public void MoveToBlock(int x, int z)
         {
             cameraVelocity = Vector3.Zero;
-            Vector3 pos = host.Core.Renderer.Camera.Position;
+            Vector3 pos = host.Core.Camera.Position;
             if (sceneType == SceneTypes.Exterior)
             {
                 pos.X = x * SceneBuilder.RMBSide + SceneBuilder.RMBSide / 2;
                 pos.Z = -z * SceneBuilder.RMBSide - SceneBuilder.RMBSide / 2;
-                host.Core.Renderer.Camera.Position = pos;
+                host.Core.Camera.Position = pos;
             }
             else if (sceneType == SceneTypes.Dungeon)
             {
                 pos.X = x * SceneBuilder.RDBSide + SceneBuilder.RDBSide / 2;
                 pos.Z = -z * SceneBuilder.RDBSide - SceneBuilder.RDBSide / 2;
-                host.Core.Renderer.Camera.Position = pos;
+                host.Core.Camera.Position = pos;
             }
         }
 
         #endregion
 
         #region Private Methods
+
+        /// <summary>
+        /// Update the camera.
+        /// </summary>
+        private void UpdateCamera()
+        {
+            // Set camera background
+            SetCameraBackground();
+
+            // Update camera settings
+            switch (base.CameraMode)
+            {
+                case CameraModes.TopDown:
+                    host.Core.Camera = topDownCamera;
+                    host.Core.Renderer.Options = DefaultRenderer.RendererOptions.Picking;
+                    break;
+                case CameraModes.Free:
+                    host.Core.Camera = freeCamera;
+                    host.Core.Renderer.Options =
+                        DefaultRenderer.RendererOptions.Flats |
+                        DefaultRenderer.RendererOptions.Picking |
+                        DefaultRenderer.RendererOptions.Compass;
+                    if (sceneType == SceneTypes.Exterior)
+                        host.Core.Renderer.Options |= DefaultRenderer.RendererOptions.SkyPlane;
+                    break;
+            }
+
+            // Update viewport
+            host.Core.Resize(0, 0);
+        }
+
+        /// <summary>
+        /// Gets currently active camera.
+        /// </summary>
+        /// <returns></returns>
+        private Camera GetActiveCamera()
+        {
+            switch (base.CameraMode)
+            {
+                case CameraModes.TopDown:
+                    return topDownCamera;
+                case CameraModes.Free:
+                    return freeCamera;
+                default:
+                    return null;
+            }
+        }
 
         /// <summary>
         /// Sets background colours.

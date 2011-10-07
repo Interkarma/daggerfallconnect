@@ -247,7 +247,7 @@ namespace XNALibrary
                 defaultRenderer = new DefaultRenderer(TextureManager);
             Renderer.Initialise();
             Renderer.LoadContent(contentManager);
-            Resize();
+            Resize(0, 0);
 
             // Create input
             input = new Input();
@@ -281,19 +281,21 @@ namespace XNALibrary
         public void Draw()
         {
             // Draw
-            Renderer.Camera = camera;
-            Renderer.Scene = scene;
+            Renderer.ActiveCamera = camera;
+            Renderer.ActiveScene = scene;
             Renderer.Draw();
         }
 
         /// <summary>
         /// Called when viewport size has changed.
         /// </summary>
-        public void Resize()
+        /// <param name="width">New width. Use 0 for auto from viewport.</param>
+        /// <param name="height">New height. Use 0 for auto from viewport.</param>
+        public void Resize(int width, int height)
         {
             // Update renderer
-            Renderer.Camera = camera;
-            Renderer.UpdateCameraAspectRatio(-1, -1);
+            Renderer.ActiveCamera = camera;
+            Renderer.UpdateCameraAspectRatio(width, height);
         }
 
         #endregion
