@@ -640,18 +640,25 @@ namespace XNALibrary
     public class PointLightNode : SceneNode
     {
         // Constants
-        private const float radius = 1024.0f;
+        public const float ExteriorRadius = 1024f;
+        public const float DungeonRadius = 512f;
+        public const float PersonalRadius = 256f;
+
+        // Variables
+        private float radius = DungeonRadius;
 
         // Properties
-        static public float Radius
+        public float Radius
         {
             get { return radius; }
+            set { radius = value; }
         }
 
         // Constructors
-        public PointLightNode()
+        public PointLightNode(float radius)
             : base()
         {
+            this.radius = radius;
             this.LocalBounds = new BoundingSphere(
                 Vector3.Zero,
                 radius);

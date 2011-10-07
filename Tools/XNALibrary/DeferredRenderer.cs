@@ -45,12 +45,12 @@ namespace XNALibrary
             {
                 // Vertices
                 VertexPositionTexture[] vertices =
-            {
-                new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 1)),
-                new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 1)),
-                new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 0)),
-                new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 0))
-            };
+                {
+                    new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 1)),
+                    new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 0))
+                };
 
                 // Create Vertex Buffer
                 vb = new VertexBuffer(
@@ -72,24 +72,11 @@ namespace XNALibrary
                 ib.SetData<ushort>(indices);
             }
 
-            // Draw and set buffers
+            // Render quad
             public void Draw(GraphicsDevice graphicsDevice)
             {
                 graphicsDevice.SetVertexBuffer(vb);
                 graphicsDevice.Indices = ib;
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 4, 0, 2);
-            }
-
-            // Just set buffers
-            public void JustSetBuffers(GraphicsDevice graphicsDevice)
-            {
-                graphicsDevice.SetVertexBuffer(vb);
-                graphicsDevice.Indices = ib;
-            }
-
-            // Just draw without setting buffers
-            public void JustDraw(GraphicsDevice graphicsDevice)
-            {
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 4, 0, 2);
             }
         }
@@ -119,7 +106,7 @@ namespace XNALibrary
         private Model sphereModel;          // Point light volume
 
         // GBuffer size
-        Viewport viewport;
+        private Viewport viewport;
         private Vector2 size;
         private Vector2 halfPixel;
 
@@ -284,12 +271,12 @@ namespace XNALibrary
             stopwatch.Start();
 #endif
 
-            // Store current viewport.
-            // This is important for WinForms apps as we could
-            // be drawing to a subrect of the total surface.
-            // This viewport needs to be reset every time the render
-            // target changes.
-            viewport = graphicsDevice.Viewport;
+            // Ensure GBuffer matches viewport size
+            if (size.X != (float)graphicsDevice.Viewport.Width ||
+                size.Y != (float)graphicsDevice.Viewport.Height)
+            {
+                CreateGBuffer();
+            }
 
             // Batch scene
             ClearBatches();
@@ -309,10 +296,7 @@ namespace XNALibrary
             DrawLights();
 
             // Combine final image
-            Finalise();
-
-            // Restore viewport
-            graphicsDevice.Viewport = viewport;
+            Compose();
 
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
@@ -323,11 +307,11 @@ namespace XNALibrary
             // Draw compass
             if (HasOptionsFlags(RendererOptions.Compass))
             {
-                //compass.Draw(camera);
+                compass.Draw(camera);
             }
 
             // Draw debug version
-            //DrawDebug();
+            DrawDebug();
 
 #if DEBUG
             // End timing
@@ -347,10 +331,10 @@ namespace XNALibrary
         {
             // Get size of back buffer
             viewport = graphicsDevice.Viewport;
-            int width = graphicsDevice.PresentationParameters.BackBufferWidth;
-            int height = graphicsDevice.PresentationParameters.BackBufferHeight;
+            int width = graphicsDevice.Viewport.Width;
+            int height = graphicsDevice.Viewport.Height;
             size = new Vector2(width, height);
-            halfPixel = new Vector2(0.5f / (float)viewport.Width, 0.5f / (float)viewport.Height);
+            halfPixel = new Vector2(0.5f / (float)width, 0.5f / (float)height);
 
             // Create render targets
             colorRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth24);
@@ -365,7 +349,6 @@ namespace XNALibrary
         private void SetGBuffer()
         {
             graphicsDevice.SetRenderTargets(colorRT, normalRT, depthRT);
-            graphicsDevice.Viewport = viewport;
         }
 
         /// <summary>
@@ -374,7 +357,6 @@ namespace XNALibrary
         private void ResolveGBuffer()
         {
             graphicsDevice.SetRenderTargets(null);
-            graphicsDevice.Viewport = viewport;
         }
 
         /// <summary>
@@ -466,8 +448,8 @@ namespace XNALibrary
         protected void DrawDebug()
         {
             // Width + Height
-            int width = 320;
-            int height = 180;
+            int width = (int)size.X / 4;
+            int height = (int)size.Y / 4;
 
             // Begin sprite batch
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, null, null);
@@ -486,13 +468,13 @@ namespace XNALibrary
             rect.Y += height;
             spriteBatch.Draw(normalRT, rect, Color.White);
 
-            // Draw depth
-            rect.Y += height;
-            spriteBatch.Draw(depthRT, rect, Color.White);
-
             // Draw light
             rect.Y += height;
             spriteBatch.Draw(lightRT, rect, Color.White);
+
+            // Draw depth
+            //rect.Y += height;
+            //spriteBatch.Draw(depthRT, rect, Color.White);
 
             // End sprite batch
             spriteBatch.End();
@@ -501,10 +483,13 @@ namespace XNALibrary
         /// <summary>
         /// Combines render targets to back buffer.
         /// </summary>
-        protected void Finalise()
+        protected void Compose()
         {
             // Set render target
             graphicsDevice.SetRenderTarget(null);
+
+            // Restore viewport
+            graphicsDevice.Viewport = viewport;
 
             // Set render states
             graphicsDevice.BlendState = BlendState.Opaque;
@@ -547,11 +532,11 @@ namespace XNALibrary
             // Draw point lights
             foreach (var pl in pointLightBatch)
             {
-                DrawPointLight(pl.TransformedBounds.Center, Color.White, PointLightNode.Radius, 1.0f);
+                DrawPointLight(pl.TransformedBounds.Center, Color.White, pl.Radius, 1.0f);
             }
 
             // Draw personal light
-            DrawPointLight(camera.Position, Color.White, PointLightNode.Radius, 1.0f);
+            DrawPointLight(camera.Position, Color.White, PointLightNode.PersonalRadius, 1.0f);
         }
 
         /// <summary>
