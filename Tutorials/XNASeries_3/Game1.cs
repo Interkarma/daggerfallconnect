@@ -25,9 +25,7 @@ namespace XNASeries_3
         GraphicsDeviceManager graphics;
 
         // XNALibrary
-        SceneBuilder sceneBuilder;
-        DefaultRenderer renderer;
-        Input input;
+        Core core;
 
         // Daggerfall path
         string arena2Path = @"C:\dosgames\dagger\arena2";
@@ -41,7 +39,7 @@ namespace XNASeries_3
 
         // Options
         bool invertMouseLook = false;
-        bool invertControllerLook = true;
+        bool invertGamePadLook = true;
         bool drawBounds = false;
 
         /// <summary>
@@ -65,21 +63,18 @@ namespace XNASeries_3
         /// </summary>
         protected override void Initialize()
         {
-            // Create scene builder
-            sceneBuilder = new SceneBuilder(GraphicsDevice, arena2Path);
+            // Create engine
+            core = new Core(arena2Path, this.Services);
 
-            // Create renderer
-            renderer = new DefaultRenderer(sceneBuilder.TextureManager);
-            renderer.Camera.Position = cameraPos;
+            // Set camera position
+            core.Camera.Position = cameraPos;
 
             // Enable picking
-            renderer.Options |= DefaultRenderer.RendererOptions.Picking;
+            core.Renderer.Options |= DefaultRenderer.RendererOptions.Picking;
 
-            // Create input
-            input = new Input();
-            input.ActiveDevices = Input.DeviceFlags.All;
-            input.InvertMouseLook = invertMouseLook;
-            input.InvertGamePadLook = invertControllerLook;
+            // Set input preferences
+            core.Input.InvertMouseLook = invertMouseLook;
+            core.Input.InvertGamePadLook = invertGamePadLook;
 
             base.Initialize();
         }
@@ -92,12 +87,12 @@ namespace XNASeries_3
         {
             // Create location node
             SceneNode node =
-                sceneBuilder.CreateExteriorLocationNode(
+                core.SceneBuilder.CreateExteriorLocationNode(
                 regionName,
                 locationName);
 
             // Add to scene
-            renderer.Scene.AddNode(null, node);
+            core.Scene.AddNode(null, node);
         }
 
         /// <summary>
@@ -116,18 +111,18 @@ namespace XNASeries_3
         protected override void Update(GameTime gameTime)
         {
             // Update scene
-            renderer.Scene.Update(gameTime.ElapsedGameTime);
+            core.Scene.Update(gameTime.ElapsedGameTime);
 
             // Update pointer ray with mouse position
-            Point mousePos = input.MousePos;
-            renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
+            Point mousePos = core.Input.MousePos;
+            core.Renderer.UpdatePointerRay(mousePos.X, mousePos.Y);
 
             // Update input
-            input.Update(gameTime.ElapsedGameTime);
-            input.Apply(renderer.Camera, true);
+            core.Input.Update(gameTime.ElapsedGameTime);
+            core.Input.Apply(core.Camera, true);
 
             // Update camera
-            renderer.Camera.Update();
+            core.Camera.Update();
         }
 
         /// <summary>
@@ -137,11 +132,11 @@ namespace XNASeries_3
         protected override void Draw(GameTime gameTime)
         {
             // Draw scene
-            renderer.Draw();
+            core.Draw();
 
             // Draw bounds
             if (drawBounds)
-                renderer.DrawBounds();
+                core.Renderer.DrawBounds();
         }
     }
 }

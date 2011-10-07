@@ -138,7 +138,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets scene to render.
         /// </summary>
-        public Scene Scene
+        public Scene ActiveScene
         {
             get { return scene; }
             set { scene = value; }
@@ -147,7 +147,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets active camera used to look into scene.
         /// </summary>
-        public Camera Camera
+        public Camera ActiveCamera
         {
             get { return camera; }
             set { camera = value; }
@@ -237,6 +237,10 @@ namespace XNALibrary
             // Renderer uses same graphics device as texture manager
             this.graphicsDevice = textureManager.GraphicsDevice;
             this.textureManager = textureManager;
+            
+            // Device events
+            this.graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
+            this.graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
 
             // Create sprite batch
             spriteBatch = new SpriteBatch(graphicsDevice);
@@ -276,6 +280,28 @@ namespace XNALibrary
 
         #endregion
 
+        #region Device Events
+
+        /// <summary>
+        /// Called when device is reset and we need to recreate resources.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected virtual void GraphicsDevice_DeviceReset(object sender, EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when device is lost.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected virtual void GraphicsDevice_DeviceLost(object sender, EventArgs e)
+        {
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -295,14 +321,14 @@ namespace XNALibrary
 
         /// <summary>
         /// Updates camera aspect ratio after viewport changes size.
-        /// <param name="width">New width. Use -1 for auto from viewport.</param>
-        /// <param name="height">New height. Use -1 for auto from viewport.</param>
+        /// <param name="width">New width. Use 0 for auto from viewport.</param>
+        /// <param name="height">New height. Use 0 for auto from viewport.</param>
         /// </summary>
         public void UpdateCameraAspectRatio(int width, int height)
         {
             // Handle auto width and height
-            if (width == -1) width = graphicsDevice.Viewport.Width;
-            if (height == -1) height = graphicsDevice.Viewport.Height;
+            if (width == 0) width = graphicsDevice.Viewport.Width;
+            if (height == 0) height = graphicsDevice.Viewport.Height;
 
             // Set new width and height
             if (camera != null)
@@ -358,7 +384,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Render active scene.
+        /// Render ActiveScene with ActiveCamera.
         /// </summary>
         public virtual void Draw()
         {
@@ -485,7 +511,7 @@ namespace XNALibrary
         private void CreateDefaultSceneCamera()
         {
             camera = new Camera();
-            UpdateCameraAspectRatio(-1, -1);
+            UpdateCameraAspectRatio(0, 0);
             camera.MovementBounds = new BoundingBox(
                 new Vector3(float.MinValue, float.MinValue, float.MinValue),
                 new Vector3(float.MaxValue, float.MaxValue, float.MaxValue));

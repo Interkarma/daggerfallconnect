@@ -184,14 +184,18 @@ namespace XNALibrary
         /// </summary>
         /// <param name="device">Graphics Device.</param>
         /// <param name="arena2Path">Path to Arena2 folder.</param>
-        public TextureManager(GraphicsDevice device, string arena2Path)
+        public TextureManager(GraphicsDevice graphicsDevice, string arena2Path)
         {
             // Setup
-            graphicsDevice = device;
+            this.graphicsDevice = graphicsDevice;
             this.arena2Path = arena2Path;
             textureFile = new TextureFile();
             textureFile.Palette.Load(Path.Combine(arena2Path, textureFile.PaletteName));
             spriteBatch = new SpriteBatch(graphicsDevice);
+
+            // Device events
+            this.graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
+            this.graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
 
             // Create dictionaries
             generalTextureDict = new Dictionary<int, Texture2D>();
@@ -200,6 +204,53 @@ namespace XNALibrary
 
             // Set default climate
             SetClimate(climateType, climateWeather);
+        }
+
+        #endregion
+
+        #region Device Events
+
+        /// <summary>
+        /// Called when device is reset and we need to recreate resources.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected virtual void GraphicsDevice_DeviceReset(object sender, EventArgs e)
+        {
+            // Work around .fx bug in XNA 4.0.
+            // XNA will error if any sampler state has a SurfaceFormat.Single attached,
+            // even if that sampler state is not in use.
+            // In this case, it is SamplerState[2] (depth buffer in deferred renderer).
+            // Source1: http://forums.create.msdn.com/forums/p/61268/438840.aspx
+            // Source2: http://www.gamedev.net/topic/603699-xna-framework-hidef-profile-requires-texturefilter-to-be-point-when-using-texture-format-single/
+            graphicsDevice.SamplerStates[2] = SamplerState.LinearClamp;
+            graphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
+
+            // Find lost ground textures
+            List<string> lostTextures = new List<string>();
+            foreach (var item in groundPlaneTextureDict)
+            {
+                if (item.Value.texture.IsContentLost)
+                    lostTextures.Add(item.Key);
+            }
+
+            // Recreate lost ground textures
+            foreach (var key in lostTextures)
+            {
+                GroundPlaneTexture gp = groundPlaneTextureDict[key];
+                CreateBlockGroundTexture(ref gp);
+                groundPlaneTextureDict[key] = gp;
+            }
+        }
+
+        /// <summary>
+        /// Called when device is lost.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">EventArgs.</param>
+        protected virtual void GraphicsDevice_DeviceLost(object sender, EventArgs e)
+        {
+            throw new Exception("Not implemented.");
         }
 
         #endregion
@@ -295,15 +346,7 @@ namespace XNALibrary
             if (!groundPlaneTextureDict.ContainsKey(key))
                 return null;
 
-            // Get ground plane texture and rebuild if needed
-            GroundPlaneTexture gp = groundPlaneTextureDict[key];
-            if (gp.texture.IsContentLost)
-            {
-                CreateBlockGroundTexture(ref gp);
-                groundPlaneTextureDict[key] = gp;
-            }
-
-            return gp.texture;
+            return groundPlaneTextureDict[key].texture;
         }
 
         /// <summary>

@@ -479,7 +479,10 @@ namespace DaggerfallModelling.ViewControls
 
             // Resize current view mode
             if (isReady && viewMode != ViewModes.None)
+            {
+                core.Resize(this.Width, this.Height);
                 viewClients[viewMode].Resize();
+            }
 
             // Invalidate control
             this.Invalidate();
