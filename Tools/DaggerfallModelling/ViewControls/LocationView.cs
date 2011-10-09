@@ -690,7 +690,7 @@ namespace DaggerfallModelling.ViewControls
             ImageFileReader reader = new ImageFileReader(host.Arena2Path);
             reader.LibraryType = LibraryTypes.Cif;
             DFImageFile crosshair = reader.GetImageFile("PNTER.CIF");
-            DFBitmap crosshairBitmap = crosshair.GetBitmapFormat(4, 0, 0, DFBitmap.Formats.ABGR);
+            DFBitmap crosshairBitmap = crosshair.GetBitmapFormat(4, 0, 0, DFBitmap.Formats.RGBA);
 
             // Create texture
             crosshairTexture = new Texture2D(

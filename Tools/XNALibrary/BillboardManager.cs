@@ -252,10 +252,20 @@ namespace XNALibrary
             // Draw all billboards in batch
             foreach (var item in batch)
             {
+                // Get light intensity from scene
+                float lightIntensity = item.LightIntensity;
+
+                // Add personal light
+                float cameraDistance = Vector3.Distance(
+                    item.Matrix.Translation, camera.Position);
+                float attenuation = MathHelper.Clamp(
+                    1.0f - cameraDistance / PointLightNode.PersonalRadius, 0, 1);
+                lightIntensity = MathHelper.Clamp(lightIntensity + attenuation, 0, 1);
+
                 // Update effect
                 effect.World = item.Matrix;
                 effect.Texture = textureManager.GetTexture(item.TextureKey);
-                effect.AmbientLightColor = Vector3.Multiply(Vector3.One, item.LightIntensity);
+                effect.AmbientLightColor = Vector3.Multiply(Vector3.One, lightIntensity);
                 effect.CurrentTechnique.Passes[0].Apply();
 
                 // Draw billboard

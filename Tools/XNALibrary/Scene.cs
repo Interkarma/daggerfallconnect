@@ -217,7 +217,10 @@ namespace XNALibrary
                     UpdateNode(child, cumulativeMatrix, elapsedTime));
             }
 
-            // Calculate lighting on a billboard node
+            // Calculate point lighting on a billboard node.
+            // The light and billboard must have the same parent or
+            // they will not be compared.
+            // TODO: Find a better way to do this.
             if (node is BillboardNode)
             {
                 BillboardNode billboardNode = (BillboardNode)node;
