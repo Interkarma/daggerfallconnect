@@ -1266,7 +1266,7 @@ namespace XNALibrary
                             r += k2 * dfBitmap.Data[srcPos++];
                             g += k2 * dfBitmap.Data[srcPos++];
                             b += k2 * dfBitmap.Data[srcPos++];
-                            a = dfBitmap.Data[srcPos];
+                            a += k2 * dfBitmap.Data[srcPos];
                         }
                     }
 
