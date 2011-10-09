@@ -364,13 +364,17 @@ namespace XNALibrary
                 model = modelManager.GetModelData(id);
                 for (int i = 0; i < model.SubMeshes.Length; i++)
                 {
+                    // Set flags
+                    TextureManager.TextureCreateFlags flags =
+                        TextureManager.TextureCreateFlags.ApplyClimate |
+                        TextureManager.TextureCreateFlags.MipMaps |
+                        TextureManager.TextureCreateFlags.PowerOfTwo;
+
                     // Load texture
                     model.SubMeshes[i].TextureKey = textureManager.LoadTexture(
                         model.DFMesh.SubMeshes[i].TextureArchive,
                         model.DFMesh.SubMeshes[i].TextureRecord,
-                        TextureManager.TextureCreateFlags.ApplyClimate |
-                        TextureManager.TextureCreateFlags.MipMaps |
-                        TextureManager.TextureCreateFlags.PowerOfTwo);
+                        flags);
                 }
             }
             catch(Exception e)

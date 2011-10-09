@@ -36,6 +36,8 @@ namespace XNALibrary
         private Dictionary<uint, ModelData> modelDataDict;
         private bool cacheModelData = true;
 
+        private Random rnd = new Random();
+
         #endregion
 
         #region Class Structures
@@ -54,8 +56,8 @@ namespace XNALibrary
             /// <summary>Bounding sphere tightly surrounding mesh data.</summary>
             public BoundingSphere BoundingSphere;
 
-            /// <summary>Vertex array containing position, normal, and texture coordinates.</summary>
-            public VertexPositionNormalTexture[] Vertices;
+            /// <summary>Vertex array containing position, normal, texture coordinates, tangent, bitangent.</summary>
+            public VertexPosNormalTexTanBitan[] Vertices;
 
             /// <summary>Index array desribing the triangles of this mesh.</summary>
             public short[] Indices;
@@ -82,6 +84,78 @@ namespace XNALibrary
 
                 /// <summary>Number of primitives in this submesh.</summary>
                 public int PrimitiveCount;
+            }
+        }
+
+        #endregion
+
+        #region Custom Vertex Formats
+
+        /// <summary>
+        /// Position, Normal, TextureCoordinate, Tangent, Bitangent (binormal).
+        /// </summary>
+        public struct VertexPosNormalTexTanBitan : IVertexType
+        {
+            Vector3 pos;
+            Vector3 normal;
+            Vector2 tex;
+            Vector3 tan;
+            Vector3 bitan;
+
+            public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration(
+                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
+                new VertexElement(24, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
+                new VertexElement(32, VertexElementFormat.Vector3, VertexElementUsage.Tangent, 0),
+                new VertexElement(44, VertexElementFormat.Vector3, VertexElementUsage.Binormal, 0));
+
+            VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
+
+            public VertexPosNormalTexTanBitan(
+                Vector3 Position,
+                Vector3 Normal,
+                Vector2 TextureCoordinate,
+                Vector3 Tangent,
+                Vector3 Binormal)
+            {
+                pos = Position;
+                this.normal = Normal;
+                tex = TextureCoordinate;
+                this.tan = Tangent;
+                this.bitan = Binormal;
+            }
+
+            public static bool operator !=(VertexPosNormalTexTanBitan left, VertexPosNormalTexTanBitan right)
+            {
+                return left.GetHashCode() != right.GetHashCode();
+            }
+
+            public static bool operator ==(VertexPosNormalTexTanBitan left, VertexPosNormalTexTanBitan right)
+            {
+                return left.GetHashCode() == right.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                return this == (VertexPosNormalTexTanBitan)obj;
+            }
+
+            public Vector3 Position { get { return pos; } set { pos = value; } }
+            public Vector3 Normal { get { return normal; } set { normal = value; } }
+            public Vector2 TextureCoordinate { get { return tex; } set { tex = value; } }
+            public Vector3 Tangent { get { return tan; } set { tan = value; } }
+            public Vector3 Binormal { get { return bitan; } set { bitan = value; } }
+
+            public static int SizeInBytes { get { return 56; } }
+
+            public override int GetHashCode()
+            {
+                return pos.GetHashCode() | tex.GetHashCode() | normal.GetHashCode() | tan.GetHashCode() | bitan.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return string.Format("{0},{1},{2}", pos.X, pos.Y, pos.Z);
             }
         }
 
@@ -286,6 +360,8 @@ namespace XNALibrary
             model.DFMesh = dfMesh;
             LoadVertices(ref model);
             LoadIndices(ref model);
+            AddModelTangents(ref model);
+            CreateModelBuffers(ref model);
 
             // Add to cache
             if (cacheModelData)
@@ -301,7 +377,7 @@ namespace XNALibrary
         private void LoadVertices(ref ModelData model)
         {
             // Allocate vertex buffer
-            model.Vertices = new VertexPositionNormalTexture[model.DFMesh.TotalVertices];
+            model.Vertices = new VertexPosNormalTexTanBitan[model.DFMesh.TotalVertices];
 
             // Track min and max vectors for bounding box
             Vector3 min = new Vector3(0, 0, 0);
@@ -354,14 +430,6 @@ namespace XNALibrary
                     }
                 }
             }
-
-            // Create VertexBuffer
-            model.VertexBuffer = new VertexBuffer(
-                graphicsDevice,
-                typeof(VertexPositionNormalTexture),
-                model.DFMesh.TotalVertices,
-                BufferUsage.WriteOnly);
-            model.VertexBuffer.SetData<VertexPositionNormalTexture>(model.Vertices);
 
             // Create bounding box
             model.BoundingBox = new BoundingBox(min, max);
@@ -428,7 +496,54 @@ namespace XNALibrary
                 // Increment submesh count
                 subMeshCount++;
             }
-            
+        }
+
+        /// <summary>
+        /// Adds tangent and bitangent information to vertices.
+        /// </summary>
+        /// <param name="model">ModelData.</param>
+        private void AddModelTangents(ref ModelData model)
+        {
+            foreach (var subMesh in model.SubMeshes)
+            {
+                int index = subMesh.StartIndex;
+                for (int tri = 0; tri < subMesh.PrimitiveCount; tri++)
+                {
+                    // Get indices
+                    short i1 = model.Indices[index++];
+                    short i2 = model.Indices[index++];
+                    short i3 = model.Indices[index++];
+
+                    // Get vertices
+                    VertexPosNormalTexTanBitan vert1 = model.Vertices[i1];
+                    VertexPosNormalTexTanBitan vert2 = model.Vertices[i2];
+                    VertexPosNormalTexTanBitan vert3 = model.Vertices[i3];
+
+                    // Make tangent and bitangent
+                    MakeTangentBitangent(ref vert1, ref vert2, ref vert3);
+
+                    // Store updated vertices
+                    model.Vertices[i1] = vert1;
+                    model.Vertices[i2] = vert2;
+                    model.Vertices[i3] = vert3;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates VertexBuffer and IndexBuffer from ModelData.
+        /// </summary>
+        /// <param name="model">ModelData.</param>
+        private void CreateModelBuffers(ref ModelData model)
+        {
+            // Create VertexBuffer
+            model.VertexBuffer = new VertexBuffer(
+                graphicsDevice,
+                VertexPosNormalTexTanBitan.VertexDeclaration,
+                model.DFMesh.TotalVertices,
+                BufferUsage.WriteOnly);
+            model.VertexBuffer.SetData<VertexPosNormalTexTanBitan>(model.Vertices);
+
             // Create IndexBuffer
             model.IndexBuffer = new IndexBuffer(
                 graphicsDevice,
@@ -436,6 +551,59 @@ namespace XNALibrary
                 model.DFMesh.TotalTriangles * 3,
                 BufferUsage.WriteOnly);
             model.IndexBuffer.SetData<short>(model.Indices);
+        }
+
+        /// <summary>
+        /// Calculates tangent and bitangent values.
+        /// Source1: Lengyel, Eric. “Computing Tangent Space Basis Vectors for an Arbitrary Mesh”. Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html
+        /// Source2: http://forums.create.msdn.com/forums/p/30443/172057.aspx
+        /// </summary>
+        private void MakeTangentBitangent(
+            ref VertexPosNormalTexTanBitan vert1,
+            ref VertexPosNormalTexTanBitan vert2,
+            ref VertexPosNormalTexTanBitan vert3)
+        {
+            Vector3 v1 = vert1.Position;
+            Vector3 v2 = vert2.Position;
+            Vector3 v3 = vert3.Position;
+
+            Vector2 w1 = vert1.TextureCoordinate;
+            Vector2 w2 = vert2.TextureCoordinate;
+            Vector2 w3 = vert3.TextureCoordinate;
+
+            // All points in a Daggerfall plane have the same vertex normal.
+            // Each vertex normal is equal to the plane normal.
+            Vector3 planeNormal = vert1.Normal;
+
+            float x1 = v2.X - v1.X;
+            float x2 = v3.X - v1.X;
+            float y1 = v2.Y - v1.Y;
+            float y2 = v3.Y - v1.Y;
+            float z1 = v2.Z - v1.Z;
+            float z2 = v3.Z - v1.Z;
+
+            float s1 = w2.X - w1.X;
+            float s2 = w3.X - w1.X;
+            float t1 = w2.Y - w1.Y;
+            float t2 = w3.Y - w1.Y;
+
+            float r = 1.0f / (s1 * t2 - s2 * t1);
+            Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+            Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+            // Gram-Schmidt orthogonalize
+            Vector3 tangent = sdir - planeNormal * Vector3.Dot(planeNormal, sdir);
+            tangent.Normalize();
+
+            float tangentdir = (Vector3.Dot(Vector3.Cross(planeNormal, sdir), tdir) >= 0.0f) ? 1.0f : -1.0f;
+            Vector3 binormal = Vector3.Cross(planeNormal, tangent) * tangentdir;
+
+            vert1.Tangent = tangent;
+            vert1.Binormal = binormal;
+            vert2.Tangent = tangent;
+            vert2.Binormal = binormal;
+            vert3.Tangent = tangent;
+            vert3.Binormal = binormal;
         }
 
         #endregion
