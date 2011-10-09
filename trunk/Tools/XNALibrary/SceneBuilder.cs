@@ -370,6 +370,10 @@ namespace XNALibrary
                         TextureManager.TextureCreateFlags.MipMaps |
                         TextureManager.TextureCreateFlags.PowerOfTwo;
 
+                    // Set HiDef flags
+                    if (Core.GraphicsProfile == GraphicsProfile.HiDef)
+                        flags |= TextureManager.TextureCreateFlags.ExtendedAlpha;
+
                     // Load texture
                     model.SubMeshes[i].TextureKey = textureManager.LoadTexture(
                         model.DFMesh.SubMeshes[i].TextureArchive,

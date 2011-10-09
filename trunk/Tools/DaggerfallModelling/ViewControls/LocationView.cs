@@ -137,6 +137,9 @@ namespace DaggerfallModelling.ViewControls
 
             // Load crosshair texture
             LoadCrosshairTexture();
+
+            // TEST: Force on night time and winter
+            host.Core.TextureManager.Daytime = false;
         }
 
         /// <summary>

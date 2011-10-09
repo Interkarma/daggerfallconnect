@@ -155,6 +155,12 @@ namespace DaggerfallModelling
             //ContentViewer.ShowBlockView("MAGEAA13.RMB", null);
             ContentViewer.CameraMode = ViewBase.CameraModes.Free;
             UpdateActiveCameraMode();
+
+            //ImageFileReader reader = new ImageFileReader(appSettings.Arena2Path);
+            //reader.LibraryType = LibraryTypes.Texture;
+            //DFImageFile imageFile = reader.GetImageFile("TEXTURE.082");
+            //DFBitmap dfBitmap = imageFile.GetDFBitmap(0, 0);
+            //int palIndex = dfBitmap.Data[62 * dfBitmap.Stride + 16];
 #endif
 
             // Show thumbnails view
@@ -1269,7 +1275,7 @@ namespace DaggerfallModelling
                 return;
 
             // Get current value
-            //TimeOfDayTrackBar.Value = ContentViewer.LocationView.SkyManager.SkyFrame;
+            TimeOfDayTrackBar.Value = ContentViewer.Core.Renderer.Sky.SkyFrame;
 
             // Toggle panel and menu check state
             TimeOfDayPanel.Visible = !TimeOfDayPanel.Visible;

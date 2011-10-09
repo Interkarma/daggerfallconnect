@@ -58,6 +58,14 @@ namespace XNALibrary
             set { textureManager = value; }
         }
 
+        /// <summary>
+        /// Gets current billboard batch.
+        /// </summary>
+        public List<BillboardBatchItem> Batch
+        {
+            get { return batch; }
+        }
+
         #endregion
 
         #region SubClasses
@@ -66,12 +74,13 @@ namespace XNALibrary
         /// Describes a batched billboard for rendering.
         ///  Used when sorting billboards for correct draw order.
         /// </summary>
-        private class BillboardBatchItem : IComparable<BillboardBatchItem>
+        public class BillboardBatchItem : IComparable<BillboardBatchItem>
         {
             // Variables
             private float? distance;
             private int textureKey;
             private Matrix matrix;
+            private float lightIntensity;
 
             // Properties
             public float? Distance
@@ -89,6 +98,11 @@ namespace XNALibrary
                 get { return matrix; }
                 set { matrix = value; }
             }
+            public float LightIntensity
+            {
+                get { return lightIntensity; }
+                set { lightIntensity = value; }
+            }
 
             // Constructors
             public BillboardBatchItem()
@@ -97,11 +111,16 @@ namespace XNALibrary
                 this.textureKey = -1;
                 this.matrix = Matrix.Identity;
             }
-            public BillboardBatchItem(float? distance, int textureKey, Matrix matrix)
+            public BillboardBatchItem(
+                float? distance,
+                int textureKey,
+                Matrix matrix,
+                float lightIntensity)
             {
                 this.distance = distance;
                 this.textureKey = textureKey;
                 this.matrix = matrix;
+                this.lightIntensity = lightIntensity;
             }
 
             // IComparable
@@ -134,8 +153,8 @@ namespace XNALibrary
             // Create billboard effect
             effect = new BasicEffect(graphicsDevice);
             effect.TextureEnabled = true;
-            effect.LightingEnabled = false;
-            effect.AmbientLightColor = new Vector3(1f, 1f, 1f);
+            effect.LightingEnabled = true;
+            effect.AmbientLightColor = Vector3.Zero;
 
             // Create billboard template
             CreateBillboard();
@@ -176,10 +195,6 @@ namespace XNALibrary
         /// <param name="node">BillboardNode</param>
         public void AddBatch(Camera camera, BillboardNode node)
         {
-            // TEST: Only batch lights for now
-            if (node.Type != BillboardNode.BillboardType.Light)
-                return;
-
             // Create billboard matrix
             Matrix constrainedBillboard = Matrix.CreateConstrainedBillboard(
                 Vector3.Zero,
@@ -203,7 +218,8 @@ namespace XNALibrary
             BillboardBatchItem batchItem = new BillboardBatchItem(
                 distance,
                 node.TextureKey,
-                transform);
+                transform,
+                node.LightIntensity);
             batch.Add(batchItem);
         }
 
@@ -239,6 +255,7 @@ namespace XNALibrary
                 // Update effect
                 effect.World = item.Matrix;
                 effect.Texture = textureManager.GetTexture(item.TextureKey);
+                effect.AmbientLightColor = Vector3.Multiply(Vector3.One, item.LightIntensity);
                 effect.CurrentTechnique.Passes[0].Apply();
 
                 // Draw billboard

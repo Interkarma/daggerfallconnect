@@ -89,9 +89,14 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
     output.Color = tex2D(diffuseSampler, input.TexCoord);
     
     //float4 specularAttributes = tex2D(specularSampler, input.TexCoord);
-    //specular Intensity
-    //output.Color.a = specularAttributes.r;
-	output.Color.a = specularIntensity;
+
+	// Alpha 0x00 - 0x7f can be used for specular.
+	// Alpha 0x80 - 0xff are emissive and are left alone.
+	if (output.Color.a < 0.5f)
+	{
+		output.Color.a = specularIntensity;
+		//output.Color.a = specularAttributes.r;
+	}
     
     // read the normal from the normal map
     float3 normalFromMap = tex2D(normalSampler, input.TexCoord);

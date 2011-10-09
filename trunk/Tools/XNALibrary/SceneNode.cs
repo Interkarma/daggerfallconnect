@@ -576,6 +576,7 @@ namespace XNALibrary
         private BillboardType type;
         private int textureKey;
         private Vector2 size;
+        private float lightIntensity;
 
         /// <summary>
         /// Billboard types enumeration.
@@ -609,6 +610,11 @@ namespace XNALibrary
         {
             get { return size; }
             set { size = value; }
+        }
+        public float LightIntensity
+        {
+            get { return lightIntensity; }
+            set { lightIntensity = value; }
         }
 
         // Constructors
@@ -645,7 +651,7 @@ namespace XNALibrary
         // Constants
         public const float ExteriorRadius = 1024f;
         public const float DungeonRadius = 512f;
-        public const float PersonalRadius = 256f;
+        public const float PersonalRadius = 512f;
 
         // Variables
         private float radius = DungeonRadius;

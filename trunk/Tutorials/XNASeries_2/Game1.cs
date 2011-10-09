@@ -81,6 +81,10 @@ namespace XNASeries_2
         /// </summary>
         protected override void LoadContent()
         {
+            // Set scene options
+            core.Renderer.BackgroundColor = Color.Black;
+            core.TextureManager.Daytime = false;
+
             // Create a block node
             BlockNode node;
             if (showDungeonBlock)
@@ -136,6 +140,8 @@ namespace XNASeries_2
             // Draw bounds
             if (drawBounds)
                 core.Renderer.DrawBounds();
+
+            Window.Title = string.Format("SceneTime: {0}, DrawTime: {1}", core.Scene.UpdateTime, core.Renderer.DrawTime);
         }
     }
 }
