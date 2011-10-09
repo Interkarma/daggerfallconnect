@@ -217,6 +217,36 @@ namespace XNALibrary
                     UpdateNode(child, cumulativeMatrix, elapsedTime));
             }
 
+            // Calculate lighting on a billboard node
+            if (node is BillboardNode)
+            {
+                BillboardNode billboardNode = (BillboardNode)node;
+                billboardNode.LightIntensity = 0f;
+                foreach (SceneNode child in node.Parent.Children)
+                {
+                    if (child is PointLightNode)
+                    {
+                        PointLightNode pointLightNode = (PointLightNode)child;
+                        if (pointLightNode.TransformedBounds.Intersects(billboardNode.TransformedBounds))
+                        {
+                            float distance = Vector3.Distance(
+                                pointLightNode.TransformedBounds.Center,
+                                billboardNode.TransformedBounds.Center);
+
+                            float attenuation = MathHelper.Clamp(
+                                1.0f - distance / pointLightNode.Radius,
+                                0,
+                                1);
+
+                            billboardNode.LightIntensity = MathHelper.Clamp(
+                                billboardNode.LightIntensity + attenuation,
+                                0,
+                                1);
+                        }
+                    }
+                }
+            }
+
             // Store transformed bounds
             node.TransformedBounds = bounds;
 

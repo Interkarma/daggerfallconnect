@@ -40,14 +40,14 @@ namespace XNALibrary
 
         // Texture dictionaries
         private const int groundBatchKey = int.MinValue;
-        private Dictionary<int, Texture2D> generalTextureDict;
-        private Dictionary<int, Texture2D> winterTextureDict;
+        private Dictionary<int, Texture2D> colorTextureDict;
         private Dictionary<int, Texture2D> normalTextureDict;
         private Dictionary<string, GroundPlaneTexture> groundPlaneTextureDict;
 
         // Climate and weather
         DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
         DFLocation.ClimateWeather climateWeather = DFLocation.ClimateWeather.Normal;
+        bool daytime = true;
 
         // Constants
         private const int defaultWorldClimate = 231;
@@ -58,6 +58,8 @@ namespace XNALibrary
         private const int groundTextureStride = groundTextureWidth * formatWidth;
         private const string formatError = "DFBitmap not RGBA.";
         private const float bumpSize = 1f;
+        private Color dayWindowColor = new Color(89, 154, 178, 0x80);
+        private Color nightWindowColor = new Color(255, 182, 56, 0xff);
 
         #endregion
 
@@ -140,6 +142,12 @@ namespace XNALibrary
             ///  Can be used to build ground textures manually.
             /// </summary>
             Flip = 0x100,
+
+            /// <summary>
+            /// Uses special alpha values for transparent and
+            ///  emissive texture properties.
+            /// </summary>
+            ExtendedAlpha = 0x200,
         }
 
         /// <summary>
@@ -185,10 +193,20 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets current weather for swaps.
         /// </summary>
-        private DFLocation.ClimateWeather Weather
+        public DFLocation.ClimateWeather Weather
         {
             get { return climateWeather; }
             set { SetClimate(climateType, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets daytime flag.
+        ///  Primarily controls colour of building windows.
+        /// </summary>
+        public bool Daytime
+        {
+            get { return daytime; }
+            set { daytime = value; }
         }
 
         /// <summary>
@@ -230,9 +248,8 @@ namespace XNALibrary
             this.graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
 
             // Create dictionaries
-            generalTextureDict = new Dictionary<int, Texture2D>();
+            colorTextureDict = new Dictionary<int, Texture2D>();
             normalTextureDict = new Dictionary<int, Texture2D>();
-            winterTextureDict = new Dictionary<int, Texture2D>();
             groundPlaneTextureDict = new Dictionary<string, GroundPlaneTexture>();
 
             // Set default climate
@@ -320,7 +337,7 @@ namespace XNALibrary
         /// Loads ground plane texture for the specified block.
         /// </summary>
         /// <param name="block">DFBlock.</param>
-        /// <param name="DFLocation.ClimateSettings">Climate settings.</param>
+        /// <param name="climate">Climate settings.</param>
         /// <returns>Texture key.</returns>
         public string LoadGroundPlaneTexture(ref DFBlock block, DFLocation.ClimateSettings? climate)
         {
@@ -332,10 +349,17 @@ namespace XNALibrary
             if (climate == null)
                 climate = MapsFile.GetWorldClimateSettings(defaultWorldClimate);
 
+            // Handle winter and rain
+            int groundArchive = climate.Value.GroundArchive;
+            if (climateWeather == DFLocation.ClimateWeather.Winter)
+                groundArchive += 1;
+            else if(climateWeather == DFLocation.ClimateWeather.Rain)
+                groundArchive += 2;
+
             // Create ground plane texture
             GroundPlaneTexture gp;
             gp.tiles = block.RmbBlock.FldHeader.GroundData.GroundTiles;
-            gp.groundArchive = climate.Value.GroundArchive;
+            gp.groundArchive = groundArchive;
             gp.texture = null;
             CreateBlockGroundTexture(ref gp);
 
@@ -353,18 +377,11 @@ namespace XNALibrary
         /// <returns>Texture2D.</returns>
         public Texture2D GetTexture(int key)
         {
-            // Try to return winter texture when required
-            if (this.climateWeather == DFLocation.ClimateWeather.Winter)
-            {
-                if (winterTextureDict.ContainsKey(key))
-                    return winterTextureDict[key];
-            }
-
             // Otherwise return general texture
-            if (!generalTextureDict.ContainsKey(key))
+            if (!colorTextureDict.ContainsKey(key))
                 return null;
             else
-                return generalTextureDict[key];
+                return colorTextureDict[key];
         }
 
         /// <summary>
@@ -404,13 +421,13 @@ namespace XNALibrary
         /// <param name="key">Texture key.</param>
         public void RemoveTexture(int key)
         {
-            // Remove general texture og key
-            if (generalTextureDict.ContainsKey(key))
-                generalTextureDict.Remove(key);
+            // Remove color texture by key
+            if (colorTextureDict.ContainsKey(key))
+                colorTextureDict.Remove(key);
 
-            // Remove winter texture of key
-            if (winterTextureDict.ContainsKey(key))
-                winterTextureDict.Remove(key);
+            // Remove normal texture by key
+            if (normalTextureDict.ContainsKey(key))
+                normalTextureDict.Remove(key);
         }
 
         /// <summary>
@@ -419,8 +436,8 @@ namespace XNALibrary
         public void ClearTextures()
         {
             // Remove general and winter dictionaries
-            generalTextureDict.Clear();
-            winterTextureDict.Clear();
+            colorTextureDict.Clear();
+            normalTextureDict.Clear();
         }
 
         /// <summary>
@@ -440,7 +457,7 @@ namespace XNALibrary
         /// <returns>True if texture exists.</returns>
         public bool HasColorTexture(int key)
         {
-            return generalTextureDict.ContainsKey(key);
+            return colorTextureDict.ContainsKey(key);
         }
 
         /// <summary>
@@ -491,7 +508,7 @@ namespace XNALibrary
         private int LoadTextureNoClimate(int archive, int record, TextureCreateFlags flags)
         {
             int key = GetTextureKey(archive, record);
-            if (generalTextureDict.ContainsKey(key))
+            if (colorTextureDict.ContainsKey(key))
                 return key;
             else
                 CreateTexture(key, archive, record, false, flags);
@@ -531,16 +548,8 @@ namespace XNALibrary
 
             // Check if key already exists
             int key = GetTextureKey(climateType, climateSet, record, 0);
-            if (this.climateWeather == DFLocation.ClimateWeather.Winter)
-            {
-                if (winterTextureDict.ContainsKey(key))
-                    return key;
-            }
-            else
-            {
-                if (generalTextureDict.ContainsKey(key))
-                    return key;
-            }
+            if (colorTextureDict.ContainsKey(key))
+                return key;
 
             // Handle specific climate sets with missing winter textures
             if (climateType == DFLocation.ClimateBaseType.Desert ||
@@ -569,37 +578,26 @@ namespace XNALibrary
         /// <param name="key">Key to associate with texture.</param>
         /// <param name="archive">Archive index to load.</param>
         /// <param name="record">Record index to load.</param>
-        /// <param name="loadWinter">True to load winter set (archive+1).</param>
+        /// <param name="supportsWinter">True to load winter set (archive+1).</param>
         /// <param name="flags">TextureCreateFlags.</param>
-        private void CreateTexture(int key, int archive, int record, bool loadWinter, TextureCreateFlags flags)
+        private void CreateTexture(int key, int archive, int record, bool supportsWinter, TextureCreateFlags flags)
         {
             // Get colour texture in RGBA format
-            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
-            DFBitmap colorBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
+            DFBitmap colorBitmap;
+            if (supportsWinter && climateWeather == DFLocation.ClimateWeather.Winter)
+                colorBitmap = LoadDFBitmap(archive + 1, record, flags);
+            else
+                colorBitmap = LoadDFBitmap(archive, record, flags);
 
             // Perform optional image processing
             ProcessDFBitmap(ref colorBitmap, flags);
 
             // Create XNA texture
-            generalTextureDict.Add(key, CreateTexture2D(ref colorBitmap, flags));
+            colorTextureDict.Add(key, CreateTexture2D(ref colorBitmap, flags));
 
             // Create XNA normal texture
             if (flags.HasFlag(TextureCreateFlags.NormalMap))
                 normalTextureDict.Add(key, CreateNormalTexture2D(ref colorBitmap, flags));
-
-            // Load winter texture
-            //if (supportsWinter)
-            //{
-            //    // Get winter texture in RGBA format
-            //    textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
-            //    DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
-
-            //    // Perform optional image processing
-            //    ProcessDFBitmap(ref colorBitmap, flags);
-                
-            //    // Create XNA texture
-            //    winterTextureDict.Add(key, CreateTexture2D(ref winterBitmap, flags));
-            //}
 
             // TEST: Save textures for review
             //if (generalTextureDict.ContainsKey(key))
@@ -691,6 +689,119 @@ namespace XNALibrary
             ConvertToNormalMap(ref normalBitmap);
 
             return CreateTexture2D(ref normalBitmap, flags);
+        }
+
+        /// <summary>
+        /// Gets DFBitmap in RGBA format.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <returns>DFBitmap.</returns>
+        private DFBitmap LoadDFBitmap(int archive, int record, TextureCreateFlags flags)
+        {
+            // Load texture file
+            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
+
+            // Convert to RGBA
+            if (Core.GraphicsProfile == GraphicsProfile.HiDef &&
+                flags.HasFlag(TextureCreateFlags.ExtendedAlpha))
+            {
+                // The hi def renderer packs alphas in a special way.
+                // Need to reimplement indexed to RGBA conversion.
+                return GetEngineRGBA(record, 0);
+            }
+            else
+            {
+                // Just load as normal
+                return textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
+            }
+        }
+
+        /// <summary>
+        /// Gets RGBA image with alpha packed for use with hidef renderer.
+        ///  Alpha 0x00 - 0x7f is transparent range.
+        ///  Alpha 0x80 - 0xff is emissive range.
+        ///  In Detail:
+        ///  * 0 is fully transparent and 127 is opaque.
+        ///  * 128 is not emissive and 255 is fullbright.
+        ///  * Window glass is always fullbright.
+        ///  * An image cannot be transparent and emissive at the same time.
+        /// </summary>
+        /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
+        /// <returns>DFBitmap.</returns>
+        private DFBitmap GetEngineRGBA(int record, int frame)
+        {
+            // Daggerfall uses this index to represent a transparent colour
+            const int dfChromaIndex = 0x00;
+
+            // Daggerfall uses this index to represent the glass in a window
+            const int dfWindowIndex = 0xff;
+
+            // Engine uses this alpha for transparent pixels
+            const int engineTransparentAlpha = 0x00;
+
+            // Engine uses this alpha for opaque pixels
+            const int engineOpaqueAlpha = 0x7f;
+
+            // Create new bitmap
+            DFBitmap srcBitmap = textureFile.GetDFBitmap(record, frame);
+            DFBitmap dstBitmap = new DFBitmap();
+            dstBitmap.Format = DFBitmap.Formats.RGBA;
+            dstBitmap.Width = srcBitmap.Width;
+            dstBitmap.Height = srcBitmap.Height;
+            dstBitmap.Stride = dstBitmap.Width * formatWidth;
+            dstBitmap.Data = new byte[dstBitmap.Stride * dstBitmap.Height];
+
+            // Get source palette
+            DFPalette palette = textureFile.Palette;
+
+            // Write pixel data to array
+            byte a, r, g, b;
+            int srcPos = 0, dstPos = 0;
+            for (int i = 0; i < dstBitmap.Width * dstBitmap.Height; i++)
+            {
+                // Get index of this pixel
+                byte index = srcBitmap.Data[srcPos++];
+
+                // Get initial colour and alpha values
+                r = palette.GetRed(index);
+                g = palette.GetGreen(index);
+                b = palette.GetBlue(index);
+                a = engineOpaqueAlpha;
+
+                // Write colour and alpha values
+                if (index == dfChromaIndex)
+                {
+                    a = engineTransparentAlpha;
+                }
+                else if (index == dfWindowIndex)
+                {
+                    if (daytime)
+                    {
+                        r = dayWindowColor.R;
+                        g = dayWindowColor.G;
+                        b = dayWindowColor.B;
+                        a = dayWindowColor.A;
+                    }
+                    else
+                    {
+                        r = nightWindowColor.R;
+                        g = nightWindowColor.G;
+                        b = nightWindowColor.B;
+                        a = nightWindowColor.A;
+                    }
+                }
+                // TODO: Handle light textures
+
+                // Write colour and alpha values
+                dstBitmap.Data[dstPos++] = r;
+                dstBitmap.Data[dstPos++] = g;
+                dstBitmap.Data[dstPos++] = b;
+                dstBitmap.Data[dstPos++] = a;
+            }
+
+            return dstBitmap;
         }
 
         #endregion
@@ -1155,7 +1266,7 @@ namespace XNALibrary
                             r += k2 * dfBitmap.Data[srcPos++];
                             g += k2 * dfBitmap.Data[srcPos++];
                             b += k2 * dfBitmap.Data[srcPos++];
-                            a += k2 * dfBitmap.Data[srcPos];
+                            a = dfBitmap.Data[srcPos];
                         }
                     }
 
@@ -1666,7 +1777,7 @@ namespace XNALibrary
                     int textureKey = LoadTexture(
                         groundPlaneTexture.groundArchive,
                         (tile.TextureRecord < 56) ? tile.TextureRecord : 2,
-                        TextureCreateFlags.None);
+                        TextureCreateFlags.ExtendedAlpha);
                     Texture2D tileTexture = GetTexture(textureKey);
 
                     // Set desination rectangle

@@ -847,7 +847,6 @@
             this.TimeOfDayTrackBar.Size = new System.Drawing.Size(850, 45);
             this.TimeOfDayTrackBar.TabIndex = 3;
             this.TimeOfDayTrackBar.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
-            this.TimeOfDayTrackBar.Value = 22;
             this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
             // 
             // ContentViewer

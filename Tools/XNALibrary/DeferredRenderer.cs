@@ -94,6 +94,7 @@ namespace XNALibrary
         // Effects
         private Effect clearBufferEffect;
         private Effect renderBufferEffect;
+        private Effect emissiveLightEffect;
         private Effect directionalLightEffect;
         private Effect pointLightEffect;
         private Effect finalCombineEffect;
@@ -229,6 +230,7 @@ namespace XNALibrary
             // Load effects
             clearBufferEffect = content.Load<Effect>(@"Effects\ClearGBuffer");
             renderBufferEffect = content.Load<Effect>(@"Effects\RenderGBuffer");
+            emissiveLightEffect = content.Load<Effect>(@"Effects\EmissiveLight");
             directionalLightEffect = content.Load<Effect>(@"Effects\DirectionalLight");
             pointLightEffect = content.Load<Effect>(@"Effects\PointLight");
             finalCombineEffect = content.Load<Effect>(@"Effects\CombineFinal");
@@ -238,12 +240,12 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.2f;
+            ambientLight.Intensity = 0.0f;
             
             // Add default directional lights
             DirectionalLight d0;
             d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
-            d0.Color = Color.FromNonPremultiplied(64, 64, 64, 255);
+            d0.Color = Color.FromNonPremultiplied(16, 16, 16, 255);
             directionalLights.Add(d0);
 
             // Load textures
@@ -300,8 +302,8 @@ namespace XNALibrary
             if (HasOptionsFlags(RendererOptions.Compass))
                 compass.Draw(camera);
 
-            // Draw debug version
-            //DrawDebug();
+            // Draw debug buffers
+            //DrawDebugBuffers();
 
 #if DEBUG
             // End timing
@@ -536,8 +538,29 @@ namespace XNALibrary
                 DrawPointLight(pl.TransformedBounds.Center, Color.White, pl.Radius, 1.0f);
             }
 
+            // Draw emissive lights
+            DrawEmissiveLight();
+
             // Draw personal light
             DrawPointLight(camera.Position, Color.White, PointLightNode.PersonalRadius, 1.0f);
+        }
+
+        /// <summary>
+        /// Draws light from emissive textures.
+        /// </summary>
+        private void DrawEmissiveLight()
+        {
+            // Set GBuffer
+            emissiveLightEffect.Parameters["colorMap"].SetValue(colorRT);
+
+            // Set size
+            emissiveLightEffect.Parameters["halfPixel"].SetValue(halfPixel);
+
+            // Apply changes
+            emissiveLightEffect.Techniques[0].Passes[0].Apply();
+
+            // Draw
+            quadRenderer.Draw(graphicsDevice);
         }
 
         /// <summary>

@@ -39,7 +39,7 @@ namespace XNALibrary
 
         // Sky animation
         private const int defaultSkyIndex = 9;
-        private const int defaultSkyFrame = 22;
+        private const int defaultSkyFrame = 0;
         private VertexPositionNormalTexture[] skyVertices;
         private short[] skyIndices;
         private int skyIndex = defaultSkyIndex;
