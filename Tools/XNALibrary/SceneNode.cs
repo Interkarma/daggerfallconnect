@@ -526,7 +526,10 @@ namespace XNALibrary
             this.textureKey = textureKey;
 
             // Build plane rectangle
-            VertexPositionNormalTexture p0, p1, p2, p3;
+            ModelManager.VertexPosNormalTexTanBitan p0 = new ModelManager.VertexPosNormalTexTanBitan();
+            ModelManager.VertexPosNormalTexTanBitan p1 = new ModelManager.VertexPosNormalTexTanBitan();
+            ModelManager.VertexPosNormalTexTanBitan p2 = new ModelManager.VertexPosNormalTexTanBitan();
+            ModelManager.VertexPosNormalTexTanBitan p3 = new ModelManager.VertexPosNormalTexTanBitan();
             p0.Position = new Vector3(0, 0, 0);
             p0.Normal = Vector3.Up;
             p0.TextureCoordinate = new Vector2(uv0, uv1);
@@ -539,7 +542,7 @@ namespace XNALibrary
             p3.Position = new Vector3(side, 0, 0);
             p3.Normal = Vector3.Up;
             p3.TextureCoordinate = new Vector2(uv1, uv1);
-            VertexPositionNormalTexture[] groundPlaneVertices = 
+            ModelManager.VertexPosNormalTexTanBitan[] groundPlaneVertices = 
             {
                 p0, p1, p2,
                 p0, p2, p3,
@@ -548,10 +551,10 @@ namespace XNALibrary
             // Create VertexBuffer
             this.vertexBuffer = new VertexBuffer(
                 graphicsDevice,
-                typeof(VertexPositionNormalTexture),
+                ModelManager.VertexPosNormalTexTanBitan.VertexDeclaration,
                 groundPlaneVertices.Length,
                 BufferUsage.WriteOnly);
-            vertexBuffer.SetData<VertexPositionNormalTexture>(groundPlaneVertices);
+            vertexBuffer.SetData<ModelManager.VertexPosNormalTexTanBitan>(groundPlaneVertices);
 
             // Set bounds
             base.LocalBounds = new BoundingSphere(

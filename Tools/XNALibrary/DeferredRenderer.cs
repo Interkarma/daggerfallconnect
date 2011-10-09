@@ -85,27 +85,26 @@ namespace XNALibrary
 
         #region Class Variables
 
-        // GBuffer render targets
+        // Render targets
         private RenderTarget2D colorRT;     // Color and specular intensity
         private RenderTarget2D normalRT;    // Normals + specular power
         private RenderTarget2D depthRT;     // Depth
         private RenderTarget2D lightRT;     // Lighting
 
-        // GBuffer effects
+        // Effects
         private Effect clearBufferEffect;
         private Effect renderBufferEffect;
         private Effect directionalLightEffect;
         private Effect pointLightEffect;
         private Effect finalCombineEffect;
 
-        // GBuffer textures
-        //private Texture2D nullNormalTexture;
-        //private Texture2D nullSpecularTexture;
+        // Textures
+        private Texture2D nullNormalTexture;
 
-        // Lighting geometry
+        // Geometry
         private Model sphereModel;          // Point light volume
 
-        // GBuffer size
+        // Size
         private Viewport viewport;
         private Vector2 size;
         private Vector2 halfPixel;
@@ -239,7 +238,7 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.0f;
+            ambientLight.Intensity = 0.2f;
             
             // Add default directional lights
             DirectionalLight d0;
@@ -248,12 +247,7 @@ namespace XNALibrary
             directionalLights.Add(d0);
 
             // Load textures
-            //nullNormalTexture = content.Load<Texture2D>(@"Textures\null_normal");
-            //nullSpecularTexture = content.Load<Texture2D>(@"Textures\null_specular");
-
-            // Assign null textures to render effect
-            //renderBufferEffect.Parameters["NormalMap"].SetValue(nullNormalTexture);
-            //renderBufferEffect.Parameters["SpecularMap"].SetValue(nullSpecularTexture);
+            nullNormalTexture = content.Load<Texture2D>(@"Textures\null_normal");
         }
 
         #endregion
@@ -385,22 +379,32 @@ namespace XNALibrary
             graphicsDevice.SamplerStates[0] = SamplerState.AnisotropicWrap;
 
             // Iterate batches
+            Texture2D colorTexture = null, normalTexture = null;
             foreach (var batch in batches)
             {
                 // Do nothing if batch empty
                 if (batch.Value.Count == 0)
                     continue;
 
-                // Set texture
+                // Set textures
                 if (batch.Key != TextureManager.GroundBatchKey)
-                    renderBufferEffect.Parameters["Texture"].SetValue(textureManager.GetTexture(batch.Key));
+                {
+                    colorTexture = textureManager.GetTexture(batch.Key);
+                    normalTexture = textureManager.GetNormalTexture(batch.Key);
+                    renderBufferEffect.Parameters["Texture"].SetValue(colorTexture);
+                    renderBufferEffect.Parameters["NormalMap"].SetValue(
+                        (normalTexture == null) ? nullNormalTexture : normalTexture);
+                }
 
                 // Iterate batch items
                 foreach (var batchItem in batch.Value)
                 {
                     // Handle ground textures
                     if (batch.Key == TextureManager.GroundBatchKey)
+                    {
                         renderBufferEffect.Parameters["Texture"].SetValue(batchItem.Texture);
+                        renderBufferEffect.Parameters["NormalMap"].SetValue(nullNormalTexture);
+                    }
 
                     // Set vertex buffer
                     graphicsDevice.SetVertexBuffer(batchItem.VertexBuffer);

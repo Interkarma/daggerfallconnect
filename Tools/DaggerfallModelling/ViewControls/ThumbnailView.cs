@@ -51,7 +51,6 @@ namespace DaggerfallModelling.ViewControls
         private Texture2D thumbBackgroundTexture;
 
         // XNA
-        private VertexDeclaration vertexDeclaration;
         private BasicEffect effect;
         private float nearPlaneDistance = 1.0f;
         private float farPlaneDistance = 10000.0f;
@@ -121,10 +120,6 @@ namespace DaggerfallModelling.ViewControls
         /// </summary>
         public override void Initialize()
         {
-            // Create vertex declaration
-            vertexDeclaration = new VertexDeclaration(
-                VertexPositionNormalTexture.VertexDeclaration.GetVertexElements());
-
             // Setup basic effect
             effect = new BasicEffect(host.GraphicsDevice);
             effect.World = Matrix.Identity;
@@ -639,7 +634,7 @@ namespace DaggerfallModelling.ViewControls
             host.GraphicsDevice.SetRenderTarget(null);
 
             // Store updated values
-            thumb.texture = host.TextureManager.CloneRenderTarget2DToTexture2D(renderTarget);
+            thumb.texture = TextureManager.CloneRenderTarget2DToTexture2D(host.GraphicsDevice, renderTarget);
         }
 
         /// <summary>

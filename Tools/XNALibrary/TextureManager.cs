@@ -23,6 +23,7 @@ namespace XNALibrary
     /// <summary>
     /// Helper class to load and store Daggerfall textures for XNA.
     ///  Provides some loading and pre-processing options. See TextureCreateFlags for more details.
+    ///  Not implemented yet: Weather swaps; texture animation; dungeon climate swaps.
     /// </summary>
     public class TextureManager
     {
@@ -38,9 +39,10 @@ namespace XNALibrary
         private TextureFile textureFile;
 
         // Texture dictionaries
-        private const int groundBatchKey = -1000000;
+        private const int groundBatchKey = int.MinValue;
         private Dictionary<int, Texture2D> generalTextureDict;
         private Dictionary<int, Texture2D> winterTextureDict;
+        private Dictionary<int, Texture2D> normalTextureDict;
         private Dictionary<string, GroundPlaneTexture> groundPlaneTextureDict;
 
         // Climate and weather
@@ -54,7 +56,8 @@ namespace XNALibrary
         private const int groundTextureWidth = 1024;
         private const int groundTextureHeight = 1024;
         private const int groundTextureStride = groundTextureWidth * formatWidth;
-        const string formatError = "DFBitmap not RGBA.";
+        private const string formatError = "DFBitmap not RGBA.";
+        private const float bumpSize = 1f;
 
         #endregion
 
@@ -76,7 +79,7 @@ namespace XNALibrary
             ///  Weather. TextureManager will atempt to ignore invalid
             ///  climate swaps.
             /// </summary>
-            ApplyClimate = 1,
+            ApplyClimate = 0x01,
 
             /// <summary>
             /// Ensures texture will be POW2 by extending right and
@@ -86,7 +89,7 @@ namespace XNALibrary
             ///  modified to correctly address valid space in the
             ///  POW2 texture.
             ///  </summary>
-            PowerOfTwo = 2,
+            PowerOfTwo = 0x02,
 
             /// <summary>
             /// Blends colour into neighbouring alpha pixels to help
@@ -95,19 +98,48 @@ namespace XNALibrary
             ///  by a couple of pixels around each edge so images do
             ///  not appear to be cut off at the edges.
             /// </summary>
-            Dilate = 4,
+            Dilate = 0x04,
 
             /// <summary>
             /// Pre-multiplies alpha with colour channels. It is the
             ///  responsibility of the caller to ensure renderer blend
             ///  states are set to use pre-multiplied textures.
             /// </summary>
-            PreMultiplyAlpha = 8,
+            PreMultiplyAlpha = 0x08,
 
             /// <summary>
             /// Creates a chain of mipmaps for this texture.
             /// </summary>
-            MipMaps = 16,
+            MipMaps = 0x10,
+
+            /// <summary>
+            /// Makes image grayscale.
+            /// </summary>
+            Grayscale = 0x20,
+
+            /// <summary>
+            /// Creates a separate normal map for this texture.
+            ///  This is achieved by using a sobel emboss filter to
+            ///  create a bump map, which is then converted into a
+            ///  normal map. The results are not very good.
+            ///  Overall it enhances just how low-res Daggerfall's
+            ///  textures are, and detracts from the painterly pixel
+            ///  art style. This process is considered
+            ///  to be experimental only.
+            /// </summary>
+            NormalMap = 0x40,
+
+            /// <summary>
+            /// Rotates texture 90 degrees counter-clockwise.
+            ///  Can be used to build ground textures manually.
+            /// </summary>
+            Rotate = 0x80,
+
+            /// <summary>
+            /// Flips texture horizontally and vertically.
+            ///  Can be used to build ground textures manually.
+            /// </summary>
+            Flip = 0x100,
         }
 
         /// <summary>
@@ -153,7 +185,7 @@ namespace XNALibrary
         /// <summary>
         /// Gets or sets current weather for swaps.
         /// </summary>
-        public DFLocation.ClimateWeather Weather
+        private DFLocation.ClimateWeather Weather
         {
             get { return climateWeather; }
             set { SetClimate(climateType, value); }
@@ -199,6 +231,7 @@ namespace XNALibrary
 
             // Create dictionaries
             generalTextureDict = new Dictionary<int, Texture2D>();
+            normalTextureDict = new Dictionary<int, Texture2D>();
             winterTextureDict = new Dictionary<int, Texture2D>();
             groundPlaneTextureDict = new Dictionary<string, GroundPlaneTexture>();
 
@@ -313,7 +346,7 @@ namespace XNALibrary
         }
 
         /// <summary>
-        /// Gets texture by key.
+        /// Gets color map texture by key.
         ///  Manager will return NULL if texture does not exist.
         /// </summary>
         /// <param name="key">Texture key.</param>
@@ -332,6 +365,20 @@ namespace XNALibrary
                 return null;
             else
                 return generalTextureDict[key];
+        }
+
+        /// <summary>
+        /// Gets normal map texture by key.
+        ///  Manager will return NULL if texture does not exist.
+        /// </summary>
+        /// <param name="key">Texture key.</param>
+        /// <returns>Texture2D.</returns>
+        public Texture2D GetNormalTexture(int key)
+        {
+            if (!normalTextureDict.ContainsKey(key))
+                return null;
+            else
+                return normalTextureDict[key];
         }
 
         /// <summary>
@@ -386,6 +433,26 @@ namespace XNALibrary
             groundPlaneTextureDict.Clear();
         }
 
+        /// <summary>
+        /// Determine if texture with specified key exists in color map texture dictionary.
+        /// </summary>
+        /// <param name="key">Texture key.</param>
+        /// <returns>True if texture exists.</returns>
+        public bool HasColorTexture(int key)
+        {
+            return generalTextureDict.ContainsKey(key);
+        }
+
+        /// <summary>
+        /// Determine if texture with specified key exists in normal map texture dictionary.
+        /// </summary>
+        /// <param name="key">Texture key.</param>
+        /// <returns>True if texture exists.</returns>
+        public bool HasNormalTexture(int key)
+        {
+            return normalTextureDict.ContainsKey(key);
+        }
+
         #endregion
 
         #region Private Methods
@@ -398,7 +465,7 @@ namespace XNALibrary
         /// <returns>Texture key.</returns>
         private int GetTextureKey(int archive, int record)
         {
-            return (archive * 1000) + record;
+            return (archive * -100) - record;
         }
 
         /// <summary>
@@ -407,10 +474,11 @@ namespace XNALibrary
         /// <param name="climateType">Climate type.</param>
         /// <param name="climateSet">Climate set.</param>
         /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record)
+        private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record, int frame)
         {
-            return 1000000 + ((int)climateType * 100000) + ((int)climateSet * 1000) + record;
+            return ((int)climateType * 1000000) + ((int)climateSet * 1000) + (record * 10) + frame;
         }
 
         /// <summary>
@@ -462,7 +530,7 @@ namespace XNALibrary
             }
 
             // Check if key already exists
-            int key = GetTextureKey(climateType, climateSet, record);
+            int key = GetTextureKey(climateType, climateSet, record, 0);
             if (this.climateWeather == DFLocation.ClimateWeather.Winter)
             {
                 if (winterTextureDict.ContainsKey(key))
@@ -495,39 +563,61 @@ namespace XNALibrary
 
         /// <summary>
         /// Creates texture for the specified archive and record, then
-        ///  adds to dictionary against key. Will attempt to load a
+        ///  adds to dictionary with key. Will attempt to load a
         ///  winter variant if specified.
         /// </summary>
         /// <param name="key">Key to associate with texture.</param>
         /// <param name="archive">Archive index to load.</param>
         /// <param name="record">Record index to load.</param>
-        /// <param name="supportsWinter">True to load winter set (archive+1).</param>
+        /// <param name="loadWinter">True to load winter set (archive+1).</param>
         /// <param name="flags">TextureCreateFlags.</param>
-        private void CreateTexture(int key, int archive, int record, bool supportsWinter, TextureCreateFlags flags)
+        private void CreateTexture(int key, int archive, int record, bool loadWinter, TextureCreateFlags flags)
         {
-            // Get normal texture in RGBA format
+            // Get colour texture in RGBA format
             textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
-            DFBitmap normalBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
+            DFBitmap colorBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
 
             // Perform optional image processing
-            ProcessDFBitmap(ref normalBitmap, flags);
+            ProcessDFBitmap(ref colorBitmap, flags);
 
             // Create XNA texture
-            generalTextureDict.Add(key, CreateTexture2D(ref normalBitmap, flags));
+            generalTextureDict.Add(key, CreateTexture2D(ref colorBitmap, flags));
+
+            // Create XNA normal texture
+            if (flags.HasFlag(TextureCreateFlags.NormalMap))
+                normalTextureDict.Add(key, CreateNormalTexture2D(ref colorBitmap, flags));
 
             // Load winter texture
-            if (supportsWinter)
-            {
-                // Get winter texture in RGBA format
-                textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
-                DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
+            //if (supportsWinter)
+            //{
+            //    // Get winter texture in RGBA format
+            //    textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive + 1)), FileUsage.UseDisk, true);
+            //    DFBitmap winterBitmap = textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
 
-                // Perform optional image processing
-                ProcessDFBitmap(ref normalBitmap, flags);
+            //    // Perform optional image processing
+            //    ProcessDFBitmap(ref colorBitmap, flags);
                 
-                // Create XNA texture
-                winterTextureDict.Add(key, CreateTexture2D(ref winterBitmap, flags));
-            }
+            //    // Create XNA texture
+            //    winterTextureDict.Add(key, CreateTexture2D(ref winterBitmap, flags));
+            //}
+
+            // TEST: Save textures for review
+            //if (generalTextureDict.ContainsKey(key))
+            //{
+            //    string filename = string.Format("D:\\Test\\{0}_color.png", key);
+            //    Texture2D colorTexture = generalTextureDict[key];
+            //    FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
+            //    colorTexture.SaveAsPng(fs, colorTexture.Width, colorTexture.Height);
+            //    fs.Close();
+            //}
+            //if (normalTextureDict.ContainsKey(key))
+            //{
+            //    string filename = string.Format("D:\\Test\\{0}_normal.png", key);
+            //    Texture2D normalTexture = normalTextureDict[key];
+            //    FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
+            //    normalTexture.SaveAsPng(fs, normalTexture.Width, normalTexture.Height);
+            //    fs.Close();
+            //}
         }
 
         /// <summary>
@@ -587,17 +677,53 @@ namespace XNALibrary
             return texture;
         }
 
+        /// <summary>
+        /// Creates a normal map texture from DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        private Texture2D CreateNormalTexture2D(ref DFBitmap dfBitmap, TextureCreateFlags flags)
+        {
+            // Get bump map
+            DFBitmap normalBitmap = GetBumpMap(ref dfBitmap);
+
+            // Convert bump map to normal map
+            ConvertToNormalMap(ref normalBitmap);
+
+            return CreateTexture2D(ref normalBitmap, flags);
+        }
+
         #endregion
 
         #region Image Processing
 
+        #region Processing
+
         /// <summary>
         /// Performs optional processing to DFBitmap.
+        ///  Only pre-process options are handled here.
+        ///  Other options are handled at texture creation time.
         /// </summary>
         /// <param name="dfBitmap">DFBitmap.</param>
         /// <param name="flags">TextureCreateFlags.</param>
         private void ProcessDFBitmap(ref DFBitmap dfBitmap, TextureCreateFlags flags)
         {
+            // Format must be RGBA
+            if (dfBitmap.Format != DFBitmap.Formats.RGBA)
+                throw new Exception(formatError);
+
+            // Grayscale
+            if (flags.HasFlag(TextureCreateFlags.Grayscale))
+                MakeGrayscale(ref dfBitmap);
+
+            // Rotate
+            if (flags.HasFlag(TextureCreateFlags.Rotate))
+                RotateDFBitmap(ref dfBitmap);
+
+            // Flip
+            if (flags.HasFlag(TextureCreateFlags.Flip))
+                FlipDFBitmap(ref dfBitmap);
+
             // Dilate
             if (flags.HasFlag(TextureCreateFlags.Dilate))
                 DilateDFBitmap(ref dfBitmap);
@@ -607,16 +733,160 @@ namespace XNALibrary
                 PreMultiplyAlphaDFBitmap(ref dfBitmap);
         }
 
+        #endregion
+
+        #region Helpers
+
+        /// <summary>
+        /// Sets RGBA pixel in DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="x">X position.</param>
+        /// <param name="y">Y position.</param>
+        /// <param name="color">Color.</param>
+        static public void SetPixel(ref DFBitmap dfBitmap, int x, int y, Color color)
+        {
+            int pos = y * dfBitmap.Stride + x * formatWidth;
+            dfBitmap.Data[pos++] = color.R;
+            dfBitmap.Data[pos++] = color.G;
+            dfBitmap.Data[pos++] = color.B;
+            dfBitmap.Data[pos] = color.A;
+        }
+
+        /// <summary>
+        /// Sets RGBA pixel in DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="x">X position.</param>
+        /// <param name="y">Y position.</param>
+        /// <param name="r">Red value.</param>
+        /// <param name="g">Green value.</param>
+        /// <param name="b">Blue value.</param>
+        /// <param name="a">Alpha value.</param>
+        static public void SetPixel(ref DFBitmap dfBitmap, int x, int y, byte r, byte g, byte b, byte a)
+        {
+            int pos = y * dfBitmap.Stride + x * formatWidth;
+            dfBitmap.Data[pos++] = r;
+            dfBitmap.Data[pos++] = g;
+            dfBitmap.Data[pos++] = b;
+            dfBitmap.Data[pos] = a;
+        }
+
+        /// <summary>
+        /// Gets pixel Color in DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="x">X position.</param>
+        /// <param name="y">Y position.</param>
+        /// <returns>Color.</returns>
+        static public Color GetPixel(ref DFBitmap dfBitmap, int x, int y)
+        {
+            int pos = y * dfBitmap.Stride + x * formatWidth;
+            return Color.FromNonPremultiplied(
+                dfBitmap.Data[pos++],
+                dfBitmap.Data[pos++],
+                dfBitmap.Data[pos++],
+                dfBitmap.Data[pos]);
+        }
+
+        /// <summary>
+        /// Creates a clone of a DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="copyData">True to copy data contents.</param>
+        /// <returns>DFBitmap.</returns>
+        static public DFBitmap CloneDFBitmap(ref DFBitmap dfBitmap, bool copyData)
+        {
+            // Create destination bitmap to receive normal image
+            DFBitmap newBitmap = new DFBitmap();
+            newBitmap.Format = dfBitmap.Format;
+            newBitmap.Width = dfBitmap.Width;
+            newBitmap.Height = dfBitmap.Height;
+            newBitmap.Stride = dfBitmap.Stride;
+            newBitmap.Data = new byte[dfBitmap.Data.Length];
+
+            if (copyData)
+                Buffer.BlockCopy(dfBitmap.Data, 0, newBitmap.Data, 0, dfBitmap.Data.Length);
+
+            return newBitmap;
+        }
+
+        /// <summary>
+        /// Clones a RenderTarget2D to Texture2D.
+        /// </summary>
+        /// <param name="renderTarget">RenderTarget2D.</param>
+        /// <returns>Texture2D</returns>
+        static public Texture2D CloneRenderTarget2DToTexture2D(GraphicsDevice graphicsDevice, RenderTarget2D renderTarget)
+        {
+            // Create target texture
+            Texture2D clone = new Texture2D(
+                graphicsDevice,
+                renderTarget.Width,
+                renderTarget.Height,
+                (renderTarget.LevelCount > 1) ? true : false,
+                SurfaceFormat.Color);
+
+            // Clone each level
+            for (int level = 0; level < renderTarget.LevelCount; level++)
+            {
+                // Get source data
+                int width = PowerOfTwo.MipMapSize(renderTarget.Width, level);
+                int height = PowerOfTwo.MipMapSize(renderTarget.Height, level);
+                Color[] srcData = new Color[width * height];
+                renderTarget.GetData<Color>(level, null, srcData, 0, width * height);
+
+                // Set destination data
+                clone.SetData<Color>(level, null, srcData, 0, width * height);
+            }
+
+            return clone;
+        }
+
+        #endregion
+
+        #region Grayscale
+
+        /// <summary>
+        /// Makes image grayscale.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        private void MakeGrayscale(ref DFBitmap dfBitmap)
+        {
+            // Make each pixel grayscale
+            int srcPos = 0, dstPos = 0;
+            for (int i = 0; i < dfBitmap.Width * dfBitmap.Height; i++)
+            {
+                // Get source color
+                byte r = dfBitmap.Data[srcPos++];
+                byte g = dfBitmap.Data[srcPos++];
+                byte b = dfBitmap.Data[srcPos++];
+                byte a = dfBitmap.Data[srcPos++];
+                System.Drawing.Color srcColor = System.Drawing.Color.FromArgb(
+                    a, r, g, b);
+
+                // Create grayscale color
+                int grayscale = (int)(r * 0.3f + g * 0.59f + b * 0.11f);
+                System.Drawing.Color dstColor = System.Drawing.Color.FromArgb(
+                    grayscale, grayscale, grayscale);
+
+                // Write destination pixel
+                dfBitmap.Data[dstPos++] = dstColor.R;
+                dfBitmap.Data[dstPos++] = dstColor.G;
+                dfBitmap.Data[dstPos++] = dstColor.B;
+                dfBitmap.Data[dstPos++] = a;
+            }
+        }
+
+        #endregion
+
+        #region PreMultiply Alpha
+
         /// <summary>
         /// Pre-multiply bitmap alpha.
         /// </summary>
-        /// <param name="dfBitmap">FBitmap.</param>
+        /// <param name="dfBitmap">DFBitmap.</param>
         private void PreMultiplyAlphaDFBitmap(ref DFBitmap dfBitmap)
         {
-            // Format must be RGBA
-            if (dfBitmap.Format != DFBitmap.Formats.RGBA)
-                throw new Exception(formatError);
-
             // Pre-multiply alpha for each pixel
             int pos;
             float multiplier;
@@ -634,16 +904,16 @@ namespace XNALibrary
             }
         }
 
+        #endregion
+
+        #region Rotate and Flip
+
         /// <summary>
         /// Rotates a DFBitmap 90 degrees counter-clockwise.
         /// </summary>
         /// <param name="dfBitmap">DFBitmap.</param>
         private void RotateDFBitmap(ref DFBitmap dfBitmap)
         {
-            // Format must be RGBA
-            if (dfBitmap.Format != DFBitmap.Formats.RGBA)
-                throw new Exception(formatError);
-
             // Create destination bitmap to receive rotated image
             DFBitmap dstBitmap = new DFBitmap();
             dstBitmap.Format = dfBitmap.Format;
@@ -657,7 +927,7 @@ namespace XNALibrary
             int dstPos = 0;
             for (int x = 0; x < dstBitmap.Width; x++)
             {
-                for (int y = dstBitmap.Height - 1; y >=0 ; y--)
+                for (int y = dstBitmap.Height - 1; y >= 0; y--)
                 {
                     // Get source pixel
                     byte r = dfBitmap.Data[srcPos++];
@@ -684,10 +954,6 @@ namespace XNALibrary
         /// <param name="dfBitmap">DFBitmap.</param>
         private void FlipDFBitmap(ref DFBitmap dfBitmap)
         {
-            // Format must be RGBA
-            if (dfBitmap.Format != DFBitmap.Formats.RGBA)
-                throw new Exception(formatError);
-
             // Create destination bitmap to receive flipped image
             DFBitmap dstBitmap = new DFBitmap();
             dstBitmap.Format = dfBitmap.Format;
@@ -717,6 +983,10 @@ namespace XNALibrary
             // Assign processed image
             dfBitmap = dstBitmap;
         }
+
+        #endregion
+
+        #region Dilate
 
         /// <summary>
         /// Dilate bitmap.
@@ -797,6 +1067,10 @@ namespace XNALibrary
             }
         }
 
+        #endregion
+
+        #region MipMap
+
         /// <summary>
         /// Creates a new mipmap from the source bitmap.
         /// </summary>
@@ -805,10 +1079,6 @@ namespace XNALibrary
         /// <returns>DFBitmap mipmap.</returns>
         private DFBitmap CreateMipMap(ref DFBitmap dfBitmap, int level)
         {
-            // Format must be RGBA
-            if (dfBitmap.Format != DFBitmap.Formats.RGBA)
-                throw new Exception(formatError);
-
             // Get start size
             int width = dfBitmap.Width;
             int height = dfBitmap.Height;
@@ -924,36 +1194,348 @@ namespace XNALibrary
             return (0.16666666666666666667 * (a - (4.0 * b) + (6.0 * c) - (4.0 * d)));
         }
 
+        #endregion
+
+        #region Normal Map
+
         /// <summary>
-        /// Clones a RenderTarget2D to Texture2D.
+        /// Converts a grayscale bump bitmap into normal map format.
         /// </summary>
-        /// <param name="renderTarget">RenderTarget2D.</param>
-        /// <returns>Texture2D</returns>
-        public Texture2D CloneRenderTarget2DToTexture2D(RenderTarget2D renderTarget)
+        /// <param name="dfBitmap">DFBitmap.</param>
+        private void ConvertToNormalMap(ref DFBitmap dfBitmap)
         {
-            // Create target texture
-            Texture2D clone = new Texture2D(
-                graphicsDevice,
-                renderTarget.Width,
-                renderTarget.Height,
-                (renderTarget.LevelCount > 1) ? true : false,
-                SurfaceFormat.Color);
+            // Calculate normal map vectors
+            ConvertGrayToAlpha(ref dfBitmap);
+            ConvertAlphaToNormals(ref dfBitmap);
+        }
 
-            // Clone each level
-            for (int level = 0; level < renderTarget.LevelCount; level++)
+        /// <summary>
+        /// Copies grayscale color information into the alpha channel.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        private void ConvertGrayToAlpha(ref DFBitmap dfBitmap)
+        {
+            for (int y = 0; y < dfBitmap.Height; y++)
             {
-                // Get source data
-                int width = PowerOfTwo.MipMapSize(renderTarget.Width, level);
-                int height = PowerOfTwo.MipMapSize(renderTarget.Height, level);
-                Color[] srcData = new Color[width * height];
-                renderTarget.GetData<Color>(level, null, srcData, 0, width * height);
+                for (int x = 0; x < dfBitmap.Width; x++)
+                {
+                    // Get position
+                    int pos = y * dfBitmap.Stride + x * formatWidth;
 
-                // Set destination data
-                clone.SetData<Color>(level, null, srcData, 0, width * height);
+                    // Get average of grayscale RGB values
+                    float average =
+                        (dfBitmap.Data[pos++] + dfBitmap.Data[pos++] + dfBitmap.Data[pos++]) / 3;
+
+                    // Copy to alpha
+                    dfBitmap.Data[pos] = (byte)average;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Using height data stored in the alpha channel, computes normalmap
+        ///  vectors and stores them in the RGB portion of the bitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        private void ConvertAlphaToNormals(ref DFBitmap dfBitmap)
+        {
+            for (int y = 0; y < dfBitmap.Height; y++)
+            {
+                for (int x = 0; x < dfBitmap.Width; x++)
+                {
+                    // Look up the heights to either side of this pixel
+                    float left = GetHeightFromAlpha(ref dfBitmap, x - 1, y);
+                    float right = GetHeightFromAlpha(ref dfBitmap, x + 1, y);
+                    float top = GetHeightFromAlpha(ref dfBitmap, x, y - 1);
+                    float bottom = GetHeightFromAlpha(ref dfBitmap, x, y + 1);
+
+                    // Compute gradient vectors, then cross them to get the normal
+                    Vector3 dx = new Vector3(1, 0, (right - left) * bumpSize);
+                    Vector3 dy = new Vector3(0, 1, (bottom - top) * bumpSize);
+                    Vector3 normal = Vector3.Cross(dx, dy);
+                    normal.Normalize();
+
+                    // Create final colour
+                    float alpha = GetHeightFromAlpha(ref dfBitmap, x, y);
+                    Vector4 vector = new Vector4(normal, alpha);
+
+                    // Store result
+                    int pos = y * dfBitmap.Stride + x * formatWidth;
+                    dfBitmap.Data[pos++] = (byte)(255f * vector.X);
+                    dfBitmap.Data[pos++] = (byte)(255f * vector.Y);
+                    dfBitmap.Data[pos++] = (byte)(255f * vector.Z);
+                    dfBitmap.Data[pos] = (byte)vector.W;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Helper for looking up height values from the bitmap alpha channel,
+        ///  clamping if the specified position is off the edge of the bitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap.</param>
+        /// <param name="x">X coord.</param>
+        /// <param name="y">Y coord.</param>
+        private float GetHeightFromAlpha(ref DFBitmap dfBitmap, int x, int y)
+        {
+            // Clamp X
+            if (x < 0)
+                x = 0;
+            else if (x >= dfBitmap.Width)
+                x = dfBitmap.Width - 1;
+
+            // Clamp Y
+            if (y < 0)
+                y = 0;
+            else if (y >= dfBitmap.Height)
+                y = dfBitmap.Height - 1;
+
+            // Get position
+            int pos = y * dfBitmap.Stride + x * formatWidth;
+
+            return (float)dfBitmap.Data[pos + 3];
+        }
+
+        #endregion
+
+        #region Bump Map
+
+        /// <summary>
+        /// Gets a bump map from the source DFBitmap.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap source image.</param>
+        /// <returns>Bump map image.</returns>
+        private DFBitmap GetBumpMap(ref DFBitmap dfBitmap)
+        {
+            // Create sobel emboss filter
+            Filter edgeDetectionFilter = new Filter(3, 3);
+            edgeDetectionFilter.MyFilter[0, 0] = 1;
+            edgeDetectionFilter.MyFilter[1, 0] = 2;
+            edgeDetectionFilter.MyFilter[2, 0] = 1;
+            edgeDetectionFilter.MyFilter[0, 1] = 0;
+            edgeDetectionFilter.MyFilter[1, 1] = 0;
+            edgeDetectionFilter.MyFilter[2, 1] = 0;
+            edgeDetectionFilter.MyFilter[0, 2] = -1;
+            edgeDetectionFilter.MyFilter[1, 2] = -2;
+            edgeDetectionFilter.MyFilter[2, 2] = -1;
+
+            // Get filtered image
+            DFBitmap newBitmap = edgeDetectionFilter.ApplyFilter(ref dfBitmap);
+
+            // Convert to grayscale
+            MakeGrayscale(ref newBitmap);
+
+            return newBitmap;
+        }
+
+        #endregion
+
+        #region Edge Detection
+
+        /*
+         * Based on Craig's Utility Library (CUL) by James Craig.
+         * http://www.gutgames.com/post/Edge-detection-in-C.aspx
+         * MIT License (http://www.opensource.org/licenses/mit-license.php)
+         */
+
+        /// <summary>
+        /// Gets a new bitmap containing edges detected in source bitmap.
+        ///  The source bitmap is unchanged.
+        /// </summary>
+        /// <param name="dfBitmap">DFBitmap source.</param>
+        /// <param name="threshold">Edge detection threshold.</param>
+        /// <param name="edgeColor">Edge colour to write.</param>
+        /// <returns>DFBitmap containing edges..</returns>
+        private DFBitmap FindEdges(ref DFBitmap dfBitmap, float threshold, Color edgeColor)
+        {
+            // Clone bitmap settings
+            DFBitmap newBitmap = CloneDFBitmap(ref dfBitmap, false);
+
+            for (int x = 0; x < dfBitmap.Width; x++)
+            {
+                for (int y = 0; y < dfBitmap.Height; y++)
+                {
+                    Color currentColor = GetPixel(ref dfBitmap, x, y);
+                    if (y < newBitmap.Height - 1 && x < newBitmap.Width - 1)
+                    {
+                        Color tempColor = GetPixel(ref dfBitmap, x + 1, y + 1);
+                        if (ColorDistance(ref currentColor, ref tempColor) > threshold)
+                            SetPixel(ref newBitmap, x, y, edgeColor);
+                    }
+                    else if (y < newBitmap.Height - 1)
+                    {
+                        Color tempColor = GetPixel(ref dfBitmap, x, y + 1);
+                        if (ColorDistance(ref currentColor, ref tempColor) > threshold)
+                            SetPixel(ref newBitmap, x, y, edgeColor);
+                    }
+                    else if (x < newBitmap.Width - 1)
+                    {
+                        Color tempColor = GetPixel(ref dfBitmap, x + 1, y);
+                        if (ColorDistance(ref currentColor, ref tempColor) > threshold)
+                            SetPixel(ref newBitmap, x, y, edgeColor);
+                    }
+                }
             }
 
-            return clone;
+            return newBitmap;
         }
+
+        /// <summary>
+        /// Gets distance between two colours using Euclidean distance function.
+        ///  Distance = SQRT( (R1-R2)2 + (G1-G2)2 + (B1-B2)2 )
+        /// </summary>
+        /// <param name="color1">First Color.</param>
+        /// <param name="color2">Second Color.</param>
+        /// <returns>Distance between colours.</returns>
+        private float ColorDistance(ref Color color1, ref Color color2)
+        {
+            float r = color1.R - color2.R;
+            float g = color1.G - color2.G;
+            float b = color1.B - color2.B;
+
+            return (float)Math.Sqrt((r * r) + (g * g) + (b * b));
+        }
+
+        #endregion
+
+        #region Matrix Convolution Filter
+
+        /*
+         * Based on Craig's Utility Library (CUL) by James Craig.
+         * http://www.gutgames.com/post/Matrix-Convolution-Filters-in-C.aspx
+         * MIT License (http://www.opensource.org/licenses/mit-license.php)
+         */
+
+        /// <summary>
+        /// Used when applying convolution filters to an image
+        /// </summary>
+        public class Filter
+        {
+            #region Constructors
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            public Filter()
+            {
+                MyFilter = new int[3, 3];
+                Width = 3;
+                Height = 3;
+                Offset = 0;
+                Absolute = false;
+            }
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="Width">Width</param>
+            /// <param name="Height">Height</param>
+            public Filter(int Width, int Height)
+            {
+                MyFilter = new int[Width, Height];
+                this.Width = Width;
+                this.Height = Height;
+                Offset = 0;
+                Absolute = false;
+            }
+            #endregion
+
+            #region Public Properties
+            /// <summary>
+            /// The actual filter array
+            /// </summary>
+            public int[,] MyFilter { get; set; }
+
+            /// <summary>
+            /// Width of the filter box
+            /// </summary>
+            public int Width { get; set; }
+
+            /// <summary>
+            /// Height of the filter box
+            /// </summary>
+            public int Height { get; set; }
+
+            /// <summary>
+            /// Amount to add to the red, blue, and green values
+            /// </summary>
+            public int Offset { get; set; }
+
+            /// <summary>
+            /// Determines if we should take the absolute value prior to clamping
+            /// </summary>
+            public bool Absolute { get; set; }
+            #endregion
+
+            #region Public Methods
+            /// <summary>
+            /// Applies the filter to the input image
+            /// </summary>
+            /// <param name="Input">input image</param>
+            /// <returns>Returns a separate image with the filter applied</returns>
+            public DFBitmap ApplyFilter(ref DFBitmap Input)
+            {
+                DFBitmap NewBitmap = CloneDFBitmap(ref Input, false);
+                for (int x = 0; x < Input.Width; ++x)
+                {
+                    for (int y = 0; y < Input.Height; ++y)
+                    {
+                        int RValue = 0;
+                        int GValue = 0;
+                        int BValue = 0;
+                        int Weight = 0;
+                        int XCurrent = -Width / 2;
+                        for (int x2 = 0; x2 < Width; ++x2)
+                        {
+                            if (XCurrent + x < Input.Width && XCurrent + x >= 0)
+                            {
+                                int YCurrent = -Height / 2;
+                                for (int y2 = 0; y2 < Height; ++y2)
+                                {
+                                    if (YCurrent + y < Input.Height && YCurrent + y >= 0)
+                                    {
+                                        Color Pixel = GetPixel(ref Input, XCurrent + x, YCurrent + y);
+                                        RValue += MyFilter[x2, y2] * Pixel.R;
+                                        GValue += MyFilter[x2, y2] * Pixel.G;
+                                        BValue += MyFilter[x2, y2] * Pixel.B;
+                                        Weight += MyFilter[x2, y2];
+                                    }
+                                    ++YCurrent;
+                                }
+                            }
+                            ++XCurrent;
+                        }
+
+                        Color MeanPixel = GetPixel(ref Input, x, y);
+                        if (Weight == 0)
+                            Weight = 1;
+                        if (Weight > 0)
+                        {
+                            if (Absolute)
+                            {
+                                RValue = System.Math.Abs(RValue);
+                                GValue = System.Math.Abs(GValue);
+                                BValue = System.Math.Abs(BValue);
+                            }
+
+                            RValue = (RValue / Weight) + Offset;
+                            RValue = (int)MathHelper.Clamp(RValue, 0, 255);
+                            GValue = (GValue / Weight) + Offset;
+                            GValue = (int)MathHelper.Clamp(GValue, 0, 255);
+                            BValue = (BValue / Weight) + Offset;
+                            BValue = (int)MathHelper.Clamp(BValue, 0, 255);
+                            MeanPixel = Color.FromNonPremultiplied(RValue, GValue, BValue, 0xff);
+                        }
+
+                        SetPixel(ref NewBitmap, x, y, MeanPixel);
+                    }
+                }
+
+                return NewBitmap;
+            }
+            #endregion
+        }
+
+        #endregion
 
         #endregion
 
