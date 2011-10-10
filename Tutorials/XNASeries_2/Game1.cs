@@ -140,8 +140,6 @@ namespace XNASeries_2
             // Draw bounds
             if (drawBounds)
                 core.Renderer.DrawBounds();
-
-            Window.Title = string.Format("SceneTime: {0}, DrawTime: {1}", core.Scene.UpdateTime, core.Renderer.DrawTime);
         }
     }
 }

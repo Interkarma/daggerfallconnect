@@ -36,6 +36,9 @@ namespace XNALibrary
         // Appearance
         private Color defaultRootBoundsColor = Color.Red;
 
+        // Random numbers
+        private Random rnd = new Random();
+
 #if DEBUG
         // Performance
         Stopwatch stopwatch = new Stopwatch();
@@ -215,6 +218,21 @@ namespace XNALibrary
                 bounds = BoundingSphere.CreateMerged(
                     bounds,
                     UpdateNode(child, cumulativeMatrix, elapsedTime));
+            }
+
+            // Animate a light node
+            if (node is PointLightNode)
+            {
+                PointLightNode pointLightNode = (PointLightNode)node;
+                pointLightNode.AnimTimer += elapsedTime.Milliseconds;
+                if (pointLightNode.AnimTimer > 60)
+                {
+                    pointLightNode.AnimTimer = 0;
+                    pointLightNode.AnimScale = MathHelper.Clamp(
+                         pointLightNode.AnimScale + (float)(rnd.NextDouble() - 0.5f) * 0.15f,
+                         0.70f,
+                         1.0f);
+                }
             }
 
             // Calculate point lighting on a billboard node.
