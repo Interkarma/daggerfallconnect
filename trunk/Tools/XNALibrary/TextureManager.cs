@@ -724,7 +724,6 @@ namespace XNALibrary
         ///  In Detail:
         ///  * 0 is fully transparent and 127 is opaque.
         ///  * 128 is not emissive and 255 is fullbright.
-        ///  * Window glass is always fullbright.
         ///  * An image cannot be transparent and emissive at the same time.
         /// </summary>
         /// <param name="record">Record index.</param>

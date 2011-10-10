@@ -1,8 +1,7 @@
 /*
  * Adds emissive light from diffuse map alpha buffer.
  * Alpha 0x80 - 0xff are reserved for emissive textures.
- * 0x80 is dark and 0xfe is fullbright.
- * 0xff is reserved for windows.
+ * 0x80 is dark and 0xff is fullbright.
 */
 
 // Diffuse colour and brightness in alpha channel
