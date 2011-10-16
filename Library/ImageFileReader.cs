@@ -336,14 +336,16 @@ namespace DaggerfallConnect
         /// <returns>DFImageFile object.</returns>
         public DFImageFile LoadFile(string FileName)
         {
+            // Always use upper case
+            FileName = FileName.ToUpper();
+
             // Change library type based on filename
-            LibraryTypes CurrentLibraryType = LibraryType;
-            LibraryType = ParseLibraryType(FileName);
-            if (LibraryTypes.None == LibraryType)
-            {
-                LibraryType = CurrentLibraryType;
+            LibraryTypes NewLibraryType = ParseLibraryType(FileName);
+            if (NewLibraryType == LibraryTypes.None)
                 return null;
-            }
+
+            // Set new library type
+            LibraryType = NewLibraryType;
 
             // Get index of file
             int Index = GetFileIndex(MyLibraryType, FileName);
@@ -482,7 +484,9 @@ namespace DaggerfallConnect
         {
             // Test path exists
             if (!Directory.Exists(Arena2Path))
-                return false;
+            {
+                throw new Exception("Arena2Path does not exist: " + Arena2Path);
+            }
 
             // Exit if same path
             if (MyArena2Path == Arena2Path)
@@ -1175,7 +1179,6 @@ namespace DaggerfallConnect
         /// <returns>Library type of this file.</returns>
         private LibraryTypes ParseLibraryType(string FileName)
         {
-            FileName = FileName.ToUpper();
             if (FileName.StartsWith("TEXTURE."))
                 return LibraryTypes.Texture;
             else if (FileName.EndsWith(".IMG"))

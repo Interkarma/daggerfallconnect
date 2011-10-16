@@ -240,12 +240,12 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.0f;
+            ambientLight.Intensity = 0.5f;
             
             // Add default directional lights
             DirectionalLight d0;
             d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
-            d0.Color = Color.FromNonPremultiplied(16, 16, 16, 255);
+            d0.Color = Color.FromNonPremultiplied(200, 200, 200, 255);
             directionalLights.Add(d0);
 
             // Load textures
@@ -296,7 +296,7 @@ namespace XNALibrary
 
             // Draw billboard batches
             if (HasOptionsFlags(RendererOptions.Flats))
-                billboardManager.Draw(camera);
+                billboardManager.Draw(camera, Vector3.Multiply(ambientLight.Color.ToVector3(), ambientLight.Intensity));
 
             // Draw compass
             if (HasOptionsFlags(RendererOptions.Compass))

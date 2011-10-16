@@ -165,13 +165,24 @@ namespace XNALibrary
         #region Abstract Overrides
 
         /// <summary>
-        /// Called when view component should redraw.
+        /// Draw all batched billboards.
         /// </summary>
         /// <param name="camera">Camera looking into scene.</param>
         public override void Draw(Camera camera)
         {
             if (this.Enabled && camera != null)
-                DrawBatch(camera);
+                DrawBatch(camera, Vector3.One);
+        }
+
+        /// <summary>
+        /// Called when view component should redraw.
+        /// </summary>
+        /// <param name="camera">Camera looking into scene.</param>
+        /// <param name="ambientLight">Ambient light.</param>
+        public void Draw(Camera camera, Vector3 ambientLight)
+        {
+            if (this.Enabled && camera != null)
+                DrawBatch(camera, ambientLight);
         }
 
         #endregion
@@ -230,7 +241,9 @@ namespace XNALibrary
         /// <summary>
         /// Draw all batched billboards.
         /// </summary>
-        private void DrawBatch(Camera camera)
+        /// <param name="camera">Camera looking into scene.</param>
+        /// <param name="ambientLight">Ambient light.</param>
+        private void DrawBatch(Camera camera, Vector3 ambientLight)
         {
             // Exit if TextureManager not set
             if (textureManager == null)
@@ -262,10 +275,13 @@ namespace XNALibrary
                     1.0f - cameraDistance / PointLightNode.PersonalRadius, 0, 1);
                 lightIntensity = MathHelper.Clamp(lightIntensity + attenuation, 0, 1);
 
+                // Add ambient lighting
+                Vector3 finalLighting = ambientLight + Vector3.Multiply(Vector3.One, lightIntensity);
+
                 // Update effect
                 effect.World = item.Matrix;
                 effect.Texture = textureManager.GetTexture(item.TextureKey);
-                effect.AmbientLightColor = Vector3.Multiply(Vector3.One, lightIntensity);
+                effect.AmbientLightColor = finalLighting;
                 effect.CurrentTechnique.Passes[0].Apply();
 
                 // Draw billboard
