@@ -410,8 +410,8 @@ namespace DaggerfallModelling.Collada
         private string MakeMaterialName(int archive, int record)
         {
             return string.Format(
-                "{0}_{1}",
-                TextureFile.IndexToFileName(archive),
+                "TEXTURE_{0:000}_{1}",
+                archive,
                 record);
         }
 

@@ -153,7 +153,7 @@
     </ProjectReference>
     <ProjectReference Include="Content\XNALibraryContent.contentproj">
       <Project>{13D69ADB-C63D-40F9-898C-83CBDBFA5057}</Project>
-      <Name>XNALibraryContent %28Content%29</Name>
+      <Name>XNALibraryContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
