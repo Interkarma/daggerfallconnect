@@ -38,12 +38,14 @@
             this.OrientationComboBox = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.ImageFormatComboBox = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.ScaleModelValue = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // OutputPathTextBox
             // 
-            this.OutputPathTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.OutputPathTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.OutputPathTextBox.Location = new System.Drawing.Point(12, 25);
             this.OutputPathTextBox.Name = "OutputPathTextBox";
             this.OutputPathTextBox.Size = new System.Drawing.Size(339, 20);
@@ -52,7 +54,7 @@
             // MyOKButton
             // 
             this.MyOKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.MyOKButton.Location = new System.Drawing.Point(12, 129);
+            this.MyOKButton.Location = new System.Drawing.Point(12, 182);
             this.MyOKButton.Name = "MyOKButton";
             this.MyOKButton.Size = new System.Drawing.Size(75, 23);
             this.MyOKButton.TabIndex = 7;
@@ -64,7 +66,7 @@
             // 
             this.MyCancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.MyCancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.MyCancelButton.Location = new System.Drawing.Point(329, 129);
+            this.MyCancelButton.Location = new System.Drawing.Point(329, 182);
             this.MyCancelButton.Name = "MyCancelButton";
             this.MyCancelButton.Size = new System.Drawing.Size(75, 23);
             this.MyCancelButton.TabIndex = 8;
@@ -136,13 +138,34 @@
             this.ImageFormatComboBox.Size = new System.Drawing.Size(181, 21);
             this.ImageFormatComboBox.TabIndex = 6;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(9, 115);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(34, 13);
+            this.label4.TabIndex = 11;
+            this.label4.Text = "Scale";
+            // 
+            // ScaleModelValue
+            // 
+            this.ScaleModelValue.Location = new System.Drawing.Point(12, 131);
+            this.ScaleModelValue.Name = "ScaleModelValue";
+            this.ScaleModelValue.Size = new System.Drawing.Size(128, 20);
+            this.ScaleModelValue.TabIndex = 12;
+            this.ScaleModelValue.Text = "1.0";
+            this.ScaleModelValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.ScaleModelValue.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ScaleModelValue_KeyPressed);
+            // 
             // BrowseExportModelDialog
             // 
             this.AcceptButton = this.MyOKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.MyCancelButton;
-            this.ClientSize = new System.Drawing.Size(416, 164);
+            this.ClientSize = new System.Drawing.Size(416, 217);
+            this.Controls.Add(this.ScaleModelValue);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.ImageFormatComboBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.OrientationComboBox);
@@ -159,6 +182,7 @@
             this.Name = "BrowseExportModelDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Export Model";
+            this.Load += new System.EventHandler(this.OnLoad);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -175,5 +199,7 @@
         private System.Windows.Forms.ComboBox OrientationComboBox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox ImageFormatComboBox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox ScaleModelValue;
     }
 }

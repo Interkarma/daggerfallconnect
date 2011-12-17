@@ -148,13 +148,13 @@ namespace DaggerfallModelling
             //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Privateer's Hold");
             //DFLocation dfLocation = mapsFile.GetLocation("Dragontail Mountains", "Scourg Barrow");
             //DFLocation dfLocation = mapsFile.GetLocation("Wayrest", "Wayrest");
-            DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Daggerfall");
+            //DFLocation dfLocation = mapsFile.GetLocation("Daggerfall", "Daggerfall");
             //DFLocation dfLocation = mapsFile.GetLocation("Sentinel", "Sentinel");
-            ContentViewer.ShowLocationExterior(dfLocation);
+            //ContentViewer.ShowLocationExterior(dfLocation);
             //ContentViewer.ShowLocationDungeon(dfLocation);
             //ContentViewer.ShowBlockView("MAGEAA13.RMB", null);
-            ContentViewer.CameraMode = ViewBase.CameraModes.Free;
-            UpdateActiveCameraMode();
+            //ContentViewer.CameraMode = ViewBase.CameraModes.Free;
+            //UpdateActiveCameraMode();
 
             //ImageFileReader reader = new ImageFileReader(appSettings.Arena2Path);
             //reader.LibraryType = LibraryTypes.Texture;
@@ -164,7 +164,7 @@ namespace DaggerfallModelling
 #endif
 
             // Show thumbnails view
-            //ContentViewer.ShowThumbnailsView();
+            ContentViewer.ShowThumbnailsView();
         }
 
         private void BrowseArena2Path()
@@ -296,6 +296,7 @@ namespace DaggerfallModelling
         {
             // Save settings
             appSettings.SaveSettings();
+            Properties.Settings.Default.Save();
         }
 
         private void SetArena2ToolStripButton_Click(object sender, EventArgs e)
@@ -566,7 +567,7 @@ namespace DaggerfallModelling
             // Execute
             try
             {
-                dfCollada.DFMeshToCollada(ContentViewer.ModelView.ModelID.Value);
+                dfCollada.DFMeshToCollada(ContentViewer.ModelView.ModelID.Value, dlg.ModelScale);
             }
             catch (Exception err)
             {
