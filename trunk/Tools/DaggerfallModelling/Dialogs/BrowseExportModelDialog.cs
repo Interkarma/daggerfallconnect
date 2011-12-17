@@ -64,6 +64,15 @@ namespace DaggerfallModelling.Dialogs
             set { ImageFormatComboBox.SelectedIndex = value; }
         }
 
+        /// <summary>
+        /// Gets or sets model scale value.
+        /// </summary>
+        public float ModelScale
+        {
+            get { return float.Parse(ScaleModelValue.Text); }
+            set { ScaleModelValue.Text = value.ToString(); }
+        }
+
         #endregion
 
         #region Constructors
@@ -88,6 +97,7 @@ namespace DaggerfallModelling.Dialogs
             {
                 DialogResult = DialogResult.OK;
                 outputPathValue = OutputPathTextBox.Text;
+                Properties.Settings.Default.ScaleModelBeforeExport = decimal.Parse(ScaleModelValue.Text);
                 Close();
             }
         }
@@ -113,6 +123,31 @@ namespace DaggerfallModelling.Dialogs
             }
 
             return true;
+        }
+
+        #endregion
+
+        #region Form Events
+
+        private void ScaleModelValue_KeyPressed(object sender, KeyPressEventArgs e)
+        {
+            // Only allow 0-9 and decimal chars to be entered
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
+            {
+                e.Handled = true;
+            }
+
+            // Only allow one decimal point 
+            if (e.KeyChar == '.' && (sender as TextBox).Text.IndexOf('.') > -1)
+            {
+                e.Handled = true;
+            } 
+        }
+
+        private void OnLoad(object sender, EventArgs e)
+        {
+            // Set scale value
+            ScaleModelValue.Text = Properties.Settings.Default.ScaleModelBeforeExport.ToString();
         }
 
         #endregion

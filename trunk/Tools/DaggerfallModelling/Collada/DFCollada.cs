@@ -137,8 +137,9 @@ namespace DaggerfallModelling.Collada
         /// Exports a DFMesh object to Collada format.
         /// </summary>
         /// <param name="id">ID of DFMesh to export.</param>
-        /// <returns></returns>
-        public bool DFMeshToCollada(uint id)
+        /// <param name="scale">Scale model by value.</param>
+        /// <returns>True if successful.</returns>
+        public bool DFMeshToCollada(uint id, float scale)
         {
             // Get source mesh
             int index = arch3dFile.GetRecordIndex(id);
@@ -163,6 +164,23 @@ namespace DaggerfallModelling.Collada
             if (!Directory.Exists(fullImageOutputPath))
             {
                 Directory.CreateDirectory(fullImageOutputPath);
+            }
+
+            // Scale model
+            if (scale != 1.0f)
+            {
+                foreach (var mesh in dfMesh.SubMeshes)
+                {
+                    foreach (var plane in mesh.Planes)
+                    {
+                        for (int point = 0; point < plane.Points.Length; point++)
+                        {
+                            plane.Points[point].X *= scale;
+                            plane.Points[point].Y *= scale;
+                            plane.Points[point].Z *= scale;
+                        }
+                    }
+                }
             }
 
             // Create dae root

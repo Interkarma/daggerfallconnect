@@ -43,22 +43,22 @@ namespace DaggerfallConnect.Utility
         /// <summary>
         /// Determines if file is read from disk (read-only file stream) or memory buffer (read-write memory stream).
         /// </summary>
-        private FileUsage FileUsage;
+        private FileUsage fileUsage;
 
         /// <summary>
         /// Has file been opened as read only or read-write.
         /// </summary>
-        private bool IsReadOnly;
+        private bool isReadOnly;
 
         /// <summary>
         /// Stream to file when using FileUsage.UseDisk.
         /// </summary>
-        private FileStream FileStream;
+        private FileStream fileStream;
 
         /// <summary>
         /// Byte array when using FileUsage.UseMemory.
         /// </summary>
-        private byte[] FileBuffer;
+        private byte[] fileBuffer;
 
         /// <summary>
         /// Full path of managed file regardless of usage.
@@ -79,7 +79,7 @@ namespace DaggerfallConnect.Utility
         /// </summary>
         public FileProxy()
         {
-            FileUsage = FileUsage.Undefined;
+            fileUsage = FileUsage.Undefined;
         }
 
         /// <summary>
@@ -100,9 +100,9 @@ namespace DaggerfallConnect.Utility
         /// <param name="Name">Name, filename, or path  to describe memory buffer.</param>
         public FileProxy(byte[] Data, string Name)
         {
-            FileBuffer = Data;
+            fileBuffer = Data;
             ManagedFilePath = Name;
-            FileUsage = FileUsage.UseMemory;
+            fileUsage = FileUsage.UseMemory;
         }
 
         #endregion
@@ -116,12 +116,12 @@ namespace DaggerfallConnect.Utility
         {
             get
             {
-                switch (FileUsage)
+                switch (fileUsage)
                 {
                     case FileUsage.UseDisk:
-                        if (FileStream == null) return 0; else return (int)FileStream.Length;
+                        if (fileStream == null) return 0; else return (int)fileStream.Length;
                     case FileUsage.UseMemory:
-                        if (FileBuffer == null) return 0; else return FileBuffer.Length;
+                        if (fileBuffer == null) return 0; else return fileBuffer.Length;
                     default:
                         return 0;
                 }
@@ -157,7 +157,7 @@ namespace DaggerfallConnect.Utility
         /// </summary>
         public FileUsage Usage
         {
-            get { return FileUsage; }
+            get { return fileUsage; }
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace DaggerfallConnect.Utility
         /// </summary>
         public bool ReadOnly
         {
-            get { return IsReadOnly; }
+            get { return isReadOnly; }
         }
 
         /// <summary>
@@ -181,7 +181,15 @@ namespace DaggerfallConnect.Utility
         /// </summary>
         public byte[] Buffer
         {
-            get { return FileBuffer; }
+            get { return fileBuffer; }
+        }
+
+        /// <summary>
+        /// Gets file stream when using FileUsage.UseDisk
+        /// </summary>
+        public FileStream FileStream
+        {
+            get { return fileStream; }
         }
 
         #endregion
@@ -204,13 +212,13 @@ namespace DaggerfallConnect.Utility
             {
                 fileAccess = FileAccess.Read;
                 fileShare = FileShare.ReadWrite;
-                IsReadOnly = true;
+                isReadOnly = true;
             }
             else
             {
                 fileAccess = FileAccess.ReadWrite;
                 fileShare = FileShare.Read;
-                IsReadOnly = false;
+                isReadOnly = false;
             }
 
             // Load based on usage
@@ -234,10 +242,10 @@ namespace DaggerfallConnect.Utility
                 return;
 
             // Close based on type
-            if (FileUsage == FileUsage.UseMemory)
-                FileBuffer = null;
+            if (fileUsage == FileUsage.UseMemory)
+                fileBuffer = null;
             else
-                FileStream.Close();
+                fileStream.Close();
 
             // Clear filename
             ManagedFilePath = String.Empty;
@@ -249,7 +257,7 @@ namespace DaggerfallConnect.Utility
         /// <returns>BinaryReader to managed file with UTF8 encoding.</returns>
         public BinaryReader GetReader()
         {
-            switch (FileUsage)
+            switch (fileUsage)
             {
                 case FileUsage.UseMemory:
                     return new BinaryReader(GetMemoryStream(), Encoding.UTF8);
@@ -280,7 +288,7 @@ namespace DaggerfallConnect.Utility
         /// <returns>BinaryReader to managed file with UTF8 encoding.</returns>
         public BinaryWriter GetWriter()
         {
-            switch (FileUsage)
+            switch (fileUsage)
             {
                 case FileUsage.UseMemory:
                     return new BinaryWriter(GetMemoryStream(), Encoding.UTF8);
@@ -458,7 +466,7 @@ namespace DaggerfallConnect.Utility
         /// <returns>FileStream object.</returns>
         private FileStream GetFileStream()
         {
-            return FileStream;
+            return fileStream;
         }
 
         /// <summary>
@@ -467,7 +475,7 @@ namespace DaggerfallConnect.Utility
         /// <returns>FileStream object</returns>
         private MemoryStream GetMemoryStream()
         {
-            return new MemoryStream(FileBuffer);
+            return new MemoryStream(fileBuffer);
         }
 
         /// <summary>
@@ -487,8 +495,8 @@ namespace DaggerfallConnect.Utility
             try
             {
                 FileStream file = File.Open(FilePath, FileMode.Open, FileAccess, FileShare);
-                FileBuffer = new byte[file.Length];
-                if (file.Length != file.Read(FileBuffer, 0, (int)file.Length))
+                fileBuffer = new byte[file.Length];
+                if (file.Length != file.Read(fileBuffer, 0, (int)file.Length))
                     return false;
 
                 // Close file
@@ -505,7 +513,7 @@ namespace DaggerfallConnect.Utility
             ManagedFilePath = FilePath;
 
             // Set usage
-            FileUsage = FileUsage.UseMemory;
+            fileUsage = FileUsage.UseMemory;
 
             return true;
         }
@@ -526,8 +534,8 @@ namespace DaggerfallConnect.Utility
             // Open file
             try
             {
-                FileStream = File.Open(FilePath, FileMode.Open, FileAccess, FileShare);
-                if (FileStream == null)
+                fileStream = File.Open(FilePath, FileMode.Open, FileAccess, FileShare);
+                if (fileStream == null)
                     return false;
             }
             catch (Exception e)
@@ -541,7 +549,7 @@ namespace DaggerfallConnect.Utility
             ManagedFilePath = FilePath;
 
             // Set usage
-            FileUsage = FileUsage.UseDisk;
+            fileUsage = FileUsage.UseDisk;
 
             return true;
         }

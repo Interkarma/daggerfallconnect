@@ -21,7 +21,7 @@ namespace XNALibrary
 {
 
     /// <summary>
-    /// Camera class providing position and
+    /// Camera class.
     /// </summary>
     public class Camera
     {

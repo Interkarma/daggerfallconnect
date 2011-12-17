@@ -240,13 +240,13 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.5f;
+            ambientLight.Intensity = 0.1f;
             
             // Add default directional lights
             DirectionalLight d0;
-            d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
-            d0.Color = Color.FromNonPremultiplied(200, 200, 200, 255);
-            directionalLights.Add(d0);
+            //d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
+            //d0.Color = Color.FromNonPremultiplied(200, 200, 200, 255);
+            //directionalLights.Add(d0);
 
             // Load textures
             nullNormalTexture = content.Load<Texture2D>(@"Textures\null_normal");
