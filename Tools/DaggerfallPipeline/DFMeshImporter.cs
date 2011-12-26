@@ -75,11 +75,12 @@ namespace DaggerfallPipeline
             // Get source information from file
             string[] lines = input.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             uint id = Convert.ToUInt32(lines[0].Trim());
-            string terrain = lines[1].Trim();
-            string weather = lines[2].Trim();
+            //string terrain = lines[1].Trim();
+            //string weather = lines[2].Trim();
+            Double scale = Convert.ToDouble(lines[1].Trim());
 
             // Load source model
-            LoadModelData(id);
+            LoadModelData(id, (float)scale);
 
             // Export texture definitions
             texturesPath = Path.Combine(Path.GetDirectoryName(filename), textureSubPath);
@@ -236,7 +237,8 @@ namespace DaggerfallPipeline
         /// Loads model data for conversion.
         /// </summary>
         /// <param name="id">Model ID.</param>
-        private void LoadModelData(uint id)
+        /// <param name="scale">Amount to scale model.</param>
+        private void LoadModelData(uint id, float scale)
         {
             // Open ARCH3D.BSA
             Arch3dFile arch3dFile = new Arch3dFile(
@@ -247,6 +249,23 @@ namespace DaggerfallPipeline
             // Get DFMesh
             int record = arch3dFile.GetRecordIndex(id);
             DFMesh dfMesh = arch3dFile.GetMesh(record);
+
+            // Scale DFMesh
+            if (scale != 1.0f)
+            {
+                foreach (var mesh in dfMesh.SubMeshes)
+                {
+                    foreach (var plane in mesh.Planes)
+                    {
+                        for (int point = 0; point < plane.Points.Length; point++)
+                        {
+                            plane.Points[point].X *= scale;
+                            plane.Points[point].Y *= scale;
+                            plane.Points[point].Z *= scale;
+                        }
+                    }
+                }
+            }
 
             // Load model data
             model = new ModelData();
