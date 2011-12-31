@@ -68,7 +68,8 @@
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />
     <Compile Include="Components\LightComponent.cs" />
-    <Compile Include="Components\PhysicsComponent.cs" />
+    <Compile Include="Components\NativeModelComponent.cs" />
+    <Compile Include="Components\PhysicsColliderComponent.cs" />
     <Compile Include="Core\DeepCore.cs" />
     <Compile Include="Daggerfall\MaterialManager.cs" />
     <Compile Include="Daggerfall\ModelManager.cs" />

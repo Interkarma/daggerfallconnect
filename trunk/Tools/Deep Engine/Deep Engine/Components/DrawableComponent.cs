@@ -83,6 +83,9 @@ namespace DeepEngine.Components
         /// </summary>
         public virtual void Draw()
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
         }
 
         #endregion

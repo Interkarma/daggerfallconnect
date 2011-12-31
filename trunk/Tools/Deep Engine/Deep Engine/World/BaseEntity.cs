@@ -192,6 +192,10 @@ namespace DeepEngine.World
         /// <param name="gameTime">GameTime.</param>
         public virtual void Update(GameTime gameTime)
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
             // Update all components
             BoundingSphere sphere;
             sphere.Center = Vector3.Zero;
@@ -213,6 +217,10 @@ namespace DeepEngine.World
         /// </summary>
         public virtual void Draw()
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
             // Draw all components
             foreach (var component in components)
             {
