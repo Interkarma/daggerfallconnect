@@ -115,6 +115,7 @@ namespace ContentLoading1
 
             // Create model entity
             BaseEntity modelEntity = new BaseEntity(core.ActiveScene);
+            modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
             new NativeModelComponent(modelEntity, 456);
         }
 
