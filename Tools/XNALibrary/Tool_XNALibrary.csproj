@@ -151,9 +151,9 @@
       <Project>{10771391-7160-4460-B456-F87461D4A2AD}</Project>
       <Name>DaggerfallConnect</Name>
     </ProjectReference>
-    <ProjectReference Include="Content\XNALibraryContent.contentproj">
+    <ProjectReference Include="Content\Tool_XNALibraryContent.contentproj">
       <Project>{13D69ADB-C63D-40F9-898C-83CBDBFA5057}</Project>
-      <Name>XNALibraryContent</Name>
+      <Name>Tool_XNALibraryContent %28XNALibraryContent%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
