@@ -42,6 +42,7 @@ namespace DeepEngine.Components
         {
             Box,
             Sphere,
+            Geometry,
         }
 
         #endregion

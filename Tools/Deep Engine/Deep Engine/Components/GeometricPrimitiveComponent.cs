@@ -206,9 +206,9 @@ namespace DeepEngine.Components
                 return;
 
             // Update effect
+            renderPrimitiveEffect.Parameters["World"].SetValue(entity.Matrix);
             renderPrimitiveEffect.Parameters["View"].SetValue(entity.Scene.DeprecatedCamera.View);
             renderPrimitiveEffect.Parameters["Projection"].SetValue(entity.Scene.DeprecatedCamera.Projection);
-            renderPrimitiveEffect.Parameters["World"].SetValue(entity.Matrix);
             renderPrimitiveEffect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
 
             // Draw primitive

@@ -147,6 +147,12 @@ namespace DeepEngine.Daggerfall
             ///  emissive texture properties.
             /// </summary>
             ExtendedAlpha = 0x200,
+
+            /// <summary>
+            /// Doubles size of texture after loading using a high quality upscale.
+            ///  Improves definition of mipmaps.
+            /// </summary>
+            DoubleSize = 0x400,
         }
 
         /// <summary>
@@ -1453,7 +1459,7 @@ namespace DeepEngine.Daggerfall
         /// <param name="dfBitmap">DFBitmap source.</param>
         /// <param name="threshold">Edge detection threshold.</param>
         /// <param name="edgeColor">Edge colour to write.</param>
-        /// <returns>DFBitmap containing edges..</returns>
+        /// <returns>DFBitmap containing edges.</returns>
         private DFBitmap FindEdges(ref DFBitmap dfBitmap, float threshold, Color edgeColor)
         {
             // Clone bitmap settings
@@ -1515,7 +1521,7 @@ namespace DeepEngine.Daggerfall
          */
 
         /// <summary>
-        /// Used when applying convolution filters to an image
+        /// Used when applying convolution filters to an image.
         /// </summary>
         public class Filter
         {

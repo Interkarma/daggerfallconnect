@@ -10,6 +10,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Daggerfall;
 using DeepEngine.World;
 #endregion
@@ -25,12 +27,16 @@ namespace DeepEngine.Components
 
         #region Fields
 
-        // Native content managers
+        // References
+        GraphicsDevice graphicsDevice;
         ModelManager modelManager;
         MaterialManager materialManager;
 
         // Model data
         ModelManager.ModelData modelData;
+
+        // Effects
+        Effect renderGeometryEffect;
 
         #endregion
 
@@ -56,9 +62,13 @@ namespace DeepEngine.Components
         public NativeModelComponent(BaseEntity entity, uint id)
             : base(entity)
         {
-            // Get references to native content managers
+            // Get references
             this.modelManager = entity.Scene.Core.ModelManager;
             this.materialManager = entity.Scene.Core.MaterialManager;
+            this.graphicsDevice = entity.Scene.Core.GraphicsDevice;
+
+            // Load effect
+            renderGeometryEffect = entity.Scene.Core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
             // Load model
             LoadModel(id);
@@ -76,6 +86,40 @@ namespace DeepEngine.Components
             // Do nothing if disabled
             if (!enabled)
                 return;
+
+            // Setup effect
+            renderGeometryEffect.Parameters["World"].SetValue(entity.Matrix);
+            renderGeometryEffect.Parameters["View"].SetValue(entity.Scene.DeprecatedCamera.View);
+            renderGeometryEffect.Parameters["Projection"].SetValue(entity.Scene.DeprecatedCamera.Projection);
+
+            // Set buffers
+            graphicsDevice.SetVertexBuffer(modelData.VertexBuffer);
+            graphicsDevice.Indices = modelData.IndexBuffer;
+
+            // Render each submesh
+            Texture2D diffuseTexture = null;
+            foreach (var sm in modelData.SubMeshes)
+            {
+                // Set texture
+                diffuseTexture = materialManager.GetTexture(sm.TextureKey);
+                renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
+
+                // Render geometry
+                foreach (EffectPass pass in renderGeometryEffect.CurrentTechnique.Passes)
+                {
+                    // Apply effect pass
+                    pass.Apply();
+
+                    // Draw indexed primitives
+                    graphicsDevice.DrawIndexedPrimitives(
+                        PrimitiveType.TriangleList,
+                        0,
+                        0,
+                        modelData.VertexBuffer.VertexCount,
+                        sm.StartIndex,
+                        sm.PrimitiveCount);
+                }
+            }
         }
 
         #endregion
@@ -102,7 +146,7 @@ namespace DeepEngine.Components
                         MaterialManager.TextureCreateFlags.PowerOfTwo;
 
                     // Set extended alpha flags
-                    //flags |= MaterialManager.TextureCreateFlags.ExtendedAlpha;
+                    flags |= MaterialManager.TextureCreateFlags.ExtendedAlpha;
 
                     // Load texture
                     modelData.SubMeshes[i].TextureKey = materialManager.LoadTexture(
