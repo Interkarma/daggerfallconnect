@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallModelling", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_DaggerfallPipeline", "Tools\DaggerfallPipeline\Tool_DaggerfallPipeline.csproj", "{299A9D67-8A08-4DAC-ABB8-6A19AC821D35}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_Deep Engine", "Tools\Deep Engine\Deep Engine\Tool_Deep Engine.csproj", "{240A9FEF-17C0-4190-9F75-7034E67EF983}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_Deep Engine Content", "Tools\Deep Engine\Deep Engine Content\Tool_Deep Engine Content.contentproj", "{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,22 @@ Global
 		{299A9D67-8A08-4DAC-ABB8-6A19AC821D35}.Release|Mixed Platforms.Build.0 = Debug|x86
 		{299A9D67-8A08-4DAC-ABB8-6A19AC821D35}.Release|x86.ActiveCfg = Debug|x86
 		{299A9D67-8A08-4DAC-ABB8-6A19AC821D35}.Release|x86.Build.0 = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Debug|x86.ActiveCfg = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Debug|x86.Build.0 = Debug|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Release|Any CPU.ActiveCfg = Release|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Release|Mixed Platforms.Build.0 = Release|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Release|x86.ActiveCfg = Release|x86
+		{240A9FEF-17C0-4190-9F75-7034E67EF983}.Release|x86.Build.0 = Release|x86
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|x86.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
