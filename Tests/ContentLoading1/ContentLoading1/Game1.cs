@@ -62,26 +62,8 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
-            // Create entity
-            BaseEntity entity = new BaseEntity(core.DeepCore.ActiveScene);
-            entity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
-
-            // Attach drawable component
-            GeometricPrimitiveComponent primitiveComponent = new GeometricPrimitiveComponent(entity);
-            primitiveComponent.MakeCube(1024f);
-            primitiveComponent.Color = Color.White;
-
-            // Attach components
-            PhysicsComponent physicsComponent = new PhysicsComponent(entity, 1024f, 1024f, 1024f);
-            LightComponent light = new LightComponent(entity, Vector3.Right, Color.White, 0.5f);
-
-            // Create second entity
-            BaseEntity entity2 = new BaseEntity(core.DeepCore.ActiveScene);
-            GeometricPrimitiveComponent primitiveComponent2 = new GeometricPrimitiveComponent(entity2);
-            primitiveComponent2.MakeTorus(64f, 64f, 16);
-            primitiveComponent2.Color = Color.White;
-            PhysicsComponent physicsComponent2 = new PhysicsComponent(entity2, 128f, 64f, 128f, 1f);
-            LightComponent light2 = new LightComponent(entity2, Vector3.Zero, 512f, Color.Green, 2f);
+            LoadModelScene();
+            //LoadPhysicsScene();
         }
 
         /// <summary>
@@ -115,11 +97,58 @@ namespace ContentLoading1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }
+
+        #region Content Loading Methods
+
+        /// <summary>
+        /// Loads a simple Daggerfall model scene.
+        /// </summary>
+        private void LoadModelScene()
+        {
+            // Create directional light
+            BaseEntity lightEntity = new BaseEntity(core.ActiveScene);
+            new LightComponent(lightEntity, Vector3.Right, Color.White, 1.0f);
+
+            // Create model entity
+            BaseEntity modelEntity = new BaseEntity(core.ActiveScene);
+            new NativeModelComponent(modelEntity, 456);
+        }
+
+        /// <summary>
+        /// Loads a simple physics test scene.
+        /// </summary>
+        private void LoadPhysicsScene()
+        {
+            // Create cube entity
+            BaseEntity cubeEntity = new BaseEntity(core.ActiveScene);
+            cubeEntity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
+
+            // Attach cube primitive component
+            GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(cubeEntity);
+            cubeGeometry.MakeCube(1024f);
+            cubeGeometry.Color = Color.White;
+
+            // Attach cube physics and a directional light
+            PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(cubeEntity, 1024f, 1024f, 1024f);
+            LightComponent cubeLight = new LightComponent(cubeEntity, Vector3.Right, Color.White, 0.5f);
+
+            // Create torus entity
+            BaseEntity torusEntity = new BaseEntity(core.ActiveScene);
+
+            // Attach torus primitive component
+            GeometricPrimitiveComponent torusGeometry = new GeometricPrimitiveComponent(torusEntity);
+            torusGeometry.MakeTorus(64f, 64f, 16);
+            torusGeometry.Color = Color.White;
+
+            // Attach torus physics and a point light
+            PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(torusEntity, 128f, 64f, 128f, 1f);
+            LightComponent torusLight = new LightComponent(torusEntity, Vector3.Zero, 512f, Color.Gold, 2f);
+        }
+
+        #endregion
     }
 }

@@ -201,6 +201,10 @@ namespace DeepEngine.Components
         /// </summary>
         public override void Draw()
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
             // Update effect
             renderPrimitiveEffect.Parameters["View"].SetValue(entity.Scene.DeprecatedCamera.View);
             renderPrimitiveEffect.Parameters["Projection"].SetValue(entity.Scene.DeprecatedCamera.Projection);

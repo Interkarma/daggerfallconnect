@@ -23,7 +23,7 @@ namespace DeepEngine.Components
     /// <summary>
     /// Provides integration with physics engine.
     /// </summary>
-    public class PhysicsComponent : BaseComponent
+    public class PhysicsColliderComponent : BaseComponent
     {
 
         #region Fields
@@ -76,7 +76,7 @@ namespace DeepEngine.Components
         /// <param name="height">Height of box.</param>
         /// <param name="length">Length of box.</param>
         /// <param name="mass">Mass of box.</param>
-        public PhysicsComponent(BaseEntity entity, float width, float height, float length, float mass)
+        public PhysicsColliderComponent(BaseEntity entity, float width, float height, float length, float mass)
             :base(entity)
         {
             // Add physics entity
@@ -93,7 +93,7 @@ namespace DeepEngine.Components
         /// <param name="width">Width of box.</param>
         /// <param name="height">Height of box.</param>
         /// <param name="length">Length of box.</param>
-        public PhysicsComponent(BaseEntity entity, float width, float height, float length)
+        public PhysicsColliderComponent(BaseEntity entity, float width, float height, float length)
             :base(entity)
         {
             // Add physics entity
@@ -109,7 +109,7 @@ namespace DeepEngine.Components
         /// <param name="entity">Entity this component is attached to.</param>
         /// <param name="radius">Radius of sphere.</param>
         /// <param name="mass">Mass of sphere.</param>
-        public PhysicsComponent(BaseEntity entity, float radius, float mass)
+        public PhysicsColliderComponent(BaseEntity entity, float radius, float mass)
             : base(entity)
         {
             // Add physics entity
@@ -124,7 +124,7 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="entity">Entity this component is attached to.</param>
         /// <param name="radius">Radius of sphere.</param>
-        public PhysicsComponent(BaseEntity entity, float radius)
+        public PhysicsColliderComponent(BaseEntity entity, float radius)
             : base(entity)
         {
             // Add physics entity
@@ -144,6 +144,10 @@ namespace DeepEngine.Components
         /// <param name="gameTime">GameTime.</param>
         public override void Update(GameTime gameTime)
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
             // Adjust scene entity world transform based on physics entity
             entity.Matrix = physicsEntity.WorldTransform;
         }

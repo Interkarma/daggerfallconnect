@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using DeepEngine.Core;
+using DeepEngine.World;
 #endregion
 
 namespace DeepEngine
@@ -33,11 +34,20 @@ namespace DeepEngine
         #region Properties
 
         /// <summary>
-        /// Gets central engine core.
+        /// Gets central engine core inside wrapper.
         /// </summary>
         public DeepCore DeepCore
         {
             get { return deepCore; }
+        }
+
+        /// <summary>
+        /// Gets or sets active scene.
+        /// </summary>
+        public Scene ActiveScene
+        {
+            get { return deepCore.ActiveScene; }
+            set { deepCore.ActiveScene = value; }
         }
 
         #endregion

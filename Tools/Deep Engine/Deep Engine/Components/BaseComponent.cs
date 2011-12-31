@@ -92,6 +92,9 @@ namespace DeepEngine.Components
         /// <param name="gameTime">GameTime.</param>
         public virtual void Update(GameTime gameTime)
         {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
         }
 
         #endregion
