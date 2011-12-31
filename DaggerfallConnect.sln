@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_Deep Engine", "Tools\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_Deep Engine Content", "Tools\Deep Engine\Deep Engine Content\Tool_Deep Engine Content.contentproj", "{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZTest_ContentLoading1", "Tests\ContentLoading1\ContentLoading1\ZTest_ContentLoading1.csproj", "{9EB8A739-58A0-42AC-A111-1DCABF987956}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "ZTest_ContentLoading1Content", "Tests\ContentLoading1\ContentLoading1Content\ZTest_ContentLoading1Content.contentproj", "{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +105,22 @@ Global
 		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}.Release|x86.ActiveCfg = Debug|Any CPU
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Debug|x86.ActiveCfg = Debug|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Debug|x86.Build.0 = Debug|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Release|Any CPU.ActiveCfg = Release|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Release|x86.ActiveCfg = Release|x86
+		{9EB8A739-58A0-42AC-A111-1DCABF987956}.Release|x86.Build.0 = Release|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Debug|x86.ActiveCfg = Debug|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Release|Any CPU.ActiveCfg = Release|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
