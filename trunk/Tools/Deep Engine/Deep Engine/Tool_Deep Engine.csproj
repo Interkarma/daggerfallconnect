@@ -120,7 +120,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Deep Engine Content\Tool_Deep Engine Content.contentproj">
       <Project>{25CEC6EC-E629-4DEA-A2AA-9F600FF898CA}</Project>
-      <Name>Tool_Deep Engine Content</Name>
+      <Name>Tool_Deep Engine Content %28Deep Engine Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>

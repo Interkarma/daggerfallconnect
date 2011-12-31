@@ -10,6 +10,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <OutputPath>bin\$(Platform)\$(Configuration)</OutputPath>
+    <ContentRootDirectory>Deep Engine Content</ContentRootDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>Deep_Engine_Content</RootNamespace>
