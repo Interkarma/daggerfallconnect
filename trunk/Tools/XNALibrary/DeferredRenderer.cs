@@ -243,7 +243,7 @@ namespace XNALibrary
             ambientLight.Intensity = 0.1f;
             
             // Add default directional lights
-            DirectionalLight d0;
+            //DirectionalLight d0;
             //d0.Direction = new Vector3(-0.4f, -0.6f, 0.0f);
             //d0.Color = Color.FromNonPremultiplied(200, 200, 200, 255);
             //directionalLights.Add(d0);
