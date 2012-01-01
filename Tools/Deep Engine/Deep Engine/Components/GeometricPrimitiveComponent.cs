@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
 using DeepEngine.World;
 using DeepEngine.Primitives;
 #endregion
@@ -79,12 +80,12 @@ namespace DeepEngine.Components
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is attached to.</param>
-        public GeometricPrimitiveComponent(BaseEntity entity)
-            :base(entity)
+        /// <param name="core">Engine core.</param>
+        public GeometricPrimitiveComponent(DeepCore core)
+            :base(core)
         {
             // Load effect
-            renderPrimitiveEffect = entity.Scene.Core.ContentManager.Load<Effect>("Effects/RenderPrimitive");
+            renderPrimitiveEffect = core.ContentManager.Load<Effect>("Effects/RenderPrimitive");
 
             // Create cube
             MakeCube(1f);
@@ -101,7 +102,7 @@ namespace DeepEngine.Components
         public void MakeCube(float size)
         {
             // Create primitive
-            primitive = new CubePrimitive(GraphicsDevice, size);
+            primitive = new CubePrimitive(core.GraphicsDevice, size);
             type = GeometricPrimitiveType.Cube;
             BoundingSphere = primitive.BoundingSphere;
         }
@@ -115,7 +116,7 @@ namespace DeepEngine.Components
         public void MakeCylinder(float height, float diameter, int tessellation)
         {
             // Create primitive
-            primitive = new CylinderPrimitive(GraphicsDevice, height, diameter, tessellation);
+            primitive = new CylinderPrimitive(core.GraphicsDevice, height, diameter, tessellation);
             type = GeometricPrimitiveType.Cylinder;
             BoundingSphere = primitive.BoundingSphere;
         }
@@ -128,7 +129,7 @@ namespace DeepEngine.Components
         public void MakeSphere(float radius, int tessellation)
         {
             // Create primitive
-            primitive = new SpherePrimitive(GraphicsDevice, radius * 2, tessellation);
+            primitive = new SpherePrimitive(core.GraphicsDevice, radius * 2, tessellation);
             type = GeometricPrimitiveType.Cube;
             BoundingSphere = primitive.BoundingSphere;
         }
@@ -141,7 +142,7 @@ namespace DeepEngine.Components
         public void MakeTeapot(float size, int tessellation)
         {
             // Create primitive
-            primitive = new TeapotPrimitive(GraphicsDevice, size, tessellation);
+            primitive = new TeapotPrimitive(core.GraphicsDevice, size, tessellation);
             type = GeometricPrimitiveType.Teapot;
             BoundingSphere = primitive.BoundingSphere;
         }
@@ -155,7 +156,7 @@ namespace DeepEngine.Components
         public void MakeTorus(float radius, float thickness, int tessellation)
         {
             // Create primitive
-            primitive = new TorusPrimitive(GraphicsDevice, radius * 2, thickness, tessellation);
+            primitive = new TorusPrimitive(core.GraphicsDevice, radius * 2, thickness, tessellation);
             type = GeometricPrimitiveType.Torus;
             BoundingSphere = primitive.BoundingSphere;
         }
@@ -170,19 +171,19 @@ namespace DeepEngine.Components
             switch (type)
             {
                 case GeometricPrimitiveType.Cube:
-                    primitive = new CubePrimitive(GraphicsDevice);
+                    primitive = new CubePrimitive(core.GraphicsDevice);
                     break;
                 case GeometricPrimitiveType.Cylinder:
-                    primitive = new CylinderPrimitive(GraphicsDevice);
+                    primitive = new CylinderPrimitive(core.GraphicsDevice);
                     break;
                 case GeometricPrimitiveType.Sphere:
-                    primitive = new SpherePrimitive(GraphicsDevice);
+                    primitive = new SpherePrimitive(core.GraphicsDevice);
                     break;
                 case GeometricPrimitiveType.Teapot:
-                    primitive = new TeapotPrimitive(GraphicsDevice);
+                    primitive = new TeapotPrimitive(core.GraphicsDevice);
                     break;
                 case GeometricPrimitiveType.Torus:
-                    primitive = new TorusPrimitive(GraphicsDevice);
+                    primitive = new TorusPrimitive(core.GraphicsDevice);
                     break;
                 default:
                     return;
@@ -199,16 +200,20 @@ namespace DeepEngine.Components
         /// <summary>
         /// Draws component.
         /// </summary>
-        public override void Draw()
+        /// <param name="caller">Entity calling the draw operation.</param>
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)
                 return;
 
+            // Calculate world matrix
+            Matrix worldMatrix = caller.Matrix * matrix;
+
             // Update effect
-            renderPrimitiveEffect.Parameters["World"].SetValue(entity.Matrix);
-            renderPrimitiveEffect.Parameters["View"].SetValue(entity.Scene.DeprecatedCamera.View);
-            renderPrimitiveEffect.Parameters["Projection"].SetValue(entity.Scene.DeprecatedCamera.Projection);
+            renderPrimitiveEffect.Parameters["World"].SetValue(worldMatrix);
+            renderPrimitiveEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
+            renderPrimitiveEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
             renderPrimitiveEffect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
 
             // Draw primitive

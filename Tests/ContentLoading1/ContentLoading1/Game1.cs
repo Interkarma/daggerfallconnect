@@ -62,8 +62,8 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
-            LoadModelScene();
-            //LoadPhysicsScene();
+            //LoadModelScene();
+            LoadPhysicsScene();
         }
 
         /// <summary>
@@ -111,12 +111,12 @@ namespace ContentLoading1
         {
             // Create directional light
             BaseEntity lightEntity = new DynamicWorldEntity(core.ActiveScene);
-            new LightComponent(lightEntity, Vector3.Right, Color.White, 1.0f);
+            lightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Right, Color.White, 1.0f));
 
             // Create model entity
             BaseEntity modelEntity = new DynamicWorldEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
-            new NativeModelComponent(modelEntity, 456);
+            modelEntity.Components.Add(new NativeModelComponent(core.DeepCore, 456));
         }
 
         /// <summary>
@@ -125,29 +125,53 @@ namespace ContentLoading1
         private void LoadPhysicsScene()
         {
             // Create cube entity
-            BaseEntity cubeEntity = new DynamicWorldEntity(core.ActiveScene);
+            DynamicWorldEntity cubeEntity = new DynamicWorldEntity(core.ActiveScene);
             cubeEntity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
 
-            // Attach cube primitive component
-            GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(cubeEntity);
+            // Create torus entity
+            DynamicWorldEntity torusEntity = new DynamicWorldEntity(core.ActiveScene);
+
+            // Create sphere entity
+            DynamicWorldEntity sphereEntity = new DynamicWorldEntity(core.ActiveScene);
+            sphereEntity.Matrix = Matrix.CreateTranslation(-555, 0, 0);
+
+            // Attach cube geometry
+            GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             cubeGeometry.MakeCube(1024f);
             cubeGeometry.Color = Color.White;
+            cubeEntity.Components.Add(cubeGeometry);
 
             // Attach cube physics and a directional light
-            PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(cubeEntity, 1024f, 1024f, 1024f);
-            LightComponent cubeLight = new LightComponent(cubeEntity, Vector3.Right, Color.White, 0.5f);
+            PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(core.DeepCore, cubeEntity.Matrix, 1024f, 1024f, 1024f);
+            LightComponent cubeLight = new LightComponent(core.DeepCore, Vector3.Right, Color.White, 0.5f);
+            cubeEntity.Components.Add(cubePhysics);
+            cubeEntity.Components.Add(cubeLight);
 
-            // Create torus entity
-            BaseEntity torusEntity = new DynamicWorldEntity(core.ActiveScene);
-
-            // Attach torus primitive component
-            GeometricPrimitiveComponent torusGeometry = new GeometricPrimitiveComponent(torusEntity);
+            // Attach torus geometry
+            GeometricPrimitiveComponent torusGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             torusGeometry.MakeTorus(64f, 64f, 16);
-            torusGeometry.Color = Color.White;
+            torusGeometry.Color = Color.Red;
+            torusEntity.Components.Add(torusGeometry);
 
             // Attach torus physics and a point light
-            PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(torusEntity, 128f, 64f, 128f, 1f);
-            LightComponent torusLight = new LightComponent(torusEntity, Vector3.Zero, 512f, Color.Gold, 2f);
+            PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(core.DeepCore, torusEntity.Matrix, 128f, 64f, 128f, 1f);
+            LightComponent torusLight = new LightComponent(core.DeepCore, Vector3.Zero, 256f, Color.Red, 1f);
+            torusEntity.Components.Add(torusPhysics);
+            torusEntity.Components.Add(torusLight);
+
+            // Attach sphere geometry
+            GeometricPrimitiveComponent sphereGeometry = new GeometricPrimitiveComponent(core.DeepCore);
+            sphereGeometry.MakeSphere(64f, 16);
+            sphereGeometry.Color = Color.Red;
+            sphereEntity.Components.Add(sphereGeometry);
+            
+            // Attach sphere physics
+            PhysicsColliderComponent spherePhysics = new PhysicsColliderComponent(core.DeepCore, sphereEntity.Matrix, 64f, 1f);
+            spherePhysics.PhysicsEntity.Material.Bounciness = 0.0f;
+            sphereEntity.Components.Add(spherePhysics);
+
+            // Share torus light with sphere
+            sphereEntity.Components.Add(torusLight);
         }
 
         #endregion

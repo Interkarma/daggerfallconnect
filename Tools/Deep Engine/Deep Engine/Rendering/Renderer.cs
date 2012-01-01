@@ -53,9 +53,26 @@ namespace DeepEngine.Rendering
         // Visible lights
         const int maxVisibleLights = 512;
         int visibleLightsCount;
-        LightComponent[] visibleLights;
+        LightData[] visibleLights;
 
         #endregion
+
+        #region Structures
+
+        /// <summary>
+        /// Information about a light being submitted for rendering.
+        /// </summary>
+        public struct LightData
+        {
+            /// <summary>The light component to draw.</summary>
+            public LightComponent LightComponent;
+
+            /// <summary>The entity that initiated this submission.</summary>
+            public BaseEntity Entity;
+        }
+
+        #endregion
+
 
         #region Properties
 
@@ -81,7 +98,7 @@ namespace DeepEngine.Rendering
             this.core = core;
 
             // Create visible light array
-            visibleLights = new LightComponent[maxVisibleLights];
+            visibleLights = new LightData[maxVisibleLights];
         }
 
         #endregion
@@ -180,12 +197,15 @@ namespace DeepEngine.Rendering
         ///  In deferred rendering lights are drawn after other buffers have been filled.
         ///  Currently just storing pending light operations until end.
         /// </summary>
-        /// <param name="light">Light to render.</param>
-        public void SubmitLight(LightComponent light)
+        /// <param name="lightComponent">Light to render.</param>
+        /// <param name="caller">The entity submitting the light.</param>
+        public void SubmitLight(LightComponent lightComponent, BaseEntity caller)
         {
             if (visibleLightsCount < maxVisibleLights)
             {
-                visibleLights[visibleLightsCount++] = light;
+                visibleLights[visibleLightsCount].LightComponent = lightComponent;
+                visibleLights[visibleLightsCount].Entity = caller;
+                visibleLightsCount++;
             }
         }
 
@@ -252,27 +272,28 @@ namespace DeepEngine.Rendering
             graphicsDevice.DepthStencilState = DepthStencilState.None;
 
             // Draw visible lights
-            LightComponent light;
             for (int i = 0; i < maxVisibleLights; i++)
             {
                 if (i < visibleLightsCount)
                 {
                     // Draw light
-                    light = visibleLights[i];
+                    LightComponent light = visibleLights[i].LightComponent;
+                    BaseEntity entity = visibleLights[i].Entity;
                     switch (light.Type)
                     {
                         case LightComponent.LightType.Directional:
                             DrawDirectionalLight(light.Direction, light.Color, light.Intensity);
                             break;
                         case LightComponent.LightType.Point:
-                            DrawPointLight(Vector3.Transform(light.Position, light.Entity.Matrix), light.Radius, light.Color, light.Intensity);
+                            DrawPointLight(Vector3.Transform(light.Position, entity.Matrix), light.Radius, light.Color, light.Intensity);
                             break;
                     }
                 }
                 else
                 {
                     // Clear buffer position to release any references
-                    visibleLights[i] = null;
+                    visibleLights[i].LightComponent = null;
+                    visibleLights[i].Entity = null;
                 }
             }
         }

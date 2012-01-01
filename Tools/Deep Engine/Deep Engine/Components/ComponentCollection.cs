@@ -99,7 +99,7 @@ namespace DeepEngine.Components
         /// <summary>
         /// Event arguments.
         /// </summary>
-        public class ComponentAddedEventArgs
+        public class ComponentAddedEventArgs : EventArgs
         {
             public BaseComponent Component;
         }

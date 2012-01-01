@@ -55,7 +55,7 @@ namespace DeepEngine.World
             // Update all components
             foreach (BaseComponent component in components)
             {
-                component.Update(gameTime);
+                component.Update(gameTime, this);
             }
         }
 
@@ -73,11 +73,11 @@ namespace DeepEngine.World
             {
                 if (component is DrawableComponent)
                 {
-                    (component as DrawableComponent).Draw();
+                    (component as DrawableComponent).Draw(this);
                 }
                 else if (component is LightComponent)
                 {
-                    scene.Core.Renderer.SubmitLight(component as LightComponent);
+                    scene.Core.Renderer.SubmitLight(component as LightComponent, this);
                 }
             }
         }
