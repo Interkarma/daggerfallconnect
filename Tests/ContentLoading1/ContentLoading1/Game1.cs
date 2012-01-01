@@ -155,7 +155,7 @@ namespace ContentLoading1
 
             // Attach torus physics and a point light
             PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(core.DeepCore, torusEntity.Matrix, 128f, 64f, 128f, 1f);
-            LightComponent torusLight = new LightComponent(core.DeepCore, Vector3.Zero, 256f, Color.Red, 1f);
+            LightComponent torusLight = new LightComponent(core.DeepCore, Vector3.Zero, 512f, Color.Red, 1f);
             torusEntity.Components.Add(torusPhysics);
             torusEntity.Components.Add(torusLight);
 

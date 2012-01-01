@@ -71,7 +71,8 @@ PixelShaderOutput DeferredGeometryPS(VertexShaderOutput input)
 	}
 
 	// Normal
-	output.Normal = float4(input.Normal, SpecularPower);
+	output.Normal.rgb = 0.5f * (input.Normal + 1.0f);
+	output.Normal.a = SpecularPower;
 
 	// Depth
     output.Depth = input.Depth.x / input.Depth.y;

@@ -45,7 +45,8 @@ PixelShaderOutput DeferredPrimitivePS(VertexShaderOutput input)
 {
     PixelShaderOutput output;
     output.Color = float4(DiffuseColor, 1);
-	output.Normal = float4(input.Normal, 1);
+	output.Normal.rgb = 0.5f * (input.Normal + 1.0f);
+	output.Normal.a = 1;
     output.Depth = input.Depth.x / input.Depth.y;
 
     return output;

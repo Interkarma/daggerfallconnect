@@ -73,7 +73,6 @@ namespace DeepEngine.Rendering
 
         #endregion
 
-
         #region Properties
 
         /// <summary>
