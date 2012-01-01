@@ -22,7 +22,7 @@ namespace DeepEngine.Components
     /// <summary>
     /// Provides features common to all world components.
     /// </summary>
-    public class BaseComponent :
+    public abstract class BaseComponent :
         IDisposable
     {
 

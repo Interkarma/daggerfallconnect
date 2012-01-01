@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\BaseComponent.cs" />
+    <Compile Include="Components\ComponentCollection.cs" />
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />
     <Compile Include="Components\LightComponent.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Utlity\PowerOfTwo.cs" />
     <Compile Include="World\BaseEntity.cs" />
+    <Compile Include="World\DynamicWorldEntity.cs" />
     <Compile Include="World\Scene.cs" />
   </ItemGroup>
   <ItemGroup>
