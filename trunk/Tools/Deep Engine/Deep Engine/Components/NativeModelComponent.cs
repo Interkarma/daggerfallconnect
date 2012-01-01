@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
 using DeepEngine.Daggerfall;
 using DeepEngine.World;
 #endregion
@@ -26,11 +27,6 @@ namespace DeepEngine.Components
     {
 
         #region Fields
-
-        // References
-        GraphicsDevice graphicsDevice;
-        ModelManager modelManager;
-        MaterialManager materialManager;
 
         // Model data
         ModelManager.ModelData modelData;
@@ -57,18 +53,13 @@ namespace DeepEngine.Components
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is attached to.</param>
+        /// <param name="core">Engine core.</param>
         /// <param name="id">Model ID to load.</param>
-        public NativeModelComponent(BaseEntity entity, uint id)
-            : base(entity)
+        public NativeModelComponent(DeepCore core, uint id)
+            : base(core)
         {
-            // Get references
-            this.modelManager = entity.Scene.Core.ModelManager;
-            this.materialManager = entity.Scene.Core.MaterialManager;
-            this.graphicsDevice = entity.Scene.Core.GraphicsDevice;
-
             // Load effect
-            renderGeometryEffect = entity.Scene.Core.ContentManager.Load<Effect>("Effects/RenderGeometry");
+            renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
             // Load model
             LoadModel(id);
@@ -81,27 +72,31 @@ namespace DeepEngine.Components
         /// <summary>
         /// Draws component.
         /// </summary>
-        public override void Draw()
+        /// <param name="caller">Entity calling the draw operation.</param>
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)
                 return;
 
+            // Calculate world matrix
+            Matrix worldMatrix = caller.Matrix * matrix;
+
             // Setup effect
-            renderGeometryEffect.Parameters["World"].SetValue(entity.Matrix);
-            renderGeometryEffect.Parameters["View"].SetValue(entity.Scene.DeprecatedCamera.View);
-            renderGeometryEffect.Parameters["Projection"].SetValue(entity.Scene.DeprecatedCamera.Projection);
+            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
+            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
+            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
 
             // Set buffers
-            graphicsDevice.SetVertexBuffer(modelData.VertexBuffer);
-            graphicsDevice.Indices = modelData.IndexBuffer;
+            core.GraphicsDevice.SetVertexBuffer(modelData.VertexBuffer);
+            core.GraphicsDevice.Indices = modelData.IndexBuffer;
 
             // Render each submesh
             Texture2D diffuseTexture = null;
             foreach (var sm in modelData.SubMeshes)
             {
                 // Set texture
-                diffuseTexture = materialManager.GetTexture(sm.TextureKey);
+                diffuseTexture = core.MaterialManager.GetTexture(sm.TextureKey);
                 renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
 
                 // Render geometry
@@ -111,7 +106,7 @@ namespace DeepEngine.Components
                     pass.Apply();
 
                     // Draw indexed primitives
-                    graphicsDevice.DrawIndexedPrimitives(
+                    core.GraphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
                         0,
                         0,
@@ -136,7 +131,7 @@ namespace DeepEngine.Components
             try
             {
                 // Load model and textures
-                modelData = modelManager.GetModelData(id);
+                modelData = core.ModelManager.GetModelData(id);
                 for (int i = 0; i < modelData.SubMeshes.Length; i++)
                 {
                     // Set flags
@@ -149,11 +144,14 @@ namespace DeepEngine.Components
                     flags |= MaterialManager.TextureCreateFlags.ExtendedAlpha;
 
                     // Load texture
-                    modelData.SubMeshes[i].TextureKey = materialManager.LoadTexture(
+                    modelData.SubMeshes[i].TextureKey = core.MaterialManager.LoadTexture(
                         modelData.DFMesh.SubMeshes[i].TextureArchive,
                         modelData.DFMesh.SubMeshes[i].TextureRecord,
                         flags);
                 }
+
+                // Set component bounding sphere
+                this.BoundingSphere = modelData.BoundingSphere;
             }
             catch (Exception e)
             {

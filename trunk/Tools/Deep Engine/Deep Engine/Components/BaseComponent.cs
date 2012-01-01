@@ -13,6 +13,7 @@ using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
 using DeepEngine.World;
 #endregion
 
@@ -29,13 +30,21 @@ namespace DeepEngine.Components
         #region Fields
 
         // Property values
-        protected BaseEntity entity;
+        protected DeepCore core;
         protected bool enabled;
         protected object tag;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets engine core.
+        /// </summary>
+        public DeepCore Core
+        {
+            get { return core; }
+        }
 
         /// <summary>
         /// Gets or sets enabled flag.
@@ -55,14 +64,6 @@ namespace DeepEngine.Components
             set { tag = value; }
         }
 
-        /// <summary>
-        /// Gets entity this component is attached to.
-        /// </summary>
-        public BaseEntity Entity
-        {
-            get { return entity; }
-        }
-
         #endregion
 
         #region Constructors
@@ -70,27 +71,25 @@ namespace DeepEngine.Components
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is being attached to.</param>
-        public BaseComponent(BaseEntity entity)
+        /// <param name="core">Engine core.</param>
+        public BaseComponent(DeepCore core)
         {
             // Store values
-            this.entity = entity;
+            this.core = core;
             this.enabled = true;
             this.tag = null;
-
-            // Attach to entity
-            this.entity.Components.Add(this);
         }
 
         #endregion
 
-        #region Abstract Methods
+        #region Virtual Methods
 
         /// <summary>
         /// Called when component should update itself.
         /// </summary>
         /// <param name="gameTime">GameTime.</param>
-        public virtual void Update(GameTime gameTime)
+        /// <param name="caller">The entity calling the update.</param>
+        public virtual void Update(GameTime gameTime, BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)

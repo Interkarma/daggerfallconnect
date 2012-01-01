@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
 using DeepEngine.World;
 #endregion
 
@@ -25,21 +26,12 @@ namespace DeepEngine.Components
     {
         #region Fields
 
-        GraphicsDevice graphicsDevice;
-        BoundingSphere boundingSphere;
-        Matrix matrix = Matrix.Identity;
+        protected BoundingSphere boundingSphere;
+        protected Matrix matrix = Matrix.Identity;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets GraphicsDevice.
-        /// </summary>
-        public GraphicsDevice GraphicsDevice
-        {
-            get { return graphicsDevice; }
-        }
 
         /// <summary>
         /// Gets or sets local bounding sphere for visibility tests.
@@ -66,22 +58,23 @@ namespace DeepEngine.Components
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is attached to.</param>
-        public DrawableComponent(BaseEntity entity)
-            :base(entity)
+        /// <param name="core">Engine core.</param>
+        public DrawableComponent(DeepCore core)
+            : base(core)
         {
             // Store values
-            this.graphicsDevice = entity.Scene.Core.GraphicsDevice;
+            this.core = core;
         }
 
         #endregion
 
-        #region Abstract Methods
+        #region Virtual Methods
 
         /// <summary>
         /// Called when component should draw itself.
         /// </summary>
-        public virtual void Draw()
+        /// <param name="caller">Entity calling the draw operation.</param>
+        public virtual void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)

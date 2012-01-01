@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
+using DeepEngine.Core;
 using DeepEngine.World;
 #endregion
 
@@ -113,12 +114,12 @@ namespace DeepEngine.Components
         /// <summary>
         /// Directional light constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is attached to.</param>
+        /// <param name="core">Engine core.</param>
         /// <param name="direction">Direction of light.</param>
         /// <param name="color">Color of light.</param>
         /// <param name="intensity">Intensity of light.</param>
-        public LightComponent(BaseEntity entity, Vector3 direction, Color color, float intensity)
-            :base(entity)
+        public LightComponent(DeepCore core, Vector3 direction, Color color, float intensity)
+            : base(core)
         {
             // Set values
             this.direction = direction;
@@ -128,15 +129,15 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
-        /// Point light constructor
+        /// Point light constructor.
         /// </summary>
-        /// <param name="entity">Entity this component is attached to.</param>
+        /// <param name="core">Engine core.</param>
         /// <param name="position">Position of light relative to entity.</param>
         /// <param name="radius">Radius of light.</param>
         /// <param name="color">Color of light.</param>
         /// <param name="intensity">Intensity of light.</param>
-        public LightComponent(BaseEntity entity, Vector3 position, float radius, Color color, float intensity)
-            : base(entity)
+        public LightComponent(DeepCore core, Vector3 position, float radius, Color color, float intensity)
+            : base(core)
         {
             // Set values
             this.position = position;
