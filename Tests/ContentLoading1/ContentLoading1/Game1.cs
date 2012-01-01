@@ -110,11 +110,11 @@ namespace ContentLoading1
         private void LoadModelScene()
         {
             // Create directional light
-            BaseEntity lightEntity = new BaseEntity(core.ActiveScene);
+            BaseEntity lightEntity = new DynamicWorldEntity(core.ActiveScene);
             new LightComponent(lightEntity, Vector3.Right, Color.White, 1.0f);
 
             // Create model entity
-            BaseEntity modelEntity = new BaseEntity(core.ActiveScene);
+            BaseEntity modelEntity = new DynamicWorldEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
             new NativeModelComponent(modelEntity, 456);
         }
@@ -125,7 +125,7 @@ namespace ContentLoading1
         private void LoadPhysicsScene()
         {
             // Create cube entity
-            BaseEntity cubeEntity = new BaseEntity(core.ActiveScene);
+            BaseEntity cubeEntity = new DynamicWorldEntity(core.ActiveScene);
             cubeEntity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
 
             // Attach cube primitive component
@@ -138,7 +138,7 @@ namespace ContentLoading1
             LightComponent cubeLight = new LightComponent(cubeEntity, Vector3.Right, Color.White, 0.5f);
 
             // Create torus entity
-            BaseEntity torusEntity = new BaseEntity(core.ActiveScene);
+            BaseEntity torusEntity = new DynamicWorldEntity(core.ActiveScene);
 
             // Attach torus primitive component
             GeometricPrimitiveComponent torusGeometry = new GeometricPrimitiveComponent(torusEntity);

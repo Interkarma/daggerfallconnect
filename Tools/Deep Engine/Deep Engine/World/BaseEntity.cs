@@ -23,7 +23,7 @@ namespace DeepEngine.World
     /// <summary>
     /// Provides features common to all world entities.
     /// </summary>
-    public class BaseEntity :
+    public abstract class BaseEntity :
         IComparable<BaseEntity>,
         IEquatable<BaseEntity>,
         IDisposable
@@ -39,10 +39,8 @@ namespace DeepEngine.World
         protected bool dynamic;
         protected object tag;
         protected Matrix matrix;
-        private BoundingSphere bounds;
-
-        // Components
-        List<BaseComponent> components;
+        protected BoundingSphere bounds;
+        protected ComponentCollection components;
 
         #endregion
 
@@ -93,14 +91,13 @@ namespace DeepEngine.World
         }
 
         /// <summary>
-        /// Gets or sets flag stating if entity is static (cannot ever move) or dynamic (can move).
+        /// Gets flag stating if entity is static (cannot ever move) or dynamic (can move).
         ///  This allows engine to make certain optimisation decisions.
         ///  Default is true.
         /// </summary>
         public bool Dynamic
         {
             get { return dynamic; }
-            set { dynamic = value; }
         }
 
         /// <summary>
@@ -132,9 +129,9 @@ namespace DeepEngine.World
         }
 
         /// <summary>
-        /// Gets component list.
+        /// Gets component collection.
         /// </summary>
-        public List<BaseComponent> Components
+        public ComponentCollection Components
         {
             get { return components; }
         }
@@ -171,12 +168,16 @@ namespace DeepEngine.World
             this.id = NewID;
             this.scene = scene;
             this.enabled = true;
-            this.dynamic = true;
             this.tag = null;
             this.matrix = Matrix.Identity;
             this.bounds.Center = Vector3.Zero;
             this.bounds.Radius = 0f;
-            this.components = new List<BaseComponent>();
+
+            // Create component collection
+            components = new ComponentCollection();
+            
+            // Subscribe to component added event
+            components.ComponentAdded += new ComponentCollection.ComponentAddedEventHandler(ComponentAdded);
 
             // Add to scene
             this.scene.Entities.Add(this);
@@ -190,54 +191,39 @@ namespace DeepEngine.World
         /// Called when entity should update itself.
         /// </summary>
         /// <param name="gameTime">GameTime.</param>
-        public virtual void Update(GameTime gameTime)
-        {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
+        public abstract void Update(GameTime gameTime);
 
+        /// <summary>
+        /// Called when entity should draw itself
+        /// </summary>
+        public abstract void Draw();
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Updates entity bounding sphere based on any drawable components attached.
+        /// </summary>
+        protected void UpdateBoundingSphere()
+        {
             // Update all components
             BoundingSphere sphere;
             sphere.Center = Vector3.Zero;
             sphere.Radius = 0f;
             foreach (var component in components)
             {
-                component.Update(gameTime);
-
                 // Merge bounds for all drawable components
                 if (component is DrawableComponent)
                 {
                     sphere = BoundingSphere.CreateMerged(sphere, ((DrawableComponent)component).BoundingSphere);
                 }
             }
+
+            // Store updated bounding sphere
+            this.bounds = sphere;
         }
 
-        /// <summary>
-        /// Called when entity should draw itself
-        /// </summary>
-        public virtual void Draw()
-        {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
-
-            // Draw all components
-            foreach (var component in components)
-            {
-                if (component is DrawableComponent)
-                {
-                    ((DrawableComponent)component).Draw();
-                }
-                else if (component is LightComponent)
-                {
-                    scene.Core.Renderer.SubmitLight((LightComponent)component);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Public methods
         #endregion
 
         #region IComparable
@@ -286,6 +272,23 @@ namespace DeepEngine.World
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Event when component is added.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        protected virtual void ComponentAdded(object sender, ComponentCollection.ComponentAddedEventArgs e)
+        {
+            // Update entity bounds every time a drawable component is added
+            if (e.Component is DrawableComponent)
+            {
+                UpdateBoundingSphere();
+            }
+        }
+
+        #endregion
     }
 
 }
