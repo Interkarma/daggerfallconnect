@@ -122,10 +122,11 @@ namespace DeepEngine.Components
         #region Public Methods
 
         /// <summary>
-        /// Loads a model to display with this component.
+        /// Loads a new model to display with this component.
         ///  Replaces any previously loaded model.
         /// </summary>
         /// <param name="id">Model ID to load.</param>
+        /// <returns>True if successful.</returns>
         public bool LoadModel(uint id)
         {
             try

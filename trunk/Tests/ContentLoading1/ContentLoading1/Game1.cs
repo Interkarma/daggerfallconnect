@@ -62,8 +62,9 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
+            LoadBlockScene();
             //LoadModelScene();
-            LoadPhysicsScene();
+            //LoadPhysicsScene();
         }
 
         /// <summary>
@@ -105,18 +106,40 @@ namespace ContentLoading1
         #region Content Loading Methods
 
         /// <summary>
+        /// Loads a block scene.
+        /// </summary>
+        private void LoadBlockScene()
+        {
+            // Create level entity
+            DynamicWorldEntity level = new DynamicWorldEntity(core.ActiveScene);
+
+            // Create block component
+            NativeBlockComponent block = new NativeBlockComponent(core.DeepCore, "MAGEAA13.RMB");
+            level.Components.Add(block);
+
+            // Create directional light
+            DynamicWorldEntity directionalLight = new DynamicWorldEntity(core.ActiveScene);
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
+        }
+
+        /// <summary>
         /// Loads a simple Daggerfall model scene.
         /// </summary>
         private void LoadModelScene()
         {
             // Create directional light
-            BaseEntity lightEntity = new DynamicWorldEntity(core.ActiveScene);
+            DynamicWorldEntity lightEntity = new DynamicWorldEntity(core.ActiveScene);
             lightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Right, Color.White, 1.0f));
 
             // Create model entity
-            BaseEntity modelEntity = new DynamicWorldEntity(core.ActiveScene);
+            DynamicWorldEntity modelEntity = new DynamicWorldEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
             modelEntity.Components.Add(new NativeModelComponent(core.DeepCore, 456));
+
+            // Create point light
+            DynamicWorldEntity pointLightEntity = new DynamicWorldEntity(core.ActiveScene);
+            pointLightEntity.Matrix = Matrix.CreateTranslation(500, 0, 0);
+            pointLightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Zero, 512f, Color.Red, 1f));
         }
 
         /// <summary>
