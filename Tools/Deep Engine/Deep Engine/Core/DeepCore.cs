@@ -10,9 +10,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
+using DaggerfallConnect;
+using DaggerfallConnect.Arena2;
+using DaggerfallConnect.Utility;
 using DeepEngine.Daggerfall;
 using DeepEngine.Rendering;
 using DeepEngine.World;
@@ -36,6 +40,7 @@ namespace DeepEngine.Core
         string arena2Path;
         MaterialManager materialManager;
         ModelManager modelManager;
+        BlocksFile blockManager;
 
         // XNA
         IServiceProvider serviceProvider;
@@ -108,6 +113,14 @@ namespace DeepEngine.Core
         public ModelManager ModelManager
         {
             get { return modelManager; }
+        }
+
+        /// <summary>
+        /// Gets Daggerfall block manager.
+        /// </summary>
+        public BlocksFile BlockManager
+        {
+            get { return blockManager; }
         }
 
         /// <summary>
@@ -185,6 +198,7 @@ namespace DeepEngine.Core
             // Create Daggerfall managers
             this.materialManager = new MaterialManager(graphicsDevice, arena2Path);
             this.modelManager = new ModelManager(graphicsDevice, arena2Path);
+            this.blockManager = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
 
             // Load engine objects content
             renderer.LoadContent();

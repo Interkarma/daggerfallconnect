@@ -109,7 +109,7 @@ float4 Phong(float3 Position, float3 N, float SpecularIntensity, float SpecularP
 // Decoding of GBuffer Normals
 float3 decode(float3 enc)
 {
-	return (2.0f * enc.xyz- 1.0f);
+	return (2.0f * enc.xyz - 1.0f);
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0

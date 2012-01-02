@@ -14,16 +14,28 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Components;
+using DeepEngine.Utility;
 #endregion
 
 namespace DeepEngine.World
 {
 
     /// <summary>
-    /// A world entity that can freely move within the scene.
+    /// A static world entity automatically combines supported geometry components
+    ///  into static buffers. This entity is ideal for building efficient level geometry
+    ///  that does not need to move in the scene. Remember to set a component's transform
+    ///  prior to attaching as you will not be able to change it later.
     /// </summary>
-    public class DynamicWorldEntity : BaseEntity
+    class StaticWorldEntity : BaseEntity
     {
+        #region Fields
+
+        StaticBatchBuilder batchBuilder;
+
+        #endregion
+
+        #region Properties
+        #endregion
 
         #region Constructors
 
@@ -31,9 +43,11 @@ namespace DeepEngine.World
         /// Constructor.
         /// </summary>
         /// <param name="scene">Scene to attach entity.</param>
-        public DynamicWorldEntity(Scene scene)
-            :base(scene)
+        public StaticWorldEntity(Scene scene)
+            : base(scene)
         {
+            // Create batch builder
+            batchBuilder = new StaticBatchBuilder(scene.Core.GraphicsDevice);
         }
 
         #endregion
@@ -65,23 +79,19 @@ namespace DeepEngine.World
             // Do nothing if disabled
             if (!enabled)
                 return;
+        }
 
-            // Draw all components
-            foreach (var component in components)
-            {
-                if (component is DrawableComponent)
-                {
-                    (component as DrawableComponent).Draw(this);
-                }
-                else if (component is LightComponent)
-                {
-                    scene.Core.Renderer.SubmitLight(component as LightComponent, this);
-                }
-            }
+        /// <summary>
+        /// Called when a component is added.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        protected override void ComponentAdded(object sender, ComponentCollection.ComponentAddedEventArgs e)
+        {
+            base.ComponentAdded(sender, e);
         }
 
         #endregion
-
     }
 
 }

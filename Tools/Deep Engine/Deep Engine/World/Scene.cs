@@ -41,7 +41,7 @@ namespace DeepEngine.World
         List<BaseEntity> entities;
 
         // Camera
-        Vector3 cameraPosition = new Vector3(0, -300, 800);
+        Vector3 cameraPosition = new Vector3(0, 256, 512);
 
         // Temporary
         Deprecated.Camera deprecatedCamera;

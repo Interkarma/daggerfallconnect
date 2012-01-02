@@ -221,36 +221,48 @@ namespace DeepEngine.Daggerfall
         }
 
         /// <summary>
-        /// Transforms vertices and bounding box of model data.
-        ///  Source model data is unchanged.
+        /// Transforms model data. Source model data is unchanged.
         /// </summary>
-        /// <param name="model">Source Model.</param>
-        /// <param name="matrix">Matrix applied to output model.</param>
-        /// <returns>Transformed Model.</returns>
-        public ModelData TransformModelData(ref ModelData modelData, Matrix matrix)
+        /// <param name="graphicsDevice">Graphics device to create buffers with.</param>
+        /// <param name="modelDataIn">Source model data.</param>
+        /// <param name="modelDataOut">Transformed model data.</param>
+        /// <param name="matrix">Matrix used to transform model data.</param>
+        public static void TransformModelData(GraphicsDevice graphicsDevice, ref ModelData modelDataIn, out ModelData modelDataOut, Matrix matrix)
         {
-            // Transform model
+            // Create new model data to receive transform
+            ModelData transformedModelData = new ModelData();
+            transformedModelData.DFMesh = modelDataIn.DFMesh;
+            transformedModelData.SubMeshes = modelDataIn.SubMeshes;
+
+            // Create vertex array
+            transformedModelData.Vertices = new VertexPositionNormalTextureBump[modelDataIn.Vertices.Length];
+
+            // Create index array and copy indices
+            transformedModelData.Indices = new short[modelDataIn.Indices.Length];
+            modelDataIn.Indices.CopyTo(transformedModelData.Indices, 0);
+
+            // Transform model vertices
             int vertexPos = 0;
-            ModelData transformedModelData = modelData;
-            foreach (var vertex in transformedModelData.Vertices)
+            foreach (var vertex in modelDataIn.Vertices)
             {
                 transformedModelData.Vertices[vertexPos].Position = Vector3.Transform(vertex.Position, matrix);
-                transformedModelData.Vertices[vertexPos].Normal = vertex.Normal;
+                transformedModelData.Vertices[vertexPos].Normal = Vector3.TransformNormal(vertex.Normal, matrix);
                 transformedModelData.Vertices[vertexPos].TextureCoordinate = vertex.TextureCoordinate;
                 vertexPos++;
             }
 
             // Transform bounding box
-            transformedModelData.BoundingBox.Min = Vector3.Transform(transformedModelData.BoundingBox.Min, matrix);
-            transformedModelData.BoundingBox.Max = Vector3.Transform(transformedModelData.BoundingBox.Max, matrix);
+            transformedModelData.BoundingBox.Min = Vector3.Transform(modelDataIn.BoundingBox.Min, matrix);
+            transformedModelData.BoundingBox.Max = Vector3.Transform(modelDataIn.BoundingBox.Max, matrix);
 
             // Transform bounding sphere
-            transformedModelData.BoundingSphere = transformedModelData.BoundingSphere.Transform(matrix);
+            transformedModelData.BoundingSphere = modelDataIn.BoundingSphere.Transform(matrix);
 
-            // Create model buffers
-            CreateModelBuffers(ref modelData);
+            // Create new buffers for transformed model data
+            CreateModelBuffers(graphicsDevice, ref transformedModelData);
 
-            return transformedModelData;
+            // Set outgoing data
+            modelDataOut = transformedModelData;
         }
 
         #endregion
@@ -290,7 +302,7 @@ namespace DeepEngine.Daggerfall
             LoadVertices(ref model);
             LoadIndices(ref model);
             AddModelTangents(ref model);
-            CreateModelBuffers(ref model);
+            CreateModelBuffers(graphicsDevice, ref model);
 
             // Add to cache
             if (cacheModelData)
@@ -462,24 +474,25 @@ namespace DeepEngine.Daggerfall
         /// <summary>
         /// Creates VertexBuffer and IndexBuffer from ModelData.
         /// </summary>
-        /// <param name="model">ModelData.</param>
-        private void CreateModelBuffers(ref ModelData model)
+        /// <param name="graphicsDevice">Graphics device to create buffers with.</param>
+        /// <param name="modelData">Model data.</param>
+        private static void CreateModelBuffers(GraphicsDevice graphicsDevice, ref ModelData modelData)
         {
             // Create VertexBuffer
-            model.VertexBuffer = new VertexBuffer(
+            modelData.VertexBuffer = new VertexBuffer(
                 graphicsDevice,
                 VertexPositionNormalTextureBump.VertexDeclaration,
-                model.DFMesh.TotalVertices,
+                modelData.DFMesh.TotalVertices,
                 BufferUsage.WriteOnly);
-            model.VertexBuffer.SetData<VertexPositionNormalTextureBump>(model.Vertices);
+            modelData.VertexBuffer.SetData<VertexPositionNormalTextureBump>(modelData.Vertices);
 
             // Create IndexBuffer
-            model.IndexBuffer = new IndexBuffer(
+            modelData.IndexBuffer = new IndexBuffer(
                 graphicsDevice,
                 IndexElementSize.SixteenBits,
-                model.DFMesh.TotalTriangles * 3,
+                modelData.DFMesh.TotalTriangles * 3,
                 BufferUsage.WriteOnly);
-            model.IndexBuffer.SetData<short>(model.Indices);
+            modelData.IndexBuffer.SetData<short>(modelData.Indices);
         }
 
         /// <summary>

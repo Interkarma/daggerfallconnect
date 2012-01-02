@@ -36,7 +36,6 @@ namespace DeepEngine.World
         protected uint id;
         protected string name;
         protected bool enabled;
-        protected bool dynamic;
         protected object tag;
         protected Matrix matrix;
         protected BoundingSphere bounds;
@@ -88,16 +87,6 @@ namespace DeepEngine.World
         {
             get { return enabled; }
             set { enabled = value; }
-        }
-
-        /// <summary>
-        /// Gets flag stating if entity is static (cannot ever move) or dynamic (can move).
-        ///  This allows engine to make certain optimisation decisions.
-        ///  Default is true.
-        /// </summary>
-        public bool Dynamic
-        {
-            get { return dynamic; }
         }
 
         /// <summary>

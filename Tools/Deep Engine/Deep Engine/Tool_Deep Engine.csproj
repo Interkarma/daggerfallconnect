@@ -71,6 +71,7 @@
     <Compile Include="Components\LightComponent.cs" />
     <Compile Include="Components\NativeModelComponent.cs" />
     <Compile Include="Components\PhysicsColliderComponent.cs" />
+    <Compile Include="Components\NativeBlockComponent.cs" />
     <Compile Include="Core\DeepCore.cs" />
     <Compile Include="Daggerfall\MaterialManager.cs" />
     <Compile Include="Daggerfall\ModelManager.cs" />
@@ -112,9 +113,11 @@
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Utlity\PowerOfTwo.cs" />
+    <Compile Include="Utlity\StaticBatchBuilder.cs" />
     <Compile Include="World\BaseEntity.cs" />
     <Compile Include="World\DynamicWorldEntity.cs" />
     <Compile Include="World\Scene.cs" />
+    <Compile Include="World\StaticWorldEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Library\DaggerfallConnect.csproj">
