@@ -21,20 +21,17 @@ namespace DeepEngine.World
 {
 
     /// <summary>
-    /// A static world entity automatically combines supported geometry components
-    ///  into static buffers. This entity is ideal for building efficient level geometry
-    ///  that does not need to move in the scene. Remember to set a component's transform
-    ///  prior to attaching as you will not be able to change it later.
+    /// Default world entity that can move freely within the scene.
+    ///  Supports adding static geometry from DrawableComponent-based components.
     /// </summary>
-    class StaticWorldEntity : BaseEntity
+    public class WorldEntity : BaseEntity
     {
+
         #region Fields
 
-        StaticBatchBuilder batchBuilder;
+        DeepCore core;
+        StaticGeometryBuilder staticGeometryBuilder;
 
-        #endregion
-
-        #region Properties
         #endregion
 
         #region Constructors
@@ -43,11 +40,14 @@ namespace DeepEngine.World
         /// Constructor.
         /// </summary>
         /// <param name="scene">Scene to attach entity.</param>
-        public StaticWorldEntity(Scene scene)
-            : base(scene)
+        public WorldEntity(Scene scene)
+            :base(scene)
         {
-            // Create batch builder
-            batchBuilder = new StaticBatchBuilder(scene.Core.GraphicsDevice);
+            // Save references
+            core = scene.Core;
+
+            // Create static geometry builder
+            staticGeometryBuilder = new StaticGeometryBuilder(core.GraphicsDevice);
         }
 
         #endregion
@@ -79,19 +79,48 @@ namespace DeepEngine.World
             // Do nothing if disabled
             if (!enabled)
                 return;
+
+            // TODO: Draw static geometry
+
+            // Draw all components
+            foreach (BaseComponent component in components)
+            {
+                if (component is DrawableComponent)
+                {
+                    if (!component.IsStatic)
+                        (component as DrawableComponent).Draw(this);
+                }
+                else if (component is LightComponent)
+                {
+                    core.Renderer.SubmitLight(component as LightComponent, this);
+                }
+            }
         }
 
+        #endregion
+
+        #region Event Overrides
+
         /// <summary>
-        /// Called when a component is added.
+        /// Event when component is added.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">Event arguments.</param>
         protected override void ComponentAdded(object sender, ComponentCollection.ComponentAddedEventArgs e)
         {
+            // Call base
             base.ComponentAdded(sender, e);
+
+            // Handle static geometry components
+            if (e.IsStatic && e.Component is DrawableComponent)
+            {
+                // Get static geometry from component
+                StaticGeometryBuilder builder = (e.Component as DrawableComponent).GetStaticGeometry(false, true);
+            }
         }
 
         #endregion
+
     }
 
 }

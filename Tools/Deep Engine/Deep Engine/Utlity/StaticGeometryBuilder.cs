@@ -28,7 +28,7 @@ namespace DeepEngine.Utility
     ///  Groups primitives by material and pre-transforms vertices.
     ///  Useful for building efficient static level geometry from smaller pieces.
     /// </summary>
-    public class StaticBatchBuilder
+    public class StaticGeometryBuilder
     {
         #region Fields
 
@@ -111,7 +111,7 @@ namespace DeepEngine.Utility
         /// Constructor.
         /// </summary>
         /// <param name="graphicsDevice">Graphics device to use during buffer creation.</param>
-        public StaticBatchBuilder(GraphicsDevice graphicsDevice)
+        public StaticGeometryBuilder(GraphicsDevice graphicsDevice)
         {
             // Save objects
             this.graphicsDevice = graphicsDevice;
@@ -122,6 +122,7 @@ namespace DeepEngine.Utility
 
         #endregion
 
+        /*
         #region Drawing Methods
 
         /// <summary>
@@ -166,6 +167,7 @@ namespace DeepEngine.Utility
         }
 
         #endregion
+        */
 
         #region Batch Building Methods
 

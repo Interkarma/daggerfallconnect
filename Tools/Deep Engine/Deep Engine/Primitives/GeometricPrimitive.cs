@@ -31,7 +31,7 @@ namespace DeepEngine.Primitives
         // During the process of constructing a primitive model, vertex
         // and index data is stored on the CPU in these managed lists.
         List<VertexPositionNormal> vertices = new List<VertexPositionNormal>();
-        List<ushort> indices = new List<ushort>();
+        List<int> indices = new List<int>();
 
 
         // Once all the geometry has been specified, the InitializePrimitive
@@ -45,6 +45,26 @@ namespace DeepEngine.Primitives
         // creating that primitive.
         protected BoundingSphere boundingSphere;
 
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets vertex list.
+        /// </summary>
+        public List<VertexPositionNormal> Vertices
+        {
+            get { return vertices; }
+        }
+
+        /// <summary>
+        /// Gets index list.
+        /// </summary>
+        public List<int> Indices
+        {
+            get { return indices; }
+        }
 
         #endregion
 
@@ -105,7 +125,7 @@ namespace DeepEngine.Primitives
             vertexBuffer.SetData(vertices.ToArray());
 
             // Create an index buffer, and copy our index data into it.
-            indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort),
+            indexBuffer = new IndexBuffer(graphicsDevice, typeof(int),
                                           indices.Count, BufferUsage.None);
 
             indexBuffer.SetData(indices.ToArray());

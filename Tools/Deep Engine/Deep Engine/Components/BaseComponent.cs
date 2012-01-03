@@ -32,6 +32,7 @@ namespace DeepEngine.Components
         // Property values
         protected DeepCore core;
         protected bool enabled;
+        protected bool isStatic;
         protected object tag;
 
         #endregion
@@ -56,6 +57,14 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
+        /// Gets a flag stating if component is static and cannot move freely.
+        /// </summary>
+        public bool IsStatic
+        {
+            get { return isStatic; }
+        }
+
+        /// <summary>
         /// Gets or sets custom tag.
         /// </summary>
         public object Tag
@@ -77,7 +86,20 @@ namespace DeepEngine.Components
             // Store values
             this.core = core;
             this.enabled = true;
+            this.isStatic = false;
             this.tag = null;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Flags component as static. This cannot be reversed.
+        /// </summary>
+        public void MakeStatic()
+        {
+            this.isStatic = true;
         }
 
         #endregion

@@ -40,9 +40,6 @@ namespace DeepEngine.World
         // Entity list
         List<BaseEntity> entities;
 
-        // Camera
-        Vector3 cameraPosition = new Vector3(0, 256, 512);
-
         // Temporary
         Deprecated.Camera deprecatedCamera;
 
@@ -101,7 +98,6 @@ namespace DeepEngine.World
 
             // Create camera
             deprecatedCamera = new Deprecated.Camera();
-            deprecatedCamera.Position = cameraPosition;
 
             // Create entity root
             entities = new List<BaseEntity>();

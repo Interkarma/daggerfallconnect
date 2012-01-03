@@ -39,7 +39,7 @@ namespace DeepEngine.Components
         string blockName;
 
         // Static batch
-        StaticBatchBuilder batches;
+        StaticGeometryBuilder batches;
 
         // Effects
         Effect renderGeometryEffect;
@@ -118,7 +118,7 @@ namespace DeepEngine.Components
             renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
             // Create builder
-            batches = new StaticBatchBuilder(core.GraphicsDevice);
+            batches = new StaticGeometryBuilder(core.GraphicsDevice);
 
             // Load block
             LoadBlock(blockName);
@@ -147,7 +147,18 @@ namespace DeepEngine.Components
             renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
 
             // Draw batches
-            batches.Draw(core.MaterialManager, renderGeometryEffect);
+            //batches.Draw(core.MaterialManager, renderGeometryEffect);
+        }
+
+        /// <summary>
+        /// Gets static geometry.
+        /// </summary>
+        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
+        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
+        /// <returns>Static geometry builder.</returns>
+        public override Utility.StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -260,7 +271,7 @@ namespace DeepEngine.Components
         /// <param name="blockData">Block data.</param>
         private void AddRMBGroundTile(ref DFBlock blockData)
         {
-            StaticBatchBuilder.BatchData batchData;
+            StaticGeometryBuilder.BatchData batchData;
 
             // Just build a simple grass tile for now
 

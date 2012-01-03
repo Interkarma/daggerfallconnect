@@ -13,8 +13,11 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
+using DeepEngine.Daggerfall;
 using DeepEngine.World;
 using DeepEngine.Primitives;
+using DeepEngine.Utility;
+using DeepEngine.Rendering;
 #endregion
 
 namespace DeepEngine.Components
@@ -34,7 +37,7 @@ namespace DeepEngine.Components
         Color color = Color.White;
 
         // Effect
-        Effect renderPrimitiveEffect;
+        Effect renderGeometryEffect;
 
         #endregion
 
@@ -85,7 +88,7 @@ namespace DeepEngine.Components
             :base(core)
         {
             // Load effect
-            renderPrimitiveEffect = core.ContentManager.Load<Effect>("Effects/RenderPrimitive");
+            renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
             // Create cube
             MakeCube(1f);
@@ -210,14 +213,63 @@ namespace DeepEngine.Components
             // Calculate world matrix
             Matrix worldMatrix = caller.Matrix * matrix;
 
+            // Set technique
+            renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Diffuse"];
+
             // Update effect
-            renderPrimitiveEffect.Parameters["World"].SetValue(worldMatrix);
-            renderPrimitiveEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderPrimitiveEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
-            renderPrimitiveEffect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
+            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
+            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
 
             // Draw primitive
-            primitive.Draw(renderPrimitiveEffect);
+            primitive.Draw(renderGeometryEffect);
+        }
+
+        /// <summary>
+        /// Gets static geometry.
+        /// </summary>
+        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
+        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
+        /// <returns>Static geometry builder.</returns>
+        public override StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        {
+            // Create builder
+            StaticGeometryBuilder builder = new StaticGeometryBuilder(core.GraphicsDevice);
+
+            // Convert vertices to required format
+            List<VertexPositionNormalTextureBump> vertices = new List<VertexPositionNormalTextureBump>(primitive.Vertices.Count);
+            foreach (var vertex in primitive.Vertices)
+            {
+                vertices.Add(new VertexPositionNormalTextureBump(
+                    vertex.Position,
+                    vertex.Normal,
+                    Vector2.Zero,
+                    Vector3.Zero,
+                    Vector3.Zero));
+            }
+
+            // Add geometry
+            StaticGeometryBuilder.BatchData batchData = new StaticGeometryBuilder.BatchData
+            {
+                Vertices = vertices,
+                Indices = primitive.Indices,
+            };
+            builder.AddToBuilder(MaterialManager.NullTextureKey, batchData);
+
+            // Apply builder
+            if (applyBuilder)
+            {
+                builder.ApplyBuilder();
+            }
+
+            // Clean up local content
+            if (cleanUpLocalContent)
+            {
+                primitive.Dispose();
+            }
+
+            return builder;
         }
 
         #endregion
