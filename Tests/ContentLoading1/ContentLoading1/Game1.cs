@@ -62,9 +62,9 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
-            //LoadBlockScene();
+            LoadBlockScene();
             //LoadModelScene();
-            LoadPhysicsScene();
+            //LoadPhysicsScene();
         }
 
         /// <summary>
@@ -110,6 +110,9 @@ namespace ContentLoading1
         /// </summary>
         private void LoadBlockScene()
         {
+            // Set camera position
+            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 0, 1000);
+
             // Create level entity
             WorldEntity level = new WorldEntity(core.ActiveScene);
 
@@ -127,6 +130,9 @@ namespace ContentLoading1
         /// </summary>
         private void LoadModelScene()
         {
+            // Set camera position
+            core.ActiveScene.DeprecatedCamera.Position = new Vector3(0, 0, 1000);
+
             // Create directional light
             WorldEntity lightEntity = new WorldEntity(core.ActiveScene);
             lightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Right, Color.White, 1.0f));
@@ -165,7 +171,7 @@ namespace ContentLoading1
             GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             cubeGeometry.MakeCube(1024f);
             cubeGeometry.Color = Color.White;
-            cubeEntity.Components.AddStatic(cubeGeometry);
+            cubeEntity.Components.Add(cubeGeometry);
 
             // Attach cube physics and a directional light
             PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(core.DeepCore, cubeEntity.Matrix, 1024f, 1024f, 1024f);

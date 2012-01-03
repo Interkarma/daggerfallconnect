@@ -321,7 +321,7 @@ namespace DeepEngine.Components
             }
 
             // Add to builder
-            batches.AddToBuilder(textureKey, batchData);
+            batches.AddToBuilder(textureKey, batchData, Matrix.Identity);
         }
 
         /// <summary>

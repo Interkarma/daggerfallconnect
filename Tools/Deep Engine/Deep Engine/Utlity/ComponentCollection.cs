@@ -6,11 +6,13 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region
+#region Using Statements
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Components;
 #endregion
 
@@ -93,7 +95,7 @@ namespace DeepEngine.Utility
         ///  Always set component transform before adding static, as you cannot
         ///  change it afterwards.
         /// </summary>
-        /// <param name="component"></param>
+        /// <param name="component">Component to add as static.</param>
         public void AddStatic(BaseComponent component)
         {
             // Cannot add a static component
