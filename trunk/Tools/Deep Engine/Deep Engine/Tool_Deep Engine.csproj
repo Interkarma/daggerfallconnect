@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\BaseComponent.cs" />
-    <Compile Include="Utlity\ComponentCollection.cs" />
+    <Compile Include="Utility\ComponentCollection.cs" />
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />
     <Compile Include="Components\LightComponent.cs" />
@@ -112,8 +112,8 @@
     <Compile Include="Rendering\FullScreenQuad.cs" />
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\Renderer.cs" />
-    <Compile Include="Utlity\PowerOfTwo.cs" />
-    <Compile Include="Utlity\StaticGeometryBuilder.cs" />
+    <Compile Include="Utility\PowerOfTwo.cs" />
+    <Compile Include="Utility\StaticGeometryBuilder.cs" />
     <Compile Include="World\BaseEntity.cs" />
     <Compile Include="World\WorldEntity.cs" />
     <Compile Include="World\Scene.cs" />
