@@ -38,10 +38,10 @@ namespace DeepEngine.Daggerfall
         private TextureFile textureFile;
 
         // Texture dictionaries
-        private const int groundBatchKey = int.MinValue;
+        private const int nullTextureKey = int.MinValue;
         private Dictionary<int, Texture2D> colorTextureDict;
         private Dictionary<int, Texture2D> normalTextureDict;
-        private Dictionary<string, GroundPlaneTexture> groundPlaneTextureDict;
+        //private Dictionary<string, GroundPlaneTexture> groundPlaneTextureDict;
 
         // Climate and weather
         DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
@@ -155,6 +155,7 @@ namespace DeepEngine.Daggerfall
             DoubleSize = 0x400,
         }
 
+        /*
         /// <summary>
         /// Stores a ground plane texture and information
         ///  to rebuild when lost.
@@ -165,6 +166,7 @@ namespace DeepEngine.Daggerfall
             public RenderTarget2D texture;
             public DFBlock.RmbGroundTiles[,] tiles;
         }
+        */
 
         #endregion
 
@@ -215,11 +217,11 @@ namespace DeepEngine.Daggerfall
         }
 
         /// <summary>
-        /// Gets reserved key for batching ground textures.
+        /// Gets reserved key for null textures.
         /// </summary>
-        public static int GroundBatchKey
+        public static int NullTextureKey
         {
-            get { return groundBatchKey; }
+            get { return nullTextureKey; }
         }
 
         /// <summary>
@@ -249,13 +251,13 @@ namespace DeepEngine.Daggerfall
             spriteBatch = new SpriteBatch(graphicsDevice);
 
             // Device events
-            this.graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
-            this.graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
+            //this.graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
+            //this.graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
 
             // Create dictionaries
             colorTextureDict = new Dictionary<int, Texture2D>();
             normalTextureDict = new Dictionary<int, Texture2D>();
-            groundPlaneTextureDict = new Dictionary<string, GroundPlaneTexture>();
+            //groundPlaneTextureDict = new Dictionary<string, GroundPlaneTexture>();
 
             // Set default climate
             SetClimate(climateType, climateWeather);
@@ -265,6 +267,7 @@ namespace DeepEngine.Daggerfall
 
         #region Device Events
 
+        /*
         /// <summary>
         /// Called when device is reset and we need to recreate resources.
         /// </summary>
@@ -297,6 +300,7 @@ namespace DeepEngine.Daggerfall
                 groundPlaneTextureDict[key] = gp;
             }
         }
+        */
 
         /// <summary>
         /// Called when device is lost.
@@ -337,6 +341,7 @@ namespace DeepEngine.Daggerfall
             }
         }
 
+        /*
         /// <summary>
         /// Loads ground plane texture for the specified block.
         /// </summary>
@@ -372,6 +377,7 @@ namespace DeepEngine.Daggerfall
 
             return block.Name;
         }
+        */
 
         /// <summary>
         /// Gets color map texture by key.
@@ -402,6 +408,7 @@ namespace DeepEngine.Daggerfall
                 return normalTextureDict[key];
         }
 
+        /*
         /// <summary>
         /// Gets a ground plane texture by key.
         ///  Manager will return NULL if texture does not exist.
@@ -416,6 +423,7 @@ namespace DeepEngine.Daggerfall
 
             return groundPlaneTextureDict[key].texture;
         }
+        */
 
         /// <summary>
         /// Remove cached texture based on key.
@@ -444,6 +452,7 @@ namespace DeepEngine.Daggerfall
             normalTextureDict.Clear();
         }
 
+        /*
         /// <summary>
         /// Clears all ground plane textures.
         ///  This should be done whenever loading a new map.
@@ -453,6 +462,7 @@ namespace DeepEngine.Daggerfall
             // Remove dictionary
             groundPlaneTextureDict.Clear();
         }
+        */
 
         /// <summary>
         /// Determine if texture with specified key exists in color map texture dictionary.
@@ -1746,6 +1756,7 @@ namespace DeepEngine.Daggerfall
 
         #endregion
 
+        /*
         #region Ground Textures
 
         /// <summary>
@@ -1837,6 +1848,7 @@ namespace DeepEngine.Daggerfall
         }
 
         #endregion
+        */
 
     }
 

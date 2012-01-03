@@ -11,9 +11,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using DeepEngine.Components;
 #endregion
 
-namespace DeepEngine.Components
+namespace DeepEngine.Utility
 {
 
     /// <summary>
@@ -23,6 +24,10 @@ namespace DeepEngine.Components
     {
         #region Fields
 
+        // Constant strings
+        const string componentIsStaticError = "Cannot add or share a component that is already marked as static.";
+
+        // Component list
         List<BaseComponent> components;
 
         #endregion
@@ -69,11 +74,40 @@ namespace DeepEngine.Components
         /// <param name="component">Component to add.</param>
         public void Add(BaseComponent component)
         {
+            // Cannot add a static component
+            if (component.IsStatic)
+                throw new Exception(componentIsStaticError);
+
             // Add component
             components.Add(component);
 
             // Raise event
-            RaiseComponentAddedEvent(component);
+            RaiseComponentAddedEvent(component, false);
+        }
+
+        /// <summary>
+        /// Adds a static component to collection.
+        ///  A static component cannot move independently but allows parent
+        ///  entity to make optimisation decisions, such as combining
+        ///  static geometry to improve draw performance.
+        ///  Always set component transform before adding static, as you cannot
+        ///  change it afterwards.
+        /// </summary>
+        /// <param name="component"></param>
+        public void AddStatic(BaseComponent component)
+        {
+            // Cannot add a static component
+            if (component.IsStatic)
+                throw new Exception(componentIsStaticError);
+
+            // Add component
+            components.Add(component);
+
+            // Flag as static
+            component.MakeStatic();
+
+            // Raise event
+            RaiseComponentAddedEvent(component, true);
         }
 
         #endregion
@@ -101,13 +135,14 @@ namespace DeepEngine.Components
         /// </summary>
         public class ComponentAddedEventArgs : EventArgs
         {
-            public BaseComponent Component;
+            public object Component;
+            public bool IsStatic;
         }
 
         /// <summary>
         /// Raise event.
         /// </summary>
-        protected virtual void RaiseComponentAddedEvent(BaseComponent component)
+        protected virtual void RaiseComponentAddedEvent(BaseComponent component, bool isStatic)
         {
             // Raise event
             if (null != ComponentAdded)
@@ -116,6 +151,7 @@ namespace DeepEngine.Components
                 ComponentAddedEventArgs e = new ComponentAddedEventArgs()
                 {
                     Component = component,
+                    IsStatic = isStatic,
                 };
 
                 // Raise event

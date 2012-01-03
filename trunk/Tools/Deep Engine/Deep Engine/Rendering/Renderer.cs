@@ -41,7 +41,6 @@ namespace DeepEngine.Rendering
 
         // Render effects
         Effect clearBufferEffect;
-        Effect renderBufferEffect;
         Effect finalCombineEffect;
         Effect directionalLightEffect;
         Effect pointLightEffect;
@@ -154,7 +153,6 @@ namespace DeepEngine.Rendering
 
             // Load rendering effects
             clearBufferEffect = core.ContentManager.Load<Effect>("Effects/ClearGBuffer");
-            renderBufferEffect = core.ContentManager.Load<Effect>("Effects/RenderGBuffer");
             finalCombineEffect = core.ContentManager.Load<Effect>("Effects/CombineFinal");
             directionalLightEffect = core.ContentManager.Load<Effect>("Effects/DirectionalLight");
             pointLightEffect = core.ContentManager.Load<Effect>("Effects/PointLight");

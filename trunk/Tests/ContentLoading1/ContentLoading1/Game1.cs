@@ -62,9 +62,9 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
-            LoadBlockScene();
+            //LoadBlockScene();
             //LoadModelScene();
-            //LoadPhysicsScene();
+            LoadPhysicsScene();
         }
 
         /// <summary>
@@ -111,14 +111,14 @@ namespace ContentLoading1
         private void LoadBlockScene()
         {
             // Create level entity
-            DynamicWorldEntity level = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity level = new WorldEntity(core.ActiveScene);
 
             // Create block component
             NativeBlockComponent block = new NativeBlockComponent(core.DeepCore, "MAGEAA13.RMB");
             level.Components.Add(block);
 
             // Create directional light
-            DynamicWorldEntity directionalLight = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
         }
 
@@ -128,16 +128,16 @@ namespace ContentLoading1
         private void LoadModelScene()
         {
             // Create directional light
-            DynamicWorldEntity lightEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity lightEntity = new WorldEntity(core.ActiveScene);
             lightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Right, Color.White, 1.0f));
 
             // Create model entity
-            DynamicWorldEntity modelEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity modelEntity = new WorldEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
             modelEntity.Components.Add(new NativeModelComponent(core.DeepCore, 456));
 
             // Create point light
-            DynamicWorldEntity pointLightEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity pointLightEntity = new WorldEntity(core.ActiveScene);
             pointLightEntity.Matrix = Matrix.CreateTranslation(500, 0, 0);
             pointLightEntity.Components.Add(new LightComponent(core.DeepCore, Vector3.Zero, 512f, Color.Red, 1f));
         }
@@ -147,22 +147,25 @@ namespace ContentLoading1
         /// </summary>
         private void LoadPhysicsScene()
         {
+            // Set camera position
+            core.ActiveScene.DeprecatedCamera.Position = new Vector3(-100, -300, 800);
+
             // Create cube entity
-            DynamicWorldEntity cubeEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity cubeEntity = new WorldEntity(core.ActiveScene);
             cubeEntity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
 
             // Create torus entity
-            DynamicWorldEntity torusEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity torusEntity = new WorldEntity(core.ActiveScene);
 
             // Create sphere entity
-            DynamicWorldEntity sphereEntity = new DynamicWorldEntity(core.ActiveScene);
+            WorldEntity sphereEntity = new WorldEntity(core.ActiveScene);
             sphereEntity.Matrix = Matrix.CreateTranslation(-555, 0, 0);
 
             // Attach cube geometry
             GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             cubeGeometry.MakeCube(1024f);
             cubeGeometry.Color = Color.White;
-            cubeEntity.Components.Add(cubeGeometry);
+            cubeEntity.Components.AddStatic(cubeGeometry);
 
             // Attach cube physics and a directional light
             PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(core.DeepCore, cubeEntity.Matrix, 1024f, 1024f, 1024f);

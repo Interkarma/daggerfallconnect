@@ -117,6 +117,17 @@ namespace DeepEngine.Components
             }
         }
 
+        /// <summary>
+        /// Gets static geometry.
+        /// </summary>
+        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
+        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
+        /// <returns>Static geometry builder.</returns>
+        public override Utility.StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Public Methods

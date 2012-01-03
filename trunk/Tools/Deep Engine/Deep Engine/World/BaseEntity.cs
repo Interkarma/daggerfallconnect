@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Components;
+using DeepEngine.Utility;
 #endregion
 
 namespace DeepEngine.World

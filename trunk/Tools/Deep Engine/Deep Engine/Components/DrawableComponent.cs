@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
+using DeepEngine.Utility;
 using DeepEngine.World;
 #endregion
 
@@ -22,7 +23,7 @@ namespace DeepEngine.Components
     /// <summary>
     /// Base for components that creates visible output.
     /// </summary>
-    public class DrawableComponent : BaseComponent
+    public abstract class DrawableComponent : BaseComponent
     {
         #region Fields
 
@@ -44,11 +45,12 @@ namespace DeepEngine.Components
 
         /// <summary>
         /// Gets or sets local transform relative to entity.
+        ///  Cannot change matrix of static components.
         /// </summary>
         public Matrix Matrix
         {
             get { return matrix; }
-            set { matrix = value; }
+            set { if (!base.isStatic) matrix = value; }
         }
 
         #endregion
@@ -68,18 +70,21 @@ namespace DeepEngine.Components
 
         #endregion
 
-        #region Virtual Methods
+        #region Abstract Methods
 
         /// <summary>
         /// Called when component should draw itself.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public virtual void Draw(BaseEntity caller)
-        {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
-        }
+        public abstract void Draw(BaseEntity caller);
+
+        /// <summary>
+        /// Provides static geometry.
+        /// </summary>
+        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
+        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
+        /// <returns>Static geometry builder.</returns>
+        public abstract StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent);
 
         #endregion
     }
