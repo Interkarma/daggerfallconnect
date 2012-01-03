@@ -255,7 +255,7 @@ namespace DeepEngine.Components
                 Vertices = vertices,
                 Indices = primitive.Indices,
             };
-            builder.AddToBuilder(MaterialManager.NullTextureKey, batchData);
+            builder.AddToBuilder(MaterialManager.NullTextureKey, batchData, this.Matrix);
 
             // Apply builder
             if (applyBuilder)
@@ -266,10 +266,18 @@ namespace DeepEngine.Components
             // Clean up local content
             if (cleanUpLocalContent)
             {
-                primitive.Dispose();
+                this.Dispose();
             }
 
             return builder;
+        }
+
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public override void Dispose()
+        {
+            primitive.Dispose();
         }
 
         #endregion

@@ -122,53 +122,6 @@ namespace DeepEngine.Utility
 
         #endregion
 
-        /*
-        #region Drawing Methods
-
-        /// <summary>
-        /// Draws static batches.
-        /// </summary>
-        /// <param name="materialManager">Material manager for getting materials by key.</param>
-        /// <param name="effect">Effect to draw with. Must expose parameter "Texture" for diffuse texture.</param>
-        public void Draw(MaterialManager materialManager, Effect effect)
-        {
-            // Do nothing if no buffers
-            if (vertexBuffer == null || indexBuffer == null || batchDictionary == null)
-                return;
-
-            // Set buffers
-            graphicsDevice.SetVertexBuffer(vertexBuffer);
-            graphicsDevice.Indices = indexBuffer;
-
-            // Draw batches
-            Texture2D diffuseTexture = null;
-            foreach (var item in batchDictionary)
-            {
-                // Set texture
-                diffuseTexture = materialManager.GetTexture(item.Key);
-                effect.Parameters["Texture"].SetValue(diffuseTexture);
-
-                // Render geometry
-                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                {
-                    // Apply effect pass
-                    pass.Apply();
-
-                    // Draw batched indexed primitives
-                    graphicsDevice.DrawIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        0,
-                        0,
-                        vertexBuffer.VertexCount,
-                        item.Value.StartIndex,
-                        item.Value.PrimitiveCount);
-                }
-            }
-        }
-
-        #endregion
-        */
-
         #region Batch Building Methods
 
         /// <summary>
@@ -187,7 +140,8 @@ namespace DeepEngine.Utility
         /// <param name="textureKey">Textue key for this geometry.</param>
         /// <param name="vertices">Vertex array.</param>
         /// <param name="indices">Index array.</param>
-        public void AddToBuilder(int textureKey, VertexPositionNormalTextureBump[] vertices, int[] indices)
+        /// <param name="matrix">Geometry transform to apply before adding.</param>
+        public void AddToBuilder(int textureKey, VertexPositionNormalTextureBump[] vertices, int[] indices, Matrix matrix)
         {
             // Start new batch data
             BatchData batchData;
@@ -197,7 +151,7 @@ namespace DeepEngine.Utility
             // Add data
             batchData.Vertices.AddRange(vertices);
             batchData.Indices.AddRange(indices);
-            AddToBuilder(textureKey, batchData);
+            AddToBuilder(textureKey, batchData, matrix);
         }
 
         /// <summary>
@@ -205,15 +159,12 @@ namespace DeepEngine.Utility
         /// </summary>
         /// <param name="modelData">Model data to add.</param>
         /// <param name="matrix">Transform to apply before adding model data.</param>
+        /// <param name="matrix">Geometry transform to apply before adding.</param>
         public void AddToBuilder(ref ModelManager.ModelData modelData, Matrix matrix)
         {
-            // Transform model data
-            ModelManager.ModelData transformedModelData;
-            ModelManager.TransformModelData(graphicsDevice, ref modelData, out transformedModelData, matrix);
-
             // Iterate submeshes
             BatchData batchData;
-            foreach (var sm in transformedModelData.SubMeshes)
+            foreach (var sm in modelData.SubMeshes)
             {
                 // Start new batch data for this submesh
                 batchData.Vertices = new List<VertexPositionNormalTextureBump>();
@@ -224,14 +175,14 @@ namespace DeepEngine.Utility
                 for (int tri = 0; tri < sm.PrimitiveCount; tri++)
                 {
                     // Get indices
-                    int i1 = transformedModelData.Indices[index++];
-                    int i2 = transformedModelData.Indices[index++];
-                    int i3 = transformedModelData.Indices[index++];
+                    int i1 = modelData.Indices[index++];
+                    int i2 = modelData.Indices[index++];
+                    int i3 = modelData.Indices[index++];
 
                     // Get vertices
-                    VertexPositionNormalTextureBump vert1 = transformedModelData.Vertices[i1];
-                    VertexPositionNormalTextureBump vert2 = transformedModelData.Vertices[i2];
-                    VertexPositionNormalTextureBump vert3 = transformedModelData.Vertices[i3];
+                    VertexPositionNormalTextureBump vert1 = modelData.Vertices[i1];
+                    VertexPositionNormalTextureBump vert2 = modelData.Vertices[i2];
+                    VertexPositionNormalTextureBump vert3 = modelData.Vertices[i3];
 
                     // Add vertices
                     batchData.Vertices.Add(vert1);
@@ -245,15 +196,32 @@ namespace DeepEngine.Utility
                 }
 
                 // Add to builder
-                AddToBuilder(sm.TextureKey, batchData);
+                AddToBuilder(sm.TextureKey, batchData, matrix);
+            }
+        }
+
+        /// <summary>
+        /// Adds batch data to builder from another builder.
+        /// </summary>
+        /// <param name="builder">Source builder.</param>
+        /// <param name="matrix">Geometry transform to apply before adding.</param>
+        public void AddToBuilder(StaticGeometryBuilder builder, Matrix matrix)
+        {
+            // Add items to this builder.
+            foreach (var item in builder.builderDictionary)
+            {
+                AddToBuilder(item.Key, item.Value, matrix);
             }
         }
 
         /// <summary>
         /// Adds batch data to the batch builder.
+        ///  Geometry data is batched by key.
         /// </summary>
-        /// <param name="batchData">Data to batch.</param>
-        public void AddToBuilder(int textureKey, BatchData batchData)
+        /// <param name="textureKey">Key to batch against.</param>
+        /// <param name="batchData">Data to add.</param>
+        /// <param name="matrix">Geometry transform to apply before adding.</param>
+        public void AddToBuilder(int textureKey, BatchData batchData, Matrix matrix)
         {
             BatchData builder;
             if (builderDictionary.ContainsKey(textureKey))
@@ -267,6 +235,15 @@ namespace DeepEngine.Utility
                 builder.Vertices = new List<VertexPositionNormalTextureBump>();
                 builder.Indices = new List<int>();
                 builderDictionary.Add(textureKey, builder);
+            }
+
+            // Transform vertices
+            for (int i = 0; i < batchData.Vertices.Count; i++)
+            {
+                VertexPositionNormalTextureBump vertex = batchData.Vertices[i];
+                vertex.Position = Vector3.Transform(vertex.Position, matrix);
+                vertex.Normal = Vector3.TransformNormal(vertex.Normal, matrix);
+                batchData.Vertices[i] = vertex;
             }
 
             // Add new vertices to builder
