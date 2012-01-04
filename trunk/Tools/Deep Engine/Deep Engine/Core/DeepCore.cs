@@ -41,6 +41,7 @@ namespace DeepEngine.Core
         MaterialManager materialManager;
         ModelManager modelManager;
         BlocksFile blockManager;
+        MapsFile mapManager;
 
         // XNA
         IServiceProvider serviceProvider;
@@ -124,6 +125,14 @@ namespace DeepEngine.Core
         }
 
         /// <summary>
+        /// Gets Daggerfall map manager.
+        /// </summary>
+        public MapsFile MapManager
+        {
+            get { return mapManager; }
+        }
+
+        /// <summary>
         /// Gets or sets active scene.
         /// </summary>
         public Scene ActiveScene
@@ -198,7 +207,8 @@ namespace DeepEngine.Core
             // Create Daggerfall managers
             this.materialManager = new MaterialManager(graphicsDevice, arena2Path);
             this.modelManager = new ModelManager(graphicsDevice, arena2Path);
-            this.blockManager = new BlocksFile(Path.Combine(arena2Path, "BLOCKS.BSA"), FileUsage.UseDisk, true);
+            this.blockManager = new BlocksFile(Path.Combine(arena2Path, BlocksFile.Filename), FileUsage.UseDisk, true);
+            this.mapManager = new MapsFile(Path.Combine(arena2Path, MapsFile.Filename), FileUsage.UseDisk, true);
 
             // Load engine objects content
             renderer.LoadContent();

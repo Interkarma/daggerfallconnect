@@ -81,6 +81,7 @@ namespace DeepEngine.Utility
 
         /// <summary>
         /// Gets combined vertex buffer.
+        ///  Not valid until data has been added and ApplyBuilder() has been called.
         /// </summary>
         public VertexBuffer VertexBuffer
         {
@@ -89,6 +90,7 @@ namespace DeepEngine.Utility
 
         /// <summary>
         /// Gets combined index buffer.
+        ///  Not valid until data has been added and ApplyBuilder() has been called.
         /// </summary>
         public IndexBuffer IndexBuffer
         {
@@ -97,6 +99,7 @@ namespace DeepEngine.Utility
 
         /// <summary>
         /// Gets static batches grouped and keyed by material.
+        ///  Not valid until data has been added and ApplyBuilder() has been called.
         /// </summary>
         public Dictionary<int, StaticBatch> StaticBatches
         {
@@ -130,7 +133,8 @@ namespace DeepEngine.Utility
         /// </summary>
         public void NewBuilder()
         {
-            // Create new builder dictionary
+            // Create empty dictionaries
+            batchDictionary = new Dictionary<int, StaticBatch>();
             builderDictionary = new Dictionary<int, BatchData>();
         }
 

@@ -71,7 +71,7 @@ namespace DeepEngine.Utility
         #region Public Methods
 
         /// <summary>
-        /// Add a component to collection.
+        /// Adds a component to collection.
         /// </summary>
         /// <param name="component">Component to add.</param>
         public void Add(BaseComponent component)
@@ -89,11 +89,8 @@ namespace DeepEngine.Utility
 
         /// <summary>
         /// Adds a static component to collection.
-        ///  A static component cannot move independently but allows parent
-        ///  entity to make optimisation decisions, such as combining
-        ///  static geometry to improve draw performance.
-        ///  Always set component transform before adding static, as you cannot
-        ///  change it afterwards.
+        ///  It is up to the component itself and the hosting entity how this behaviour is implemented.
+        ///  A static component cannot be shared between entities.
         /// </summary>
         /// <param name="component">Component to add as static.</param>
         public void AddStatic(BaseComponent component)
@@ -129,8 +126,12 @@ namespace DeepEngine.Utility
 
         #region ComponentAdded Event
 
-        public delegate void ComponentAddedEventHandler(object sender, ComponentAddedEventArgs e);
+        /// <summary>
+        /// This event is fired whenever a component is added, allowing the entity to overlay
+        ///  any special handling required.
+        /// </summary>
         public event ComponentAddedEventHandler ComponentAdded;
+        public delegate void ComponentAddedEventHandler(object sender, ComponentAddedEventArgs e);
 
         /// <summary>
         /// Event arguments.

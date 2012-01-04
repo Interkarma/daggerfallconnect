@@ -25,10 +25,10 @@ namespace DeepEngine.Components
 {
 
     /// <summary>
-    /// A drawable Daggerfall block. Can be attached at runtime independently of content pipeline.
-    ///  Supports exterior (RMB) and dungeon (RDB) blocks.
+    /// Component for creating scenes from Daggerfall blocks.
+    ///  Supports RMB blocks, RDB blocks, and building interiors.
     /// </summary>
-    public class NativeBlockComponent : DrawableComponent
+    public class DaggerfallBlockComponent : DrawableComponent
     {
         #region Fields
 
@@ -39,7 +39,7 @@ namespace DeepEngine.Components
         string blockName;
 
         // Static batch
-        StaticGeometryBuilder batches;
+        StaticGeometryBuilder staticGeometry;
 
         // Effects
         Effect renderGeometryEffect;
@@ -110,18 +110,14 @@ namespace DeepEngine.Components
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        /// <param name="blockName">Name of block to load.</param>
-        public NativeBlockComponent(DeepCore core, string blockName)
+        public DaggerfallBlockComponent(DeepCore core)
             : base(core)
         {
             // Load effect
             renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
-            // Create builder
-            batches = new StaticGeometryBuilder(core.GraphicsDevice);
-
-            // Load block
-            LoadBlock(blockName);
+            // Create static geometry builder
+            staticGeometry = new StaticGeometryBuilder(core.GraphicsDevice);
         }
 
         #endregion
@@ -134,29 +130,59 @@ namespace DeepEngine.Components
         /// <param name="caller">Entity calling the draw operation.</param>
         public override void Draw(BaseEntity caller)
         {
-            // Do nothing if component is disabled
-            if (!enabled)
+            // Do nothing if no batches or component is disabled
+            if (staticGeometry.StaticBatches.Count == 0 || !enabled)
                 return;
 
             // Calculate world matrix
             Matrix worldMatrix = caller.Matrix * matrix;
 
+            // Set render state
+            core.GraphicsDevice.SamplerStates[0] = SamplerState.AnisotropicWrap;
+
             // Setup effect
+            renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Default"];
             renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
             renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
             renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
 
+            // Set buffers
+            core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
+            core.GraphicsDevice.Indices = staticGeometry.IndexBuffer;
+
             // Draw batches
-            //batches.Draw(core.MaterialManager, renderGeometryEffect);
+            Texture2D diffuseTexture = null;
+            foreach (var item in staticGeometry.StaticBatches)
+            {
+                int textureKey = item.Key;
+
+                // Set texture
+                diffuseTexture = core.MaterialManager.GetTexture(item.Key);
+                renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
+
+                // Render geometry
+                foreach (EffectPass pass in renderGeometryEffect.CurrentTechnique.Passes)
+                {
+                    // Apply effect pass
+                    pass.Apply();
+
+                    // Draw batched indexed primitives
+                    core.GraphicsDevice.DrawIndexedPrimitives(
+                        PrimitiveType.TriangleList,
+                        0,
+                        0,
+                        staticGeometry.VertexBuffer.VertexCount,
+                        item.Value.StartIndex,
+                        item.Value.PrimitiveCount);
+                }
+            }
         }
 
         /// <summary>
         /// Gets static geometry.
         /// </summary>
-        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
-        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
         /// <returns>Static geometry builder.</returns>
-        public override Utility.StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        public override Utility.StaticGeometryBuilder GetStaticGeometry()
         {
             throw new NotImplementedException();
         }
@@ -166,15 +192,19 @@ namespace DeepEngine.Components
         #region Public Methods
 
         /// <summary>
-        /// Loads a new block to display with this component.
-        ///  Replaces any previously loaded block.
+        /// Loads a RMB or RDB block.
+        ///  Replaces any previously loaded data.
         /// </summary>
         /// <param name="blockName">Name of block to load.</param>
+        /// <param name="climateSettings">Desired climate settings for block.</param>
         /// <returns>True if successful.</returns>
-        public bool LoadBlock(string blockName)
+        public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings)
         {
             try
             {
+                // Set climate
+                core.MaterialManager.ClimateType = climateSettings.ClimateType;
+
                 // Load block
                 DFBlock blockData = core.BlockManager.GetBlock(blockName);
                 switch (blockData.Type)
@@ -201,6 +231,20 @@ namespace DeepEngine.Components
             return true;
         }
 
+        /// <summary>
+        /// Loads a interior location (such as inside a house or tavern).
+        ///  Automatically uses correct climate settings.
+        ///  Replaces any previously loaded data.
+        /// </summary>
+        /// <param name="blockName">Blocks name.</param>
+        /// <param name="rmbRecordIndex">Index of interior inside block.</param>
+        /// <param name="climateSettings">Desired climate settings for block.</param>
+        /// <returns>True if successful.</returns>
+        public bool LoadInterior(string blockName, int rmbRecordIndex, DFLocation.ClimateSettings climateSettings)
+        {
+            return false;
+        }
+
         #endregion
 
         #region Block Building
@@ -212,11 +256,11 @@ namespace DeepEngine.Components
         private void BuildRMB(ref DFBlock blockData)
         {
             // Add RMB data
-            AddRMBGroundTile(ref blockData);
+            AddRMBGroundTiles(ref blockData);
             AddRMBModels(ref blockData);
 
             // Finish batch building
-            batches.ApplyBuilder();
+            staticGeometry.ApplyBuilder();
 
             //AddRMBModels(ref block, blockNode);
             //AddRMBMiscModels(ref block, blockNode);
@@ -266,62 +310,89 @@ namespace DeepEngine.Components
         #region RMB Block Building
 
         /// <summary>
-        /// Adds exterior ground tile to the batch.
+        /// Adds exterior ground tiles to the batch.
         /// </summary>
         /// <param name="blockData">Block data.</param>
-        private void AddRMBGroundTile(ref DFBlock blockData)
+        private void AddRMBGroundTiles(ref DFBlock blockData)
         {
-            StaticGeometryBuilder.BatchData batchData;
+            // Corner positions
+            Vector3 topLeftPos, topRightPos, bottomLeftPos, bottomRightPos;
+            Vector2 topLeftUV, topRightUV, bottomLeftUV, bottomRightUV;
 
-            // Just build a simple grass tile for now
+            // Create vertices. These will be updated for each tile based on position and UV orientation.
+            VertexPositionNormalTextureBump[] vertices = new VertexPositionNormalTextureBump[4];
 
-            int textureKey = core.MaterialManager.LoadTexture(302, 2, MaterialManager.TextureCreateFlags.MipMaps | MaterialManager.TextureCreateFlags.ExtendedAlpha);
-            batchData.Vertices = new List<VertexPositionNormalTextureBump>(1024);
-            batchData.Indices = new List<int>(1536);
+            // Create indices. These are the same for every tile.
+            int[] indices = new int[] {0, 1, 2, 1, 3, 2};
 
-            int currentVertex;
-            Vector3 topLeft, topRight, bottomLeft, bottomRight;
-
-            Vector2 topLeftUV = new Vector2(0, 0);
-            Vector2 topRightUV = new Vector2(1, 0);
-            Vector2 bottomLeftUV = new Vector2(0, 1);
-            Vector2 bottomRightUV = new Vector2(1, 1);
-
+            // Loop through tiles
             const int tileCount = 16;
             const float tileDimension = 256.0f;
             for (int y = 0; y < tileCount; y++)
             {
                 for (int x = 0; x < tileCount; x++)
                 {
+                    // Get source tile data
+                    DFBlock.RmbGroundTiles tile = blockData.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
+
+                    // Load texture
+                    int textureKey = core.MaterialManager.LoadTexture(
+                        (int)DFLocation.ClimateTextureSet.Exterior_Terrain,
+                        tile.TextureRecord,
+                        MaterialManager.TextureCreateFlags.MipMaps |
+                        MaterialManager.TextureCreateFlags.ExtendedAlpha |
+                        MaterialManager.TextureCreateFlags.ApplyClimate);
+
                     // Create vertices for this quad
-                    topLeft = new Vector3(x * tileDimension, 0, y * tileDimension);
-                    topRight = new Vector3(topLeft.X + tileDimension, 0, topLeft.Z);
-                    bottomLeft = new Vector3(topLeft.X, 0, topLeft.Z + tileDimension);
-                    bottomRight = new Vector3(topLeft.X + tileDimension, 0, topLeft.Z + tileDimension);
+                    topLeftPos = new Vector3(x * tileDimension, 0, y * tileDimension);
+                    topRightPos = new Vector3(topLeftPos.X + tileDimension, 0, topLeftPos.Z);
+                    bottomLeftPos = new Vector3(topLeftPos.X, 0, topLeftPos.Z + tileDimension);
+                    bottomRightPos = new Vector3(topLeftPos.X + tileDimension, 0, topLeftPos.Z + tileDimension);
 
-                    // Get current vertex
-                    currentVertex = batchData.Vertices.Count;
+                    // Set UVs
+                    if (tile.IsRotated && !tile.IsFlipped)
+                    {
+                        // Rotate only
+                        topLeftUV = new Vector2(1, 0);
+                        topRightUV = new Vector2(1, 1);
+                        bottomLeftUV = new Vector2(0, 0);
+                        bottomRightUV = new Vector2(0, 1);
+                    }
+                    else if (tile.IsFlipped && !tile.IsRotated)
+                    {
+                        // Flip only
+                        topLeftUV = new Vector2(1, 1);
+                        topRightUV = new Vector2(0, 1);
+                        bottomLeftUV = new Vector2(1, 0);
+                        bottomRightUV = new Vector2(0, 0);
+                    }
+                    else if (tile.IsRotated && tile.IsRotated)
+                    {
+                        // Rotate and flip
+                        topLeftUV = new Vector2(0, 1);
+                        topRightUV = new Vector2(0, 0);
+                        bottomLeftUV = new Vector2(1, 1);
+                        bottomRightUV = new Vector2(1, 0);
+                    }
+                    else
+                    {
+                        // No rotate or flip
+                        topLeftUV = new Vector2(0, 0);
+                        topRightUV = new Vector2(1, 0);
+                        bottomLeftUV = new Vector2(0, 1);
+                        bottomRightUV = new Vector2(1, 1);
+                    }
 
-                    // Add vertices for quad
-                    batchData.Vertices.Add(new VertexPositionNormalTextureBump(topLeft, Vector3.Up, topLeftUV, Vector3.Zero, Vector3.Zero));
-                    batchData.Vertices.Add(new VertexPositionNormalTextureBump(topRight, Vector3.Up, topRightUV, Vector3.Zero, Vector3.Zero));
-                    batchData.Vertices.Add(new VertexPositionNormalTextureBump(bottomLeft, Vector3.Up, bottomLeftUV, Vector3.Zero, Vector3.Zero));
-                    batchData.Vertices.Add(new VertexPositionNormalTextureBump(bottomRight, Vector3.Up, bottomRightUV, Vector3.Zero, Vector3.Zero));
+                    // Set vertices
+                    vertices[0] = new VertexPositionNormalTextureBump(topLeftPos, Vector3.Up, topLeftUV, Vector3.Zero, Vector3.Zero);
+                    vertices[1] = new VertexPositionNormalTextureBump(topRightPos, Vector3.Up, topRightUV, Vector3.Zero, Vector3.Zero);
+                    vertices[2] = new VertexPositionNormalTextureBump(bottomLeftPos, Vector3.Up, bottomLeftUV, Vector3.Zero, Vector3.Zero);
+                    vertices[3] = new VertexPositionNormalTextureBump(bottomRightPos, Vector3.Up, bottomRightUV, Vector3.Zero, Vector3.Zero);
 
-                    // Add first face of quad
-                    batchData.Indices.Add(currentVertex + 0);
-                    batchData.Indices.Add(currentVertex + 1);
-                    batchData.Indices.Add(currentVertex + 2);
-
-                    // Add second face of quad
-                    batchData.Indices.Add(currentVertex + 1);
-                    batchData.Indices.Add(currentVertex + 3);
-                    batchData.Indices.Add(currentVertex + 2);
+                    // Add to builder
+                    staticGeometry.AddToBuilder(textureKey, vertices, indices, Matrix.Identity);
                 }
             }
-
-            // Add to builder
-            batches.AddToBuilder(textureKey, batchData, Matrix.Identity);
         }
 
         /// <summary>
@@ -330,16 +401,13 @@ namespace DeepEngine.Components
         /// <param name="blockData">Block data.</param>
         private void AddRMBModels(ref DFBlock blockData)
         {
-            // Constants
-            const float rotationDivisor = 5.68888888888889f;
-
             // Iterate through all subrecords
             float degrees;
             foreach (DFBlock.RmbSubRecord subRecord in blockData.RmbBlock.SubRecords)
             {
                 // Create subrecord transform
                 Matrix subrecordMatrix = Matrix.Identity;
-                degrees = subRecord.YRotation / rotationDivisor;
+                degrees = subRecord.YRotation / BlocksFile.RotationDivisor;
                 subrecordMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
                 subrecordMatrix *= Matrix.CreateTranslation(subRecord.XPos, 0, subRecord.ZPos);
 
@@ -352,12 +420,12 @@ namespace DeepEngine.Components
 
                     // Create model transform
                     Matrix modelMatrix = Matrix.Identity;
-                    degrees = obj.YRotation / rotationDivisor;
+                    degrees = obj.YRotation / BlocksFile.RotationDivisor;
                     modelMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
                     modelMatrix *= Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
 
                     // Add model data to batch builder
-                    batches.AddToBuilder(ref modelData, subrecordMatrix * modelMatrix);
+                    staticGeometry.AddToBuilder(ref modelData, subrecordMatrix * modelMatrix);
                 }
             }
         }

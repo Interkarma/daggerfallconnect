@@ -87,6 +87,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Library\DaggerfallConnect.csproj">
+      <Project>{10771391-7160-4460-B456-F87461D4A2AD}</Project>
+      <Name>DaggerfallConnect</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Tools\Deep Engine\Deep Engine\Tool_Deep Engine.csproj">
       <Project>{240A9FEF-17C0-4190-9F75-7034E67EF983}</Project>
       <Name>Tool_Deep Engine</Name>

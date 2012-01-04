@@ -240,7 +240,7 @@ namespace XNALibrary
 
             // Set default ambient light
             ambientLight.Color = Color.White;
-            ambientLight.Intensity = 0.1f;
+            ambientLight.Intensity = 0.4f;
             
             // Add default directional lights
             //DirectionalLight d0;
