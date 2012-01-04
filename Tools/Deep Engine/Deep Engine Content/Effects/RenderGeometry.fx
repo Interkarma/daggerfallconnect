@@ -16,11 +16,6 @@ float3 DiffuseColor = float3(1,1,1);
 sampler ColorTextureSampler = sampler_state
 {
     Texture = (Texture);
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    MIPFILTER = LINEAR;
-    AddressU = Wrap;
-    AddressV = Wrap;
 };
 
 

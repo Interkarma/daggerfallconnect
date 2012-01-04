@@ -79,12 +79,10 @@ namespace DeepEngine.Components
         public abstract void Draw(BaseEntity caller);
 
         /// <summary>
-        /// Provides static geometry.
+        /// Gets static geometry.
         /// </summary>
-        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
-        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
         /// <returns>Static geometry builder.</returns>
-        public abstract StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent);
+        public abstract StaticGeometryBuilder GetStaticGeometry();
 
         #endregion
     }

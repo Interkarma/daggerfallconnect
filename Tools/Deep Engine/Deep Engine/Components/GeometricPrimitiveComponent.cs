@@ -229,10 +229,8 @@ namespace DeepEngine.Components
         /// <summary>
         /// Gets static geometry.
         /// </summary>
-        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
-        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
         /// <returns>Static geometry builder.</returns>
-        public override StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        public override StaticGeometryBuilder GetStaticGeometry()
         {
             // Create builder
             StaticGeometryBuilder builder = new StaticGeometryBuilder(core.GraphicsDevice);
@@ -256,18 +254,6 @@ namespace DeepEngine.Components
                 Indices = primitive.Indices,
             };
             builder.AddToBuilder(MaterialManager.NullTextureKey, batchData, this.Matrix);
-
-            // Apply builder
-            if (applyBuilder)
-            {
-                builder.ApplyBuilder();
-            }
-
-            // Clean up local content
-            if (cleanUpLocalContent)
-            {
-                this.Dispose();
-            }
 
             return builder;
         }

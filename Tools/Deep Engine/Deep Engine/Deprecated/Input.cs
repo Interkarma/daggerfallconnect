@@ -26,7 +26,7 @@ namespace DeepEngine.Deprecated
 
         // Keyboard movement
         private const float keyboardSpinRate = 100f;
-        private const float keyboardMoveRate = 200f;
+        private const float keyboardMoveRate = 1000f;
         private const float keyboardShiftKeyMultiplier = 3f;
 
         // Mouse movement

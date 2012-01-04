@@ -210,12 +210,26 @@ namespace DaggerfallConnect.Arena2
 
         #endregion
 
+        #region Static Properties
+
+        /// <summary>
+        /// Gets default climate settings.
+        /// </summary>
+        /// <returns>Set of default climate settings.</returns>
+        static public DFLocation.ClimateSettings DefaultClimateSettings
+        {
+            get { return GetWorldClimateSettings(231); }
+        }
+
+        #endregion
+
         #region Static Public Methods
 
         /// <summary>
         /// Gets settings for specified map climate.
         /// </summary>
         /// <param name="worldClimate">Climate value from CLIMATE.PAK. Valid range is 223-232.</param>
+        /// <returns>Climate settings for specified world climate value.</returns>
         static public DFLocation.ClimateSettings GetWorldClimateSettings(int worldClimate)
         {
             // Create settings struct

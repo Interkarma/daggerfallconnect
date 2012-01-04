@@ -157,7 +157,7 @@ namespace DeepEngine.Components
         /// <param name="direction">Direction of light.</param>
         /// <param name="color">Color of light.</param>
         /// <param name="intensity">Intensity of light.</param>
-        public void BecomeDirectional(Vector3 direction, Color color, float intensity)
+        public void MakeDirectional(Vector3 direction, Color color, float intensity)
         {
             // Set values
             this.direction = direction;
@@ -173,7 +173,7 @@ namespace DeepEngine.Components
         /// <param name="radius">Radius of light.</param>
         /// <param name="color">Color of light.</param>
         /// <param name="intensity">Intensity of light.</param>
-        public void BecomePoint(Vector3 position, float radius, Color color, float intensity)
+        public void MakePoint(Vector3 position, float radius, Color color, float intensity)
         {
             // Set values
             this.position = position;

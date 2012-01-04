@@ -8,6 +8,8 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using DaggerfallConnect;
+using DaggerfallConnect.Arena2;
 using DeepEngine;
 using DeepEngine.World;
 using DeepEngine.Components;
@@ -62,7 +64,7 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
-            LoadBlockScene();
+            LoadExteriorMapScene();
             //LoadModelScene();
             //LoadPhysicsScene();
         }
@@ -106,19 +108,49 @@ namespace ContentLoading1
         #region Content Loading Methods
 
         /// <summary>
-        /// Loads a block scene.
+        /// Loads a map scene.
         /// </summary>
-        private void LoadBlockScene()
+        private void LoadExteriorMapScene()
         {
             // Set camera position
-            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 0, 1000);
+            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
 
             // Create level entity
             WorldEntity level = new WorldEntity(core.ActiveScene);
 
-            // Create block component
-            NativeBlockComponent block = new NativeBlockComponent(core.DeepCore, "MAGEAA13.RMB");
-            level.Components.Add(block);
+            // Get location
+            DFLocation location = core.DeepCore.MapManager.GetLocation("Wayrest", "Wayrest");
+            int width = location.Exterior.ExteriorData.Width;
+            int height = location.Exterior.ExteriorData.Height;
+
+            // Add block components
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Get final block name
+                    string name = core.DeepCore.BlockManager.CheckName(
+                        core.DeepCore.MapManager.GetRmbBlockName(ref location, x, y));
+
+                    // Create block component
+                    DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore);
+                    block.LoadBlock(name, location.Climate);
+                    block.Matrix = Matrix.CreateTranslation(x * 4096f, 0f, -(y * 4096f));
+
+                    // Attach component
+                    level.Components.Add(block);
+
+                    // Create block component
+                    //SceneNode blockNode = CreateBlockNode(name, location.Climate, false);
+                    //blockNode.Position = new Vector3(
+                    //    x * rmbSide,
+                    //    0f,
+                    //    -(y * rmbSide));
+
+                    // Add block to location node
+                    //locationNode.Add(blockNode);
+                }
+            }
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
@@ -140,7 +172,7 @@ namespace ContentLoading1
             // Create model entity
             WorldEntity modelEntity = new WorldEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, -400, 0);
-            modelEntity.Components.Add(new NativeModelComponent(core.DeepCore, 456));
+            modelEntity.Components.Add(new DaggerfallModelComponent(core.DeepCore, 456));
 
             // Create point light
             WorldEntity pointLightEntity = new WorldEntity(core.ActiveScene);

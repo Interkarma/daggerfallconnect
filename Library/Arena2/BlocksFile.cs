@@ -121,6 +121,15 @@ namespace DaggerfallConnect.Arena2
             get { return "BLOCKS.BSA"; }
         }
 
+        /// <summary>
+        /// Gets rotation divisor used when rotating
+        ///  block records and models into place.
+        /// </summary>
+        static public float RotationDivisor
+        {
+            get { return 5.68888888888889f;}
+        }
+
         #endregion
 
         #region Public Methods

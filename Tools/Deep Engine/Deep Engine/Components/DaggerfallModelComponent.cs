@@ -21,9 +21,9 @@ namespace DeepEngine.Components
 {
 
     /// <summary>
-    /// A drawable Daggerfall native model. Can be attached at runtime independently of content pipeline.
+    /// A lightweight component for drawing a single Daggerfall model.
     /// </summary>
-    public class NativeModelComponent : DrawableComponent
+    public class DaggerfallModelComponent : DrawableComponent
     {
 
         #region Fields
@@ -55,7 +55,7 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="core">Engine core.</param>
         /// <param name="id">Model ID to load.</param>
-        public NativeModelComponent(DeepCore core, uint id)
+        public DaggerfallModelComponent(DeepCore core, uint id)
             : base(core)
         {
             // Load effect
@@ -120,10 +120,8 @@ namespace DeepEngine.Components
         /// <summary>
         /// Gets static geometry.
         /// </summary>
-        /// <param name="applyBuilder">Request to apply builder before completion. Caller may only require geometry temporarily, so this optional.</param>
-        /// <param name="cleanUpLocalContent">Request to clean up local copies of drawable content after being made static.</param>
         /// <returns>Static geometry builder.</returns>
-        public override Utility.StaticGeometryBuilder GetStaticGeometry(bool applyBuilder, bool cleanUpLocalContent)
+        public override Utility.StaticGeometryBuilder GetStaticGeometry()
         {
             throw new NotImplementedException();
         }

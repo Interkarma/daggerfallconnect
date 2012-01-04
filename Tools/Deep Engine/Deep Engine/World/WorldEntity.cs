@@ -33,7 +33,7 @@ namespace DeepEngine.World
         #region Fields
 
         DeepCore core;
-        StaticGeometryBuilder staticGeometryBuilder;
+        StaticGeometryBuilder staticGeometryBuilder = null;
         Effect renderGeometryEffect;
 
         #endregion
@@ -52,9 +52,6 @@ namespace DeepEngine.World
 
             // Load effect for rendering static batches
             renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
-
-            // Create static geometry builder
-            staticGeometryBuilder = new StaticGeometryBuilder(core.GraphicsDevice);
         }
 
         #endregion
@@ -93,10 +90,9 @@ namespace DeepEngine.World
             // Draw all components
             foreach (BaseComponent component in components)
             {
-                if (component is DrawableComponent)
+                if (component is DrawableComponent && !component.IsStatic)
                 {
-                    if (!component.IsStatic)
-                        (component as DrawableComponent).Draw(this);
+                    (component as DrawableComponent).Draw(this);
                 }
                 else if (component is LightComponent)
                 {
@@ -115,10 +111,8 @@ namespace DeepEngine.World
         /// </summary>
         private void DrawStaticGeometry()
         {
-            // Do nothing if no buffers or batches
-            if (staticGeometryBuilder.VertexBuffer == null || 
-                staticGeometryBuilder.IndexBuffer == null ||
-                staticGeometryBuilder.StaticBatches == null)
+            // Do nothing if no static geometry added yet
+            if (staticGeometryBuilder == null)
                 return;
 
             // Update effect
@@ -184,8 +178,12 @@ namespace DeepEngine.World
             // Handle static geometry components
             if (e.IsStatic && e.Component is DrawableComponent)
             {
+                // Create static geometry builder first time a static component is added
+                if (this.staticGeometryBuilder == null)
+                    staticGeometryBuilder = new StaticGeometryBuilder(core.GraphicsDevice);
+
                 // Get static geometry from component
-                StaticGeometryBuilder builder = (e.Component as DrawableComponent).GetStaticGeometry(false, false);
+                StaticGeometryBuilder builder = (e.Component as DrawableComponent).GetStaticGeometry();
 
                 // Create new matrix for static component
                 this.staticGeometryBuilder.AddToBuilder(builder, (e.Component as DrawableComponent).Matrix);
