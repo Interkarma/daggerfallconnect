@@ -126,6 +126,14 @@ namespace DeepEngine.Components
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public override void Dispose()
+        {
+            modelData.Dispose();
+        }
+
         #endregion
 
         #region Public Methods

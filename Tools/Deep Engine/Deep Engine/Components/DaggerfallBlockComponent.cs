@@ -130,8 +130,12 @@ namespace DeepEngine.Components
         /// <param name="caller">Entity calling the draw operation.</param>
         public override void Draw(BaseEntity caller)
         {
+            // Do nothing if no static geometry
+            if (staticGeometry == null)
+                return;
+
             // Do nothing if no batches or component is disabled
-            if (staticGeometry.StaticBatches.Count == 0 || !enabled)
+            if (staticGeometry.StaticBatches == null || !enabled)
                 return;
 
             // Calculate world matrix
@@ -184,7 +188,15 @@ namespace DeepEngine.Components
         /// <returns>Static geometry builder.</returns>
         public override Utility.StaticGeometryBuilder GetStaticGeometry()
         {
-            throw new NotImplementedException();
+            return staticGeometry;
+        }
+
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public override void Dispose()
+        {
+            staticGeometry.Dispose();
         }
 
         #endregion
@@ -315,6 +327,9 @@ namespace DeepEngine.Components
         /// <param name="blockData">Block data.</param>
         private void AddRMBGroundTiles(ref DFBlock blockData)
         {
+            // Make ground slightly lower to minimise depth-fighting on ground aligned polygons
+            const float groundHeight = -2f;
+
             // Corner positions
             Vector3 topLeftPos, topRightPos, bottomLeftPos, bottomRightPos;
             Vector2 topLeftUV, topRightUV, bottomLeftUV, bottomRightUV;
@@ -335,19 +350,22 @@ namespace DeepEngine.Components
                     // Get source tile data
                     DFBlock.RmbGroundTiles tile = blockData.RmbBlock.FldHeader.GroundData.GroundTiles[x, y];
 
+                    // Set random terrain marker back to grass
+                    int textureRecord = (tile.TextureRecord > 55) ? 2 : tile.TextureRecord;
+
                     // Load texture
                     int textureKey = core.MaterialManager.LoadTexture(
                         (int)DFLocation.ClimateTextureSet.Exterior_Terrain,
-                        tile.TextureRecord,
+                        textureRecord,
                         MaterialManager.TextureCreateFlags.MipMaps |
                         MaterialManager.TextureCreateFlags.ExtendedAlpha |
                         MaterialManager.TextureCreateFlags.ApplyClimate);
 
                     // Create vertices for this quad
-                    topLeftPos = new Vector3(x * tileDimension, 0, y * tileDimension);
-                    topRightPos = new Vector3(topLeftPos.X + tileDimension, 0, topLeftPos.Z);
-                    bottomLeftPos = new Vector3(topLeftPos.X, 0, topLeftPos.Z + tileDimension);
-                    bottomRightPos = new Vector3(topLeftPos.X + tileDimension, 0, topLeftPos.Z + tileDimension);
+                    topLeftPos = new Vector3(x * tileDimension, groundHeight, y * tileDimension);
+                    topRightPos = new Vector3(topLeftPos.X + tileDimension, groundHeight, topLeftPos.Z);
+                    bottomLeftPos = new Vector3(topLeftPos.X, groundHeight, topLeftPos.Z + tileDimension);
+                    bottomRightPos = new Vector3(topLeftPos.X + tileDimension, groundHeight, topLeftPos.Z + tileDimension);
 
                     // Set UVs
                     if (tile.IsRotated && !tile.IsFlipped)
@@ -425,7 +443,7 @@ namespace DeepEngine.Components
                     modelMatrix *= Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
 
                     // Add model data to batch builder
-                    staticGeometry.AddToBuilder(ref modelData, subrecordMatrix * modelMatrix);
+                    staticGeometry.AddToBuilder(ref modelData, modelMatrix * subrecordMatrix);
                 }
             }
         }

@@ -32,8 +32,11 @@ namespace DeepEngine.World
 
         #region Fields
 
+        // Constant strings
+        const string entitySealedError = "Cannot add a static component to a sealed entity.";
+
         DeepCore core;
-        StaticGeometryBuilder staticGeometryBuilder = null;
+        StaticGeometryBuilder staticGeometry = null;
         Effect renderGeometryEffect;
 
         #endregion
@@ -101,6 +104,43 @@ namespace DeepEngine.World
             }
         }
 
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        ///  Destroys all static geometry.
+        /// </summary>
+        public override void Dispose()
+        {
+            // Dispose static geometry
+            if (staticGeometry != null)
+                staticGeometry.Dispose();
+
+            // Dispose each component
+            foreach (BaseComponent component in components)
+            {
+                component.Dispose();
+            }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Seals the static geometry builder, finalising build and making
+        ///  static buffers available for draw operations. Always seal after
+        ///  you have finished adding static components.
+        ///  Cannot be unsealed, but dynamic components can still be added as normal.
+        /// </summary>
+        public void SealStaticGeometry()
+        {
+            // Seal static geometry
+            if (staticGeometry != null)
+            {
+                staticGeometry.ApplyBuilder();
+                staticGeometry.Seal();
+            }
+        }
+
         #endregion
 
         #region Private Methods
@@ -112,7 +152,11 @@ namespace DeepEngine.World
         private void DrawStaticGeometry()
         {
             // Do nothing if no static geometry added yet
-            if (staticGeometryBuilder == null)
+            if (staticGeometry == null)
+                return;
+
+            // Do nothing if no batch dictionary
+            if (staticGeometry.StaticBatches == null)
                 return;
 
             // Update effect
@@ -121,12 +165,12 @@ namespace DeepEngine.World
             renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
 
             // Set buffers
-            core.GraphicsDevice.SetVertexBuffer(staticGeometryBuilder.VertexBuffer);
-            core.GraphicsDevice.Indices = staticGeometryBuilder.IndexBuffer;
+            core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
+            core.GraphicsDevice.Indices = staticGeometry.IndexBuffer;
 
             // Draw batches
             Texture2D diffuseTexture = null;
-            foreach (var item in staticGeometryBuilder.StaticBatches)
+            foreach (var item in staticGeometry.StaticBatches)
             {
                 int textureKey = item.Key;
                 if (textureKey == MaterialManager.NullTextureKey)
@@ -154,7 +198,7 @@ namespace DeepEngine.World
                         PrimitiveType.TriangleList,
                         0,
                         0,
-                        staticGeometryBuilder.VertexBuffer.VertexCount,
+                        staticGeometry.VertexBuffer.VertexCount,
                         item.Value.StartIndex,
                         item.Value.PrimitiveCount);
                 }
@@ -179,15 +223,18 @@ namespace DeepEngine.World
             if (e.IsStatic && e.Component is DrawableComponent)
             {
                 // Create static geometry builder first time a static component is added
-                if (this.staticGeometryBuilder == null)
-                    staticGeometryBuilder = new StaticGeometryBuilder(core.GraphicsDevice);
+                if (this.staticGeometry == null)
+                    staticGeometry = new StaticGeometryBuilder(core.GraphicsDevice);
+
+                // Check seal
+                if (staticGeometry.IsSealed)
+                    throw new Exception(entitySealedError);
 
                 // Get static geometry from component
                 StaticGeometryBuilder builder = (e.Component as DrawableComponent).GetStaticGeometry();
 
-                // Create new matrix for static component
-                this.staticGeometryBuilder.AddToBuilder(builder, (e.Component as DrawableComponent).Matrix);
-                this.staticGeometryBuilder.ApplyBuilder();
+                // Add to entity static geometry
+                this.staticGeometry.AddToBuilder(builder, (e.Component as DrawableComponent).Matrix);
             }
         }
 

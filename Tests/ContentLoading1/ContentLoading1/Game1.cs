@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -24,6 +24,11 @@ namespace ContentLoading1
         GameCore core;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont font;
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        public long lastUpdateTime;
+        public long lastDrawTime;
 
         const string arena2Path = @"c:\dosgames\dagger\arena2";
 
@@ -64,7 +69,12 @@ namespace ContentLoading1
 
             // TODO: use this.Content to load your game content here
 
+            // Load a sprite font
+            font = Content.Load<SpriteFont>("SpriteFont1");
+
+            // Load a test scene
             LoadExteriorMapScene();
+            //LoadBlockScene();
             //LoadModelScene();
             //LoadPhysicsScene();
         }
@@ -91,7 +101,11 @@ namespace ContentLoading1
 
             // TODO: Add your update logic here
 
+            long startTime = stopwatch.ElapsedMilliseconds;
+
             base.Update(gameTime);
+
+            lastUpdateTime= stopwatch.ElapsedMilliseconds - startTime;
         }
 
         /// <summary>
@@ -102,7 +116,17 @@ namespace ContentLoading1
         {
             // TODO: Add your drawing code here
 
+            long startTime = stopwatch.ElapsedMilliseconds;
+
             base.Draw(gameTime);
+
+            lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
+
+            string status = string.Format("Update: {0}ms, Draw: {1}ms", lastUpdateTime, lastDrawTime);
+
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            spriteBatch.DrawString(font, status, Vector2.Zero, Color.Gold);
+            spriteBatch.End();
         }
 
         #region Content Loading Methods
@@ -128,7 +152,7 @@ namespace ContentLoading1
             {
                 for (int x = 0; x < width; x++)
                 {
-                    // Get final block name
+                    // Get block name
                     string name = core.DeepCore.BlockManager.CheckName(
                         core.DeepCore.MapManager.GetRmbBlockName(ref location, x, y));
 
@@ -139,18 +163,31 @@ namespace ContentLoading1
 
                     // Attach component
                     level.Components.Add(block);
-
-                    // Create block component
-                    //SceneNode blockNode = CreateBlockNode(name, location.Climate, false);
-                    //blockNode.Position = new Vector3(
-                    //    x * rmbSide,
-                    //    0f,
-                    //    -(y * rmbSide));
-
-                    // Add block to location node
-                    //locationNode.Add(blockNode);
                 }
             }
+
+            // Now that we've added everything, seal static geometry so it can be displayed
+            //level.SealStaticGeometry();
+
+            // Create directional light
+            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
+        }
+
+        private void LoadBlockScene()
+        {
+            // Set camera position
+            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
+
+            // Create level entity
+            WorldEntity level = new WorldEntity(core.ActiveScene);
+
+            // Create block component
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore);
+            block.LoadBlock("GRVEAL09.RMB", MapsFile.DefaultClimateSettings);
+
+            // Attach component
+            level.Components.Add(block);
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
