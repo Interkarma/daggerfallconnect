@@ -43,7 +43,7 @@ namespace DeepEngine.Daggerfall
         /// <summary>
         /// Defines model data.
         /// </summary>
-        public class ModelData
+        public class ModelData : IDisposable
         {
             /// <summary>Native geometry as read from ARCH3D.BSA.</summary>
             public DFMesh DFMesh;
@@ -82,6 +82,21 @@ namespace DeepEngine.Daggerfall
 
                 /// <summary>Number of primitives in this submesh.</summary>
                 public int PrimitiveCount;
+            }
+
+            /// <summary>
+            /// Dispose model data.
+            /// </summary>
+            public void Dispose()
+            {
+                Vertices = null;
+                Indices = null;
+                SubMeshes = null;
+                this.DFMesh.SubMeshes = null;
+                VertexBuffer.Dispose();
+                VertexBuffer = null;
+                IndexBuffer.Dispose();
+                IndexBuffer = null;
             }
         }
 
@@ -216,8 +231,17 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         public void ClearModelData()
         {
-            if (cacheModelData)
+            if (cacheModelData && modelDataDict != null)
+            {
+                // Dispose all model data items
+                foreach (var item in modelDataDict)
+                {
+                    item.Value.Dispose();
+                }
+
+                // Clear the dictionary contents
                 modelDataDict.Clear();
+            }
         }
 
         /// <summary>

@@ -28,7 +28,7 @@ namespace DeepEngine.Utility
     ///  Groups primitives by material and pre-transforms vertices.
     ///  Useful for building efficient static level geometry from smaller pieces.
     /// </summary>
-    public class StaticGeometryBuilder
+    public class StaticGeometryBuilder : IDisposable
     {
         #region Fields
 
@@ -44,6 +44,9 @@ namespace DeepEngine.Utility
 
         // Builder dictionary used during build process
         Dictionary<int, BatchData> builderDictionary;
+
+        // Options
+        private bool isSealed = false;
 
         #endregion
 
@@ -65,6 +68,14 @@ namespace DeepEngine.Utility
         {
             public List<VertexPositionNormalTextureBump> Vertices;
             public List<int> Indices;
+        }
+
+        /// <summary>
+        /// A sealed builder cannot be added to.
+        /// </summary>
+        public bool IsSealed
+        {
+            get { return isSealed; }
         }
 
         #endregion
@@ -133,6 +144,10 @@ namespace DeepEngine.Utility
         /// </summary>
         public void NewBuilder()
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
             // Create empty dictionaries
             batchDictionary = new Dictionary<int, StaticBatch>();
             builderDictionary = new Dictionary<int, BatchData>();
@@ -147,6 +162,10 @@ namespace DeepEngine.Utility
         /// <param name="matrix">Geometry transform to apply before adding.</param>
         public void AddToBuilder(int textureKey, VertexPositionNormalTextureBump[] vertices, int[] indices, Matrix matrix)
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
             // Start new batch data
             BatchData batchData;
             batchData.Vertices = new List<VertexPositionNormalTextureBump>();
@@ -166,6 +185,10 @@ namespace DeepEngine.Utility
         /// <param name="matrix">Geometry transform to apply before adding.</param>
         public void AddToBuilder(ref ModelManager.ModelData modelData, Matrix matrix)
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
             // Iterate submeshes
             BatchData batchData;
             foreach (var sm in modelData.SubMeshes)
@@ -211,6 +234,10 @@ namespace DeepEngine.Utility
         /// <param name="matrix">Geometry transform to apply before adding.</param>
         public void AddToBuilder(StaticGeometryBuilder builder, Matrix matrix)
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
             // Add items to this builder.
             foreach (var item in builder.builderDictionary)
             {
@@ -227,6 +254,10 @@ namespace DeepEngine.Utility
         /// <param name="matrix">Geometry transform to apply before adding.</param>
         public void AddToBuilder(int textureKey, BatchData batchData, Matrix matrix)
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
             BatchData builder;
             if (builderDictionary.ContainsKey(textureKey))
             {
@@ -273,6 +304,31 @@ namespace DeepEngine.Utility
         /// </summary>
         public void ApplyBuilder()
         {
+            // Do nothing if sealed
+            if (isSealed)
+                return;
+
+            // Dispose current vertex buffer
+            if (vertexBuffer != null)
+            {
+                vertexBuffer.Dispose();
+                vertexBuffer = null;
+            }
+
+            // Dispose current index buffer
+            if (indexBuffer != null)
+            {
+                indexBuffer.Dispose();
+                indexBuffer = null;
+            }
+
+            // Dispose current batch dictionary
+            if (batchDictionary != null)
+            {
+                batchDictionary.Clear();
+                batchDictionary = null;
+            }
+
             // Create new batch dictionary
             batchDictionary = new Dictionary<int, StaticBatch>();
 
@@ -328,8 +384,72 @@ namespace DeepEngine.Utility
             indexBuffer.SetData<int>(allIndices);
         }
 
+        /// <summary>
+        /// Seal the builder once all static geometry has been completed.
+        ///  This removes the builder dictionary and just keeps the final vertex and index buffers.
+        ///  You cannot add to a sealed builder.
+        /// </summary>
+        public void Seal()
+        {
+            // Dispose of builder dictionary
+            if (builderDictionary != null)
+            {
+                builderDictionary.Clear();
+                builderDictionary = null;
+            }
+            this.isSealed = true;
+        }
+
+        /// <summary>
+        /// Removes seal on builder.
+        ///  This will create a fresh builder and replace any existing buffers
+        ///  next time you call ApplyBuilder().
+        /// </summary>
+        public void UnSeal()
+        {
+            this.isSealed = false;
+            NewBuilder();
+        }
+
         #endregion
 
+        #region IDisposable
+
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public void Dispose()
+        {
+            // Dispose vertex buffer
+            if (vertexBuffer != null)
+            {
+                vertexBuffer.Dispose();
+                vertexBuffer = null;
+            }
+
+            // Dispose index buffer
+            if (indexBuffer != null)
+            {
+                indexBuffer.Dispose();
+                indexBuffer = null;
+            }
+
+            // Dispose batch dictionary
+            if (batchDictionary != null)
+            {
+                batchDictionary.Clear();
+                batchDictionary = null;
+            }
+
+            // Dispose builder dictionary
+            if (builderDictionary != null)
+            {
+                builderDictionary.Clear();
+                builderDictionary = null;
+            }
+        }
+
+        #endregion
     }
 
 }
