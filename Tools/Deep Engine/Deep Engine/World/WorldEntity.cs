@@ -74,6 +74,7 @@ namespace DeepEngine.World
             // Update all components
             foreach (BaseComponent component in components)
             {
+                // Update component
                 component.Update(gameTime, this);
             }
         }
@@ -88,18 +89,39 @@ namespace DeepEngine.World
                 return;
 
             // Draw static geometry
-            DrawStaticGeometry();
+            if (staticGeometry != null)
+            {
+                DrawStaticGeometry();
+            }
 
             // Draw all components
             foreach (BaseComponent component in components)
             {
                 if (component is DrawableComponent && !component.IsStatic)
                 {
-                    (component as DrawableComponent).Draw(this);
+                    // Get bounding sphere of component transformed to entity space
+                    BoundingSphere sphere = (component as DrawableComponent).BoundingSphere.Transform(matrix);
+
+                    // Only draw if component is visible by camera
+                    if (sphere.Intersects(core.ActiveScene.DeprecatedCamera.BoundingFrustum))
+                        (component as DrawableComponent).Draw(this);
                 }
                 else if (component is LightComponent)
                 {
-                    core.Renderer.SubmitLight(component as LightComponent, this);
+                    // Point lights must be visible to camera
+                    if ((component as LightComponent).Type == LightComponent.LightType.Point)
+                    {
+                        // Get bounding sphere of component transformed to entity space
+                        BoundingSphere sphere = (component as LightComponent).BoundingSphere.Transform(matrix);
+
+                        // Only draw if component is visible by camera
+                        if (sphere.Intersects(core.ActiveScene.DeprecatedCamera.BoundingFrustum))
+                            core.Renderer.SubmitLight(component as LightComponent, this);
+                    }
+                    else
+                    {
+                        core.Renderer.SubmitLight(component as LightComponent, this);
+                    }
                 }
             }
         }
@@ -151,10 +173,6 @@ namespace DeepEngine.World
         /// </summary>
         private void DrawStaticGeometry()
         {
-            // Do nothing if no static geometry added yet
-            if (staticGeometry == null)
-                return;
-
             // Do nothing if no batch dictionary
             if (staticGeometry.StaticBatches == null)
                 return;

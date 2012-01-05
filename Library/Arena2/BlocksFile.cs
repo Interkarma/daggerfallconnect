@@ -130,6 +130,22 @@ namespace DaggerfallConnect.Arena2
             get { return 5.68888888888889f;}
         }
 
+        /// <summary>
+        /// Gets dimension of a single RMB block.
+        /// </summary>
+        static public float RMBDimension
+        {
+            get { return 4096f; }
+        }
+
+        /// <summary>
+        /// Gets dimension of a single RDB block.
+        /// </summary>
+        static public float RDBDimension
+        {
+            get { return 2048f; }
+        }
+
         #endregion
 
         #region Public Methods

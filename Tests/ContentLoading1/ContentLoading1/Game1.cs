@@ -25,10 +25,9 @@ namespace ContentLoading1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         SpriteFont font;
-        Stopwatch stopwatch = Stopwatch.StartNew();
 
-        public long lastUpdateTime;
-        public long lastDrawTime;
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        long lastLoadTime = 0;
 
         const string arena2Path = @"c:\dosgames\dagger\arena2";
 
@@ -72,11 +71,15 @@ namespace ContentLoading1
             // Load a sprite font
             font = Content.Load<SpriteFont>("SpriteFont1");
 
+            long startTime = stopwatch.ElapsedMilliseconds;
+
             // Load a test scene
-            LoadExteriorMapScene();
+            //LoadExteriorMapScene();
             //LoadBlockScene();
             //LoadModelScene();
-            //LoadPhysicsScene();
+            LoadPhysicsScene();
+
+            lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
         }
 
         /// <summary>
@@ -101,11 +104,7 @@ namespace ContentLoading1
 
             // TODO: Add your update logic here
 
-            long startTime = stopwatch.ElapsedMilliseconds;
-
             base.Update(gameTime);
-
-            lastUpdateTime= stopwatch.ElapsedMilliseconds - startTime;
         }
 
         /// <summary>
@@ -116,13 +115,14 @@ namespace ContentLoading1
         {
             // TODO: Add your drawing code here
 
-            long startTime = stopwatch.ElapsedMilliseconds;
-
             base.Draw(gameTime);
 
-            lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
-
-            string status = string.Format("Update: {0}ms, Draw: {1}ms", lastUpdateTime, lastDrawTime);
+            string status = string.Format(
+                "LoadTime: {0}ms, Update: {1}ms, Draw: {2}ms, Lights: {3}",
+                lastLoadTime,
+                core.DeepCore.LastUpdateTime,
+                core.DeepCore.LastDrawTime,
+                core.DeepCore.VisibleLightsCount);
 
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             spriteBatch.DrawString(font, status, Vector2.Zero, Color.Gold);
@@ -166,8 +166,8 @@ namespace ContentLoading1
                 }
             }
 
-            // Now that we've added everything, seal static geometry so it can be displayed
-            //level.SealStaticGeometry();
+            // Clear model cache to release some memory
+            core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);

@@ -273,6 +273,12 @@ namespace DeepEngine.Components
 
             // Finish batch building
             staticGeometry.ApplyBuilder();
+            staticGeometry.Seal();
+
+            // Set component bounding sphere
+            this.BoundingSphere = new BoundingSphere(
+                new Vector3(BlocksFile.RMBDimension / 2, 0, BlocksFile.RMBDimension / 2),
+                BlocksFile.RMBDimension);
 
             //AddRMBModels(ref block, blockNode);
             //AddRMBMiscModels(ref block, blockNode);
