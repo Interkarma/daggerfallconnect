@@ -48,7 +48,7 @@ namespace DeepEngine.Components
         /// Gets or sets local transform relative to entity.
         ///  Cannot change matrix of static components.
         /// </summary>
-        public Matrix Matrix
+        public virtual Matrix Matrix
         {
             get { return matrix; }
             set { if (!base.isStatic) matrix = value; }

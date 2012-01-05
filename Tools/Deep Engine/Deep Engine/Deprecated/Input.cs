@@ -32,7 +32,7 @@ namespace DeepEngine.Deprecated
         // Mouse movement
         private const float mouseSpinRate = 5f;
         private const float mouseMoveRate = 50f;
-        private const float middleButonMoveRate = 10f;
+        private const float middleButonMoveRate = 100f;
 
         // GamePad movement
         private bool gamePadConnected = false;

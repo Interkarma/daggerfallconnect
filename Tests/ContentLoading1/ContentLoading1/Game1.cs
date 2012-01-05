@@ -29,6 +29,21 @@ namespace ContentLoading1
         Stopwatch stopwatch = Stopwatch.StartNew();
         long lastLoadTime = 0;
 
+        long nextBallTime = 0;
+        long minBallTime = 200;
+
+        int colorIndex = 0;
+        Color[] colors = new Color[]
+        {
+            Color.Red,
+            Color.Green,
+            Color.Blue,
+            Color.Gold,
+            Color.Purple,
+            Color.YellowGreen,
+        };
+
+
         const string arena2Path = @"c:\dosgames\dagger\arena2";
 
         public Game1()
@@ -74,10 +89,10 @@ namespace ContentLoading1
             long startTime = stopwatch.ElapsedMilliseconds;
 
             // Load a test scene
-            //LoadExteriorMapScene();
+            LoadExteriorMapScene();
             //LoadBlockScene();
             //LoadModelScene();
-            LoadPhysicsScene();
+            //LoadPhysicsScene();
 
             lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
         }
@@ -104,6 +119,13 @@ namespace ContentLoading1
 
             // TODO: Add your update logic here
 
+            KeyboardState ks = Keyboard.GetState();
+            if (ks.IsKeyDown(Keys.Space) && stopwatch.ElapsedMilliseconds > nextBallTime)
+            {
+                ShootBall();
+                nextBallTime = stopwatch.ElapsedMilliseconds + minBallTime;
+            }
+
             base.Update(gameTime);
         }
 
@@ -117,16 +139,22 @@ namespace ContentLoading1
 
             base.Draw(gameTime);
 
+            /*
+            // Draw debug buffers
+            core.DeepCore.DrawDebugBuffers();
+
+            // Compose engine statistics
             string status = string.Format(
-                "LoadTime: {0}ms, Update: {1}ms, Draw: {2}ms, Lights: {3}",
-                lastLoadTime,
+                "Update: {0}ms, Draw: {1}ms, Lights: {2}",
                 core.DeepCore.LastUpdateTime,
                 core.DeepCore.LastDrawTime,
                 core.DeepCore.VisibleLightsCount);
 
+            // Draw engine statistics
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             spriteBatch.DrawString(font, status, Vector2.Zero, Color.Gold);
             spriteBatch.End();
+            */
         }
 
         #region Content Loading Methods
@@ -136,6 +164,9 @@ namespace ContentLoading1
         /// </summary>
         private void LoadExteriorMapScene()
         {
+            // Set clear colour to black
+            core.DeepCore.Renderer.ClearColor = Color.Black;
+
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
 
@@ -157,9 +188,9 @@ namespace ContentLoading1
                         core.DeepCore.MapManager.GetRmbBlockName(ref location, x, y));
 
                     // Create block component
-                    DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore);
+                    DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore, core.DeepCore.ActiveScene);
                     block.LoadBlock(name, location.Climate);
-                    block.Matrix = Matrix.CreateTranslation(x * 4096f, 0f, -(y * 4096f));
+                    block.Matrix = Matrix.CreateTranslation(x * BlocksFile.RMBDimension, 0f, -(y * BlocksFile.RMBDimension));
 
                     // Attach component
                     level.Components.Add(block);
@@ -171,7 +202,7 @@ namespace ContentLoading1
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.2f));
         }
 
         private void LoadBlockScene()
@@ -183,8 +214,8 @@ namespace ContentLoading1
             WorldEntity level = new WorldEntity(core.ActiveScene);
 
             // Create block component
-            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore);
-            block.LoadBlock("GRVEAL09.RMB", MapsFile.DefaultClimateSettings);
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore, core.DeepCore.ActiveScene);
+            block.LoadBlock("MAGEAA13.RMB", MapsFile.DefaultClimateSettings);
 
             // Attach component
             level.Components.Add(block);
@@ -243,7 +274,7 @@ namespace ContentLoading1
             cubeEntity.Components.Add(cubeGeometry);
 
             // Attach cube physics and a directional light
-            PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(core.DeepCore, cubeEntity.Matrix, 1024f, 1024f, 1024f);
+            PhysicsColliderComponent cubePhysics = new PhysicsColliderComponent(core.DeepCore, core.DeepCore.ActiveScene, cubeEntity.Matrix, 1024f, 1024f, 1024f);
             LightComponent cubeLight = new LightComponent(core.DeepCore, Vector3.Right, Color.White, 0.5f);
             cubeEntity.Components.Add(cubePhysics);
             cubeEntity.Components.Add(cubeLight);
@@ -255,7 +286,7 @@ namespace ContentLoading1
             torusEntity.Components.Add(torusGeometry);
 
             // Attach torus physics and a point light
-            PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(core.DeepCore, torusEntity.Matrix, 128f, 64f, 128f, 1f);
+            PhysicsColliderComponent torusPhysics = new PhysicsColliderComponent(core.DeepCore, core.DeepCore.ActiveScene, torusEntity.Matrix, 128f, 64f, 128f, 1f);
             LightComponent torusLight = new LightComponent(core.DeepCore, Vector3.Zero, 512f, Color.Red, 1f);
             torusEntity.Components.Add(torusPhysics);
             torusEntity.Components.Add(torusLight);
@@ -267,12 +298,54 @@ namespace ContentLoading1
             sphereEntity.Components.Add(sphereGeometry);
             
             // Attach sphere physics
-            PhysicsColliderComponent spherePhysics = new PhysicsColliderComponent(core.DeepCore, sphereEntity.Matrix, 64f, 1f);
+            PhysicsColliderComponent spherePhysics = new PhysicsColliderComponent(core.DeepCore, core.DeepCore.ActiveScene, sphereEntity.Matrix, 64f, 1f);
             spherePhysics.PhysicsEntity.Material.Bounciness = 0.0f;
             sphereEntity.Components.Add(spherePhysics);
 
             // Share torus light with sphere
             sphereEntity.Components.Add(torusLight);
+        }
+
+        #endregion
+
+        #region Fun Stuff
+
+        /// <summary>
+        /// Shoots a coloured ball from player's position into world.
+        /// </summary>
+        public void ShootBall()
+        {
+            // Get next colour for ball
+            Color sphereColor = colors[colorIndex++];
+            if (colorIndex >= colors.Length)
+                colorIndex = 0;
+
+            // Get camera facing
+            Vector3 cameraFacing = core.ActiveScene.DeprecatedCamera.TransformedReference;
+
+            // Get start position
+            Vector3 position = core.ActiveScene.DeprecatedCamera.Position;
+            position += cameraFacing * 128;
+
+            // Create sphere entity
+            WorldEntity sphereEntity = new WorldEntity(core.ActiveScene);
+            sphereEntity.Matrix = Matrix.CreateTranslation(position);
+
+            // Attach sphere geometry
+            GeometricPrimitiveComponent sphereGeometry = new GeometricPrimitiveComponent(core.DeepCore);
+            sphereGeometry.MakeSphere(64f, 16);
+            sphereGeometry.Color = sphereColor;
+            sphereEntity.Components.Add(sphereGeometry);
+
+            // Attach sphere physics
+            PhysicsColliderComponent spherePhysics = new PhysicsColliderComponent(core.DeepCore, core.DeepCore.ActiveScene, sphereEntity.Matrix, 64f, 1f);
+            spherePhysics.PhysicsEntity.LinearVelocity = cameraFacing * 500f;
+            spherePhysics.PhysicsEntity.Material.Bounciness = 0.2f;
+            sphereEntity.Components.Add(spherePhysics);
+
+            // Attach sphere light
+            LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 512f, sphereColor, 1f);
+            sphereEntity.Components.Add(sphereLight);
         }
 
         #endregion

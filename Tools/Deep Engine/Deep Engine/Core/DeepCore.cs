@@ -269,6 +269,7 @@ namespace DeepEngine.Core
         /// <summary>
         /// Called when core should draw.
         /// </summary>
+        /// <param name="drawDebugBuffers">Flag to draw debug buffers.</param>
         public void Draw()
         {
             // Start timer
@@ -279,6 +280,14 @@ namespace DeepEngine.Core
 
             // Get time
             lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
+        }
+
+        /// <summary>
+        /// Draws debug buffers from last render operation.
+        /// </summary>
+        public void DrawDebugBuffers()
+        {
+            renderer.DrawDebugBuffers();
         }
 
         #endregion

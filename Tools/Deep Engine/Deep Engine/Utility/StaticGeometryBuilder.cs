@@ -45,6 +45,10 @@ namespace DeepEngine.Utility
         // Builder dictionary used during build process
         Dictionary<int, BatchData> builderDictionary;
 
+        // Static data for physics engine
+        Vector3[] physicsVertices = null;
+        int[] physicsIndices = null;
+
         // Options
         private bool isSealed = false;
 
@@ -76,6 +80,24 @@ namespace DeepEngine.Utility
         public bool IsSealed
         {
             get { return isSealed; }
+        }
+
+        /// <summary>
+        /// Gets vertices for physics engine.
+        ///  Only valid once geometry has been sealed.
+        /// </summary>
+        public Vector3[] PhysicsVertices
+        {
+            get { return physicsVertices; }
+        }
+
+        /// <summary>
+        /// Gets indices for physics engine.
+        ///  Only valid once geometry has been sealed.
+        /// </summary>
+        public int[] PhysicsIndices
+        {
+            get { return physicsIndices; }
         }
 
         #endregion
@@ -391,12 +413,17 @@ namespace DeepEngine.Utility
         /// </summary>
         public void Seal()
         {
-            // Dispose of builder dictionary
             if (builderDictionary != null)
             {
+                // Create physics properties
+                SetPhysicsArrays();
+
+                // Dispose of builder dictionary
                 builderDictionary.Clear();
                 builderDictionary = null;
             }
+
+            // Set flag
             this.isSealed = true;
         }
 
@@ -409,6 +436,51 @@ namespace DeepEngine.Utility
         {
             this.isSealed = false;
             NewBuilder();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Set physics arrays from builder data.
+        /// </summary>
+        private void SetPhysicsArrays()
+        {
+            // Count total vertices and indices
+            int totalVertices = 0;
+            int totalIndices = 0;
+            foreach (var item in builderDictionary)
+            {
+                totalVertices += item.Value.Vertices.Count;
+                totalIndices += item.Value.Indices.Count;
+            }
+
+            // Create static arrays
+            physicsVertices = new Vector3[totalVertices];
+            physicsIndices = new int[totalIndices];
+
+            // Populate static arrays
+            int currentVertex = 0;
+            int currentIndex = 0;
+            foreach (var item in builderDictionary)
+            {
+                // Save current highest vertex and index
+                int highestVertex = currentVertex;
+                int highestIndex = currentIndex;
+
+                // Copy vertex data
+                foreach (var vertex in item.Value.Vertices)
+                {
+                    physicsVertices[currentVertex++] = vertex.Position;
+                }
+
+                // Copy index data
+                foreach (var index in item.Value.Indices)
+                {
+                    physicsIndices[currentIndex++] = highestVertex + index;
+                }
+            }
         }
 
         #endregion

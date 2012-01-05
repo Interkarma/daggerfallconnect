@@ -198,6 +198,14 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
+        /// Draws debug buffers from last render operation.
+        /// </summary>
+        public void DrawDebugBuffers()
+        {
+            gBuffer.DrawDebugBuffers(core.SpriteBatch);
+        }
+
+        /// <summary>
         /// Submit a light to be drawn in GBuffer.
         ///  In deferred rendering lights are drawn after other buffers have been filled.
         ///  Currently just storing pending light operations until end.
@@ -258,9 +266,6 @@ namespace DeepEngine.Rendering
             // Finish deferred rendering
             DrawLights();
             ComposeFinal();
-
-            // Draw debug buffers
-            gBuffer.DrawDebugBuffers(core.SpriteBatch);
         }
 
         /// <summary>

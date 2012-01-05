@@ -94,7 +94,7 @@ namespace DeepEngine.World
 
             // Create simulation space
             space = new Space();
-            space.ForceUpdater.Gravity = new Vector3(0, -9.81f, 0);
+            space.ForceUpdater.Gravity = new Vector3(0, -90f, 0);
 
             // Create camera
             deprecatedCamera = new Deprecated.Camera();

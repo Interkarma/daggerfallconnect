@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BEPUphysics.Collidables;
+using BEPUphysics.MathExtensions;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DeepEngine.Core;
@@ -27,6 +29,7 @@ namespace DeepEngine.Components
     /// <summary>
     /// Component for creating scenes from Daggerfall blocks.
     ///  Supports RMB blocks, RDB blocks, and building interiors.
+    ///  Adds static mesh properties to physics scene so environment is collidable.
     /// </summary>
     public class DaggerfallBlockComponent : DrawableComponent
     {
@@ -34,6 +37,9 @@ namespace DeepEngine.Components
 
         // Constant strings
         const string unknownBlockError = "Error loading an unknown or unsupported block.";
+
+        // References
+        Scene scene;
 
         // Variables
         string blockName;
@@ -43,6 +49,9 @@ namespace DeepEngine.Components
 
         // Effects
         Effect renderGeometryEffect;
+
+        // Physics
+        StaticMesh physicsMesh = null;
 
         #endregion
 
@@ -102,6 +111,23 @@ namespace DeepEngine.Components
             get { return blockName; }
         }
 
+        /// <summary>
+        /// Gets or sets local transform relative to entity.
+        ///  Cannot change matrix of static components.
+        /// </summary>
+        public override Matrix Matrix
+        {
+            get { return base.Matrix; }
+            set
+            {
+                base.Matrix = value;
+                if (physicsMesh != null)
+                {
+                    physicsMesh.WorldTransform = new AffineTransform(this.matrix.Translation);
+                }
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -110,9 +136,13 @@ namespace DeepEngine.Components
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        public DaggerfallBlockComponent(DeepCore core)
+        /// <param name="scene">Scene to add physics properties.</param>
+        public DaggerfallBlockComponent(DeepCore core, Scene scene)
             : base(core)
         {
+            // Save references
+            this.scene = scene;
+
             // Load effect
             renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
 
@@ -123,6 +153,21 @@ namespace DeepEngine.Components
         #endregion
 
         #region DrawableComponent Overrides
+
+        /// <summary>
+        /// Called when component should update itself.
+        /// </summary>
+        /// <param name="gameTime">GameTime.</param>
+        /// <param name="caller">The entity calling the update.</param>
+        public override void Update(GameTime gameTime, BaseEntity caller)
+        {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
+            // Ensure component is aligned to physics entity
+            this.matrix = physicsMesh.WorldTransform.Matrix;
+        }
 
         /// <summary>
         /// Draws the component.
@@ -217,6 +262,9 @@ namespace DeepEngine.Components
                 // Set climate
                 core.MaterialManager.ClimateType = climateSettings.ClimateType;
 
+                // Start new builder
+                staticGeometry.UnSeal();
+
                 // Load block
                 DFBlock blockData = core.BlockManager.GetBlock(blockName);
                 switch (blockData.Type)
@@ -259,6 +307,30 @@ namespace DeepEngine.Components
 
         #endregion
 
+        #region Private Methods
+
+        /// <summary>
+        /// Completes static geometry build process.
+        ///  Submits static geometry to physics scene.
+        /// </summary>
+        private void Seal()
+        {
+            // Seal static geometry
+            staticGeometry.ApplyBuilder();
+            staticGeometry.Seal();
+
+            // Create static geometry for physics engine
+            physicsMesh = new StaticMesh(
+                staticGeometry.PhysicsVertices,
+                staticGeometry.PhysicsIndices,
+                new AffineTransform(this.matrix.Translation));
+
+            // Add static mesh to physics space
+            scene.Space.Add(physicsMesh);
+        }
+
+        #endregion
+
         #region Block Building
 
         /// <summary>
@@ -272,8 +344,7 @@ namespace DeepEngine.Components
             AddRMBModels(ref blockData);
 
             // Finish batch building
-            staticGeometry.ApplyBuilder();
-            staticGeometry.Seal();
+            Seal();
 
             // Set component bounding sphere
             this.BoundingSphere = new BoundingSphere(

@@ -22,13 +22,14 @@ namespace DeepEngine.Components
 {
 
     /// <summary>
-    /// Provides integration with physics engine.
+    /// Provides simplistic integration with physics engine.
     /// </summary>
     public class PhysicsColliderComponent : BaseComponent
     {
 
         #region Fields
 
+        Scene scene;
         Entity physicsEntity;
         PhysicsPrimitiveType type;
 
@@ -75,18 +76,22 @@ namespace DeepEngine.Components
         /// Dynamic Box constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
         /// <param name="matrix">Starting transform.</param>
         /// <param name="width">Width of box.</param>
         /// <param name="height">Height of box.</param>
         /// <param name="length">Length of box.</param>
         /// <param name="mass">Mass of box.</param>
-        public PhysicsColliderComponent(DeepCore core, Matrix matrix, float width, float height, float length, float mass)
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, float width, float height, float length, float mass)
             : base(core)
         {
+            // Store references
+            this.scene = scene;
+
             // Add physics entity
             physicsEntity = new Box(Vector3.Zero, width, height, length, mass);
             physicsEntity.WorldTransform = matrix;
-            core.ActiveScene.Space.Add(physicsEntity);
+            scene.Space.Add(physicsEntity);
             type = PhysicsPrimitiveType.Box;
         }
 
@@ -94,17 +99,21 @@ namespace DeepEngine.Components
         /// Kinematic Box constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
         /// <param name="matrix">Starting transform.</param>
         /// <param name="width">Width of box.</param>
         /// <param name="height">Height of box.</param>
         /// <param name="length">Length of box.</param>
-        public PhysicsColliderComponent(DeepCore core, Matrix matrix, float width, float height, float length)
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, float width, float height, float length)
             : base(core)
         {
+            // Store references
+            this.scene = scene;
+
             // Add physics entity
             physicsEntity = new Box(Vector3.Zero, width, height, length);
             physicsEntity.WorldTransform = matrix;
-            core.ActiveScene.Space.Add(physicsEntity);
+            scene.Space.Add(physicsEntity);
             type = PhysicsPrimitiveType.Box;
         }
 
@@ -112,16 +121,20 @@ namespace DeepEngine.Components
         /// Dynamic Sphere constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
         /// <param name="matrix">Starting transform.</param>
         /// <param name="radius">Radius of sphere.</param>
         /// <param name="mass">Mass of sphere.</param>
-        public PhysicsColliderComponent(DeepCore core, Matrix matrix, float radius, float mass)
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, float radius, float mass)
             : base(core)
         {
+            // Store references
+            this.scene = scene;
+
             // Add physics entity
             physicsEntity = new Sphere(Vector3.Zero, radius, mass);
             physicsEntity.WorldTransform = matrix;
-            core.ActiveScene.Space.Add(physicsEntity);
+            scene.Space.Add(physicsEntity);
             type = PhysicsPrimitiveType.Sphere;
         }
 
@@ -129,15 +142,19 @@ namespace DeepEngine.Components
         /// Kinematic Sphere constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
         /// <param name="matrix">Starting transform.</param>
         /// <param name="radius">Radius of sphere.</param>
-        public PhysicsColliderComponent(DeepCore core, Matrix matrix, float radius)
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, float radius)
             : base(core)
         {
+            // Store references
+            this.scene = scene;
+
             // Add physics entity
             physicsEntity = new Sphere(Vector3.Zero, radius);
             physicsEntity.WorldTransform = matrix;
-            core.ActiveScene.Space.Add(physicsEntity);
+            scene.Space.Add(physicsEntity);
             type = PhysicsPrimitiveType.Sphere;
         }
 
