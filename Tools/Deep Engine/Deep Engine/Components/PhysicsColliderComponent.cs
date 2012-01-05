@@ -177,6 +177,17 @@ namespace DeepEngine.Components
             caller.Matrix = physicsEntity.WorldTransform;
         }
 
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            // Clear physics entity from space
+            scene.Space.Remove(physicsEntity);
+        }
+
         #endregion
 
         #region Public Methods

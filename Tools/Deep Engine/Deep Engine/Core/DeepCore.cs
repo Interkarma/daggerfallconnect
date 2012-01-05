@@ -179,6 +179,15 @@ namespace DeepEngine.Core
             get { return renderer.VisibleLightsCount; }
         }
 
+        /// <summary>
+        /// Gets the number of milliseconds elapsed since core started.
+        /// </summary>
+        public long ElapsedMilliseconds
+        {
+            get { return stopwatch.ElapsedMilliseconds; }
+        }
+
+
         #endregion
 
         #region Constructors
