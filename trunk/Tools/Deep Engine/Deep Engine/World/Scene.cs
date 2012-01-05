@@ -32,7 +32,7 @@ namespace DeepEngine.World
         #region Fields
 
         // Engine
-        DeepCore deepCore;
+        DeepCore core;
 
         // Simulation
         Space space;
@@ -52,7 +52,7 @@ namespace DeepEngine.World
         /// </summary>
         public DeepCore Core
         {
-            get { return deepCore; }
+            get { return core; }
         }
 
         /// <summary>
@@ -87,10 +87,10 @@ namespace DeepEngine.World
         /// DeepCore Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        public Scene(DeepCore deepCore)
+        public Scene(DeepCore core)
         {
             // Store values
-            this.deepCore = deepCore;
+            this.core = core;
 
             // Create simulation space
             space = new Space();
@@ -126,7 +126,7 @@ namespace DeepEngine.World
             space.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
 
             // Update camera
-            float aspectRatio = (float)deepCore.GraphicsDevice.Viewport.Width / (float)deepCore.GraphicsDevice.Viewport.Height;
+            float aspectRatio = (float)core.GraphicsDevice.Viewport.Width / (float)core.GraphicsDevice.Viewport.Height;
             deprecatedCamera.SetAspectRatio(aspectRatio);
 
             // Update entities

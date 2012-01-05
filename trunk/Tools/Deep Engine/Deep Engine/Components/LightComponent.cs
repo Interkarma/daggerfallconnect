@@ -107,6 +107,29 @@ namespace DeepEngine.Components
             set { radius = value; }
         }
 
+        /// <summary>
+        /// Gets matrix of positional lights (e.g. point lights).
+        /// </summary>
+        public Matrix Matrix
+        {
+            get { return Matrix.CreateTranslation(position); }
+        }
+
+        /// <summary>
+        /// Gets bounding sphere of volume lights (e.g. point lights).
+        ///  Getting will return transformed bounding sphere based on Matrix.
+        /// </summary>
+        public BoundingSphere BoundingSphere
+        {
+            get
+            {
+                BoundingSphere sphere;
+                sphere.Center = position;
+                sphere.Radius = radius;
+                return sphere.Transform(Matrix);
+            }
+        }
+
         #endregion
 
         #region Constructors

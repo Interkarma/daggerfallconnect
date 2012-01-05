@@ -35,11 +35,12 @@ namespace DeepEngine.Components
         #region Properties
 
         /// <summary>
-        /// Gets or sets local bounding sphere for visibility tests.
+        /// Gets or sets bounding sphere for visibility tests.
+        ///  Getting will return transformed bounding sphere based on Matrix.
         /// </summary>
         public BoundingSphere BoundingSphere
         {
-            get { return boundingSphere; }
+            get { return boundingSphere.Transform(matrix); }
             set { boundingSphere = value; }
         }
 

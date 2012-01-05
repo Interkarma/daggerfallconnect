@@ -83,6 +83,14 @@ namespace DeepEngine.Rendering
             set { clearColor = value; }
         }
 
+        /// <summary>
+        /// Gets the number of light submitted to renderer during last lighting operation.
+        /// </summary>
+        public int VisibleLightsCount
+        {
+            get { return visibleLightsCount; }
+        }
+
         #endregion
 
         #region Constructors

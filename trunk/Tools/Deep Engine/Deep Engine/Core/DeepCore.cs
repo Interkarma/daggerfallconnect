@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
@@ -51,6 +52,11 @@ namespace DeepEngine.Core
 
         // Engine
         Renderer renderer;
+
+        // Engine statistics
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        long lastUpdateTime = 0;
+        long lastDrawTime = 0;
 
         // Temporary
         Scene scene;
@@ -149,6 +155,30 @@ namespace DeepEngine.Core
             get { return renderer; }
         }
 
+        /// <summary>
+        /// Gets last update time in milliseconds.
+        /// </summary>
+        public long LastUpdateTime
+        {
+            get { return lastUpdateTime; }
+        }
+
+        /// <summary>
+        /// Gets last draw time in milliseconds.
+        /// </summary>
+        public long LastDrawTime
+        {
+            get { return lastDrawTime; }
+        }
+
+        /// <summary>
+        /// Gets number of visible lights submitted to renderer.
+        /// </summary>
+        public int VisibleLightsCount
+        {
+            get { return renderer.VisibleLightsCount; }
+        }
+
         #endregion
 
         #region Constructors
@@ -219,6 +249,9 @@ namespace DeepEngine.Core
         /// </summary>
         public void Update(GameTime gameTime)
         {
+            // Start timer
+            long startTime = stopwatch.ElapsedMilliseconds;
+
             // Update scene
             scene.Update(gameTime);
 
@@ -228,6 +261,9 @@ namespace DeepEngine.Core
             // Update input
             deprecatedInput.Update(gameTime.ElapsedGameTime);
             deprecatedInput.Apply(scene.DeprecatedCamera, true);
+
+            // Get time
+            lastUpdateTime = stopwatch.ElapsedMilliseconds - startTime;
         }
 
         /// <summary>
@@ -235,7 +271,14 @@ namespace DeepEngine.Core
         /// </summary>
         public void Draw()
         {
+            // Start timer
+            long startTime = stopwatch.ElapsedMilliseconds;
+
+            // Draw scene
             renderer.Draw(scene);
+
+            // Get time
+            lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
         }
 
         #endregion
