@@ -139,7 +139,6 @@ namespace ContentLoading1
 
             base.Draw(gameTime);
 
-            /*
             // Draw debug buffers
             core.DeepCore.DrawDebugBuffers();
 
@@ -154,7 +153,6 @@ namespace ContentLoading1
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             spriteBatch.DrawString(font, status, Vector2.Zero, Color.Gold);
             spriteBatch.End();
-            */
         }
 
         #region Content Loading Methods
@@ -346,6 +344,9 @@ namespace ContentLoading1
             // Attach sphere light
             LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 512f, sphereColor, 1f);
             sphereEntity.Components.Add(sphereLight);
+
+            // Set entity to expire after 5 minutes
+            sphereEntity.Components.Add(new ReaperComponent(core.DeepCore, sphereEntity, 300000));
         }
 
         #endregion

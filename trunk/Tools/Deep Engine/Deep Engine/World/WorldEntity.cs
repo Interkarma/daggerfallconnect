@@ -71,6 +71,13 @@ namespace DeepEngine.World
             if (!enabled)
                 return;
 
+            // Handle dispose on update
+            if (base.disposeOnUpdate)
+            {
+                Dispose();
+                return;
+            }
+
             // Update all components
             foreach (BaseComponent component in components)
             {
@@ -132,15 +139,11 @@ namespace DeepEngine.World
         /// </summary>
         public override void Dispose()
         {
+            base.Dispose();
+
             // Dispose static geometry
             if (staticGeometry != null)
                 staticGeometry.Dispose();
-
-            // Dispose each component
-            foreach (BaseComponent component in components)
-            {
-                component.Dispose();
-            }
         }
 
         #endregion

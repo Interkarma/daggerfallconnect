@@ -109,6 +109,14 @@ namespace DeepEngine.Utility
             RaiseComponentAddedEvent(component, true);
         }
 
+        /// <summary>
+        /// Clears the collection.
+        /// </summary>
+        public void Clear()
+        {
+            components.Clear();
+        }
+
         #endregion
 
         #region IEnumerable

@@ -42,6 +42,9 @@ namespace DeepEngine.World
         protected BoundingSphere bounds;
         protected ComponentCollection components;
 
+        // Variables
+        protected bool disposeOnUpdate = false;
+
         #endregion
 
         #region Properties
@@ -184,9 +187,21 @@ namespace DeepEngine.World
         public abstract void Update(GameTime gameTime);
 
         /// <summary>
-        /// Called when entity should draw itself
+        /// Called when entity should draw itself.
         /// </summary>
         public abstract void Draw();
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Request the entity dispose itself on next update.
+        /// </summary>
+        public void DisposeOnUpdate()
+        {
+            disposeOnUpdate = true;
+        }
 
         #endregion
 
@@ -258,6 +273,17 @@ namespace DeepEngine.World
         /// </summary>
         public virtual void Dispose()
         {
+            // Dispose each component
+            foreach (BaseComponent component in components)
+            {
+                component.Dispose();
+            }
+
+            // Clear collection
+            components.Clear();
+
+            // Disable self
+            this.enabled = false;
         }
 
         #endregion
