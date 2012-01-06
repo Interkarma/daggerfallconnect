@@ -253,7 +253,7 @@ namespace DeepEngine.Components
                 Vertices = vertices,
                 Indices = primitive.Indices,
             };
-            builder.AddToBuilder(MaterialManager.NullTextureKey, batchData, this.Matrix);
+            builder.AddToBuilder((uint)MaterialManager.NullTextureKey, batchData, this.Matrix);
 
             return builder;
         }

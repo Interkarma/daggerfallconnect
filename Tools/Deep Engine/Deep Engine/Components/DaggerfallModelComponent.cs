@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Daggerfall;
 using DeepEngine.World;
+using DeepEngine.Utility;
 #endregion
 
 namespace DeepEngine.Components
@@ -30,9 +31,6 @@ namespace DeepEngine.Components
 
         // Model data
         ModelManager.ModelData modelData;
-
-        // Effects
-        Effect renderGeometryEffect;
 
         #endregion
 
@@ -58,9 +56,6 @@ namespace DeepEngine.Components
         public DaggerfallModelComponent(DeepCore core, uint id)
             : base(core)
         {
-            // Load effect
-            renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
-
             // Load model
             LoadModel(id);
         }
@@ -82,25 +77,24 @@ namespace DeepEngine.Components
             // Calculate world matrix
             Matrix worldMatrix = caller.Matrix * matrix;
 
-            // Setup effect
-            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
-            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            // Set transforms
+            core.MaterialManager.DefaultEffect_World = worldMatrix;
+            core.MaterialManager.DefaultEffect_View = core.ActiveScene.DeprecatedCamera.View;
+            core.MaterialManager.DefaultEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(modelData.VertexBuffer);
             core.GraphicsDevice.Indices = modelData.IndexBuffer;
 
-            // Render each submesh
-            Texture2D diffuseTexture = null;
+            // Draw batches
             foreach (var sm in modelData.SubMeshes)
             {
-                // Set texture
-                diffuseTexture = core.MaterialManager.GetTexture(sm.TextureKey);
-                renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
+                // Apply material
+                BaseMaterialEffect materialEffect = core.MaterialManager.GetMaterialEffect(sm.MaterialKey);
+                materialEffect.Apply();
 
                 // Render geometry
-                foreach (EffectPass pass in renderGeometryEffect.CurrentTechnique.Passes)
+                foreach (EffectPass pass in materialEffect.Effect.CurrentTechnique.Passes)
                 {
                     // Apply effect pass
                     pass.Apply();
@@ -148,27 +142,8 @@ namespace DeepEngine.Components
         {
             try
             {
-                // Load model and textures
+                // Load model data and set bounds
                 modelData = core.ModelManager.GetModelData(id);
-                for (int i = 0; i < modelData.SubMeshes.Length; i++)
-                {
-                    // Set flags
-                    MaterialManager.TextureCreateFlags flags =
-                        MaterialManager.TextureCreateFlags.ApplyClimate |
-                        MaterialManager.TextureCreateFlags.MipMaps |
-                        MaterialManager.TextureCreateFlags.PowerOfTwo;
-
-                    // Set extended alpha flags
-                    flags |= MaterialManager.TextureCreateFlags.ExtendedAlpha;
-
-                    // Load texture
-                    modelData.SubMeshes[i].TextureKey = core.MaterialManager.LoadTexture(
-                        modelData.DFMesh.SubMeshes[i].TextureArchive,
-                        modelData.DFMesh.SubMeshes[i].TextureRecord,
-                        flags);
-                }
-
-                // Set component bounding sphere
                 this.BoundingSphere = modelData.BoundingSphere;
             }
             catch (Exception e)

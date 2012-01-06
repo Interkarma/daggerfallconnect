@@ -200,7 +200,7 @@ namespace ContentLoading1
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.2f));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.3f));
         }
 
         private void LoadBlockScene()
@@ -342,7 +342,7 @@ namespace ContentLoading1
             sphereEntity.Components.Add(spherePhysics);
 
             // Attach sphere light
-            LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 512f, sphereColor, 1f);
+            LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 750f, sphereColor, 1.5f);
             sphereEntity.Components.Add(sphereLight);
 
             // Set entity to expire after 5 minutes

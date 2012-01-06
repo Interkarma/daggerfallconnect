@@ -40,10 +40,10 @@ namespace DeepEngine.Utility
         public IndexBuffer indexBuffer;
 
         // Static batch dictionary
-        Dictionary<int, StaticBatch> batchDictionary;
+        Dictionary<uint, StaticBatch> batchDictionary;
 
         // Builder dictionary used during build process
-        Dictionary<int, BatchData> builderDictionary;
+        Dictionary<uint, BatchData> builderDictionary;
 
         // Static data for physics engine
         Vector3[] physicsVertices = null;
@@ -134,7 +134,7 @@ namespace DeepEngine.Utility
         /// Gets static batches grouped and keyed by material.
         ///  Not valid until data has been added and ApplyBuilder() has been called.
         /// </summary>
-        public Dictionary<int, StaticBatch> StaticBatches
+        public Dictionary<uint, StaticBatch> StaticBatches
         {
             get { return batchDictionary; }
         }
@@ -171,18 +171,18 @@ namespace DeepEngine.Utility
                 return;
 
             // Create empty dictionaries
-            batchDictionary = new Dictionary<int, StaticBatch>();
-            builderDictionary = new Dictionary<int, BatchData>();
+            batchDictionary = new Dictionary<uint, StaticBatch>();
+            builderDictionary = new Dictionary<uint, BatchData>();
         }
 
         /// <summary>
         /// Adds buffer arrays to the batch builder.
         /// </summary>
-        /// <param name="textureKey">Textue key for this geometry.</param>
+        /// <param name="key">Key to batch against.</param>
         /// <param name="vertices">Vertex array.</param>
         /// <param name="indices">Index array.</param>
         /// <param name="matrix">Geometry transform to apply before adding.</param>
-        public void AddToBuilder(int textureKey, VertexPositionNormalTextureBump[] vertices, int[] indices, Matrix matrix)
+        public void AddToBuilder(uint key, VertexPositionNormalTextureBump[] vertices, int[] indices, Matrix matrix)
         {
             // Do nothing if sealed
             if (isSealed)
@@ -196,12 +196,13 @@ namespace DeepEngine.Utility
             // Add data
             batchData.Vertices.AddRange(vertices);
             batchData.Indices.AddRange(indices);
-            AddToBuilder(textureKey, batchData, matrix);
+            AddToBuilder(key, batchData, matrix);
         }
 
         /// <summary>
         /// Adds model data to the batch builder.
         /// </summary>
+        /// <param name="key">Key to batch against.</param> 
         /// <param name="modelData">Model data to add.</param>
         /// <param name="matrix">Transform to apply before adding model data.</param>
         /// <param name="matrix">Geometry transform to apply before adding.</param>
@@ -245,7 +246,7 @@ namespace DeepEngine.Utility
                 }
 
                 // Add to builder
-                AddToBuilder(sm.TextureKey, batchData, matrix);
+                AddToBuilder((uint)sm.MaterialKey, batchData, matrix);
             }
         }
 
@@ -271,27 +272,27 @@ namespace DeepEngine.Utility
         /// Adds batch data to the batch builder.
         ///  Geometry data is batched by key.
         /// </summary>
-        /// <param name="textureKey">Key to batch against.</param>
+        /// <param name="key">Key to batch against.</param>
         /// <param name="batchData">Data to add.</param>
         /// <param name="matrix">Geometry transform to apply before adding.</param>
-        public void AddToBuilder(int textureKey, BatchData batchData, Matrix matrix)
+        public void AddToBuilder(uint key, BatchData batchData, Matrix matrix)
         {
             // Do nothing if sealed
             if (isSealed)
                 return;
 
             BatchData builder;
-            if (builderDictionary.ContainsKey(textureKey))
+            if (builderDictionary.ContainsKey(key))
             {
                 // Get current batch data
-                builder = builderDictionary[textureKey];
+                builder = builderDictionary[key];
             }
             else
             {
                 // Start a new batch
                 builder.Vertices = new List<VertexPositionNormalTextureBump>();
                 builder.Indices = new List<int>();
-                builderDictionary.Add(textureKey, builder);
+                builderDictionary.Add(key, builder);
             }
 
             // Transform vertices
@@ -317,7 +318,7 @@ namespace DeepEngine.Utility
             builder.Indices.AddRange(batchData.Indices);
 
             // Update dictionary
-            builderDictionary[textureKey] = builder;
+            builderDictionary[key] = builder;
         }
 
         /// <summary>
@@ -352,7 +353,7 @@ namespace DeepEngine.Utility
             }
 
             // Create new batch dictionary
-            batchDictionary = new Dictionary<int, StaticBatch>();
+            batchDictionary = new Dictionary<uint, StaticBatch>();
 
             // Count total vertices and indices
             int totalVertices = 0;
