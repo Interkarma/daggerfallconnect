@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Components\BaseComponent.cs" />
     <Compile Include="Components\ReaperComponent.cs" />
+    <Compile Include="Utility\BaseMaterialEffect.cs" />
     <Compile Include="Utility\ComponentCollection.cs" />
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />

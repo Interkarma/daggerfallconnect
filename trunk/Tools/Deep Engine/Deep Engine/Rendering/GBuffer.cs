@@ -191,7 +191,7 @@ namespace DeepEngine.Rendering
         {
             // Set render states
             graphicsDevice.BlendState = BlendState.AlphaBlend;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
 
             // Set values
             finalCombineEffect.Parameters["ColorMap"].SetValue(colorRT);

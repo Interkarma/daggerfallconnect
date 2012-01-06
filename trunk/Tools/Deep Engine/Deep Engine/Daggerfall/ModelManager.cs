@@ -13,6 +13,7 @@ using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
 using DeepEngine.Rendering;
 using DeepEngine.Utility;
 using DaggerfallConnect;
@@ -30,11 +31,13 @@ namespace DeepEngine.Daggerfall
 
         #region Fields
 
+        DeepCore core;
         string arena2Path = string.Empty;
         private GraphicsDevice graphicsDevice;
         private Arch3dFile arch3dFile;
         private Dictionary<uint, ModelData> modelDataDict;
         private bool cacheModelData = true;
+        private MaterialManager materialManager;
 
         #endregion
 
@@ -74,8 +77,8 @@ namespace DeepEngine.Daggerfall
             /// </summary>
             public struct SubMeshData
             {
-                /// <summary>TextureManager key.</summary>
-                public int TextureKey;
+                /// <summary>Material key.</summary>
+                public uint MaterialKey;
 
                 /// <summary>Location in the index array at which to start reading vertices.</summary>
                 public int StartIndex;
@@ -138,16 +141,19 @@ namespace DeepEngine.Daggerfall
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="device">Graphics Device.</param>
-        /// <param name="arena2Path">Path to Arena2 folder.</param>
-        public ModelManager(GraphicsDevice device, string arena2Path)
+        /// <param name="core">Engine core.</param>
+        public ModelManager(DeepCore core)
         {
+            // Save references
+            this.core = core;
+            this.materialManager = core.MaterialManager;
+            this.graphicsDevice = core.GraphicsDevice;
+            this.arena2Path = core.Arena2Path;
+
             // Setup
-            graphicsDevice = device;
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, Arch3dFile.Filename), FileUsage.UseDisk, true);
-            arch3dFile.AutoDiscard = true;
-            this.arena2Path = arena2Path;
             modelDataDict = new Dictionary<uint, ModelData>();
+            arch3dFile.AutoDiscard = true;
         }
 
         #endregion
@@ -170,8 +176,6 @@ namespace DeepEngine.Daggerfall
 
         /// <summary>
         /// Get model data.
-        ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
-        ///  flag is set when loading textures with TextureManager.
         /// </summary>
         /// <param name="id">ID of model.</param>
         /// <returns>Model object.</returns>
@@ -185,8 +189,6 @@ namespace DeepEngine.Daggerfall
 
         /// <summary>
         /// Get model data.
-        ///  Model UVs will be aligned to power of two. Ensure PowerOfTwo
-        ///  flag is set when loading textures with TextureManager.
         /// </summary>
         /// <param name="id">ID of model.</param>
         /// <param name="model">ModelData out.</param>
@@ -297,19 +299,19 @@ namespace DeepEngine.Daggerfall
         /// Loads model data from DFMesh.
         /// </summary>
         /// <param name="id">Key of source mesh.</param>
-        /// <param name="model">ModelData out.</param>
+        /// <param name="modelData">ModelData out.</param>
         /// <returns>True if successful.</returns>
-        private bool LoadModelData(uint id, out ModelData model)
+        private bool LoadModelData(uint id, out ModelData modelData)
         {
             // Return from cache if present
             if (cacheModelData && modelDataDict.ContainsKey(id))
             {
-                model = modelDataDict[id];
+                modelData = modelDataDict[id];
                 return true;
             }
 
             // New model object
-            model = new ModelData();
+            modelData = new ModelData();
 
             // Find mesh index
             int index = arch3dFile.GetRecordIndex(id);
@@ -322,15 +324,27 @@ namespace DeepEngine.Daggerfall
                 return false;
 
             // Load mesh data
-            model.DFMesh = dfMesh;
-            LoadVertices(ref model);
-            LoadIndices(ref model);
-            AddModelTangents(ref model);
-            CreateModelBuffers(graphicsDevice, ref model);
+            modelData.DFMesh = dfMesh;
+            LoadVertices(ref modelData);
+            LoadIndices(ref modelData);
+            AddModelTangents(ref modelData);
+            CreateModelBuffers(graphicsDevice, ref modelData);
+
+            // Load materials
+            for (int i = 0; i < modelData.SubMeshes.Length; i++)
+            {
+                // Create default material
+                BaseMaterialEffect materialEffect = materialManager.CreateDefaultEffect(
+                    modelData.DFMesh.SubMeshes[i].TextureArchive,
+                    modelData.DFMesh.SubMeshes[i].TextureRecord);
+
+                // Save key in submesh
+                modelData.SubMeshes[i].MaterialKey = materialEffect.ID;
+            }
 
             // Add to cache
             if (cacheModelData)
-                modelDataDict.Add(id, model);
+                modelDataDict.Add(id, modelData);
 
             return true;
         }

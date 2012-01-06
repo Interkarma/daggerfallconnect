@@ -193,7 +193,7 @@ namespace DeepEngine.World
             Texture2D diffuseTexture = null;
             foreach (var item in staticGeometry.StaticBatches)
             {
-                int textureKey = item.Key;
+                uint textureKey = item.Key;
                 if (textureKey == MaterialManager.NullTextureKey)
                 {
                     // Set diffuse effect
@@ -203,7 +203,7 @@ namespace DeepEngine.World
                 else
                 {
                     // Set texture effect
-                    diffuseTexture = core.MaterialManager.GetTexture(item.Key);
+                    diffuseTexture = core.MaterialManager.GetTexture((int)item.Key);
                     renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
                     renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Default"];
                 }

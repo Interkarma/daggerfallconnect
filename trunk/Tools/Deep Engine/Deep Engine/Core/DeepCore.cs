@@ -243,9 +243,10 @@ namespace DeepEngine.Core
             // Create sprite batch for rendering console and other overlays
             spriteBatch = new SpriteBatch(graphicsDevice);
 
-            // Create Daggerfall managers
-            this.materialManager = new MaterialManager(graphicsDevice, arena2Path);
-            this.modelManager = new ModelManager(graphicsDevice, arena2Path);
+            // Create Daggerfall managers.
+            // MaterialManager must be created before ModelManager due to dependencies.
+            this.materialManager = new MaterialManager(this);
+            this.modelManager = new ModelManager(this);
             this.blockManager = new BlocksFile(Path.Combine(arena2Path, BlocksFile.Filename), FileUsage.UseDisk, true);
             this.mapManager = new MapsFile(Path.Combine(arena2Path, MapsFile.Filename), FileUsage.UseDisk, true);
 

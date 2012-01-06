@@ -47,9 +47,6 @@ namespace DeepEngine.Components
         // Static batch
         StaticGeometryBuilder staticGeometry;
 
-        // Effects
-        Effect renderGeometryEffect;
-
         // Physics
         StaticMesh physicsMesh = null;
 
@@ -143,9 +140,6 @@ namespace DeepEngine.Components
             // Save references
             this.scene = scene;
 
-            // Load effect
-            renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
-
             // Create static geometry builder
             staticGeometry = new StaticGeometryBuilder(core.GraphicsDevice);
         }
@@ -186,31 +180,24 @@ namespace DeepEngine.Components
             // Calculate world matrix
             Matrix worldMatrix = caller.Matrix * matrix;
 
-            // Set render state
-            core.GraphicsDevice.SamplerStates[0] = SamplerState.AnisotropicWrap;
-
-            // Setup effect
-            renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Default"];
-            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
-            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            // Set transforms
+            core.MaterialManager.DefaultEffect_World = worldMatrix;
+            core.MaterialManager.DefaultEffect_View = core.ActiveScene.DeprecatedCamera.View;
+            core.MaterialManager.DefaultEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
             core.GraphicsDevice.Indices = staticGeometry.IndexBuffer;
 
             // Draw batches
-            Texture2D diffuseTexture = null;
             foreach (var item in staticGeometry.StaticBatches)
             {
-                int textureKey = item.Key;
-
-                // Set texture
-                diffuseTexture = core.MaterialManager.GetTexture(item.Key);
-                renderGeometryEffect.Parameters["Texture"].SetValue(diffuseTexture);
+                // Apply material
+                BaseMaterialEffect materialEffect = core.MaterialManager.GetMaterialEffect(item.Key);
+                materialEffect.Apply();
 
                 // Render geometry
-                foreach (EffectPass pass in renderGeometryEffect.CurrentTechnique.Passes)
+                foreach (EffectPass pass in materialEffect.Effect.CurrentTechnique.Passes)
                 {
                     // Apply effect pass
                     pass.Apply();
@@ -257,32 +244,24 @@ namespace DeepEngine.Components
         /// <returns>True if successful.</returns>
         public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings)
         {
-            try
-            {
-                // Set climate
-                core.MaterialManager.ClimateType = climateSettings.ClimateType;
+            // Set climate
+            core.MaterialManager.ClimateType = climateSettings.ClimateType;
 
-                // Start new builder
-                staticGeometry.UnSeal();
+            // Start new builder
+            staticGeometry.UnSeal();
 
-                // Load block
-                DFBlock blockData = core.BlockManager.GetBlock(blockName);
-                switch (blockData.Type)
-                {
-                    case DFBlock.BlockTypes.Rmb:
-                        BuildRMB(ref blockData);
-                        break;
-                    case DFBlock.BlockTypes.Rdb:
-                        BuildRDB(ref blockData);
-                        break;
-                    default:
-                        throw new Exception(unknownBlockError);
-                }
-            }
-            catch (Exception e)
+            // Load block
+            DFBlock blockData = core.BlockManager.GetBlock(blockName);
+            switch (blockData.Type)
             {
-                Console.WriteLine(e.Message);
-                return false;
+                case DFBlock.BlockTypes.Rmb:
+                    BuildRMB(ref blockData);
+                    break;
+                case DFBlock.BlockTypes.Rdb:
+                    BuildRDB(ref blockData);
+                    break;
+                default:
+                    throw new Exception(unknownBlockError);
             }
 
             // Store name
@@ -342,6 +321,8 @@ namespace DeepEngine.Components
             // Add RMB data
             AddRMBGroundTiles(ref blockData);
             AddRMBModels(ref blockData);
+            AddRMBMiscModels(ref blockData);
+            //AddRMBSceneryFlats(ref blockData);
 
             // Finish batch building
             Seal();
@@ -351,11 +332,7 @@ namespace DeepEngine.Components
                 new Vector3(BlocksFile.RMBDimension / 2, 0, BlocksFile.RMBDimension / 2),
                 BlocksFile.RMBDimension);
 
-            //AddRMBModels(ref block, blockNode);
-            //AddRMBMiscModels(ref block, blockNode);
-            //AddRMBGroundPlane(ref block, blockNode, climate);
             //AddRMBMiscFlats(ref block, blockNode);
-            //AddRMBSceneryFlats(ref block, blockNode, climate.SceneryArchive);
         }
 
         /// <summary>
@@ -375,23 +352,6 @@ namespace DeepEngine.Components
         {
             // Load model and textures
             modelData = core.ModelManager.GetModelData(id);
-            for (int i = 0; i < modelData.SubMeshes.Length; i++)
-            {
-                // Set flags
-                MaterialManager.TextureCreateFlags flags =
-                    MaterialManager.TextureCreateFlags.ApplyClimate |
-                    MaterialManager.TextureCreateFlags.MipMaps |
-                    MaterialManager.TextureCreateFlags.PowerOfTwo;
-
-                // Set extended alpha flags
-                flags |= MaterialManager.TextureCreateFlags.ExtendedAlpha;
-
-                // Load texture
-                modelData.SubMeshes[i].TextureKey = core.MaterialManager.LoadTexture(
-                    modelData.DFMesh.SubMeshes[i].TextureArchive,
-                    modelData.DFMesh.SubMeshes[i].TextureRecord,
-                    flags);
-            }
         }
 
         #endregion
@@ -430,13 +390,11 @@ namespace DeepEngine.Components
                     // Set random terrain marker back to grass
                     int textureRecord = (tile.TextureRecord > 55) ? 2 : tile.TextureRecord;
 
-                    // Load texture
-                    int textureKey = core.MaterialManager.LoadTexture(
+                    // Create default material
+                    BaseMaterialEffect materialEffect = core.MaterialManager.CreateDefaultEffect(
                         (int)DFLocation.ClimateTextureSet.Exterior_Terrain,
-                        textureRecord,
-                        MaterialManager.TextureCreateFlags.MipMaps |
-                        MaterialManager.TextureCreateFlags.ExtendedAlpha |
-                        MaterialManager.TextureCreateFlags.ApplyClimate);
+                        textureRecord);
+                    materialEffect.SamplerState0 = SamplerState.AnisotropicClamp;
 
                     // Create vertices for this quad
                     topLeftPos = new Vector3(x * tileDimension, groundHeight, y * tileDimension);
@@ -485,7 +443,7 @@ namespace DeepEngine.Components
                     vertices[3] = new VertexPositionNormalTextureBump(bottomRightPos, Vector3.Up, bottomRightUV, Vector3.Zero, Vector3.Zero);
 
                     // Add to builder
-                    staticGeometry.AddToBuilder(textureKey, vertices, indices, Matrix.Identity);
+                    staticGeometry.AddToBuilder(materialEffect.ID, vertices, indices, Matrix.Identity);
                 }
             }
         }
@@ -522,6 +480,31 @@ namespace DeepEngine.Components
                     // Add model data to batch builder
                     staticGeometry.AddToBuilder(ref modelData, modelMatrix * subrecordMatrix);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds miscellaneous RMB models to block node.
+        /// </summary>
+        /// <param name="block">Block data.</param>
+        private void AddRMBMiscModels(ref DFBlock block)
+        {
+            // Iterate through all misc records
+            float degrees;
+            foreach (DFBlock.RmbBlock3dObjectRecord obj in block.RmbBlock.Misc3dObjectRecords)
+            {
+                // Load model data
+                ModelManager.ModelData modelData;
+                LoadModel(obj.ModelIdNum, out modelData);
+
+                // Create model transform
+                Matrix modelMatrix = Matrix.Identity;
+                degrees = obj.YRotation / BlocksFile.RotationDivisor;
+                modelMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
+                modelMatrix *= Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
+
+                // Add model data to batch builder
+                staticGeometry.AddToBuilder(ref modelData, modelMatrix);
             }
         }
 
