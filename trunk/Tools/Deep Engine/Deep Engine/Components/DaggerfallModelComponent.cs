@@ -78,9 +78,9 @@ namespace DeepEngine.Components
             Matrix worldMatrix = caller.Matrix * matrix;
 
             // Set transforms
-            core.MaterialManager.DefaultEffect_World = worldMatrix;
-            core.MaterialManager.DefaultEffect_View = core.ActiveScene.DeprecatedCamera.View;
-            core.MaterialManager.DefaultEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
+            core.ModelManager.ModelEffect_World = worldMatrix;
+            core.ModelManager.ModelEffect_View = core.ActiveScene.DeprecatedCamera.View;
+            core.ModelManager.ModelEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(modelData.VertexBuffer);
@@ -109,15 +109,6 @@ namespace DeepEngine.Components
                         sm.PrimitiveCount);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets static geometry.
-        /// </summary>
-        /// <returns>Static geometry builder.</returns>
-        public override Utility.StaticGeometryBuilder GetStaticGeometry()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

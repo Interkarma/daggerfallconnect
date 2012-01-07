@@ -79,12 +79,6 @@ namespace DeepEngine.Components
         /// <param name="caller">Entity calling the draw operation.</param>
         public abstract void Draw(BaseEntity caller);
 
-        /// <summary>
-        /// Gets static geometry.
-        /// </summary>
-        /// <returns>Static geometry builder.</returns>
-        public abstract StaticGeometryBuilder GetStaticGeometry();
-
         #endregion
     }
 

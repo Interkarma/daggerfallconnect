@@ -147,7 +147,7 @@ namespace DeepEngine.Utility
 
             // Apply parameters
             if (DiffuseTextureParam != null) DiffuseTextureParam.SetValue(DiffuseTexture);
-            if (NormalTextureParam != null) NormalTextureParam.SetValue(NormalTexture);
+            //if (NormalTextureParam != null) NormalTextureParam.SetValue(NormalTexture);
         }
 
         #endregion

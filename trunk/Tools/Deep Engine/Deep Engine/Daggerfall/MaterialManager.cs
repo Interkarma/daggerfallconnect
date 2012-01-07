@@ -24,21 +24,17 @@ namespace DeepEngine.Daggerfall
 {
     /// <summary>
     /// Loads texture data from Daggerfall and creates materials for use by engine.
-    ///  Provides a default effect tightly integrated with Daggerfall textures and renderer.
     /// </summary>
     public class MaterialManager
     {
 
         #region Fields
 
+        // Strings
+        const string maxMaterialsError = "Maximum number of materials has been reached.";
+
         // XNA
         SpriteBatch spriteBatch = null;
-
-        // Effect
-        Effect renderGeometryEffect;
-        EffectParameter worldParam;
-        EffectParameter viewParam;
-        EffectParameter projParam;
 
         // Class
         private DeepCore core;
@@ -229,42 +225,6 @@ namespace DeepEngine.Daggerfall
             get { return textureFile; }
         }
 
-        /// <summary>
-        /// Gets default effect.
-        ///  Optimised for use with Daggerfall's textures.
-        /// </summary>
-        public Effect DefaultEffect
-        {
-            get { return renderGeometryEffect; }
-        }
-
-        /// <summary>
-        /// Gets or sets DefaultEffect World transform parameter.
-        /// </summary>
-        public Matrix DefaultEffect_World
-        {
-            get { return worldParam.GetValueMatrix(); }
-            set { worldParam.SetValue(value); }
-        }
-
-        /// <summary>
-        /// Gets or sets DefaultEffect View transform parameter.
-        /// </summary>
-        public Matrix DefaultEffect_View
-        {
-            get { return viewParam.GetValueMatrix(); }
-            set { viewParam.SetValue(value); }
-        }
-
-        /// <summary>
-        /// Gets or sets DefaultEffect Projection transform parameter.
-        /// </summary>
-        public Matrix DefaultEffect_Projection
-        {
-            get { return projParam.GetValueMatrix(); }
-            set { projParam.SetValue(value); }
-        }
-
         #endregion
 
         #region Constructors
@@ -295,12 +255,6 @@ namespace DeepEngine.Daggerfall
 
             // Set default climate
             SetClimate(climateType, climateWeather);
-
-            // Load effect
-            renderGeometryEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
-            worldParam = renderGeometryEffect.Parameters["World"];
-            viewParam = renderGeometryEffect.Parameters["View"];
-            projParam = renderGeometryEffect.Parameters["Projection"];
         }
 
         #endregion
@@ -308,12 +262,13 @@ namespace DeepEngine.Daggerfall
         #region Public Methods
 
         /// <summary>
-        /// Creates a new material effect using DefaultEffect.
+        /// Creates a new material effect linked to a Daggerfall texture.
         /// </summary>
         /// <param name="archive">Texture archive.</param>
         /// <param name="record">Texture record.</param>
+        /// <param name="effect">Effect</param>
         /// <returns>BaseMaterialEffect.</returns>
-        public BaseMaterialEffect CreateDefaultEffect(int archive, int record)
+        public BaseMaterialEffect CreateTextureMaterialEffect(int archive, int record, Effect effect)
         {
             // Set flags
             MaterialManager.TextureCreateFlags flags =
@@ -334,9 +289,9 @@ namespace DeepEngine.Daggerfall
 
             // Create new material effect
             BaseMaterialEffect materialEffect = CreateMaterialEffect(
-                    renderGeometryEffect,
-                    renderGeometryEffect.Techniques["Default"],
-                    "Texture",
+                    effect,
+                    null,
+                    null,
                     null,
                     GetTexture(textureKey),
                     null);
@@ -378,6 +333,12 @@ namespace DeepEngine.Daggerfall
             // Save texture references
             material.DiffuseTexture = diffuseTexture;
             material.NormalTexture = normalTexture;
+
+            // Check for array overflow
+            if (material.ID > maxMaterials)
+            {
+                throw new Exception(maxMaterialsError);
+            }
 
             // Add to array
             materialEffects[material.ID] = material;

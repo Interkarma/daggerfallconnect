@@ -179,6 +179,7 @@ namespace DeepEngine.Rendering
         public void ClearGBuffer(Effect clearBufferEffect, FullScreenQuad fullScreenQuad, Color clearColor)
         {
             graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
             clearBufferEffect.Parameters["ClearColor"].SetValue(clearColor.ToVector3());
             clearBufferEffect.Techniques[0].Passes[0].Apply();
             fullScreenQuad.Draw(graphicsDevice);
@@ -191,7 +192,7 @@ namespace DeepEngine.Rendering
         {
             // Set render states
             graphicsDevice.BlendState = BlendState.AlphaBlend;
-            graphicsDevice.DepthStencilState = DepthStencilState.None;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             // Set values
             finalCombineEffect.Parameters["ColorMap"].SetValue(colorRT);

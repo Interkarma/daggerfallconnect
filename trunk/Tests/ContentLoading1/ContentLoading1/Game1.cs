@@ -26,6 +26,8 @@ namespace ContentLoading1
         SpriteBatch spriteBatch;
         SpriteFont font;
 
+        DaggerfallBillboardComponent staticBillboards;
+
         Stopwatch stopwatch = Stopwatch.StartNew();
         long lastLoadTime = 0;
 
@@ -80,6 +82,9 @@ namespace ContentLoading1
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            // Create billboards component
+            staticBillboards = new DaggerfallBillboardComponent(core.DeepCore);
 
             // TODO: use this.Content to load your game content here
 
@@ -139,8 +144,11 @@ namespace ContentLoading1
 
             base.Draw(gameTime);
 
+            // Draw billboards
+            staticBillboards.Draw(null);
+
             // Draw debug buffers
-            core.DeepCore.DrawDebugBuffers();
+            core.DeepCore.Renderer.DrawDebugBuffers();
 
             // Compose engine statistics
             string status = string.Format(
@@ -162,7 +170,7 @@ namespace ContentLoading1
         /// </summary>
         private void LoadExteriorMapScene()
         {
-            // Set clear colour to black
+            // Set clear colour
             core.DeepCore.Renderer.ClearColor = Color.Black;
 
             // Set camera position
@@ -185,22 +193,49 @@ namespace ContentLoading1
                     string name = core.DeepCore.BlockManager.CheckName(
                         core.DeepCore.MapManager.GetRmbBlockName(ref location, x, y));
 
-                    // Create block component
+                    // Get block translation
+                    Vector3 blockPosition = new Vector3(x * BlocksFile.RMBDimension, 0f, -(y * BlocksFile.RMBDimension));
+
+                    // Attach block component
                     DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore, core.DeepCore.ActiveScene);
                     block.LoadBlock(name, location.Climate);
-                    block.Matrix = Matrix.CreateTranslation(x * BlocksFile.RMBDimension, 0f, -(y * BlocksFile.RMBDimension));
-
-                    // Attach component
+                    block.Matrix = Matrix.CreateTranslation(blockPosition);
                     level.Components.Add(block);
+
+                    // Attach block flats
+                    AddBlockFlats(block, blockPosition);
                 }
             }
+
+            // Seal billboards
+            staticBillboards.Seal();
 
             // Clear model cache to release some memory
             core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.3f));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.4f));
+        }
+
+        /// <summary>
+        /// Attach flats component to an entity.
+        /// </summary>
+        /// <param name="block">Block to get flats from.</param>
+        /// <param name="blockPosition">Block position.</param>
+        private void AddBlockFlats(DaggerfallBlockComponent block, Vector3 blockPosition)
+        {
+            // Exit if no flats
+            if (block.BlockFlats.Count == 0)
+                return;
+
+            blockPosition = new Vector3(blockPosition.X, blockPosition.Y, -blockPosition.Z);
+
+            // Add flats to component
+            foreach (var flat in block.BlockFlats)
+            {
+                staticBillboards.AddBillboard(flat.Archive, flat.Record, flat.Position + blockPosition);
+            }
         }
 
         private void LoadBlockScene()
@@ -218,9 +253,15 @@ namespace ContentLoading1
             // Attach component
             level.Components.Add(block);
 
+            // Attach block flats
+            AddBlockFlats(block, Vector3.Zero);
+
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
+
+            // Seal billboards
+            staticBillboards.Seal();
         }
 
         /// <summary>

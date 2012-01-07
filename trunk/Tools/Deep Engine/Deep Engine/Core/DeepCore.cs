@@ -292,14 +292,6 @@ namespace DeepEngine.Core
             lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
         }
 
-        /// <summary>
-        /// Draws debug buffers from last render operation.
-        /// </summary>
-        public void DrawDebugBuffers()
-        {
-            renderer.DrawDebugBuffers();
-        }
-
         #endregion
 
     }

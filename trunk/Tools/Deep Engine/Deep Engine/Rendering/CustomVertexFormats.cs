@@ -44,9 +44,9 @@ namespace DeepEngine.Rendering
             Vector3 Tangent,
             Vector3 Binormal)
         {
-            pos = Position;
+            this.pos = Position;
             this.normal = Normal;
-            tex = TextureCoordinate;
+            this.tex = TextureCoordinate;
             this.tan = Tangent;
             this.bitan = Binormal;
         }
