@@ -230,7 +230,7 @@ namespace DeepEngine.Components
         /// Gets static geometry.
         /// </summary>
         /// <returns>Static geometry builder.</returns>
-        public override StaticGeometryBuilder GetStaticGeometry()
+        public StaticGeometryBuilder GetStaticGeometry()
         {
             // Create builder
             StaticGeometryBuilder builder = new StaticGeometryBuilder(core.GraphicsDevice);

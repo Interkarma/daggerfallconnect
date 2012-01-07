@@ -50,15 +50,33 @@ namespace DeepEngine.Components
         // Physics
         StaticMesh physicsMesh = null;
 
+        // Additional block objects
+        List<BlockFlat> blockFlats = new List<BlockFlat>();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets list of stationary block flats.
+        /// </summary>
+        public List<BlockFlat> BlockFlats
+        {
+            get { return blockFlats; }
+        }
+
         #endregion
 
         #region Structures
 
         /// <summary>
-        /// A block flat texture used for trees, rocks, animals, and other scenery.
+        /// A stationary billboard used for trees, rocks, animals, etc.
         /// </summary>
-        private struct BlockFlat
+        public struct BlockFlat
         {
+            public int Archive;
+            public int Record;
+            public Vector3 Position;
         }
 
         /// <summary>
@@ -181,9 +199,9 @@ namespace DeepEngine.Components
             Matrix worldMatrix = caller.Matrix * matrix;
 
             // Set transforms
-            core.MaterialManager.DefaultEffect_World = worldMatrix;
-            core.MaterialManager.DefaultEffect_View = core.ActiveScene.DeprecatedCamera.View;
-            core.MaterialManager.DefaultEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
+            core.ModelManager.ModelEffect_World = worldMatrix;
+            core.ModelManager.ModelEffect_View = core.ActiveScene.DeprecatedCamera.View;
+            core.ModelManager.ModelEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
@@ -202,7 +220,7 @@ namespace DeepEngine.Components
                     // Apply effect pass
                     pass.Apply();
 
-                    // Draw batched indexed primitives
+                    // Draw primitives
                     core.GraphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
                         0,
@@ -218,7 +236,7 @@ namespace DeepEngine.Components
         /// Gets static geometry.
         /// </summary>
         /// <returns>Static geometry builder.</returns>
-        public override Utility.StaticGeometryBuilder GetStaticGeometry()
+        public StaticGeometryBuilder GetStaticGeometry()
         {
             return staticGeometry;
         }
@@ -322,7 +340,8 @@ namespace DeepEngine.Components
             AddRMBGroundTiles(ref blockData);
             AddRMBModels(ref blockData);
             AddRMBMiscModels(ref blockData);
-            //AddRMBSceneryFlats(ref blockData);
+            AddRMBMiscFlats(ref blockData);
+            
 
             // Finish batch building
             Seal();
@@ -332,7 +351,7 @@ namespace DeepEngine.Components
                 new Vector3(BlocksFile.RMBDimension / 2, 0, BlocksFile.RMBDimension / 2),
                 BlocksFile.RMBDimension);
 
-            //AddRMBMiscFlats(ref block, blockNode);
+            //AddRMBSceneryFlats(ref blockData);
         }
 
         /// <summary>
@@ -390,11 +409,11 @@ namespace DeepEngine.Components
                     // Set random terrain marker back to grass
                     int textureRecord = (tile.TextureRecord > 55) ? 2 : tile.TextureRecord;
 
-                    // Create default material
-                    BaseMaterialEffect materialEffect = core.MaterialManager.CreateDefaultEffect(
+                    // Create material
+                    BaseMaterialEffect material = core.ModelManager.CreateModelMaterial(
                         (int)DFLocation.ClimateTextureSet.Exterior_Terrain,
                         textureRecord);
-                    materialEffect.SamplerState0 = SamplerState.AnisotropicClamp;
+                    material.SamplerState0 = SamplerState.AnisotropicClamp;
 
                     // Create vertices for this quad
                     topLeftPos = new Vector3(x * tileDimension, groundHeight, y * tileDimension);
@@ -443,7 +462,7 @@ namespace DeepEngine.Components
                     vertices[3] = new VertexPositionNormalTextureBump(bottomRightPos, Vector3.Up, bottomRightUV, Vector3.Zero, Vector3.Zero);
 
                     // Add to builder
-                    staticGeometry.AddToBuilder(materialEffect.ID, vertices, indices, Matrix.Identity);
+                    staticGeometry.AddToBuilder(material.ID, vertices, indices, Matrix.Identity);
                 }
             }
         }
@@ -505,6 +524,24 @@ namespace DeepEngine.Components
 
                 // Add model data to batch builder
                 staticGeometry.AddToBuilder(ref modelData, modelMatrix);
+            }
+        }
+
+        /// <summary>
+        /// Stores miscellaneous flats.
+        /// </summary>
+        /// <param name="block">Block data.</param>
+        private void AddRMBMiscFlats(ref DFBlock block)
+        {
+            foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.RmbBlock.MiscFlatObjectRecords)
+            {
+                BlockFlat flat = new BlockFlat
+                {
+                    Archive = obj.TextureArchive,
+                    Record = obj.TextureRecord,
+                    Position = new Vector3(obj.XPos, obj.YPos, obj.ZPos),
+                };
+                blockFlats.Add(flat);
             }
         }
 

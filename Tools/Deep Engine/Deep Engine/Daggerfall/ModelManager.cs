@@ -25,6 +25,7 @@ namespace DeepEngine.Daggerfall
 
     /// <summary>
     /// Loads mesh data from Daggerfall and creates models for use by engine.
+    ///  Provides a default effect tightly integrated with Daggerfall textures and deferred renderer.
     /// </summary>
     public class ModelManager
     {
@@ -38,6 +39,12 @@ namespace DeepEngine.Daggerfall
         private Dictionary<uint, ModelData> modelDataDict;
         private bool cacheModelData = true;
         private MaterialManager materialManager;
+
+        // Effect
+        Effect modelEffect;
+        EffectParameter modelEffect_World;
+        EffectParameter modelEffect_View;
+        EffectParameter modelEffect_Projection;
 
         #endregion
 
@@ -134,6 +141,41 @@ namespace DeepEngine.Daggerfall
             set { cacheModelData = value; }
         }
 
+        /// <summary>
+        /// Gets default model effect.
+        /// </summary>
+        public Effect ModelEffect
+        {
+            get { return modelEffect; }
+        }
+
+        /// <summary>
+        /// Gets or sets World transform.
+        /// </summary>
+        public Matrix ModelEffect_World
+        {
+            get { return modelEffect_World.GetValueMatrix(); }
+            set { modelEffect_World.SetValue(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets View transform.
+        /// </summary>
+        public Matrix ModelEffect_View
+        {
+            get { return modelEffect_View.GetValueMatrix(); }
+            set { modelEffect_View.SetValue(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets Projection transform.
+        /// </summary>
+        public Matrix ModelEffect_Projection
+        {
+            get { return modelEffect_Projection.GetValueMatrix(); }
+            set { modelEffect_Projection.SetValue(value); }
+        }
+
         #endregion
 
         #region Constructors
@@ -154,6 +196,12 @@ namespace DeepEngine.Daggerfall
             arch3dFile = new Arch3dFile(Path.Combine(arena2Path, Arch3dFile.Filename), FileUsage.UseDisk, true);
             modelDataDict = new Dictionary<uint, ModelData>();
             arch3dFile.AutoDiscard = true;
+
+            // Load effect
+            modelEffect = core.ContentManager.Load<Effect>("Effects/RenderGeometry");
+            modelEffect_World = modelEffect.Parameters["World"];
+            modelEffect_View = modelEffect.Parameters["View"];
+            modelEffect_Projection = modelEffect.Parameters["Projection"];
         }
 
         #endregion
@@ -291,6 +339,24 @@ namespace DeepEngine.Daggerfall
             modelDataOut = transformedModelData;
         }
 
+        /// <summary>
+        /// Creates a new Daggerfall texture material using the default ModelEffect.
+        /// </summary>
+        /// <param name="archive">Texture archive.</param>
+        /// <param name="record">Texture record.</param>
+        /// <returns>BaseMaterialEffect</returns>
+        public BaseMaterialEffect CreateModelMaterial(int archive, int record)
+        {
+            // Create default material effect
+            BaseMaterialEffect material = materialManager.CreateTextureMaterialEffect(archive, record, modelEffect);
+
+            // Setup material effect
+            material.Technique = modelEffect.Techniques["Default"];
+            material.DiffuseTextureParam = modelEffect.Parameters["Texture"];
+
+            return material;
+        }
+
         #endregion
 
         #region Private Methods
@@ -333,13 +399,13 @@ namespace DeepEngine.Daggerfall
             // Load materials
             for (int i = 0; i < modelData.SubMeshes.Length; i++)
             {
-                // Create default material
-                BaseMaterialEffect materialEffect = materialManager.CreateDefaultEffect(
+                // Create material
+                BaseMaterialEffect material = CreateModelMaterial(
                     modelData.DFMesh.SubMeshes[i].TextureArchive,
                     modelData.DFMesh.SubMeshes[i].TextureRecord);
 
                 // Save key in submesh
-                modelData.SubMeshes[i].MaterialKey = materialEffect.ID;
+                modelData.SubMeshes[i].MaterialKey = material.ID;
             }
 
             // Add to cache

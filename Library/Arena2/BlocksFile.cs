@@ -146,6 +146,14 @@ namespace DaggerfallConnect.Arena2
             get { return 2048f; }
         }
 
+        /// <summary>
+        /// Gets scale divisor for billboards.
+        /// </summary>
+        static public float ScaleDivisor
+        {
+            get { return 256f; }
+        }
+
         #endregion
 
         #region Public Methods
