@@ -38,6 +38,18 @@ namespace DeepEngine.Components
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets size of billboard.
+        /// </summary>
+        public Vector2 Size
+        {
+            get { return size; }
+        }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>

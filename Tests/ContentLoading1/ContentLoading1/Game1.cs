@@ -181,7 +181,7 @@ namespace ContentLoading1
             WorldEntity level = new WorldEntity(core.ActiveScene);
 
             // Get location
-            DFLocation location = core.DeepCore.MapManager.GetLocation("Wayrest", "Wayrest");
+            DFLocation location = core.DeepCore.MapManager.GetLocation("Daggerfall", "Daggerfall");
             int width = location.Exterior.ExteriorData.Width;
             int height = location.Exterior.ExteriorData.Height;
 
@@ -212,7 +212,7 @@ namespace ContentLoading1
             core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
-            float lightIntensity = 0.25f;
+            float lightIntensity = 0.01f;
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
@@ -221,7 +221,10 @@ namespace ContentLoading1
         private void LoadBlockScene()
         {
             // Set clear colour
-            core.DeepCore.Renderer.ClearColor = Color.CornflowerBlue;
+            core.DeepCore.Renderer.ClearColor = Color.Black;
+
+            // Set day/night mode for window textures
+            core.DeepCore.MaterialManager.Daytime = false;
 
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
@@ -238,9 +241,10 @@ namespace ContentLoading1
             AddBlockFlats(level, block);
 
             // Create directional light
+            float lightIntensity = 0.25f;
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, 1f));
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, 1f));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
         }
 
         /// <summary>
@@ -257,9 +261,21 @@ namespace ContentLoading1
             // Add flats to component
             foreach (var flat in block.BlockFlats)
             {
+                // Get position
+                Vector3 position = new Vector3(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
+
+                // Add billboard component
                 DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core.DeepCore, flat.Archive, flat.Record);
-                billboard.Matrix = block.Matrix * Matrix.CreateTranslation(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
+                billboard.Matrix = block.Matrix * Matrix.CreateTranslation(position);
                 entity.Components.Add(billboard);
+
+                // Add a light commponent for each billboard light source
+                if (flat.Archive == 210)
+                {
+                    position.Y += billboard.Size.Y;
+                    LightComponent lightComponent = new LightComponent(core.DeepCore, block.Matrix.Translation + position, 750f, Color.White, 1.1f);
+                    entity.Components.Add(lightComponent);
+                }
             }
         }
 
