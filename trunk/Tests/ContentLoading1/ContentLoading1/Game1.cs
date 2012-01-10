@@ -38,12 +38,12 @@ namespace ContentLoading1
         int colorIndex = 0;
         Vector4[] colors = new Vector4[]
         {
-            new Vector4(Color.Red.ToVector3(), 1f),
-            new Vector4(Color.Green.ToVector3(), 1f),
-            new Vector4(Color.Blue.ToVector3(), 1f),
-            new Vector4(Color.Gold.ToVector3(), 1f),
-            new Vector4(Color.Purple.ToVector3(), 1f),
-            new Vector4(Color.YellowGreen.ToVector3(), 1f),
+            new Vector4(Color.Red.ToVector3(), 0.9f),
+            new Vector4(Color.Green.ToVector3(), 0.9f),
+            new Vector4(Color.Blue.ToVector3(), 0.9f),
+            new Vector4(Color.Gold.ToVector3(), 0.9f),
+            new Vector4(Color.Purple.ToVector3(), 0.9f),
+            new Vector4(Color.YellowGreen.ToVector3(), 0.9f),
         };
 
 
@@ -55,6 +55,8 @@ namespace ContentLoading1
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
+            //graphics.PreferredBackBufferWidth = 1920;
+            //graphics.PreferredBackBufferHeight = 1080;
             this.IsMouseVisible = true;
 
             // Create and register engine core
@@ -98,7 +100,7 @@ namespace ContentLoading1
             //LoadPhysicsScene();
 
             // Show or hide debug buffers
-            core.DeepCore.Renderer.ShowDebugBuffers = true;
+            core.DeepCore.Renderer.ShowDebugBuffers = false;
 
             lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
         }
@@ -168,6 +170,9 @@ namespace ContentLoading1
         {
             // Set clear colour
             core.DeepCore.Renderer.ClearColor = Color.Black;
+
+            // Set day/night mode for window textures
+            core.DeepCore.MaterialManager.Daytime = false;
 
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);

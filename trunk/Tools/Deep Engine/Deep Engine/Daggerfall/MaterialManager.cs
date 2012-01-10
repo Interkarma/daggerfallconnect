@@ -695,12 +695,12 @@ namespace DeepEngine.Daggerfall
 
         /// <summary>
         /// Gets RGBA image with alpha packed for use with hidef renderer.
-        ///  Alpha 0x00 - 0x7f is transparent range.
-        ///  Alpha 0x80 - 0xff is emissive range.
+        ///  Alpha 0x00 - 0x7f is specular intensity.
+        ///  Alpha 0x80 - 0xff is emissive intensity.
         ///  In Detail:
-        ///  * 0 is fully transparent and 127 is opaque.
+        ///  * 0 is matte and 127 is glossy.
         ///  * 128 is not emissive and 255 is fullbright.
-        ///  * An image cannot be transparent and emissive at the same time.
+        ///  * A material cannot be specular and emissive at the same time.
         /// </summary>
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
@@ -712,12 +712,6 @@ namespace DeepEngine.Daggerfall
 
             // Daggerfall uses this index to represent the glass in a window
             const int dfWindowIndex = 0xff;
-
-            // Engine uses this alpha for transparent pixels
-            const int engineTransparentAlpha = 0x00;
-
-            // Engine uses this alpha for opaque pixels
-            const int engineOpaqueAlpha = 0x7f;
 
             // Create new bitmap
             DFBitmap srcBitmap = textureFile.GetDFBitmap(record, frame);
@@ -743,12 +737,12 @@ namespace DeepEngine.Daggerfall
                 r = palette.GetRed(index);
                 g = palette.GetGreen(index);
                 b = palette.GetBlue(index);
-                a = engineOpaqueAlpha;
+                a = 0;
 
                 // Write colour and alpha values
                 if (index == dfChromaIndex)
                 {
-                    a = engineTransparentAlpha;
+                    a = 0;
                 }
                 else if (index == dfWindowIndex)
                 {
