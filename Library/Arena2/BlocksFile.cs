@@ -139,6 +139,14 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
+        /// Gets dimension of a single RMB ground tile.
+        /// </summary>
+        static public float TileDimension
+        {
+            get { return 256f; }
+        }
+
+        /// <summary>
         /// Gets dimension of a single RDB block.
         /// </summary>
         static public float RDBDimension

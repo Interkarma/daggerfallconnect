@@ -17,6 +17,7 @@ using DeepEngine.Core;
 using DeepEngine.World;
 using DeepEngine.Primitives;
 using DeepEngine.Components;
+using DeepEngine.Utility;
 #endregion
 
 namespace DeepEngine.Rendering
@@ -44,15 +45,33 @@ namespace DeepEngine.Rendering
         Effect finalCombineEffect;
         Effect directionalLightEffect;
         Effect pointLightEffect;
-        //Effect emissiveLightEffect;
+        Effect emissiveLightEffect;
+        Effect renderBillboards;
+
+        // Render parameters
+        EffectParameter renderBillboards_Texture;
+        EffectParameter renderBillboards_Position;
+        EffectParameter renderBillboards_Size;
 
         // Geometry
         private Model pointLightSphereModel;
+
+        // Billboard geometry template
+        private VertexBuffer billboardVertexBuffer;
+        private IndexBuffer billboardIndexBuffer;
 
         // Visible lights
         const int maxVisibleLights = 512;
         int visibleLightsCount;
         LightData[] visibleLights;
+
+        // Visible billboards
+        const int maxVisibleBillboards = 2048;
+        int visibleBillboardsCount;
+        BillboardData[] visibleBillboards;
+
+        // Debug buffers
+        bool showDebugBuffers = false;
 
         #endregion
 
@@ -61,13 +80,28 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Information about a light being submitted for rendering.
         /// </summary>
-        public struct LightData
+        private struct LightData
         {
             /// <summary>The light component to draw.</summary>
             public LightComponent LightComponent;
 
             /// <summary>The entity that initiated this submission.</summary>
             public BaseEntity Entity;
+        }
+
+        /// <summary>
+        /// Information about a billboard being submitted for rendering.
+        /// </summary>
+        private struct BillboardData
+        {
+            /// <summary>Texture to use when drawing billboard.</summary>
+            public Texture2D Texture;
+
+            /// <summary>Position of billboard in world space.</summary>
+            public Vector3 Position;
+
+            /// <summary>Dimensions of billboard.</summary>
+            public Vector2 Size;
         }
 
         #endregion
@@ -91,6 +125,31 @@ namespace DeepEngine.Rendering
             get { return visibleLightsCount; }
         }
 
+        /// <summary>
+        /// Gets the number of billboards submitted to renderer during last draw operation.
+        /// </summary>
+        public int VisibleBillboardsCount
+        {
+            get { return visibleBillboardsCount; }
+        }
+
+        /// <summary>
+        /// Gets current GBuffer.
+        /// </summary>
+        public GBuffer GBuffer
+        {
+            get { return gBuffer; }
+        }
+
+        /// <summary>
+        /// Gets or sets flag to show debug buffers after each render.
+        /// </summary>
+        public bool ShowDebugBuffers
+        {
+            get { return showDebugBuffers; }
+            set { showDebugBuffers = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -103,8 +162,9 @@ namespace DeepEngine.Rendering
             // Store values
             this.core = core;
 
-            // Create visible light array
+            // Create arraya
             visibleLights = new LightData[maxVisibleLights];
+            visibleBillboards = new BillboardData[maxVisibleBillboards];
         }
 
         #endregion
@@ -164,13 +224,23 @@ namespace DeepEngine.Rendering
             finalCombineEffect = core.ContentManager.Load<Effect>("Effects/CombineFinal");
             directionalLightEffect = core.ContentManager.Load<Effect>("Effects/DirectionalLight");
             pointLightEffect = core.ContentManager.Load<Effect>("Effects/PointLight");
+            emissiveLightEffect = core.ContentManager.Load<Effect>("Effects/EmissiveLight");
+            renderBillboards = core.ContentManager.Load<Effect>("Effects/RenderBillboards");
+
+            // Get parameters
+            renderBillboards_Texture = renderBillboards.Parameters["Texture"];
+            renderBillboards_Position = renderBillboards.Parameters["Position"];
+            renderBillboards_Size = renderBillboards.Parameters["Size"];
 
             // Load models
             pointLightSphereModel = core.ContentManager.Load<Model>("Models/PointLightSphere");
 
+            // Create billboard template
+            CreateBillboardTemplate();
+
             // Create rendering classes
             fullScreenQuad = new FullScreenQuad(graphicsDevice);
-            gBuffer = new GBuffer(graphicsDevice);
+            gBuffer = new GBuffer(core);
 
             // Wire up GraphicsDevice events
             graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
@@ -182,8 +252,9 @@ namespace DeepEngine.Rendering
         /// </summary>
         public void Update()
         {
-            // Reset visible lights count
+            // Reset visible lights and billboards count
             visibleLightsCount = 0;
+            visibleBillboardsCount = 0;
         }
 
         /// <summary>
@@ -195,14 +266,6 @@ namespace DeepEngine.Rendering
             BeginDraw();
             DrawScene(scene);
             EndDraw();
-        }
-
-        /// <summary>
-        /// Draws debug buffers from last render operation.
-        /// </summary>
-        public void DrawDebugBuffers()
-        {
-            gBuffer.DrawDebugBuffers(core.SpriteBatch);
         }
 
         /// <summary>
@@ -219,6 +282,23 @@ namespace DeepEngine.Rendering
                 visibleLights[visibleLightsCount].LightComponent = lightComponent;
                 visibleLights[visibleLightsCount].Entity = caller;
                 visibleLightsCount++;
+            }
+        }
+
+        /// <summary>
+        /// Submit a billboard to be drawn in GBuffer.
+        /// </summary>
+        /// <param name="material">Texture used when rendering the billboard.</param>
+        /// <param name="position">Position of billboard in world space.</param>
+        /// <param name="size">Dimensions of billboard.</param>
+        public void SubmitBillboard(Texture2D texture, Vector3 position, Vector2 size)
+        {
+            if (visibleBillboardsCount < maxVisibleBillboards)
+            {
+                visibleBillboards[visibleBillboardsCount].Texture = texture;
+                visibleBillboards[visibleBillboardsCount].Position = position;
+                visibleBillboards[visibleBillboardsCount].Size = size;
+                visibleBillboardsCount++;
             }
         }
 
@@ -255,18 +335,50 @@ namespace DeepEngine.Rendering
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.SamplerStates[0] = SamplerState.AnisotropicWrap;
 
+            // Draw scene
             scene.Draw();
+
+            // Draw billboards
+            DrawBillboards();
         }
 
         /// <summary>
-        /// Ends the drawing process and composits GBuffer.
+        /// Draws post-geometry objects and composits GBuffer.
         /// </summary>
         private void EndDraw()
         {
-            // Finish deferred rendering
+            // Draw lights
             DrawLights();
+
+            // Update depth debug buffer
+            if (showDebugBuffers)
+                gBuffer.UpdateDepthDebugBuffer(fullScreenQuad);
+
+            // Finish deferred rendering
             ComposeFinal();
         }
+
+        /// <summary>
+        /// Combines all render targets into back buffer for presentation.
+        /// </summary>
+        private void ComposeFinal()
+        {
+            gBuffer.ResolveGBuffer();
+
+            // Clear frame buffer
+            graphicsDevice.Clear(clearColor);
+
+            // Compose final image
+            gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+
+            // Draw debug buffers
+            if (showDebugBuffers)
+                gBuffer.DrawDebugBuffers(core.SpriteBatch, fullScreenQuad);
+        }
+
+        #endregion
+
+        #region Lighting
 
         /// <summary>
         /// Draws lights into GBuffer.
@@ -275,13 +387,16 @@ namespace DeepEngine.Rendering
         {
             gBuffer.ResolveGBuffer();
 
-            // Set render states
+            // Set render target
             graphicsDevice.SetRenderTarget(gBuffer.LightRT);
+
+            // Set render states
             graphicsDevice.Clear(Color.Transparent);
             graphicsDevice.BlendState = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.None;
 
-            // Draw visible lights
+            // Draw visible lights for geometry
+            pointLightEffect.CurrentTechnique = pointLightEffect.Techniques["Default"];
             for (int i = 0; i < maxVisibleLights; i++)
             {
                 if (i < visibleLightsCount)
@@ -301,30 +416,15 @@ namespace DeepEngine.Rendering
                 }
                 else
                 {
-                    // Clear buffer position to release any references
+                    // Clear remaining buffer positions to release any references
                     visibleLights[i].LightComponent = null;
                     visibleLights[i].Entity = null;
                 }
             }
+
+            // Draw emissive light
+            DrawEmissiveLight();
         }
-
-        /// <summary>
-        /// Combines all render targets into back buffer for presentation.
-        /// </summary>
-        private void ComposeFinal()
-        {
-            gBuffer.ResolveGBuffer();
-
-            // Clear frame buffer
-            graphicsDevice.Clear(clearColor);
-
-            // Compose final image
-            gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
-        }
-
-        #endregion
-
-        #region Lighting
 
         /// <summary>
         /// Draws a directional light.
@@ -352,7 +452,7 @@ namespace DeepEngine.Rendering
             directionalLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
 
             // Apply changes
-            directionalLightEffect.Techniques[0].Passes[0].Apply();
+            directionalLightEffect.CurrentTechnique.Passes[0].Apply();
 
             // Draw
             fullScreenQuad.Draw(graphicsDevice);
@@ -404,8 +504,7 @@ namespace DeepEngine.Rendering
                 graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             graphicsDevice.DepthStencilState = DepthStencilState.None;
-
-            pointLightEffect.Techniques[0].Passes[0].Apply();
+            pointLightEffect.CurrentTechnique.Passes[0].Apply();
             foreach (ModelMesh mesh in pointLightSphereModel.Meshes)
             {
                 foreach (ModelMeshPart meshPart in mesh.MeshParts)
@@ -419,6 +518,153 @@ namespace DeepEngine.Rendering
 
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
+        }
+
+        /// <summary>
+        /// Draws light from emissive textures.
+        /// </summary>
+        private void DrawEmissiveLight()
+        {
+            // Set GBuffer
+            emissiveLightEffect.Parameters["colorMap"].SetValue(gBuffer.ColorRT);
+
+            // Set parameters
+            emissiveLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
+
+            // Apply changes
+            emissiveLightEffect.Techniques[0].Passes[0].Apply();
+
+            // Draw
+            fullScreenQuad.Draw(graphicsDevice);
+        }
+
+        #endregion
+
+        #region Billboards
+
+        /// <summary>
+        /// Draws billboard colors in a forward pass using previously
+        ///  accumulated light information.
+        /// </summary>
+        private void DrawBillboards()
+        {
+            // Set transforms
+            renderBillboards.Parameters["World"].SetValue(Matrix.Identity);
+            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
+            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+
+            // Set buffers
+            core.GraphicsDevice.SetVertexBuffer(billboardVertexBuffer);
+            core.GraphicsDevice.Indices = billboardIndexBuffer;
+
+            // Set render states
+            core.GraphicsDevice.BlendState = BlendState.Opaque;
+            core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            core.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            core.GraphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+
+            // Set technique
+            //renderBillboards.CurrentTechnique = renderBillboards.Techniques["Default"];
+
+            // First pass renders opaque part of texture.
+            // These are depth sorted using depth-stencil buffer.
+            renderBillboards.Parameters["AlphaTestDirection"].SetValue(1f);
+            for (int i = 0; i < maxVisibleBillboards; i++)
+            {
+                DrawBillboardPass(i);
+            }
+
+            /*
+            // Second pass renders unsorted alpha fringe of texture.
+            // This yields decent looking results and is much cheaper than a CPU sort.
+            core.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            core.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+            renderBillboards.Parameters["AlphaTestDirection"].SetValue(-1f);
+            for (int i = 0; i < maxVisibleBillboards; i++)
+            {
+                DrawBillboardPass(i);
+            }
+            */
+        }
+
+        /// <summary>
+        /// Draw static batches with current settings.
+        /// </summary>
+        /// <param name="current">Current billboard index.</param>
+        private void DrawBillboardPass(int current)
+        {
+            // Apply parameters
+            renderBillboards_Texture.SetValue(visibleBillboards[current].Texture);
+            renderBillboards_Position.SetValue(visibleBillboards[current].Position);
+            renderBillboards_Size.SetValue(visibleBillboards[current].Size);
+
+            // Render geometry
+            foreach (EffectPass pass in renderBillboards.CurrentTechnique.Passes)
+            {
+                // Apply effect pass
+                pass.Apply();
+
+                // Draw primitives
+                core.GraphicsDevice.DrawIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    0,
+                    0,
+                    billboardVertexBuffer.VertexCount,
+                    0,
+                    2);
+            }
+        }
+
+        /// <summary>
+        /// Creates billboard template.
+        /// </summary>
+        private void CreateBillboardTemplate()
+        {
+            // Set dimensions of billboard 
+            const float w = 0.5f;
+            const float h = 0.5f;
+
+            // Create vertex array
+            VertexPositionNormalTextureBump[] billboardVertices = new VertexPositionNormalTextureBump[4];
+            billboardVertices[0] = new VertexPositionNormalTextureBump(
+                new Vector3(-w, h, 0),
+                Vector3.Up,
+                new Vector2(0, 0),
+                Vector3.Zero,
+                Vector3.Zero);
+            billboardVertices[1] = new VertexPositionNormalTextureBump(
+                new Vector3(w, h, 0),
+                Vector3.Up,
+                new Vector2(1, 0),
+                Vector3.Zero,
+                Vector3.Zero);
+            billboardVertices[2] = new VertexPositionNormalTextureBump(
+                new Vector3(-w, -h, 0),
+                Vector3.Up,
+                new Vector2(0, 1),
+                Vector3.Zero,
+                Vector3.Zero);
+            billboardVertices[3] = new VertexPositionNormalTextureBump(
+                new Vector3(w, -h, 0),
+                Vector3.Up,
+                new Vector2(1, 1),
+                Vector3.Zero,
+                Vector3.Zero);
+
+            // Create index array
+            short[] billboardIndices = new short[6]
+            {
+                0, 1, 2,
+                1, 3, 2,
+            };
+
+            // Create buffers
+            billboardVertexBuffer = new VertexBuffer(core.GraphicsDevice, VertexPositionNormalTextureBump.VertexDeclaration, 4, BufferUsage.WriteOnly);
+            billboardIndexBuffer = new IndexBuffer(core.GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
+
+            // Set data
+            billboardVertexBuffer.SetData(billboardVertices);
+            billboardIndexBuffer.SetData(billboardIndices);
         }
 
         #endregion

@@ -114,14 +114,22 @@ float3 decode(float3 enc)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-    // Get normal data from the normalMap
+	// Get specular or emissive intensity value from color sampler
+	// 0.0 - 0.5 are specular intensity
+	// 0.5 - 1.0 are emissive intensity
+    float specularOrEmissiveIntensityValue = tex2D(colorSampler, input.TexCoord).a;
+
+	// Ignore everything above 0.5f at it is emissive intensity
+	clip((-1 * specularOrEmissiveIntensityValue) + 0.5f);
+
+	// Shift specular intensity value into 0.0 - 1.0 range
+	float specularIntensity = specularOrEmissiveIntensityValue / 0.5f;
+
+	// Get normal data from the normalMap
     float4 normalData = tex2D(normalSampler,input.TexCoord);
 
     // Tranform normal back into [-1,1] range
     float3 normal = decode(normalData.xyz);
-
-	// Get specular intensity from the colorMap
-    float specularIntensity = tex2D(colorSampler, input.TexCoord).w;
 
     // Get specular power, and get it into [0,255] range]
     float specularPower = normalData.w * 255;

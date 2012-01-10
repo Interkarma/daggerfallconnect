@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using DeepEngine.Core;
 #endregion
 
 namespace DeepEngine.Rendering
@@ -23,20 +24,23 @@ namespace DeepEngine.Rendering
     /// <summary>
     /// Class for managing a deferred GBuffer.
     /// </summary>
-    internal class GBuffer
+    public class GBuffer
     {
 
         #region Fields
+
+        // Engine
+        DeepCore core;
 
         // XNA
         GraphicsDevice graphicsDevice;
         Viewport viewport;
 
         // Render targets
-        RenderTarget2D colorRT;     // Color and specular intensity
-        RenderTarget2D normalRT;    // Normals + specular power
-        RenderTarget2D depthRT;     // Depth
-        RenderTarget2D lightRT;     // Lighting
+        RenderTarget2D colorRT;             // Color and specular intensity
+        RenderTarget2D normalRT;            // Normals + specular power
+        RenderTarget2D depthRT;             // Depth
+        RenderTarget2D lightRT;             // Lighting
 
         // Ambient lighting
         Color ambientColor = Color.White;
@@ -45,6 +49,12 @@ namespace DeepEngine.Rendering
         // Size
         Vector2 size;
         Vector2 halfPixel;
+
+        // Effects
+        Effect drawDebugDepthBufferEffect;
+
+        // Custom debug buffers
+        RenderTarget2D depthDebugBuffer = null;
 
         #endregion
 
@@ -125,9 +135,14 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GBuffer(GraphicsDevice graphicsDevice)
+        public GBuffer(DeepCore core)
         {
-            this.graphicsDevice = graphicsDevice;
+            // Save references
+            this.core = core;
+            this.graphicsDevice = core.GraphicsDevice;
+
+            // Load content
+            drawDebugDepthBufferEffect = core.ContentManager.Load<Effect>("Effects/DrawDebugDepthBuffer");
         }
 
         #endregion
@@ -174,8 +189,8 @@ namespace DeepEngine.Rendering
         /// Clear GBuffer.
         /// </summary>
         /// <param name="clearBufferEffect">Effect to clear GBuffer with.</param>
-        /// <param name="clearColor">FullScreenQuad class.</param>
-        /// <param name="fullScreenQuad">Clear colour for diffuse buffer.</param>
+        /// <param name="fullScreenQuad">FullScreenQuad class.</param>
+        /// <param name="clearColor">Clear colour for diffuse buffer.</param>
         public void ClearGBuffer(Effect clearBufferEffect, FullScreenQuad fullScreenQuad, Color clearColor)
         {
             graphicsDevice.BlendState = BlendState.Opaque;
@@ -207,10 +222,15 @@ namespace DeepEngine.Rendering
             fullScreenQuad.Draw(graphicsDevice);
         }
 
+        #endregion
+
+        #region Debug Buffers
+
         /// <summary>
         /// Draw a debug version of GBuffer.
         /// </summary>
-        public void DrawDebugBuffers(SpriteBatch spriteBatch)
+        /// <param name="fullScreenQuad">FullScreenQuad class.</param>
+        public void DrawDebugBuffers(SpriteBatch spriteBatch, FullScreenQuad fullScreenQuad)
         {
             // Width + Height
             int width = (int)size.X / 8;
@@ -226,23 +246,65 @@ namespace DeepEngine.Rendering
             rect.Width = width;
             rect.Height = height;
 
-            // Draw color
+            // Draw colour target
             spriteBatch.Draw(colorRT, rect, Color.White);
 
-            // Draw normal
+            // Draw normal target
             rect.X += width;
             spriteBatch.Draw(normalRT, rect, Color.White);
 
-            // Draw light
+            // Draw depth
+            if (depthDebugBuffer != null)
+            {
+                rect.X += width;
+                spriteBatch.Draw(depthDebugBuffer, rect, Color.White);
+            }
+
+            // Draw light accumulation target
             rect.X += width;
             spriteBatch.Draw(lightRT, rect, Color.White);
 
-            // Draw depth
-            //rect.X += width;
-            //spriteBatch.Draw(depthRT, rect, Color.White);
-
             // End sprite batch
             spriteBatch.End();
+        }
+
+        /// <summary>
+        /// Renders depth information to grayscale so it is more useful for debug.
+        /// </summary>
+        /// <param name="fullScreenQuad">FullScreenQuad class.</param>
+        public void UpdateDepthDebugBuffer(FullScreenQuad fullScreenQuad)
+        {
+            // Clear render target
+            ResolveGBuffer();
+
+            // Create render target if it doesn't exist or is lost
+            if (depthDebugBuffer == null)
+                CreateDepthDebugBuffer();
+            else if (depthDebugBuffer.IsContentLost)
+                CreateDepthDebugBuffer();
+
+            // Set render target
+            graphicsDevice.SetRenderTarget(depthDebugBuffer);
+
+            // Set render states
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
+
+            // Set values
+            drawDebugDepthBufferEffect.Parameters["DepthMap"].SetValue(depthRT);
+            drawDebugDepthBufferEffect.Parameters["HalfPixel"].SetValue(halfPixel);
+
+            // Apply changes and draw
+            drawDebugDepthBufferEffect.Techniques[0].Passes[0].Apply();
+            fullScreenQuad.Draw(graphicsDevice);
+        }
+
+        /// <summary>
+        /// Creates depth debug buffer.
+        /// </summary>
+        private void CreateDepthDebugBuffer()
+        {
+            depthDebugBuffer = new RenderTarget2D(graphicsDevice, (int)size.X, (int)size.Y, false, SurfaceFormat.Color, DepthFormat.None);
         }
 
         #endregion

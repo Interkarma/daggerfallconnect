@@ -180,6 +180,14 @@ namespace DeepEngine.Core
         }
 
         /// <summary>
+        /// Gets number of visible billboards submitted to renderer.
+        /// </summary>
+        public int VisibleBillboardsCount
+        {
+            get { return renderer.VisibleBillboardsCount; }
+        }
+
+        /// <summary>
         /// Gets the number of milliseconds elapsed since core started.
         /// </summary>
         public long ElapsedMilliseconds

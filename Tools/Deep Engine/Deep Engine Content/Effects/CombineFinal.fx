@@ -72,16 +72,14 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
 	PixelShaderOutput output;
 
 	// Calculate final colour
-    float3 diffuseColor = tex2D(colorSampler,input.TexCoord).rgb;
+    float3 diffuseColor = tex2D(colorSampler, input.TexCoord).rgb;
     float4 light = tex2D(lightSampler,input.TexCoord);
     float3 diffuseLight = light.rgb;
     float specularLight = light.a;
 	float3 ambientLight = diffuseColor * AmbientColor * AmbientIntensity;
 
-	// Output Depth
-	// This information is used by forward rendering to insert
-	// objects (such as billboards) into scene with depth intact
-	float4 depth = tex2D(depthSampler,input.TexCoord);
+	// Read geometry depth
+    float depth = tex2D(depthSampler, input.TexCoord).r;
 	output.Depth = depth;
 
 	// Output final color on every pixel except those still at max depth (i.e. the sky).

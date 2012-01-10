@@ -1103,6 +1103,7 @@ namespace DeepEngine.Daggerfall
                 dstPos = (y * dstBitmap.Stride) + (paddingPixels * dstBitmap.Stride) + (paddingPixels * formatWidth);
                 for (int x = 0; x < dfBitmap.Width; x++)
                 {
+                    /*
                     // Copy pixel to top, bottom, left, right
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride);
@@ -1114,6 +1115,7 @@ namespace DeepEngine.Daggerfall
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride + formatWidth);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride - formatWidth);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride + formatWidth);
+                     */
 
                     // Copy central colour pixel
                     dstBitmap.Data[dstPos] = dfBitmap.Data[srcPos];
