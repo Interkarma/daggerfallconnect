@@ -92,8 +92,8 @@ namespace ContentLoading1
             long startTime = stopwatch.ElapsedMilliseconds;
 
             // Load a test scene
-            //LoadExteriorMapScene();
-            LoadBlockScene();
+            LoadExteriorMapScene();
+            //LoadBlockScene();
             //LoadModelScene();
             //LoadPhysicsScene();
 
@@ -167,7 +167,7 @@ namespace ContentLoading1
         private void LoadExteriorMapScene()
         {
             // Set clear colour
-            core.DeepCore.Renderer.ClearColor = Color.CornflowerBlue;
+            core.DeepCore.Renderer.ClearColor = Color.Black;
 
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
@@ -207,8 +207,10 @@ namespace ContentLoading1
             core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
+            float lightIntensity = 0.25f;
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1f));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
         }
 
         private void LoadBlockScene()
@@ -231,8 +233,9 @@ namespace ContentLoading1
             AddBlockFlats(level, block);
 
             // Create directional light
-            //WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            //directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1f));
+            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, 1f));
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, 1f));
         }
 
         /// <summary>

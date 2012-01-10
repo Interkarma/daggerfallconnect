@@ -39,9 +39,9 @@ struct Default_VSO
 
 struct Default_PSO
 {
-    half4 Color				: COLOR0;
-    half4 Normal			: COLOR1;
-	half4 Depth				: COLOR2;
+    float4 Color			: COLOR0;
+    float4 Normal			: COLOR1;
+	float4 Depth			: COLOR2;
 };
 
 
