@@ -34,7 +34,7 @@ namespace DeepEngine.Components
         // Primitive
         GeometricPrimitive primitive;
         GeometricPrimitiveType type;
-        Color color = Color.White;
+        Vector4 color = Vector4.One;
 
         // Effect
         Effect renderGeometryEffect;
@@ -70,7 +70,7 @@ namespace DeepEngine.Components
         /// <summary>
         /// Gets or sets the diffuse colour used to render this primitive.
         /// </summary>
-        public Color Color
+        public Vector4 Color
         {
             get { return color; }
             set { color = value; }
@@ -220,7 +220,7 @@ namespace DeepEngine.Components
             renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
             renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
             renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
-            renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color);
 
             // Draw primitive
             primitive.Draw(renderGeometryEffect);

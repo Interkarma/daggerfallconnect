@@ -70,7 +70,7 @@ namespace DeepEngine.Components
         #region Structures
 
         /// <summary>
-        /// A stationary billboard used for trees, rocks, animals, etc.
+        /// A static billboard used for trees, rocks, animals, etc.
         /// </summary>
         public struct BlockFlat
         {
@@ -273,7 +273,7 @@ namespace DeepEngine.Components
             switch (blockData.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    BuildRMB(ref blockData);
+                    BuildRMB(ref blockData, climateSettings);
                     break;
                 case DFBlock.BlockTypes.Rdb:
                     BuildRDB(ref blockData);
@@ -333,15 +333,16 @@ namespace DeepEngine.Components
         /// <summary>
         /// Builds an RMB block.
         /// </summary>
+        /// <param name="climateSettings">Desired climate settings for block.</param>
         /// <param name="blockData">Block data.</param>
-        private void BuildRMB(ref DFBlock blockData)
+        private void BuildRMB(ref DFBlock blockData, DFLocation.ClimateSettings climateSettings )
         {
             // Add RMB data
             AddRMBGroundTiles(ref blockData);
             AddRMBModels(ref blockData);
             AddRMBMiscModels(ref blockData);
             AddRMBMiscFlats(ref blockData);
-            
+            AddRMBSceneryFlats(ref blockData, climateSettings);
 
             // Finish batch building
             Seal();
@@ -350,8 +351,6 @@ namespace DeepEngine.Components
             this.BoundingSphere = new BoundingSphere(
                 new Vector3(BlocksFile.RMBDimension / 2, 0, BlocksFile.RMBDimension / 2),
                 BlocksFile.RMBDimension);
-
-            //AddRMBSceneryFlats(ref blockData);
         }
 
         /// <summary>
@@ -533,6 +532,7 @@ namespace DeepEngine.Components
         /// <param name="block">Block data.</param>
         private void AddRMBMiscFlats(ref DFBlock block)
         {
+            // Add block flats
             foreach (DFBlock.RmbBlockFlatObjectRecord obj in block.RmbBlock.MiscFlatObjectRecords)
             {
                 BlockFlat flat = new BlockFlat
@@ -542,6 +542,37 @@ namespace DeepEngine.Components
                     Position = new Vector3(obj.XPos, obj.YPos, obj.ZPos),
                 };
                 blockFlats.Add(flat);
+            }
+        }
+
+        /// <summary>
+        /// Stores scenery flats.
+        /// </summary>
+        /// <param name="block">Block data.</param>
+        /// /// <param name="climateSettings">Desired climate settings for block.</param>
+        private void AddRMBSceneryFlats(ref DFBlock block, DFLocation.ClimateSettings climateSettings)
+        {
+            // Add block scenery
+            for (int y = 0; y < 16; y++)
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    // Get scenery item
+                    DFBlock.RmbGroundScenery scenery =
+                        block.RmbBlock.FldHeader.GroundData.GroundScenery[x, y];
+
+                    // Ignore 0 as this appears to be a marker/waypoint of some kind
+                    if (scenery.TextureRecord > 0)
+                    {
+                        BlockFlat flat = new BlockFlat
+                        {
+                            Archive = climateSettings.SceneryArchive,
+                            Record = scenery.TextureRecord,
+                            Position = new Vector3(x * BlocksFile.TileDimension, 0, -y * BlocksFile.TileDimension),
+                        };
+                        blockFlats.Add(flat);
+                    }
+                }
             }
         }
 

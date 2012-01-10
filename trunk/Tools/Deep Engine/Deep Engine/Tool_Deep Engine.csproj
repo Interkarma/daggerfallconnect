@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\BaseComponent.cs" />
+    <Compile Include="Components\DaggerfallBillboardBatchComponent.cs" />
     <Compile Include="Components\DaggerfallBillboardComponent.cs" />
     <Compile Include="Components\ReaperComponent.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />

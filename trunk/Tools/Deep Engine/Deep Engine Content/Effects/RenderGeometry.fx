@@ -7,7 +7,7 @@ float4x4 Projection;
 texture Texture;
 float SpecularIntensity = 0.0f;
 float SpecularPower = 0.5f;
-float3 DiffuseColor = float3(1,1,1);
+float4 DiffuseColor = float4(1,1,1,0);
 
 
 ///////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ struct Default_PSO
 {
     half4 Color				: COLOR0;
     half4 Normal			: COLOR1;
-    half4 Depth				: COLOR2;
+	half4 Depth				: COLOR2;
 };
 
 
@@ -84,15 +84,9 @@ Default_PSO Default_PS(Default_VSO input)
 {
     Default_PSO output;
 
-	// Colour texture
+	// Colour texture - forcing to 0 specular intensity for now
     output.Color = tex2D(ColorTextureSampler, input.TexCoord);
-
-	// Alpha 0x00 - 0x7f can be used for specular.
-	// Alpha 0x80 - 0xff are emissive and are left alone.
-	if (output.Color.a < 0.5f)
-	{
-		output.Color.a = SpecularIntensity;
-	}
+	output.Color.a = 0;
 
 	// Normal
 	output.Normal.rgb = 0.5f * (input.Normal + 1.0f);
@@ -125,9 +119,15 @@ Diffuse_VSO Diffuse_VS(Diffuse_VSI input)
 Default_PSO Diffuse_PS(Diffuse_VSO input)
 {
     Default_PSO output;
-    output.Color = float4(DiffuseColor, 1);
+
+	// Colour - allow specular/emissive as specified
+    output.Color = DiffuseColor;
+
+	// Normal
 	output.Normal.rgb = 0.5f * (input.Normal + 1.0f);
-	output.Normal.a = 1;
+	output.Normal.a = 0.98;
+
+	// Depth
     output.Depth = input.Depth.x / input.Depth.y;
 
     return output;

@@ -20,7 +20,7 @@ namespace DeepEngine.Rendering
     /// <summary>
     /// Draws a full-screen quad for post-rendering effect such as combining deferred buffers.
     /// </summary>
-    internal class FullScreenQuad
+    public class FullScreenQuad
     {
         // Fields
         VertexBuffer vb;

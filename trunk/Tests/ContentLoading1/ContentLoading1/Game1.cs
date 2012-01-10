@@ -26,23 +26,24 @@ namespace ContentLoading1
         SpriteBatch spriteBatch;
         SpriteFont font;
 
-        DaggerfallBillboardComponent staticBillboards;
-
         Stopwatch stopwatch = Stopwatch.StartNew();
         long lastLoadTime = 0;
 
         long nextBallTime = 0;
         long minBallTime = 200;
 
+        // Ball colours.
+        // Alpha value < 0.5 is specular intensity.
+        // Alpha value > 0.5 is emissive intensity.
         int colorIndex = 0;
-        Color[] colors = new Color[]
+        Vector4[] colors = new Vector4[]
         {
-            Color.Red,
-            Color.Green,
-            Color.Blue,
-            Color.Gold,
-            Color.Purple,
-            Color.YellowGreen,
+            new Vector4(Color.Red.ToVector3(), 1f),
+            new Vector4(Color.Green.ToVector3(), 1f),
+            new Vector4(Color.Blue.ToVector3(), 1f),
+            new Vector4(Color.Gold.ToVector3(), 1f),
+            new Vector4(Color.Purple.ToVector3(), 1f),
+            new Vector4(Color.YellowGreen.ToVector3(), 1f),
         };
 
 
@@ -83,9 +84,6 @@ namespace ContentLoading1
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // Create billboards component
-            staticBillboards = new DaggerfallBillboardComponent(core.DeepCore);
-
             // TODO: use this.Content to load your game content here
 
             // Load a sprite font
@@ -94,10 +92,13 @@ namespace ContentLoading1
             long startTime = stopwatch.ElapsedMilliseconds;
 
             // Load a test scene
-            LoadExteriorMapScene();
-            //LoadBlockScene();
+            //LoadExteriorMapScene();
+            LoadBlockScene();
             //LoadModelScene();
             //LoadPhysicsScene();
+
+            // Show or hide debug buffers
+            core.DeepCore.Renderer.ShowDebugBuffers = true;
 
             lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
         }
@@ -144,18 +145,13 @@ namespace ContentLoading1
 
             base.Draw(gameTime);
 
-            // Draw billboards
-            staticBillboards.Draw(null);
-
-            // Draw debug buffers
-            core.DeepCore.Renderer.DrawDebugBuffers();
-
             // Compose engine statistics
             string status = string.Format(
-                "Update: {0}ms, Draw: {1}ms, Lights: {2}",
+                "Update: {0:00}ms, Draw: {1:00}ms, Lights: {2:000}, Billboards: {3:0000}",
                 core.DeepCore.LastUpdateTime,
                 core.DeepCore.LastDrawTime,
-                core.DeepCore.VisibleLightsCount);
+                core.DeepCore.VisibleLightsCount,
+                core.DeepCore.VisibleBillboardsCount);
 
             // Draw engine statistics
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
@@ -171,7 +167,7 @@ namespace ContentLoading1
         private void LoadExteriorMapScene()
         {
             // Set clear colour
-            core.DeepCore.Renderer.ClearColor = Color.Black;
+            core.DeepCore.Renderer.ClearColor = Color.CornflowerBlue;
 
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
@@ -203,43 +199,23 @@ namespace ContentLoading1
                     level.Components.Add(block);
 
                     // Attach block flats
-                    AddBlockFlats(block, blockPosition);
+                    AddBlockFlats(level, block);
                 }
             }
-
-            // Seal billboards
-            staticBillboards.Seal();
 
             // Clear model cache to release some memory
             core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 0.4f));
-        }
-
-        /// <summary>
-        /// Attach flats component to an entity.
-        /// </summary>
-        /// <param name="block">Block to get flats from.</param>
-        /// <param name="blockPosition">Block position.</param>
-        private void AddBlockFlats(DaggerfallBlockComponent block, Vector3 blockPosition)
-        {
-            // Exit if no flats
-            if (block.BlockFlats.Count == 0)
-                return;
-
-            blockPosition = new Vector3(blockPosition.X, blockPosition.Y, -blockPosition.Z);
-
-            // Add flats to component
-            foreach (var flat in block.BlockFlats)
-            {
-                staticBillboards.AddBillboard(flat.Archive, flat.Record, flat.Position + blockPosition);
-            }
+            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1f));
         }
 
         private void LoadBlockScene()
         {
+            // Set clear colour
+            core.DeepCore.Renderer.ClearColor = Color.CornflowerBlue;
+
             // Set camera position
             core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
 
@@ -249,19 +225,34 @@ namespace ContentLoading1
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core.DeepCore, core.DeepCore.ActiveScene);
             block.LoadBlock("MAGEAA13.RMB", MapsFile.DefaultClimateSettings);
-
-            // Attach component
             level.Components.Add(block);
 
             // Attach block flats
-            AddBlockFlats(block, Vector3.Zero);
+            AddBlockFlats(level, block);
 
             // Create directional light
-            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1));
+            //WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            //directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Down + Vector3.Right, Color.White, 1f));
+        }
 
-            // Seal billboards
-            staticBillboards.Seal();
+        /// <summary>
+        /// Attach flats component to an entity.
+        /// </summary>
+        /// <param name="entity">Entity to attach billboards.</param>
+        /// <param name="block">Block to get flats from.</param>
+        private void AddBlockFlats(BaseEntity entity, DaggerfallBlockComponent block)
+        {
+            // Exit if no flats
+            if (block.BlockFlats.Count == 0)
+                return;
+
+            // Add flats to component
+            foreach (var flat in block.BlockFlats)
+            {
+                DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core.DeepCore, flat.Archive, flat.Record);
+                billboard.Matrix = block.Matrix * Matrix.CreateTranslation(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
+                entity.Components.Add(billboard);
+            }
         }
 
         /// <summary>
@@ -309,7 +300,7 @@ namespace ContentLoading1
             // Attach cube geometry
             GeometricPrimitiveComponent cubeGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             cubeGeometry.MakeCube(1024f);
-            cubeGeometry.Color = Color.White;
+            cubeGeometry.Color = Vector4.One;
             cubeEntity.Components.Add(cubeGeometry);
 
             // Attach cube physics and a directional light
@@ -321,7 +312,7 @@ namespace ContentLoading1
             // Attach torus geometry
             GeometricPrimitiveComponent torusGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             torusGeometry.MakeTorus(64f, 64f, 16);
-            torusGeometry.Color = Color.Red;
+            torusGeometry.Color = new Vector4(Color.Red.ToVector3(), 1);
             torusEntity.Components.Add(torusGeometry);
 
             // Attach torus physics and a point light
@@ -333,7 +324,7 @@ namespace ContentLoading1
             // Attach sphere geometry
             GeometricPrimitiveComponent sphereGeometry = new GeometricPrimitiveComponent(core.DeepCore);
             sphereGeometry.MakeSphere(64f, 16);
-            sphereGeometry.Color = Color.Red;
+            sphereGeometry.Color = new Vector4(Color.Red.ToVector3(), 1);
             sphereEntity.Components.Add(sphereGeometry);
             
             // Attach sphere physics
@@ -355,7 +346,8 @@ namespace ContentLoading1
         public void ShootBall()
         {
             // Get next colour for ball
-            Color sphereColor = colors[colorIndex++];
+            Vector4 sphereColor = colors[colorIndex++];
+            Color lightColor = new Color(sphereColor.X, sphereColor.Y, sphereColor.Z);
             if (colorIndex >= colors.Length)
                 colorIndex = 0;
 
@@ -383,7 +375,7 @@ namespace ContentLoading1
             sphereEntity.Components.Add(spherePhysics);
 
             // Attach sphere light
-            LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 750f, sphereColor, 1.5f);
+            LightComponent sphereLight = new LightComponent(core.DeepCore, Vector3.Zero, 750f, lightColor, 2.0f);
             sphereEntity.Components.Add(sphereLight);
 
             // Set entity to expire after 5 minutes
