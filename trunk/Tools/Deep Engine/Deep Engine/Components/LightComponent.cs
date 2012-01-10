@@ -124,7 +124,7 @@ namespace DeepEngine.Components
             get
             {
                 BoundingSphere sphere;
-                sphere.Center = position;
+                sphere.Center = Vector3.Zero;
                 sphere.Radius = radius;
                 return sphere.Transform(Matrix);
             }
