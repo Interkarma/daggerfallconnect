@@ -84,9 +84,8 @@ Default_PSO Default_PS(Default_VSO input)
 {
     Default_PSO output;
 
-	// Colour texture - forcing to 0 specular intensity for now
+	// Colour texture
     output.Color = tex2D(ColorTextureSampler, input.TexCoord);
-	output.Color.a = 0;
 
 	// Normal
 	output.Normal.rgb = 0.5f * (input.Normal + 1.0f);

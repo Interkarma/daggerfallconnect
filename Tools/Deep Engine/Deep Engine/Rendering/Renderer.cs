@@ -49,6 +49,10 @@ namespace DeepEngine.Rendering
         Effect renderBillboards;
         Effect fxaaAntialiasing;
 
+        // Render targets
+        RenderTarget2D sceneRenderTarget;
+        RenderTarget2D finalRenderTarget;
+
         // Render parameters
         EffectParameter renderBillboards_Texture;
         EffectParameter renderBillboards_Position;
@@ -74,9 +78,8 @@ namespace DeepEngine.Rendering
         // Debug buffers
         bool showDebugBuffers = false;
 
-        // FXAA
-        bool fxaaEnabled = true;
-        RenderTarget2D fxaaRenderTarget;
+        // Post processing
+        BloomProcessor bloomProcessor;
 
         #endregion
 
@@ -192,8 +195,10 @@ namespace DeepEngine.Rendering
             graphicsDevice.SamplerStates[2] = SamplerState.LinearWrap;
             graphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
 
-            // Reset GBuffer
+            // Reset render targets
             gBuffer.CreateGBuffer();
+            CreateRenderTargets();
+            bloomProcessor.CreateTargets();
         }
 
         /// <summary>
@@ -247,6 +252,7 @@ namespace DeepEngine.Rendering
             // Create rendering classes
             fullScreenQuad = new FullScreenQuad(graphicsDevice);
             gBuffer = new GBuffer(core);
+            bloomProcessor = new BloomProcessor(core);
 
             // Wire up GraphicsDevice events
             graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
@@ -322,7 +328,8 @@ namespace DeepEngine.Rendering
                 gBuffer.Size.Y != (float)graphicsDevice.Viewport.Height)
             {
                 gBuffer.CreateGBuffer();
-                CreateFXAARenderTarget();
+                CreateRenderTargets();
+                bloomProcessor.CreateTargets();
             }
 
             // Prepare GBuffer
@@ -370,50 +377,38 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void ComposeFinal()
         {
-            // Draw final screen with or without FXAA
-            if (fxaaEnabled)
-            {
-                // Set fxaa buffer render target
-                graphicsDevice.SetRenderTarget(fxaaRenderTarget);
+            // Set render target
+            graphicsDevice.SetRenderTarget(sceneRenderTarget);
 
-                // Clear target
-                graphicsDevice.Clear(Color.Transparent);
+            // Clear target
+            graphicsDevice.Clear(Color.Transparent);
 
-                // Compose final image
-                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+            // Compose final image from GBuffer
+            gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
 
-                // Clear render targets
-                gBuffer.ResolveGBuffer();
+            // Set next render target
+            graphicsDevice.SetRenderTarget(finalRenderTarget);
 
-                // Clear frame buffer
-                graphicsDevice.Clear(clearColor);
+            // Clear
+            graphicsDevice.Clear(clearColor);
 
-                // Set effect parameters
-                fxaaAntialiasing.CurrentTechnique = fxaaAntialiasing.Techniques["ppfxaa"];
-                fxaaAntialiasing.Parameters["SCREEN_WIDTH"].SetValue(fxaaRenderTarget.Width);
-                fxaaAntialiasing.Parameters["SCREEN_HEIGHT"].SetValue(fxaaRenderTarget.Height);
-                fxaaAntialiasing.Parameters["gScreenTexture"].SetValue(fxaaRenderTarget as Texture2D);
+            // Set effect parameters
+            fxaaAntialiasing.CurrentTechnique = fxaaAntialiasing.Techniques["ppfxaa"];
+            fxaaAntialiasing.Parameters["SCREEN_WIDTH"].SetValue(sceneRenderTarget.Width);
+            fxaaAntialiasing.Parameters["SCREEN_HEIGHT"].SetValue(sceneRenderTarget.Height);
+            fxaaAntialiasing.Parameters["gScreenTexture"].SetValue(sceneRenderTarget as Texture2D);
 
-                // Set render states
-                graphicsDevice.BlendState = BlendState.AlphaBlend;
-                graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-                graphicsDevice.DepthStencilState = DepthStencilState.None;
+            // Set render states
+            graphicsDevice.BlendState = BlendState.AlphaBlend;
+            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
 
-                // Draw to frame buffer
-                fxaaAntialiasing.Techniques[0].Passes[0].Apply();
-                fullScreenQuad.Draw(graphicsDevice);
-            }
-            else
-            {
-                // Clear render targets
-                gBuffer.ResolveGBuffer();
+            // Draw FXAA
+            fxaaAntialiasing.Techniques[0].Passes[0].Apply();
+            fullScreenQuad.Draw(graphicsDevice);
 
-                // Clear frame buffer
-                graphicsDevice.Clear(clearColor);
-
-                // Compose final image
-                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
-            }
+            // Draw bloom
+            bloomProcessor.Draw(finalRenderTarget);
 
             // Draw debug buffers
             if (showDebugBuffers)
@@ -605,9 +600,6 @@ namespace DeepEngine.Rendering
             core.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             core.GraphicsDevice.SamplerStates[0] = SamplerState.AnisotropicClamp;
 
-            // Set technique
-            //renderBillboards.CurrentTechnique = renderBillboards.Techniques["Default"];
-
             // First pass renders opaque part of texture.
             // These are depth sorted using depth-stencil buffer.
             renderBillboards.Parameters["AlphaTestDirection"].SetValue(1f);
@@ -615,18 +607,6 @@ namespace DeepEngine.Rendering
             {
                 DrawBillboardPass(i);
             }
-
-            /*
-            // Second pass renders unsorted alpha fringe of texture.
-            // This yields decent looking results and is much cheaper than a CPU sort.
-            core.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            core.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
-            renderBillboards.Parameters["AlphaTestDirection"].SetValue(-1f);
-            for (int i = 0; i < maxVisibleBillboards; i++)
-            {
-                DrawBillboardPass(i);
-            }
-            */
         }
 
         /// <summary>
@@ -711,18 +691,20 @@ namespace DeepEngine.Rendering
 
         #endregion
 
-        #region FXAA
+        #region Scene Render Target
 
         /// <summary>
-        /// Creates new FXAA render target.
+        /// Creates new render target for post-processing effects.
+        ///  Standard rendering just draws direct into the frame buffer.
         /// </summary>
-        private void CreateFXAARenderTarget()
+        private void CreateRenderTargets()
         {
-            // Only create if enabled
-            if (fxaaEnabled)
-            {
-                fxaaRenderTarget = new RenderTarget2D(graphicsDevice, (int)gBuffer.Size.X, (int)gBuffer.Size.Y, false, SurfaceFormat.Color, DepthFormat.None);
-            }
+            int width = graphicsDevice.Viewport.Width;
+            int height = graphicsDevice.Viewport.Height;
+
+            // Create post-processing targets
+            sceneRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            finalRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
         }
 
         #endregion
