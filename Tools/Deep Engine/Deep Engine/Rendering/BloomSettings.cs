@@ -77,6 +77,8 @@ namespace DeepEngine.Rendering
             new BloomSettings("Saturated",   0.25f,  4,   2,     1,    2,       0),
             new BloomSettings("Blurry",      0,      2,   1,     0.1f, 1,       1),
             new BloomSettings("Subtle",      0.5f,   2,   1,     1,    1,       1),
+            new BloomSettings("Day",         0.4f,   2,   1.25f, 1,    1,       1),
+            new BloomSettings("Night",       0.25f,  4,   1.5f,  1,    1,       1),
         };
     }
 }

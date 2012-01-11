@@ -134,6 +134,11 @@ namespace ContentLoading1
                 nextBallTime = stopwatch.ElapsedMilliseconds + minBallTime;
             }
 
+            if (ks.IsKeyDown(Keys.Escape))
+            {
+                Exit();
+            }
+
             base.Update(gameTime);
         }
 
@@ -212,7 +217,7 @@ namespace ContentLoading1
             core.DeepCore.ModelManager.ClearModelData();
 
             // Create directional light
-            float lightIntensity = 0.01f;
+            float lightIntensity = 0.25f;
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
             directionalLight.Components.Add(new LightComponent(core.DeepCore, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
