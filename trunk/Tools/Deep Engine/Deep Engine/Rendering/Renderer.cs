@@ -50,8 +50,8 @@ namespace DeepEngine.Rendering
         Effect fxaaAntialiasing;
 
         // Render targets
-        RenderTarget2D sceneRenderTarget;
-        RenderTarget2D finalRenderTarget;
+        RenderTarget2D fxaaRenderTarget;
+        RenderTarget2D bloomRenderTarget;
 
         // Render parameters
         EffectParameter renderBillboards_Texture;
@@ -80,6 +80,8 @@ namespace DeepEngine.Rendering
 
         // Post processing
         BloomProcessor bloomProcessor;
+        bool fxaaEnabled = false;
+        bool bloomEnabled = true;
 
         #endregion
 
@@ -374,41 +376,109 @@ namespace DeepEngine.Rendering
 
         /// <summary>
         /// Combines all render targets into back buffer for presentation.
+        ///  Runs post-processing until a proper framework is written.
         /// </summary>
         private void ComposeFinal()
         {
-            // Set render target
-            graphicsDevice.SetRenderTarget(sceneRenderTarget);
+            // No post-processing enabled, just compose into frame buffer
+            if (!fxaaEnabled && !bloomEnabled)
+            {
+                // Null render target
+                gBuffer.ResolveGBuffer();
 
-            // Clear target
-            graphicsDevice.Clear(Color.Transparent);
+                // Clear
+                graphicsDevice.Clear(clearColor);
 
-            // Compose final image from GBuffer
-            gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+                // Compose final image from GBuffer
+                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+            }
 
-            // Set next render target
-            graphicsDevice.SetRenderTarget(finalRenderTarget);
+            // Only fxaa is enabled
+            if (fxaaEnabled && !bloomEnabled)
+            {
+                // Set render target
+                graphicsDevice.SetRenderTarget(fxaaRenderTarget);
 
-            // Clear
-            graphicsDevice.Clear(clearColor);
+                // Clear target
+                graphicsDevice.Clear(Color.Transparent);
 
-            // Set effect parameters
-            fxaaAntialiasing.CurrentTechnique = fxaaAntialiasing.Techniques["ppfxaa"];
-            fxaaAntialiasing.Parameters["SCREEN_WIDTH"].SetValue(sceneRenderTarget.Width);
-            fxaaAntialiasing.Parameters["SCREEN_HEIGHT"].SetValue(sceneRenderTarget.Height);
-            fxaaAntialiasing.Parameters["gScreenTexture"].SetValue(sceneRenderTarget as Texture2D);
+                // Compose final image from GBuffer
+                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
 
-            // Set render states
-            graphicsDevice.BlendState = BlendState.AlphaBlend;
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-            graphicsDevice.DepthStencilState = DepthStencilState.None;
+                // Null render target
+                gBuffer.ResolveGBuffer();
 
-            // Draw FXAA
-            fxaaAntialiasing.Techniques[0].Passes[0].Apply();
-            fullScreenQuad.Draw(graphicsDevice);
+                // Clear
+                graphicsDevice.Clear(clearColor);
 
-            // Draw bloom
-            bloomProcessor.Draw(finalRenderTarget);
+                // Set effect parameters
+                fxaaAntialiasing.CurrentTechnique = fxaaAntialiasing.Techniques["ppfxaa"];
+                fxaaAntialiasing.Parameters["SCREEN_WIDTH"].SetValue(fxaaRenderTarget.Width);
+                fxaaAntialiasing.Parameters["SCREEN_HEIGHT"].SetValue(fxaaRenderTarget.Height);
+                fxaaAntialiasing.Parameters["gScreenTexture"].SetValue(fxaaRenderTarget as Texture2D);
+
+                // Set render states
+                graphicsDevice.BlendState = BlendState.AlphaBlend;
+                graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+                graphicsDevice.DepthStencilState = DepthStencilState.None;
+
+                // Draw FXAA
+                fxaaAntialiasing.Techniques[0].Passes[0].Apply();
+                fullScreenQuad.Draw(graphicsDevice);
+            }
+
+            // Only bloom is enabled
+            if (bloomEnabled && !fxaaEnabled)
+            {
+                // Set render target
+                graphicsDevice.SetRenderTarget(bloomRenderTarget);
+
+                // Clear
+                graphicsDevice.Clear(clearColor);
+
+                // Compose final image from GBuffer
+                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+
+                // Draw bloom
+                bloomProcessor.Draw(bloomRenderTarget);
+            }
+
+            // Both fxaa and bloom are enabled
+            if (fxaaEnabled && bloomEnabled)
+            {
+                // Set render target
+                graphicsDevice.SetRenderTarget(fxaaRenderTarget);
+
+                // Clear target
+                graphicsDevice.Clear(Color.Transparent);
+
+                // Compose final image from GBuffer
+                gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
+
+                // Next render target
+                graphicsDevice.SetRenderTarget(bloomRenderTarget);
+
+                // Clear
+                graphicsDevice.Clear(clearColor);
+
+                // Set effect parameters
+                fxaaAntialiasing.CurrentTechnique = fxaaAntialiasing.Techniques["ppfxaa"];
+                fxaaAntialiasing.Parameters["SCREEN_WIDTH"].SetValue(fxaaRenderTarget.Width);
+                fxaaAntialiasing.Parameters["SCREEN_HEIGHT"].SetValue(fxaaRenderTarget.Height);
+                fxaaAntialiasing.Parameters["gScreenTexture"].SetValue(fxaaRenderTarget as Texture2D);
+
+                // Set render states
+                graphicsDevice.BlendState = BlendState.AlphaBlend;
+                graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+                graphicsDevice.DepthStencilState = DepthStencilState.None;
+
+                // Draw FXAA
+                fxaaAntialiasing.Techniques[0].Passes[0].Apply();
+                fullScreenQuad.Draw(graphicsDevice);
+
+                // Draw bloom
+                bloomProcessor.Draw(bloomRenderTarget);
+            }
 
             // Draw debug buffers
             if (showDebugBuffers)
@@ -702,9 +772,13 @@ namespace DeepEngine.Rendering
             int width = graphicsDevice.Viewport.Width;
             int height = graphicsDevice.Viewport.Height;
 
-            // Create post-processing targets
-            sceneRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
-            finalRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            // Create FXAA post-processing target
+            if (fxaaEnabled)
+                fxaaRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+
+            // Create Bloom post-processing target
+            if (bloomEnabled)
+                bloomRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
         }
 
         #endregion
