@@ -35,6 +35,7 @@ namespace DeepEngine.Rendering
         DeepCore core;
 
         // Rendering
+        Vector2 renderTargetSize;
         Color clearColor = Color.CornflowerBlue;
         GraphicsDevice graphicsDevice;
         FullScreenQuad fullScreenQuad;
@@ -50,8 +51,9 @@ namespace DeepEngine.Rendering
         Effect fxaaAntialiasing;
 
         // Render targets
-        RenderTarget2D fxaaRenderTarget;
-        RenderTarget2D bloomRenderTarget;
+        RenderTarget2D renderTarget;            // Final render target for any renderer output.
+        RenderTarget2D fxaaRenderTarget;        // Render target to use as source for FXAA post-process.
+        RenderTarget2D bloomRenderTarget;       // Render target ro use as source for Bloom post-process.
 
         // Render parameters
         EffectParameter renderBillboards_Texture;
@@ -82,6 +84,10 @@ namespace DeepEngine.Rendering
         BloomProcessor bloomProcessor;
         bool fxaaEnabled = false;
         bool bloomEnabled = true;
+
+        // Screen rectangles
+        Rectangle renderTargetRectangle;
+        Rectangle graphicsDeviceRectangle;
 
         #endregion
 
@@ -152,6 +158,22 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
+        /// Gets rectangle of internal render target.
+        /// </summary>
+        public Rectangle RenderTargetRectangle
+        {
+            get { return renderTargetRectangle; }
+        }
+
+        /// <summary>
+        /// Gets rectangle of graphics device render target.
+        /// </summary>
+        public Rectangle GraphicsDeviceRectangle
+        {
+            get { return graphicsDeviceRectangle; }
+        }
+
+        /// <summary>
         /// Gets or sets flag to show debug buffers after each render.
         /// </summary>
         public bool ShowDebugBuffers
@@ -167,10 +189,13 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Constructor.
         /// </summary>
-        public Renderer(DeepCore core)
+        /// <param name="core">Engine core.</param>
+        /// <param name="renderTargetSize">Size of internal render target.</param></param>
+        public Renderer(DeepCore core, Vector2 renderTargetSize)
         {
             // Store values
             this.core = core;
+            this.renderTargetSize = renderTargetSize;
 
             // Create arrays
             visibleLights = new LightData[maxVisibleLights];
@@ -253,12 +278,17 @@ namespace DeepEngine.Rendering
 
             // Create rendering classes
             fullScreenQuad = new FullScreenQuad(graphicsDevice);
-            gBuffer = new GBuffer(core);
+            gBuffer = new GBuffer(core, renderTargetSize);
             bloomProcessor = new BloomProcessor(core);
 
             // Wire up GraphicsDevice events
             graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
             graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
+
+            // Create targets for the first time
+            gBuffer.CreateGBuffer();
+            CreateRenderTargets();
+            bloomProcessor.CreateTargets();
         }
 
         /// <summary>
@@ -325,15 +355,6 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void BeginDraw()
         {
-            // Ensure GBuffer matches viewport size
-            if (gBuffer.Size.X != (float)graphicsDevice.Viewport.Width ||
-                gBuffer.Size.Y != (float)graphicsDevice.Viewport.Height)
-            {
-                gBuffer.CreateGBuffer();
-                CreateRenderTargets();
-                bloomProcessor.CreateTargets();
-            }
-
             // Prepare GBuffer
             gBuffer.SetGBuffer();
             gBuffer.ClearGBuffer(clearBufferEffect, fullScreenQuad, clearColor);
@@ -353,9 +374,6 @@ namespace DeepEngine.Rendering
 
             // Draw scene
             scene.Draw();
-
-            // Draw billboards
-            DrawBillboards();
         }
 
         /// <summary>
@@ -372,6 +390,18 @@ namespace DeepEngine.Rendering
 
             // Finish deferred rendering
             ComposeFinal();
+
+            // Resolve GBuffer
+            gBuffer.ResolveGBuffer();
+
+            // Copy renderTarget to frame buffer
+            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+            core.SpriteBatch.Draw(renderTarget, graphicsDeviceRectangle, renderTargetRectangle, Color.White);
+            core.SpriteBatch.End();
+
+            // Draw debug buffers
+            if (showDebugBuffers)
+                gBuffer.DrawDebugBuffers(core.SpriteBatch, fullScreenQuad);
         }
 
         /// <summary>
@@ -383,8 +413,8 @@ namespace DeepEngine.Rendering
             // No post-processing enabled, just compose into frame buffer
             if (!fxaaEnabled && !bloomEnabled)
             {
-                // Null render target
-                gBuffer.ResolveGBuffer();
+                // Set render target
+                graphicsDevice.SetRenderTarget(renderTarget);
 
                 // Clear
                 graphicsDevice.Clear(clearColor);
@@ -405,8 +435,8 @@ namespace DeepEngine.Rendering
                 // Compose final image from GBuffer
                 gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
 
-                // Null render target
-                gBuffer.ResolveGBuffer();
+                // Set render target
+                graphicsDevice.SetRenderTarget(renderTarget);
 
                 // Clear
                 graphicsDevice.Clear(clearColor);
@@ -440,7 +470,7 @@ namespace DeepEngine.Rendering
                 gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
 
                 // Draw bloom
-                bloomProcessor.Draw(bloomRenderTarget);
+                bloomProcessor.Draw(bloomRenderTarget, renderTarget);
             }
 
             // Both fxaa and bloom are enabled
@@ -477,12 +507,8 @@ namespace DeepEngine.Rendering
                 fullScreenQuad.Draw(graphicsDevice);
 
                 // Draw bloom
-                bloomProcessor.Draw(bloomRenderTarget);
+                bloomProcessor.Draw(bloomRenderTarget, renderTarget);
             }
-
-            // Draw debug buffers
-            if (showDebugBuffers)
-                gBuffer.DrawDebugBuffers(core.SpriteBatch, fullScreenQuad);
         }
 
         #endregion
@@ -769,8 +795,26 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void CreateRenderTargets()
         {
-            int width = graphicsDevice.Viewport.Width;
-            int height = graphicsDevice.Viewport.Height;
+            // Dispose of previous targets
+            if (renderTarget != null) renderTarget.Dispose();
+            if (fxaaRenderTarget != null) fxaaRenderTarget.Dispose();
+            if (bloomRenderTarget != null) bloomRenderTarget.Dispose();
+
+            // Set rectangles
+            this.renderTargetRectangle = new Rectangle(0, 0, (int)renderTargetSize.X, (int)renderTargetSize.Y);
+            this.graphicsDeviceRectangle = new Rectangle(
+                graphicsDevice.Viewport.X,
+                graphicsDevice.Viewport.Y,
+                graphicsDevice.Viewport.Width,
+                graphicsDevice.Viewport.Height);
+
+            // Get width and height
+            int width = (int)renderTargetSize.X;
+            int height = (int)renderTargetSize.Y;
+
+            // Create final render target.
+            // Remember to add a depth-stencil buffer if any forward rendering is done in the future.
+            renderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
 
             // Create FXAA post-processing target
             if (fxaaEnabled)

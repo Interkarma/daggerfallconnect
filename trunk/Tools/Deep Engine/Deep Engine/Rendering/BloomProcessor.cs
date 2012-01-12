@@ -143,7 +143,8 @@ namespace DeepEngine.Rendering
         /// Updates the bloom processor from a render target.
         /// </summary>
         /// <param name="sceneRenderTarget">Source render target to bloom.</param>
-        public void Draw(RenderTarget2D sceneRenderTarget)
+        /// <param name="outputRenderTarget">Final render target to received bloomed image.</param>
+        public void Draw(RenderTarget2D sceneRenderTarget, RenderTarget2D outputRenderTarget)
         {
             graphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
 
@@ -175,7 +176,7 @@ namespace DeepEngine.Rendering
             // Pass 4: draw both rendertarget 1 and the original scene
             // image back into the main backbuffer, using a shader that
             // combines them to produce the final bloomed result.
-            graphicsDevice.SetRenderTarget(null);
+            graphicsDevice.SetRenderTarget(outputRenderTarget);
 
             EffectParameterCollection parameters = bloomCombineEffect.Parameters;
 

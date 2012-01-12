@@ -58,12 +58,13 @@ namespace DeepEngine
         /// Constructor.
         /// </summary>
         /// <param name="arena2Folder">Path to Arena2 folder.</param>
-        /// <param name="serviceProvider">Game class.</param>
-        public GameCore(string arena2Path, Game game)
+        /// <param name="renderTargetSize">Size of internal render target.</param>
+        /// <param name="game">Game class.</param>
+        public GameCore(string arena2Path, Vector2 renderTargetSize, Game game)
             :base(game)
         {
             // Start core
-            deepCore = new DeepCore(arena2Path, game.Services);
+            deepCore = new DeepCore(arena2Path, renderTargetSize, game.Services);
         }
 
         #endregion

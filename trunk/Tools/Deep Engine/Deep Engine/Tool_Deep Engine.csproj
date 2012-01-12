@@ -68,6 +68,8 @@
     <Compile Include="Components\DaggerfallBillboardBatchComponent.cs" />
     <Compile Include="Components\DaggerfallBillboardComponent.cs" />
     <Compile Include="Components\ReaperComponent.cs" />
+    <Compile Include="GameStates\GameState.cs" />
+    <Compile Include="GameStates\GameStateManager.cs" />
     <Compile Include="Rendering\BloomProcessor.cs" />
     <Compile Include="Rendering\BloomSettings.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
