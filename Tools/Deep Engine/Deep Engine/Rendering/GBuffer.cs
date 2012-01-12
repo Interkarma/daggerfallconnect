@@ -135,10 +135,13 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GBuffer(DeepCore core)
+        /// <param name="core">Engine core.</param>
+        /// <param name="renderTargetSize">Size of internal GBuffer render targets.</param>
+        public GBuffer(DeepCore core, Vector2 size)
         {
             // Save references
             this.core = core;
+            this.size = size;
             this.graphicsDevice = core.GraphicsDevice;
 
             // Load content
@@ -154,11 +157,18 @@ namespace DeepEngine.Rendering
         /// </summary>
         public void CreateGBuffer()
         {
-            // Get size of back buffer
+            // Dispose of previous targets
+            if (colorRT != null) colorRT.Dispose();
+            if (normalRT != null) normalRT.Dispose();
+            if (depthRT != null) depthRT.Dispose();
+            if (lightRT != null) lightRT.Dispose();
+
+            // Save viewport size as this needs to be restored every time SetRenderTarget(null)
             viewport = graphicsDevice.Viewport;
-            int width = graphicsDevice.Viewport.Width;
-            int height = graphicsDevice.Viewport.Height;
-            size = new Vector2(width, height);
+
+            // Get width and height
+            int width = (int)size.X;
+            int height = (int)size.Y;
             halfPixel = new Vector2(0.5f / (float)width, 0.5f / (float)height);
 
             // Create render targets
@@ -177,7 +187,8 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Resets GBuffer render targets.
+        /// Resets render targets back to null and restores viewport.
+        ///  Only use this at end of render pipeline.
         /// </summary>
         public void ResolveGBuffer()
         {
@@ -201,7 +212,7 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Compose buffers into one layer for presentation.
+        /// Compose buffers into one layer.
         /// </summary>
         public void ComposeFinal(Effect finalCombineEffect, FullScreenQuad fullScreenQuad)
         {

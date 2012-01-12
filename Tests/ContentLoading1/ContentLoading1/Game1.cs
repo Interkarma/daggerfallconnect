@@ -60,7 +60,7 @@ namespace ContentLoading1
             this.IsMouseVisible = true;
 
             // Create and register engine core
-            core = new GameCore(arena2Path, this);
+            core = new GameCore(arena2Path, new Vector2(1280, 720), this);
             this.Components.Add(core);
         }
 
