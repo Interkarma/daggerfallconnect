@@ -103,15 +103,6 @@ namespace DeepEngine.World
             entities = new List<BaseEntity>();
         }
 
-        /// <summary>
-        /// GameCore Constructor.
-        /// </summary>
-        /// <param name="gameCore">GameCore.</param>
-        public Scene(GameCore gameCore)
-            :this(gameCore.DeepCore)
-        {
-        }
-
         #endregion
 
         #region Public Methods

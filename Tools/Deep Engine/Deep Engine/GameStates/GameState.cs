@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
+using DeepEngine.Core;
 #endregion
 
 namespace DeepEngine.GameStates
@@ -32,6 +33,7 @@ namespace DeepEngine.GameStates
 
         #region Fields
 
+        protected DeepCore core;
         protected IGameStateManager gameStateManager;
         
         #endregion
@@ -41,10 +43,13 @@ namespace DeepEngine.GameStates
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameState(Game game)
+        /// <param name="core">Engine core.</param>
+        /// <param name="game">Game object.</param>
+        public GameState(DeepCore core, Game game)
             : base(game)
         {
-            gameStateManager = (IGameStateManager)game.Services.GetService(typeof(IGameStateManager));
+            this.core = core;
+            this.gameStateManager = (IGameStateManager)game.Services.GetService(typeof(IGameStateManager));
         }
 
         #endregion

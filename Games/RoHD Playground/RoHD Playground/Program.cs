@@ -10,7 +10,7 @@ namespace RoHD_Playground
         /// </summary>
         static void Main(string[] args)
         {
-            using (Game.Main game = new Game.Main())
+            using (Main game = new Main())
             {
                 game.Run();
             }

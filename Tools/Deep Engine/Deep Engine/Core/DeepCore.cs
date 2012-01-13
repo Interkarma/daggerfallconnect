@@ -195,6 +195,13 @@ namespace DeepEngine.Core
             get { return stopwatch.ElapsedMilliseconds; }
         }
 
+        /// <summary>
+        /// Gets engine stopwatch.
+        /// </summary>
+        public Stopwatch Stopwatch
+        {
+            get { return stopwatch; }
+        }
 
         #endregion
 
@@ -237,13 +244,7 @@ namespace DeepEngine.Core
 
             // Initialise engine objects
             renderer.Initialize();
-        }
 
-        /// <summary>
-        /// Called when core should load content.
-        /// </summary>
-        public void LoadContent()
-        {
             // Get GraphicsDevice
             IGraphicsDeviceService graphicsDeviceService =
                 (IGraphicsDeviceService)serviceProvider.GetService(typeof(IGraphicsDeviceService));
