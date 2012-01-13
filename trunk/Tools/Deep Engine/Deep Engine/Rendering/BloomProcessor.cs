@@ -51,7 +51,7 @@ namespace DeepEngine.Rendering
         Effect gaussianBlurEffect;
 
         // Settings
-        BloomSettings settings = BloomSettings.PresetSettings[7];
+        BloomSettings settings = BloomSettings.PresetSettings[8];
         IntermediateBuffer showBuffer = IntermediateBuffer.FinalResult;
 
         #endregion

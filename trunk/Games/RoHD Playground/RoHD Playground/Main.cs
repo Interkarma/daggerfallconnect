@@ -21,11 +21,13 @@ using DaggerfallConnect.Arena2;
 using DaggerfallConnect.Utility;
 using DeepEngine;
 using DeepEngine.Core;
+using DeepEngine.GameStates;
 using DeepEngine.Components;
 using DeepEngine.World;
+using RoHD_Playground.GameStates;
 #endregion
 
-namespace RoHD_Playground.Game
+namespace RoHD_Playground
 {
     /// <summary>
     /// Game class.
@@ -42,11 +44,14 @@ namespace RoHD_Playground.Game
         GraphicsDeviceManager graphics;
 
         // Deep Engine
-        GameCore core;
+        DeepCore core;
+
+        // States
+        GameStateManager gameManager;
+        TitleScreen titleScreen;
 
         // Display
-        Vector2 renderTargetSize = new Vector2(1280, 720);      // 720p
-        //Vector2 renderTargetSize = new Vector2(1920, 1080);   // 1080p
+        DisplayMode displayMode;
         DisplayPreferences displayPreference = DisplayPreferences.BorderlessWindowed;
 
         #endregion
@@ -78,12 +83,24 @@ namespace RoHD_Playground.Game
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            // Create and register engine core
-            core = new GameCore(arena2Path, renderTargetSize, this);
-            this.Components.Add(core);
+            // Get display mode information
+            displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
 
             // Capture device settings event
             graphics.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(Graphics_PreparingDeviceSettings);
+
+            // Create engine core
+            core = new DeepCore(arena2Path, new Vector2(displayMode.Width, displayMode.Height), this.Services);
+
+            // Create game state manager
+            gameManager = new GameStateManager(this);
+            Components.Add(gameManager);
+
+            // Create game states
+            titleScreen = new TitleScreen(core, this);
+
+            // Set initial game state
+            gameManager.ChangeState(titleScreen);
         }
 
         #endregion
@@ -95,6 +112,9 @@ namespace RoHD_Playground.Game
         /// </summary>
         protected override void Initialize()
         {
+            // Initialise core
+            core.Initialize();
+
             base.Initialize();
         }
 
@@ -104,6 +124,7 @@ namespace RoHD_Playground.Game
         /// </summary>
         protected override void LoadContent()
         {
+            base.LoadContent();
         }
 
         /// <summary>
@@ -122,6 +143,9 @@ namespace RoHD_Playground.Game
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            // Update core
+            core.Update(gameTime);
+
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
@@ -174,8 +198,8 @@ namespace RoHD_Playground.Game
         private void StartWindowed(GraphicsDeviceInformation graphicsDeviceInformation)
         {
             // Set back buffer size to match render target size
-            graphicsDeviceInformation.PresentationParameters.BackBufferWidth = (int)renderTargetSize.X;
-            graphicsDeviceInformation.PresentationParameters.BackBufferHeight = (int)renderTargetSize.Y;
+            graphicsDeviceInformation.PresentationParameters.BackBufferWidth = displayMode.Width;
+            graphicsDeviceInformation.PresentationParameters.BackBufferHeight = displayMode.Height;
         }
 
         /// <summary>
@@ -183,9 +207,6 @@ namespace RoHD_Playground.Game
         /// </summary>
         private void StartBorderlessWindowed(GraphicsDeviceInformation graphicsDeviceInformation)
         {
-            // Get display mode information
-            DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-
             // Set borderless window style
             System.Windows.Forms.Control control = System.Windows.Forms.Form.FromHandle(this.Window.Handle);
             System.Windows.Forms.Form form = control.FindForm();

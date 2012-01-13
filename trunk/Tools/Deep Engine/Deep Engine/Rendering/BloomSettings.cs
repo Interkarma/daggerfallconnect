@@ -79,6 +79,7 @@ namespace DeepEngine.Rendering
             new BloomSettings("Subtle",      0.5f,   2,   1,     1,    1,       1),
             new BloomSettings("Day",         0.4f,   2,   1.25f, 1,    1,       1),
             new BloomSettings("Night",       0.25f,  4,   1.5f,  1,    1,       1),
+            new BloomSettings("Title",       0.25f,  5,   2,     1,    1,       1),
         };
     }
 }

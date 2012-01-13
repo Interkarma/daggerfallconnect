@@ -82,7 +82,7 @@ namespace DeepEngine.Rendering
 
         // Post processing
         BloomProcessor bloomProcessor;
-        bool fxaaEnabled = false;
+        bool fxaaEnabled = true;
         bool bloomEnabled = true;
 
         // Screen rectangles
@@ -374,6 +374,9 @@ namespace DeepEngine.Rendering
 
             // Draw scene
             scene.Draw();
+
+            // Draw billboards
+            DrawBillboards();
         }
 
         /// <summary>

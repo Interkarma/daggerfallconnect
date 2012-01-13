@@ -106,7 +106,6 @@
     <Compile Include="Deprecated\ServiceContainer.cs" />
     <Compile Include="Deprecated\Sky.cs" />
     <Compile Include="Deprecated\TextureManager.cs" />
-    <Compile Include="GameCore.cs" />
     <Compile Include="Primitives\BezierPrimitive.cs" />
     <Compile Include="Primitives\CubePrimitive.cs" />
     <Compile Include="Primitives\CylinderPrimitive.cs" />
