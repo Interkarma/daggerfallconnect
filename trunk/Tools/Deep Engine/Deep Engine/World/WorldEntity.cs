@@ -60,13 +60,6 @@ namespace DeepEngine.World
             if (!enabled)
                 return;
 
-            // Handle dispose on update
-            if (base.disposeOnUpdate)
-            {
-                Dispose();
-                return;
-            }
-
             // Update all components
             foreach (BaseComponent component in components)
             {

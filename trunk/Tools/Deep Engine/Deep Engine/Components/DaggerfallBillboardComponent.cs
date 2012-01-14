@@ -67,10 +67,11 @@ namespace DeepEngine.Components
         /// <param name="core">Engine core.</param>
         /// <param name="archive">Texture archive index.</param>
         /// <param name="record">Texture record index.</param>
-        public DaggerfallBillboardComponent(DeepCore core, int archive, int record)
+        /// <param name="flat">Flat data.</param>
+        public DaggerfallBillboardComponent(DeepCore core, DaggerfallBlockComponent.BlockFlat flat)
             : base(core)
         {
-            LoadBillboard(archive, record);
+            LoadBillboard(flat);
         }
 
         #endregion
@@ -103,16 +104,17 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="archive">Texture archive.</param>
         /// <param name="record">Texture record.</param>
-        public void LoadBillboard(int archive, int record)
+        /// <param name="flat">Flat data.</param>
+        public void LoadBillboard(DaggerfallBlockComponent.BlockFlat flat)
         {
             // Get path to texture file
             string path = Path.Combine(
                 core.MaterialManager.Arena2Path,
-                TextureFile.IndexToFileName(archive));
+                TextureFile.IndexToFileName(flat.Archive));
 
             // Get size and scale of this texture
-            System.Drawing.Size size = TextureFile.QuickSize(path, record);
-            System.Drawing.Size scale = TextureFile.QuickScale(path, record);
+            System.Drawing.Size size = TextureFile.QuickSize(path, flat.Record);
+            System.Drawing.Size scale = TextureFile.QuickScale(path, flat.Record);
 
             // Set start size
             Vector2 startSize;
@@ -133,14 +135,17 @@ namespace DeepEngine.Components
                 MaterialManager.TextureCreateFlags.MipMaps;
 
             // Load texture
-            int textureKey = core.MaterialManager.LoadTexture(archive, record, flags);
+            int textureKey = core.MaterialManager.LoadTexture(flat.Archive, flat.Record, flags);
 
             // Save settings
             this.texture = core.MaterialManager.GetTexture(textureKey);
             this.size = finalSize;
 
             // Calcuate offset for correct positioning in scene
-            this.offset = new Vector3(0, (finalSize.Y / 2) - 4, 0);
+            if (flat.Dungeon)
+                this.offset = Vector3.Zero;
+            else
+                this.offset = new Vector3(0, (finalSize.Y / 2) - 4, 0);
 
             // Set bounding sphere
             BoundingSphere sphere;

@@ -49,6 +49,7 @@ namespace RoHD_Playground
         // States
         GameStateManager gameManager;
         TitleScreen titleScreen;
+        PlayingGame playingGame;
 
         // Display
         DisplayMode displayMode;
@@ -90,7 +91,7 @@ namespace RoHD_Playground
             graphics.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(Graphics_PreparingDeviceSettings);
 
             // Create engine core
-            core = new DeepCore(arena2Path, new Vector2(displayMode.Width, displayMode.Height), this.Services);
+            core = new DeepCore(arena2Path, this.Services);
 
             // Create game state manager
             gameManager = new GameStateManager(this);
@@ -98,9 +99,10 @@ namespace RoHD_Playground
 
             // Create game states
             titleScreen = new TitleScreen(core, this);
+            playingGame = new PlayingGame(core, this);
 
             // Set initial game state
-            gameManager.ChangeState(titleScreen);
+            gameManager.ChangeState(playingGame);
         }
 
         #endregion

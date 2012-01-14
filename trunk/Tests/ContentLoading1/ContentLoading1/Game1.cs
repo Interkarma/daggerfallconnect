@@ -61,7 +61,7 @@ namespace ContentLoading1
             this.IsMouseVisible = true;
 
             // Create engine core
-            core = new DeepCore(arena2Path, new Vector2(1280, 720), this.Services);
+            core = new DeepCore(arena2Path, this.Services);
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace ContentLoading1
             long startTime = stopwatch.ElapsedMilliseconds;
 
             // Load a test scene
-            LoadExteriorMapScene();
-            //LoadBlockScene();
+            //LoadExteriorMapScene();
+            LoadBlockScene();
             //LoadModelScene();
             //LoadPhysicsScene();
 
             // Show or hide debug buffers
-            core.Renderer.ShowDebugBuffers = false;
+            core.Renderer.ShowDebugBuffers = true;
 
             lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
         }
@@ -192,7 +192,7 @@ namespace ContentLoading1
             WorldEntity level = new WorldEntity(core.ActiveScene);
 
             // Get location
-            DFLocation location = core.MapManager.GetLocation("Daggerfall", "Daggerfall");
+            DFLocation location = core.MapManager.GetLocation("Wayrest", "Wayrest");
             int width = location.Exterior.ExteriorData.Width;
             int height = location.Exterior.ExteriorData.Height;
 
@@ -245,14 +245,16 @@ namespace ContentLoading1
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
-            block.LoadBlock("MAGEAA13.RMB", MapsFile.DefaultClimateSettings);
+            //block.LoadBlock("BOOKAL02.RMB", MapsFile.DefaultClimateSettings);
+            //block.LoadBlock("S0000040.RDB", MapsFile.DefaultClimateSettings);
+            block.LoadBlock("N0000000.RDB", MapsFile.DefaultClimateSettings);
             level.Components.Add(block);
 
             // Attach block flats
             AddBlockFlats(level, block);
 
             // Create directional light
-            float lightIntensity = 0.25f;
+            float lightIntensity = 1f;
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
@@ -272,16 +274,20 @@ namespace ContentLoading1
             // Add flats to component
             foreach (var flat in block.BlockFlats)
             {
+                // Filter editor flats
+                if (flat.Type == DaggerfallBlockComponent.FlatTypes.Editor)
+                    continue;
+
                 // Get position
-                Vector3 position = new Vector3(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
+                Vector3 position = new Vector3(flat.Position.X, flat.Position.Y, flat.Position.Z);
 
                 // Add billboard component
-                DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core, flat.Archive, flat.Record);
+                DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core, flat);
                 billboard.Matrix = block.Matrix * Matrix.CreateTranslation(position);
                 entity.Components.Add(billboard);
 
-                // Add a light commponent for each billboard light source
-                if (flat.Archive == 210)
+                // Add a light component for each billboard light source outside of dungeons
+                if (flat.Archive == 210 && flat.Dungeon == false)
                 {
                     position.Y += billboard.Size.Y;
                     LightComponent lightComponent = new LightComponent(core, block.Matrix.Translation + position, 750f, Color.White, 1.1f);

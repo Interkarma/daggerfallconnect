@@ -46,6 +46,7 @@ namespace DeepEngine.Components
         /// </summary>
         public enum LightType
         {
+            Ambient,
             Directional,
             Point,
         }
@@ -135,6 +136,18 @@ namespace DeepEngine.Components
         #region Constructors
 
         /// <summary>
+        /// Ambient light constructor
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="color">Color of light.</param>
+        /// <param name="intensity">Intensity of light.</param>
+        public LightComponent(DeepCore core, Color color, float intensity)
+            : base(core)
+        {
+            MakeAmbient(color, intensity);
+        }
+
+        /// <summary>
         /// Directional light constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
@@ -144,11 +157,7 @@ namespace DeepEngine.Components
         public LightComponent(DeepCore core, Vector3 direction, Color color, float intensity)
             : base(core)
         {
-            // Set values
-            this.direction = direction;
-            this.color = color;
-            this.intensity = intensity;
-            this.type = LightType.Directional;
+            MakeDirectional(direction, color, intensity);
         }
 
         /// <summary>
@@ -162,17 +171,25 @@ namespace DeepEngine.Components
         public LightComponent(DeepCore core, Vector3 position, float radius, Color color, float intensity)
             : base(core)
         {
-            // Set values
-            this.position = position;
-            this.radius = radius;
-            this.color = color;
-            this.intensity = intensity;
-            this.type = LightType.Point;
+            MakePoint(position, radius, color, intensity);
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Change light into an ambient light.
+        /// </summary>
+        /// <param name="color">Color of light.</param>
+        /// <param name="intensity">Intensity of light.</param>
+        public void MakeAmbient(Color color, float intensity)
+        {
+            // Set values
+            this.color = color;
+            this.intensity = intensity;
+            this.type = LightType.Ambient;
+        }
 
         /// <summary>
         /// Change light into a directional light.

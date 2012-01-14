@@ -121,6 +121,8 @@
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Utility\PowerOfTwo.cs" />
     <Compile Include="Utility\StaticGeometryBuilder.cs" />
+    <Compile Include="WinForms\GraphicsDeviceService.cs" />
+    <Compile Include="WinForms\ServiceContainer.cs" />
     <Compile Include="World\BaseEntity.cs" />
     <Compile Include="World\WorldEntity.cs" />
     <Compile Include="World\Scene.cs" />

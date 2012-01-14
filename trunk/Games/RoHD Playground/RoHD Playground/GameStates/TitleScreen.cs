@@ -39,14 +39,18 @@ namespace RoHD_Playground.GameStates
 
         #region Fields
 
-        const string titleText = "Ruins of Hill Deep (Playground)";
+        const string titleText = "Ruins of Hill Deep";
+        const string versionText = "Playground Build 1.0";
 
         Scene scene;
         Song song;
+
         SpriteFont titleFont;
+        SpriteFont consoleFont;
 
         Rectangle titleSafeArea;
         Vector2 titlePos;
+        Vector2 versionPos;
 
         #endregion
 
@@ -98,7 +102,7 @@ namespace RoHD_Playground.GameStates
             // Attach block flats
             AddBlockFlats(level, block);
 
-            // Create directional light
+            // Create directional lights
             Color lightColor = new Color(100, 100, 200);
             WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), lightColor, 0.60f));
@@ -132,11 +136,14 @@ namespace RoHD_Playground.GameStates
 
             // Load fonts
             titleFont = Game.Content.Load<SpriteFont>("Fonts/TitleFont");
+            consoleFont = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
             // Title area
             titleSafeArea = Game.GraphicsDevice.Viewport.TitleSafeArea;
             Vector2 titleSize = titleFont.MeasureString(titleText);
+            Vector2 versionSize = consoleFont.MeasureString(versionText);
             titlePos = new Vector2(titleSafeArea.Right - titleSize.X - 20, titleSafeArea.Top + 20);
+            versionPos = new Vector2(titlePos.X + titleSize.X - versionSize.X, titlePos.Y + titleSize.Y);
 
             base.Game.IsMouseVisible = true;
 
@@ -154,9 +161,10 @@ namespace RoHD_Playground.GameStates
         {
             core.Draw();
 
-            // Draw title
+            // Draw title and version
             scene.Core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             scene.Core.SpriteBatch.DrawString(titleFont, titleText, titlePos, Color.AliceBlue);
+            scene.Core.SpriteBatch.DrawString(consoleFont, versionText, versionPos, Color.Gold);
             scene.Core.SpriteBatch.End();
         }
 
@@ -182,7 +190,7 @@ namespace RoHD_Playground.GameStates
                 Vector3 position = new Vector3(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
 
                 // Add billboard component
-                DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core, flat.Archive, flat.Record);
+                DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core, flat);
                 billboard.Matrix = block.Matrix * Matrix.CreateTranslation(position);
                 entity.Components.Add(billboard);
 

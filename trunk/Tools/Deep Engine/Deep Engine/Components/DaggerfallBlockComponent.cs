@@ -74,9 +74,11 @@ namespace DeepEngine.Components
         /// </summary>
         public struct BlockFlat
         {
+            public bool Dungeon;
             public int Archive;
             public int Record;
             public Vector3 Position;
+            public FlatTypes Type;
         }
 
         /// <summary>
@@ -112,6 +114,27 @@ namespace DeepEngine.Components
         /// </summary>
         private struct BlockWater
         {
+        }
+
+        #endregion
+
+        #region Enumerations
+
+        /// <summary>
+        /// Types of billboard flats in Daggerfall blocks.
+        /// </summary>
+        public enum FlatTypes
+        {
+            /// <summary>Decorative flats.</summary>
+            Decorative,
+            /// <summary>Non-player characters, such as quest givers and shop keepers.</summary>
+            NPC,
+            /// <summary>Climate-specific scenery in exterior blocks, such as trees and rocks.</summary>
+            ClimateScenery,
+            /// <summary>Editor flats, such as markers for quests, random monters, and treasure.</summary>
+            Editor = 199,
+            /// <summary>Flat is also light-source.</summary>
+            Light = 210,
         }
 
         #endregion
@@ -359,6 +382,16 @@ namespace DeepEngine.Components
         /// <param name="blockData">Block data.</param>
         private void BuildRDB(ref DFBlock blockData)
         {
+            // Add RDB data
+            AddRDBObjects(ref blockData);
+
+            // Finish batch building
+            Seal();
+
+            // Set component bounding sphere
+            this.BoundingSphere = new BoundingSphere(
+                new Vector3(BlocksFile.RDBDimension / 2, 0, -(BlocksFile.RDBDimension / 2)),
+                BlocksFile.RDBDimension);
         }
 
         /// <summary>
@@ -537,9 +570,11 @@ namespace DeepEngine.Components
             {
                 BlockFlat flat = new BlockFlat
                 {
+                    Dungeon = false,
                     Archive = obj.TextureArchive,
                     Record = obj.TextureRecord,
-                    Position = new Vector3(obj.XPos, obj.YPos, obj.ZPos),
+                    Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
+                    Type = GetFlatType(obj.TextureArchive),
                 };
                 blockFlats.Add(flat);
             }
@@ -549,7 +584,7 @@ namespace DeepEngine.Components
         /// Stores scenery flats.
         /// </summary>
         /// <param name="block">Block data.</param>
-        /// /// <param name="climateSettings">Desired climate settings for block.</param>
+        /// <param name="climateSettings">Desired climate settings for block.</param>
         private void AddRMBSceneryFlats(ref DFBlock block, DFLocation.ClimateSettings climateSettings)
         {
             // Add block scenery
@@ -566,14 +601,146 @@ namespace DeepEngine.Components
                     {
                         BlockFlat flat = new BlockFlat
                         {
+                            Dungeon = false,
                             Archive = climateSettings.SceneryArchive,
                             Record = scenery.TextureRecord,
-                            Position = new Vector3(x * BlocksFile.TileDimension, 0, -y * BlocksFile.TileDimension),
+                            Position = new Vector3(x * BlocksFile.TileDimension, 0, y * BlocksFile.TileDimension),
+                            Type = FlatTypes.ClimateScenery,
                         };
                         blockFlats.Add(flat);
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region RDB Block Building
+
+        /// <summary>
+        /// Adds RDB block objects.
+        /// </summary>
+        /// <param name="block">Block data.</param>
+        private void AddRDBObjects(ref DFBlock block)
+        {
+            // Iterate object groups
+            foreach (DFBlock.RdbObjectRoot group in block.RdbBlock.ObjectRootList)
+            {
+                // Skip empty object groups
+                if (null == group.RdbObjects)
+                    continue;
+
+                // Iterate objects in this group
+                foreach (DFBlock.RdbObject obj in group.RdbObjects)
+                {
+                    // Add by type
+                    switch (obj.Type)
+                    {
+                        case DFBlock.RdbResourceTypes.Model:
+                            AddRDBModel(ref block, obj);
+                            break;
+                        case DFBlock.RdbResourceTypes.Flat:
+                            AddRDBFlat(obj);
+                            break;
+                        case DFBlock.RdbResourceTypes.Light:
+                            //AddRDBLight(obj, block);
+                            break;
+                        default:
+                            // Unknown type encounter
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds RDB model to the batch.
+        /// </summary>
+        /// <param name="block">DFBlock.</param>
+        /// <param name="obj">RdbObject.</param>
+        private void AddRDBModel(ref DFBlock block, DFBlock.RdbObject obj)
+        {
+            // Get model reference index, desc, and id
+            int modelReference = obj.Resources.ModelResource.ModelIndex;
+            string modelDescription = block.RdbBlock.ModelReferenceList[modelReference].Description;
+            uint modelId = block.RdbBlock.ModelReferenceList[modelReference].ModelIdNum;
+
+            // Get rotation angle for each axis
+            float degreesX = obj.Resources.ModelResource.XRotation / BlocksFile.RotationDivisor;
+            float degreesY = obj.Resources.ModelResource.YRotation / BlocksFile.RotationDivisor;
+            float degreesZ = -obj.Resources.ModelResource.ZRotation / BlocksFile.RotationDivisor;
+
+            // Calcuate position
+            Vector3 position = new Vector3(
+                obj.XPos,
+                -obj.YPos,
+                -obj.ZPos);
+
+            // Calculate rotation
+            Vector3 rotation = new Vector3(
+                MathHelper.ToRadians(degreesX),
+                MathHelper.ToRadians(degreesY),
+                MathHelper.ToRadians(degreesZ));
+
+            // Create transforms
+            Matrix rotationX = Matrix.CreateRotationX(rotation.X);
+            Matrix rotationY = Matrix.CreateRotationY(rotation.Y);
+            Matrix rotationZ = Matrix.CreateRotationZ(rotation.Z);
+            Matrix translation = Matrix.CreateTranslation(position);
+
+            // Create model transform
+            Matrix modelMatrix = Matrix.Identity;
+            Matrix.Multiply(ref modelMatrix, ref rotationY, out modelMatrix);
+            Matrix.Multiply(ref modelMatrix, ref rotationX, out modelMatrix);
+            Matrix.Multiply(ref modelMatrix, ref rotationZ, out modelMatrix);
+            Matrix.Multiply(ref modelMatrix, ref translation, out modelMatrix);
+
+            // Load model data
+            ModelManager.ModelData modelData;
+            LoadModel(modelId, out modelData);
+
+            // Add model data to batch builder
+            staticGeometry.AddToBuilder(ref modelData, modelMatrix);
+        }
+
+        /// <summary>
+        /// Adds RDB flat.
+        /// </summary>
+        /// <param name="obj">RdbObject.</param>
+        private void AddRDBFlat(DFBlock.RdbObject obj)
+        {
+            BlockFlat flat = new BlockFlat
+            {
+                Dungeon = true,
+                Archive = obj.Resources.FlatResource.TextureArchive,
+                Record = obj.Resources.FlatResource.TextureRecord,
+                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
+                Type = GetFlatType(obj.Resources.FlatResource.TextureArchive),
+            };
+            blockFlats.Add(flat);
+        }
+
+        #endregion
+
+        #region Utility Methods
+
+        /// <summary>
+        /// Gets the type of this flat.
+        /// </summary>
+        /// <param name="textureArchive">Texture archive index.</param>
+        /// <returns>Type of flat based on texture archive.</returns>
+        private FlatTypes GetFlatType(int textureArchive)
+        {
+            // Determine flat type
+            FlatTypes type;
+            if (textureArchive == (int)FlatTypes.Editor)
+                type = FlatTypes.Editor;
+            else if (textureArchive == (int)FlatTypes.Light)
+                type = FlatTypes.Light;
+            else
+                type = FlatTypes.Decorative;
+
+            return type;
         }
 
         #endregion
