@@ -70,6 +70,9 @@
     <Compile Include="Components\ReaperComponent.cs" />
     <Compile Include="GameStates\GameState.cs" />
     <Compile Include="GameStates\GameStateManager.cs" />
+    <Compile Include="Player\Input.cs" />
+    <Compile Include="Player\SimpleCharacterController.cs" />
+    <Compile Include="Player\SimpleCharacterControllerInput.cs" />
     <Compile Include="Rendering\BloomProcessor.cs" />
     <Compile Include="Rendering\BloomSettings.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
@@ -83,29 +86,6 @@
     <Compile Include="Core\DeepCore.cs" />
     <Compile Include="Daggerfall\MaterialManager.cs" />
     <Compile Include="Daggerfall\ModelManager.cs" />
-    <Compile Include="Deprecated\BillboardManager.cs" />
-    <Compile Include="Deprecated\Camera.cs" />
-    <Compile Include="Deprecated\Collision.cs" />
-    <Compile Include="Deprecated\Compass.cs" />
-    <Compile Include="Deprecated\Component.cs" />
-    <Compile Include="Deprecated\ContentHelper.cs" />
-    <Compile Include="Deprecated\Core.cs" />
-    <Compile Include="Deprecated\DefaultRenderer.cs" />
-    <Compile Include="Deprecated\DeferredRenderer.cs" />
-    <Compile Include="Deprecated\GraphicsDeviceService.cs" />
-    <Compile Include="Deprecated\Gravity.cs" />
-    <Compile Include="Deprecated\Input.cs" />
-    <Compile Include="Deprecated\Intersection.cs" />
-    <Compile Include="Deprecated\ModelManager.cs" />
-    <Compile Include="Deprecated\PowerOfTwo.cs" />
-    <Compile Include="Deprecated\RenderableBoundingBox.cs" />
-    <Compile Include="Deprecated\RenderableBoundingSphere.cs" />
-    <Compile Include="Deprecated\Scene.cs" />
-    <Compile Include="Deprecated\SceneBuilder.cs" />
-    <Compile Include="Deprecated\SceneNode.cs" />
-    <Compile Include="Deprecated\ServiceContainer.cs" />
-    <Compile Include="Deprecated\Sky.cs" />
-    <Compile Include="Deprecated\TextureManager.cs" />
     <Compile Include="Primitives\BezierPrimitive.cs" />
     <Compile Include="Primitives\CubePrimitive.cs" />
     <Compile Include="Primitives\CylinderPrimitive.cs" />
@@ -124,6 +104,7 @@
     <Compile Include="WinForms\GraphicsDeviceService.cs" />
     <Compile Include="WinForms\ServiceContainer.cs" />
     <Compile Include="World\BaseEntity.cs" />
+    <Compile Include="Player\Camera.cs" />
     <Compile Include="World\WorldEntity.cs" />
     <Compile Include="World\Scene.cs" />
   </ItemGroup>

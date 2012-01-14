@@ -48,8 +48,8 @@ namespace RoHD_Playground.Entities
         float current = 0f;             // Current position
 
         // Ranges
-        float minBrightness = 0.5f;     // Minimum brightness
-        float maxBrightness = 1.2f;     // Maximum brightness
+        float minBrightness = 0.6f;     // Minimum brightness
+        float maxBrightness = 1.0f;     // Maximum brightness
         float xzRange = 350;            // Maximum distance firefly can travel in the horizontal dimension
         float yRange = 90;              // Maximum distance firefly can travel in the vertical dimension
 

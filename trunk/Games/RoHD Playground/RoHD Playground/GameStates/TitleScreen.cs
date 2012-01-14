@@ -74,9 +74,9 @@ namespace RoHD_Playground.GameStates
         {
             // Create scene
             scene = new Scene(core);
-            scene.DeprecatedCamera.Position = new Vector3(1058, 142, 2874);
-            scene.DeprecatedCamera.Transform(327, 0, Vector3.Zero);
-            scene.DeprecatedCamera.Update();
+            scene.Camera.Position = new Vector3(1058, 142, 2874);
+            scene.Camera.Transform(327, 0, Vector3.Zero);
+            scene.Camera.Update();
             core.ActiveScene = scene;
 
             // Set clear colour
@@ -126,7 +126,7 @@ namespace RoHD_Playground.GameStates
             for (int i = 0; i < 10; i++)
             {
                 Entities.Firefly firefly = new Entities.Firefly(scene);
-                firefly.Matrix = Matrix.CreateTranslation(2200, 100, 2400);
+                firefly.Matrix = Matrix.CreateTranslation(1200, 100, 2400);
             }
 
             // Load songs
@@ -187,7 +187,7 @@ namespace RoHD_Playground.GameStates
             foreach (var flat in block.BlockFlats)
             {
                 // Get position
-                Vector3 position = new Vector3(flat.Position.X, -flat.Position.Y, -flat.Position.Z);
+                Vector3 position = new Vector3(flat.Position.X, flat.Position.Y, flat.Position.Z);
 
                 // Add billboard component
                 DaggerfallBillboardComponent billboard = new DaggerfallBillboardComponent(core, flat);
