@@ -218,8 +218,8 @@ namespace DeepEngine.Components
 
             // Update effect
             renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
-            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
+            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
             renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color);
 
             // Draw primitive

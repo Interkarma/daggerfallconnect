@@ -87,8 +87,8 @@ namespace DeepEngine.Components
 
             // Set transforms
             renderBillboards.Parameters["World"].SetValue(worldMatrix);
-            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
+            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);

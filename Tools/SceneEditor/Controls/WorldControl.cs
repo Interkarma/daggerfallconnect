@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
-using DeepEngine.Deprecated;
+using DeepEngine.Player;
 #endregion
 
 namespace SceneEditor.Controls
@@ -34,8 +34,8 @@ namespace SceneEditor.Controls
 
         DeepCore core;
 
-        Input deprecatedInput;
-        Camera deprecatedCamera;
+        Input input;
+        Camera camera;
 
         string arena2Path = string.Empty;
         bool isReady = false;
@@ -77,8 +77,8 @@ namespace SceneEditor.Controls
             lastTime = stopwatch.Elapsed;
 
             // Create input and camera
-            deprecatedInput = new Input();
-            deprecatedCamera = new Camera();
+            input = new Input();
+            camera = new Camera();
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace SceneEditor.Controls
             GameTime gameTime = new GameTime(currentTime - startTime, currentTime - lastTime);
 
             // Update input
-            deprecatedInput.Update(gameTime.ElapsedGameTime);
-            deprecatedInput.Apply(deprecatedCamera, true);
+            input.Update(gameTime.ElapsedGameTime);
+            input.Apply(camera, true);
 
             // Update core
             core.Update(gameTime);

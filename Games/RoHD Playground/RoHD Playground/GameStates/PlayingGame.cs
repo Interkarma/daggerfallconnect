@@ -64,8 +64,8 @@ namespace RoHD_Playground.GameStates
         {
             // Create scene
             scene = new Scene(core);
-            scene.DeprecatedCamera.Position = new Vector3(1024, 142, 2874);
-            scene.DeprecatedCamera.Update();
+            scene.Camera.Position = new Vector3(1024, 142, 2874);
+            scene.Camera.Update();
             core.ActiveScene = scene;
 
             // Set clear colour

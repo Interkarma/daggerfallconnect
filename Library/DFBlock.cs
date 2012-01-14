@@ -809,8 +809,8 @@ namespace DaggerfallConnect
             /// <summary>Unknown.</summary>
             public UInt32 Unknown2;
 
-            /// <summary>Unknown.</summary>
-            public UInt16 Unknown3;
+            /// <summary>Seems to be light radius, not sure about attenuation model.</summary>
+            public UInt16 Radius;
         }
 
         /// <summary>

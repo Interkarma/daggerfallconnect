@@ -1,6 +1,6 @@
-﻿// Project:         XNALibrary
-// Description:     Simple XNA game library for DaggerfallConnect.
-// Copyright:       Copyright (C) 2011 Gavin Clayton
+﻿// Project:         Deep Engine
+// Description:     3D game engine for Ruins of Hill Deep and Daggerfall Workshop projects.
+// Copyright:       Copyright (C) 2012 Gavin Clayton
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Web Site:        http://www.dfworkshop.net
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
@@ -17,7 +17,7 @@ using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 #endregion
 
-namespace DeepEngine.Deprecated
+namespace DeepEngine.Player
 {
 
     /// <summary>
@@ -26,7 +26,7 @@ namespace DeepEngine.Deprecated
     public class Camera
     {
 
-        #region Class Variables
+        #region Fields
 
         // Clipping plane extents
         private float nearPlaneDistance = 1.0f;
@@ -35,35 +35,25 @@ namespace DeepEngine.Deprecated
         // Matrices
         private Matrix projectionMatrix = Matrix.Identity;
         private Matrix viewMatrix = Matrix.Identity;
-        private Matrix worldMatrix = Matrix.Identity;
+        private Matrix worldMatrixA = Matrix.Identity;
 
         // Camera
-        private bool restrictVertical = false;
-        private float eyeHeight = 64f;
-        private float bodyRadius = 16f;
-        private float cameraYaw = 0.0f;
-        private float cameraPitch = 0.0f;
-        private BoundingBox cameraMovementBounds;
-        private BoundingSphere cameraBoundingSphere;
-        private Vector3 cameraPosition;
-        private Vector3 cameraReference = Vector3.Forward;
-        private Vector3 cameraUpVector = Vector3.Up;
-        private Vector3 cameraTransformedReference;
-        private Vector3 cameraTarget;
-        private BoundingFrustum viewFrustum;
+        float cameraYaw = 0.0f;
+        float cameraPitch = 0.0f;
+        Vector3 cameraPosition;
+        Vector3 cameraReference = Vector3.Forward;
+        Vector3 cameraUpVector = Vector3.Up;
+        Vector3 cameraTransformedReference;
+        Vector3 cameraTarget;
+        BoundingFrustum viewFrustum;
+
+        // Movement
+        BoundingBox cameraMovementBounds;
+        float cameraSpeed;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets flag to restrict vertical movement.
-        /// </summary>
-        public bool RestrictVertical
-        {
-            get { return restrictVertical; }
-            set { restrictVertical = value; }
-        }
 
         /// <summary>
         /// Gets or sets camera movement bounds.
@@ -75,34 +65,12 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Gets or sets eye height.
+        /// Gets or sets camera speed.
         /// </summary>
-        public float EyeHeight
+        public float Speed
         {
-            get { return eyeHeight; }
-            set { eyeHeight = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets body radius.
-        /// </summary>
-        public float BodyRadius
-        {
-            get { return bodyRadius; }
-            set { bodyRadius = value; }
-        }
-
-        /// <summary>
-        /// Gets bounds of camera.
-        /// </summary>
-        public BoundingSphere BoundingSphere
-        {
-            get
-            {
-                cameraBoundingSphere.Center = cameraPosition;
-                cameraBoundingSphere.Radius = bodyRadius;
-                return cameraBoundingSphere;
-            }
+            get { return cameraSpeed; }
+            set { cameraSpeed = value; }
         }
 
         /// <summary>
@@ -126,10 +94,10 @@ namespace DeepEngine.Deprecated
         /// <summary>
         /// Gets or sets world matrix.
         /// </summary>
-        public Matrix World
+        public Matrix WorldA
         {
-            get { return worldMatrix; }
-            set { worldMatrix = value; }
+            get { return worldMatrixA; }
+            set { worldMatrixA = value; }
         }
 
         /// <summary>
@@ -139,15 +107,6 @@ namespace DeepEngine.Deprecated
         {
             get { return cameraPosition; }
             set { SetPosition(value); }
-        }
-
-        /// <summary>
-        /// Gets or sets camera facing.
-        /// </summary>
-        public Vector3 Reference
-        {
-            get { return cameraReference; }
-            set { SetReference(value); }
         }
 
         /// <summary>
@@ -194,19 +153,28 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Gets camera yaw in degrees.
+        /// Gets or sets the yaw rotation of the camera.
         /// </summary>
         public float Yaw
         {
             get { return cameraYaw; }
+            set { cameraYaw = MathHelper.WrapAngle(value); }
         }
 
         /// <summary>
-        /// Gets camera pitch in degrees.
+        /// Gets or sets the pitch rotation of the camera.
         /// </summary>
         public float Pitch
         {
             get { return cameraPitch; }
+            set
+            {
+                cameraPitch = value;
+                if (cameraPitch > MathHelper.PiOver2 * .99f)
+                    cameraPitch = MathHelper.PiOver2 * .99f;
+                else if (cameraPitch < -MathHelper.PiOver2 * .99f)
+                    cameraPitch = -MathHelper.PiOver2 * .99f;
+            }
         }
 
         #endregion
@@ -221,8 +189,7 @@ namespace DeepEngine.Deprecated
             viewFrustum = new BoundingFrustum(Matrix.Identity);
             cameraMovementBounds.Min = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             cameraMovementBounds.Max = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            cameraBoundingSphere = new BoundingSphere();
-            cameraPosition = new Vector3(0, 0, 64f);
+            cameraPosition = Vector3.Zero;
             ResetReference();
         }
 
@@ -250,18 +217,14 @@ namespace DeepEngine.Deprecated
         static public void Copy(Camera src, Camera dst)
         {
             // Copy all variables from source camera.
-            dst.restrictVertical = src.restrictVertical;
             dst.nearPlaneDistance = src.nearPlaneDistance;
             dst.farPlaneDistance = src.farPlaneDistance;
             dst.projectionMatrix = src.projectionMatrix;
             dst.viewMatrix = src.viewMatrix;
-            dst.worldMatrix = src.worldMatrix;
-            dst.eyeHeight = src.eyeHeight;
-            dst.bodyRadius = src.bodyRadius;
+            dst.worldMatrixA = src.worldMatrixA;
             dst.cameraYaw = src.cameraYaw;
             dst.cameraPitch = src.cameraPitch;
             dst.cameraMovementBounds = src.cameraMovementBounds;
-            dst.cameraBoundingSphere = src.cameraBoundingSphere;
             dst.cameraPosition = src.cameraPosition;
             dst.cameraReference = src.cameraReference;
             dst.cameraUpVector = src.cameraUpVector;
@@ -280,6 +243,9 @@ namespace DeepEngine.Deprecated
 
             // Update frustum
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
+
+            // Create world matrix for camera
+            worldMatrixA = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(cameraYaw), MathHelper.ToRadians(cameraPitch), 0);
         }
 
         /// <summary>
@@ -349,23 +315,9 @@ namespace DeepEngine.Deprecated
             // Apply movement
             if (movement != Vector3.Zero)
             {
-                if (restrictVertical)
-                {
-                    // Restrict camera to X-Z dimensions
-                    movement.Y = 0f;
-                    Matrix moveRotation = Matrix.Identity;
-                    Matrix.CreateRotationY(MathHelper.ToRadians(cameraYaw), out moveRotation);
-                    Vector3.Transform(ref movement, ref moveRotation, out movement);
-                    cameraPosition += movement;
-                    EnforceBounds();
-                }
-                else
-                {
-                    // Camera can move freely in all dimensions
-                    Vector3.Transform(ref movement, ref lookRotation, out movement);
-                    cameraPosition += movement;
-                    EnforceBounds();
-                }
+                Vector3.Transform(ref movement, ref lookRotation, out movement);
+                cameraPosition += movement;
+                EnforceBounds();
             }
 
             // Transform camera target
@@ -419,17 +371,6 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Sets new camera reference.
-        /// </summary>
-        /// <param name="reference">Reference vector.</param>
-        private void SetReference(Vector3 reference)
-        {
-            ResetReference();
-            cameraReference = reference;
-            UpdateTarget();
-        }
-
-        /// <summary>
         /// Sets new camera target.
         /// </summary>
         private void UpdateTarget()
@@ -445,14 +386,14 @@ namespace DeepEngine.Deprecated
             // Keep camera position within defined movement bounds
             if (cameraPosition.X < cameraMovementBounds.Min.X)
                 cameraPosition.X = cameraMovementBounds.Min.X;
-            if (cameraPosition.Y < cameraMovementBounds.Min.Y + eyeHeight)
-                cameraPosition.Y = cameraMovementBounds.Min.Y + eyeHeight;
+            if (cameraPosition.Y < cameraMovementBounds.Min.Y)
+                cameraPosition.Y = cameraMovementBounds.Min.Y;
             if (cameraPosition.Z < cameraMovementBounds.Min.Z)
                 cameraPosition.Z = cameraMovementBounds.Min.Z;
             if (cameraPosition.X > cameraMovementBounds.Max.X)
                 cameraPosition.X = cameraMovementBounds.Max.X;
-            if (cameraPosition.Y > cameraMovementBounds.Max.Y - eyeHeight)
-                cameraPosition.Y = cameraMovementBounds.Max.Y - eyeHeight;
+            if (cameraPosition.Y > cameraMovementBounds.Max.Y)
+                cameraPosition.Y = cameraMovementBounds.Max.Y;
             if (cameraPosition.Z > cameraMovementBounds.Max.Z)
                 cameraPosition.Z = cameraMovementBounds.Max.Z;
         }

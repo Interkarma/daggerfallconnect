@@ -79,8 +79,8 @@ namespace DeepEngine.Components
 
             // Set transforms
             core.ModelManager.ModelEffect_World = worldMatrix;
-            core.ModelManager.ModelEffect_View = core.ActiveScene.DeprecatedCamera.View;
-            core.ModelManager.ModelEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
+            core.ModelManager.ModelEffect_View = core.ActiveScene.Camera.View;
+            core.ModelManager.ModelEffect_Projection = core.ActiveScene.Camera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(modelData.VertexBuffer);

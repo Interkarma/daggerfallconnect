@@ -1,6 +1,6 @@
-﻿// Project:         XNALibrary
-// Description:     Simple XNA game library for DaggerfallConnect.
-// Copyright:       Copyright (C) 2011 Gavin Clayton
+﻿// Project:         Deep Engine
+// Description:     3D game engine for Ruins of Hill Deep and Daggerfall Workshop projects.
+// Copyright:       Copyright (C) 2012 Gavin Clayton
 // License:         MIT License (http://www.opensource.org/licenses/mit-license.php)
 // Web Site:        http://www.dfworkshop.net
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 #endregion
 
-namespace DeepEngine.Deprecated
+namespace DeepEngine.Player
 {
     /// <summary>
     /// Collects input from various devices and applies to a camera.
@@ -58,9 +58,12 @@ namespace DeepEngine.Deprecated
         private DeviceFlags activeDevices = DeviceFlags.None;
 
         // Input state
-        private GamePadState gamePadState;
-        private KeyboardState keyboardState;
-        private MouseState mouseState;
+        GamePadState gamePadState;
+        GamePadState previousGamePadState;
+        KeyboardState keyboardState;
+        KeyboardState previousKeyboardState;
+        MouseState mouseState;
+        MouseState previousMouseState;
 
         #endregion
 
@@ -132,7 +135,15 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Gets keyboard state at time of last update.
+        /// Gets current GamePad state.
+        /// </summary>
+        public GamePadState GamePadState
+        {
+            get { return gamePadState; }
+        }
+
+        /// <summary>
+        /// Gets current keyboard state.
         /// </summary>
         public KeyboardState KeyboardState
         {
@@ -140,7 +151,7 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Gets mouse state at time of last update.
+        /// Gets current mouse state.
         /// </summary>
         public MouseState MouseState
         {
@@ -148,11 +159,27 @@ namespace DeepEngine.Deprecated
         }
 
         /// <summary>
-        /// Gets GamePad state at time of last update.
+        /// Gets previous GamePad state.
         /// </summary>
-        public GamePadState GamePadState
+        public GamePadState PreviousGamePadState
         {
-            get { return gamePadState; }
+            get { return previousGamePadState; }
+        }
+
+        /// <summary>
+        /// Gets previous keyboard state.
+        /// </summary>
+        public KeyboardState PreviousKeyboardState
+        {
+            get { return previousKeyboardState; }
+        }
+
+        /// <summary>
+        /// Gets previous mouse state.
+        /// </summary>
+        public MouseState PreviousMouseState
+        {
+            get { return previousMouseState; }
         }
 
         /// <summary>
@@ -188,6 +215,7 @@ namespace DeepEngine.Deprecated
             float timeDelta = (float)elapsedTime.TotalSeconds;
 
             // Get keyboard state
+            previousKeyboardState = keyboardState;
             keyboardState = Keyboard.GetState();
 
             // Keyboard input
@@ -216,6 +244,7 @@ namespace DeepEngine.Deprecated
             }
 
             // Get mouse state
+            previousMouseState = mouseState;
             mouseState = Mouse.GetState();
             lastMousePos = mousePos;
             mousePos.X = mouseState.X;
@@ -242,15 +271,12 @@ namespace DeepEngine.Deprecated
             }
 
             // Get player 1 gamepad state
+            previousGamePadState = gamePadState;
             gamePadState = GamePad.GetState(0);
             if (gamePadState.IsConnected)
-            {
                 gamePadConnected = true;
-            }
             else
-            {
                 gamePadConnected = false;
-            }
 
             // GamePad input
             if ((activeDevices & DeviceFlags.GamePad) == DeviceFlags.GamePad)
@@ -331,7 +357,8 @@ namespace DeepEngine.Deprecated
             // Transform camera by changes
             if (camera != null)
             {
-                camera.Transform(yaw, pitch, movement);
+                //camera.Transform(yaw, pitch, movement);
+                camera.Transform(yaw, pitch, Vector3.Zero);
                 if (reset)
                     Reset();
             }
@@ -347,9 +374,6 @@ namespace DeepEngine.Deprecated
             movement = Vector3.Zero;
         }
 
-        #endregion
-
-        #region Private Methods
         #endregion
     }
 }

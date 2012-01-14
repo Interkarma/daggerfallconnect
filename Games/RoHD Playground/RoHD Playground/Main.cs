@@ -102,7 +102,7 @@ namespace RoHD_Playground
             playingGame = new PlayingGame(core, this);
 
             // Set initial game state
-            gameManager.ChangeState(playingGame);
+            gameManager.ChangeState(titleScreen);
         }
 
         #endregion

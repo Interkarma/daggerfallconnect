@@ -18,6 +18,7 @@ using Microsoft.Xna.Framework.Content;
 using BEPUphysics;
 using DeepEngine.Core;
 using DeepEngine.Components;
+using DeepEngine.Player;
 #endregion
 
 namespace DeepEngine.World
@@ -42,7 +43,7 @@ namespace DeepEngine.World
         List<int> entitiesToDispose;
 
         // Temporary
-        Deprecated.Camera deprecatedCamera;
+        Camera camera;
 
         #endregion
 
@@ -73,11 +74,11 @@ namespace DeepEngine.World
         }
 
         /// <summary>
-        /// Gets deprecated camera object. To be replaced later.
+        /// Gets scene camera.
         /// </summary>
-        public DeepEngine.Deprecated.Camera DeprecatedCamera
+        public Camera Camera
         {
-            get { return deprecatedCamera; }
+            get { return camera; }
         }
 
         #endregion
@@ -98,7 +99,7 @@ namespace DeepEngine.World
             space.ForceUpdater.Gravity = new Vector3(0, -90f, 0);
 
             // Create camera
-            deprecatedCamera = new Deprecated.Camera();
+            camera = new Camera();
 
             // Create entity lists
             entities = new List<BaseEntity>();
@@ -120,7 +121,7 @@ namespace DeepEngine.World
 
             // Update camera
             float aspectRatio = (float)core.GraphicsDevice.Viewport.Width / (float)core.GraphicsDevice.Viewport.Height;
-            deprecatedCamera.SetAspectRatio(aspectRatio);
+            camera.SetAspectRatio(aspectRatio);
 
             // Update entities
             for (int i = 0; i < entities.Count; i++)

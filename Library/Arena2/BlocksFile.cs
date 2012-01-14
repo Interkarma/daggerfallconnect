@@ -1075,7 +1075,7 @@ namespace DaggerfallConnect.Arena2
             // Read light data
             RdbObject.Resources.LightResource.Unknown1 = Reader.ReadUInt32();
             RdbObject.Resources.LightResource.Unknown2 = Reader.ReadUInt32();
-            RdbObject.Resources.LightResource.Unknown3 = Reader.ReadUInt16();
+            RdbObject.Resources.LightResource.Radius = Reader.ReadUInt16();
         }
 
         #endregion

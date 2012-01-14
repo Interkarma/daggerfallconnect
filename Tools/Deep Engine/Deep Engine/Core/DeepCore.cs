@@ -21,6 +21,7 @@ using DaggerfallConnect.Utility;
 using DeepEngine.Daggerfall;
 using DeepEngine.Rendering;
 using DeepEngine.World;
+using DeepEngine.Player;
 #endregion
 
 namespace DeepEngine.Core
@@ -60,7 +61,7 @@ namespace DeepEngine.Core
 
         // Temporary
         Scene scene;
-        Deprecated.Input deprecatedInput;
+        Input input;
 
         #endregion
 
@@ -203,6 +204,14 @@ namespace DeepEngine.Core
             get { return stopwatch; }
         }
 
+        /// <summary>
+        /// Gets input manager.
+        /// </summary>
+        public Input Input
+        {
+            get { return input; }
+        }
+
         #endregion
 
         #region Constructors
@@ -235,8 +244,8 @@ namespace DeepEngine.Core
             contentManager = new ContentManager(serviceProvider, contentRootDirectory);
 
             // Create input
-            deprecatedInput = new Deprecated.Input();
-            deprecatedInput.ActiveDevices = Deprecated.Input.DeviceFlags.All;
+            input = new Input();
+            input.ActiveDevices = Input.DeviceFlags.All;
 
             // Create empty scene
             scene = new Scene(this);
@@ -278,8 +287,8 @@ namespace DeepEngine.Core
             renderer.Update();
 
             // Update input
-            deprecatedInput.Update(gameTime.ElapsedGameTime);
-            deprecatedInput.Apply(scene.DeprecatedCamera, true);
+            input.Update(gameTime.ElapsedGameTime);
+            input.Apply(scene.Camera, true);
 
             // Get time
             lastUpdateTime = stopwatch.ElapsedMilliseconds - startTime;

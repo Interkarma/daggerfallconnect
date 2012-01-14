@@ -14,6 +14,7 @@ using DeepEngine;
 using DeepEngine.Core;
 using DeepEngine.World;
 using DeepEngine.Components;
+using DeepEngine.Player;
 
 namespace ContentLoading1
 {
@@ -32,6 +33,8 @@ namespace ContentLoading1
 
         long nextBallTime = 0;
         long minBallTime = 200;
+
+        SimpleCharacterControllerInput playerInput;
 
         // Ball colours.
         // Alpha value < 0.5 is specular intensity.
@@ -54,10 +57,12 @@ namespace ContentLoading1
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
-            //graphics.PreferredBackBufferWidth = 1920;
-            //graphics.PreferredBackBufferHeight = 1080;
+            //graphics.PreferredBackBufferWidth = 1280;
+            //graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            graphics.SynchronizeWithVerticalRetrace = true;
+            this.IsFixedTimeStep = true;
             this.IsMouseVisible = true;
 
             // Create engine core
@@ -102,9 +107,12 @@ namespace ContentLoading1
             //LoadPhysicsScene();
 
             // Show or hide debug buffers
-            core.Renderer.ShowDebugBuffers = true;
+            core.Renderer.ShowDebugBuffers = false;
 
             lastLoadTime = stopwatch.ElapsedMilliseconds - startTime;
+
+            playerInput = new SimpleCharacterControllerInput(core.ActiveScene.Space, core.ActiveScene.Camera);
+            playerInput.Activate();
         }
 
         /// <summary>
@@ -129,14 +137,24 @@ namespace ContentLoading1
 
             // TODO: Add your update logic here
 
+            playerInput.Update(
+                gameTime.ElapsedGameTime.Seconds,
+                core.Input.PreviousKeyboardState,
+                core.Input.KeyboardState,
+                core.Input.PreviousGamePadState,
+                core.Input.GamePadState);
+
             core.Update(gameTime);
 
             KeyboardState ks = Keyboard.GetState();
+
+            /*
             if (ks.IsKeyDown(Keys.Space) && stopwatch.ElapsedMilliseconds > nextBallTime)
             {
                 ShootBall();
                 nextBallTime = stopwatch.ElapsedMilliseconds + minBallTime;
             }
+            */
 
             if (ks.IsKeyDown(Keys.Escape))
             {
@@ -186,7 +204,7 @@ namespace ContentLoading1
             core.MaterialManager.Daytime = false;
 
             // Set camera position
-            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
+            core.ActiveScene.Camera.Position = new Vector3(2048, 500, 4096);
 
             // Create level entity
             WorldEntity level = new WorldEntity(core.ActiveScene);
@@ -238,7 +256,7 @@ namespace ContentLoading1
             core.MaterialManager.Daytime = false;
 
             // Set camera position
-            core.ActiveScene.DeprecatedCamera.Position = new Vector3(2048, 500, 4096);
+            core.ActiveScene.Camera.Position = new Vector3(800, 900, -500);
 
             // Create level entity
             WorldEntity level = new WorldEntity(core.ActiveScene);
@@ -247,17 +265,23 @@ namespace ContentLoading1
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
             //block.LoadBlock("BOOKAL02.RMB", MapsFile.DefaultClimateSettings);
             //block.LoadBlock("S0000040.RDB", MapsFile.DefaultClimateSettings);
-            block.LoadBlock("N0000000.RDB", MapsFile.DefaultClimateSettings);
+            //block.LoadBlock("S0000999.RDB", MapsFile.DefaultClimateSettings);
+            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings);
+            //block.LoadBlock("N0000002.RDB", MapsFile.DefaultClimateSettings);
+            //block.LoadBlock("N0000000.RDB", MapsFile.DefaultClimateSettings);
             level.Components.Add(block);
 
             // Attach block flats
             AddBlockFlats(level, block);
 
+            // Attach block lights
+            AddBlockLights(level, block);
+
             // Create directional light
-            float lightIntensity = 1f;
-            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
-            directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
-            directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
+            //float lightIntensity = 1f;
+            //WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            //directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
+            //directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
         }
 
         /// <summary>
@@ -271,7 +295,7 @@ namespace ContentLoading1
             if (block.BlockFlats.Count == 0)
                 return;
 
-            // Add flats to component
+            // Add flats to entity
             foreach (var flat in block.BlockFlats)
             {
                 // Filter editor flats
@@ -293,6 +317,51 @@ namespace ContentLoading1
                     LightComponent lightComponent = new LightComponent(core, block.Matrix.Translation + position, 750f, Color.White, 1.1f);
                     entity.Components.Add(lightComponent);
                 }
+
+                // Add a light component for each billboard light source inside dungeons
+                // Daggerfall often misses light sources in dungeons, this ensures at least
+                // one small light be positioned over every light source. This is very cheap
+                // with a deferred renderer.
+                if (flat.Archive == 210 && flat.Dungeon == true)
+                {
+                    LightComponent lightComponent = new LightComponent(core, block.Matrix.Translation + position, 90f, Color.White, 1.0f);
+                    entity.Components.Add(lightComponent);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Attach light components to an entity.
+        /// </summary>
+        /// <param name="entity">Entity to attach lights.</param>
+        /// <param name="block">Block to get lights from</param>
+        private void AddBlockLights(BaseEntity entity, DaggerfallBlockComponent block)
+        {
+            // Exit if no lights
+            if (block.BlockLights.Count == 0)
+                return;
+
+            // Add lights to entity
+            foreach (var light in block.BlockLights)
+            {
+                // Get position
+                Vector3 position = new Vector3(light.Position.X, light.Position.Y, light.Position.Z);
+
+                // Add test sphere
+                //GeometricPrimitiveComponent sphereGeometry = new GeometricPrimitiveComponent(core);
+                //sphereGeometry.MakeSphere(light.Radius / 6, 16);
+                //sphereGeometry.Color = new Vector4(Color.White.ToVector3(), 1);
+                //sphereGeometry.Matrix = block.Matrix * Matrix.CreateTranslation(position);
+                //entity.Components.Add(sphereGeometry);
+
+                // Add light
+                LightComponent lightComponent = new LightComponent(
+                    core,
+                    position,
+                    light.Radius,
+                    Color.White,
+                    1.0f);
+                entity.Components.Add(lightComponent);
             }
         }
 
@@ -302,7 +371,7 @@ namespace ContentLoading1
         private void LoadModelScene()
         {
             // Set camera position
-            core.ActiveScene.DeprecatedCamera.Position = new Vector3(0, 0, 1000);
+            core.ActiveScene.Camera.Position = new Vector3(0, 0, 1000);
 
             // Create directional light
             WorldEntity lightEntity = new WorldEntity(core.ActiveScene);
@@ -325,7 +394,7 @@ namespace ContentLoading1
         private void LoadPhysicsScene()
         {
             // Set camera position
-            core.ActiveScene.DeprecatedCamera.Position = new Vector3(-100, -300, 800);
+            core.ActiveScene.Camera.Position = new Vector3(-100, -300, 800);
 
             // Create cube entity
             WorldEntity cubeEntity = new WorldEntity(core.ActiveScene);
@@ -393,10 +462,10 @@ namespace ContentLoading1
                 colorIndex = 0;
 
             // Get camera facing
-            Vector3 cameraFacing = core.ActiveScene.DeprecatedCamera.TransformedReference;
+            Vector3 cameraFacing = core.ActiveScene.Camera.TransformedReference;
 
             // Get start position
-            Vector3 position = core.ActiveScene.DeprecatedCamera.Position;
+            Vector3 position = core.ActiveScene.Camera.Position;
             position += cameraFacing * 128;
 
             // Create sphere entity

@@ -52,6 +52,7 @@ namespace DeepEngine.Components
 
         // Additional block objects
         List<BlockFlat> blockFlats = new List<BlockFlat>();
+        List<BlockLight> blockLights = new List<BlockLight>();
 
         #endregion
 
@@ -63,6 +64,14 @@ namespace DeepEngine.Components
         public List<BlockFlat> BlockFlats
         {
             get { return blockFlats; }
+        }
+
+        /// <summary>
+        /// Gets list of stationary block lights.
+        /// </summary>
+        public List<BlockLight> BlockLights
+        {
+            get { return blockLights; }
         }
 
         #endregion
@@ -84,8 +93,13 @@ namespace DeepEngine.Components
         /// <summary>
         /// A block light used to illuminate the environment.
         /// </summary>
-        private struct BlockLight
+        public struct BlockLight
         {
+            public bool Dungeon;
+            public Vector3 Position;
+            public float Radius;
+            public uint Unknown1;
+            public uint Unknown2;
         }
 
         /// <summary>
@@ -223,8 +237,8 @@ namespace DeepEngine.Components
 
             // Set transforms
             core.ModelManager.ModelEffect_World = worldMatrix;
-            core.ModelManager.ModelEffect_View = core.ActiveScene.DeprecatedCamera.View;
-            core.ModelManager.ModelEffect_Projection = core.ActiveScene.DeprecatedCamera.Projection;
+            core.ModelManager.ModelEffect_View = core.ActiveScene.Camera.View;
+            core.ModelManager.ModelEffect_Projection = core.ActiveScene.Camera.Projection;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
@@ -643,7 +657,7 @@ namespace DeepEngine.Components
                             AddRDBFlat(obj);
                             break;
                         case DFBlock.RdbResourceTypes.Light:
-                            //AddRDBLight(obj, block);
+                            AddRDBLight(obj);
                             break;
                         default:
                             // Unknown type encounter
@@ -718,6 +732,23 @@ namespace DeepEngine.Components
                 Type = GetFlatType(obj.Resources.FlatResource.TextureArchive),
             };
             blockFlats.Add(flat);
+        }
+
+        /// <summary>
+        /// Adds RDB light source.
+        /// </summary>
+        /// <param name="obj">RdbObject.</param>
+        private void AddRDBLight(DFBlock.RdbObject obj)
+        {
+            BlockLight light = new BlockLight
+            {
+                Dungeon = true,
+                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
+                Radius = obj.Resources.LightResource.Radius * 6,
+                Unknown1 = obj.Resources.LightResource.Unknown1,
+                Unknown2 = obj.Resources.LightResource.Unknown2,
+            };
+            blockLights.Add(light);
         }
 
         #endregion

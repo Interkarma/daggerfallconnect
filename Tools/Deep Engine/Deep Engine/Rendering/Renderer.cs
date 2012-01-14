@@ -579,8 +579,8 @@ namespace DeepEngine.Rendering
             directionalLightEffect.Parameters["Color"].SetValue(lightColor.ToVector3());
 
             // Set camera
-            directionalLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.DeprecatedCamera.Position);
-            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.DeprecatedCamera.View * core.ActiveScene.DeprecatedCamera.Projection));
+            directionalLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
+            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.View * core.ActiveScene.Camera.Projection));
 
             // Set size
             directionalLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
@@ -610,8 +610,8 @@ namespace DeepEngine.Rendering
             // Scale according to light radius, and translate it to light position.
             Matrix sphereWorldMatrix = Matrix.CreateScale(lightRadius) * Matrix.CreateTranslation(lightPosition);
             pointLightEffect.Parameters["World"].SetValue(sphereWorldMatrix);
-            pointLightEffect.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            pointLightEffect.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            pointLightEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
+            pointLightEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
 
             // Light position
             pointLightEffect.Parameters["LightPosition"].SetValue(lightPosition);
@@ -622,14 +622,14 @@ namespace DeepEngine.Rendering
             pointLightEffect.Parameters["LightIntensity"].SetValue(lightIntensity);
 
             // Parameters for specular computations
-            pointLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.DeprecatedCamera.Position);
-            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.DeprecatedCamera.View * core.ActiveScene.DeprecatedCamera.Projection));
+            pointLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
+            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.View * core.ActiveScene.Camera.Projection));
 
             // Size of a halfpixel, for texture coordinates alignment
             pointLightEffect.Parameters["HalfPixel"].SetValue(gBuffer.HalfPixel);
 
             // Calculate the distance between the camera and light center
-            float cameraToCenter = Vector3.Distance(core.ActiveScene.DeprecatedCamera.Position, lightPosition);
+            float cameraToCenter = Vector3.Distance(core.ActiveScene.Camera.Position, lightPosition);
 
             // If we are inside the light volume, draw the sphere's inside face
             if (cameraToCenter < lightRadius)
@@ -684,8 +684,8 @@ namespace DeepEngine.Rendering
         {
             // Set transforms
             renderBillboards.Parameters["World"].SetValue(Matrix.Identity);
-            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.DeprecatedCamera.View);
-            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.DeprecatedCamera.Projection);
+            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
+            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(billboardVertexBuffer);

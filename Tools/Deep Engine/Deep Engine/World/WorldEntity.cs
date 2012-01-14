@@ -86,7 +86,7 @@ namespace DeepEngine.World
                     BoundingSphere sphere = (component as DrawableComponent).BoundingSphere.Transform(matrix);
 
                     // Only draw if component is visible by camera
-                    if (sphere.Intersects(core.ActiveScene.DeprecatedCamera.BoundingFrustum))
+                    if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
                         (component as DrawableComponent).Draw(this);
                 }
                 else if (component is LightComponent)
@@ -98,7 +98,7 @@ namespace DeepEngine.World
                         BoundingSphere sphere = (component as LightComponent).BoundingSphere.Transform(matrix);
 
                         // Only draw if component is visible by camera
-                        if (sphere.Intersects(core.ActiveScene.DeprecatedCamera.BoundingFrustum))
+                        if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
                             core.Renderer.SubmitLight(component as LightComponent, this);
                     }
                     else
