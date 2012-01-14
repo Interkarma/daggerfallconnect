@@ -211,16 +211,15 @@ namespace DeepEngine.Core
         /// Constructor.
         /// </summary>
         /// <param name="arena2Path">Path to Arena2 folder.</param>
-        /// <param name="renderTargetSize">Size of internal render target.</param>
         /// <param name="serviceProvider">IServiceProvider.</param>
-        public DeepCore(string arena2Path, Vector2 renderTargetSize, IServiceProvider serviceProvider)
+        public DeepCore(string arena2Path, IServiceProvider serviceProvider)
         {
             // Store values
             this.arena2Path = arena2Path;
             this.serviceProvider = serviceProvider;
 
             // Create engine objects
-            this.renderer = new Renderer(this, renderTargetSize);
+            this.renderer = new Renderer(this);
         }
 
         #endregion

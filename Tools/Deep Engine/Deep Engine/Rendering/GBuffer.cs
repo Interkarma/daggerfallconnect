@@ -136,12 +136,10 @@ namespace DeepEngine.Rendering
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        /// <param name="renderTargetSize">Size of internal GBuffer render targets.</param>
-        public GBuffer(DeepCore core, Vector2 size)
+        public GBuffer(DeepCore core)
         {
             // Save references
             this.core = core;
-            this.size = size;
             this.graphicsDevice = core.GraphicsDevice;
 
             // Load content
@@ -167,9 +165,11 @@ namespace DeepEngine.Rendering
             viewport = graphicsDevice.Viewport;
 
             // Get width and height
-            int width = (int)size.X;
-            int height = (int)size.Y;
+            int width = graphicsDevice.Viewport.Width;
+            int height = graphicsDevice.Viewport.Height;
             halfPixel = new Vector2(0.5f / (float)width, 0.5f / (float)height);
+            size.X = width;
+            size.Y = height;
 
             // Create render targets
             colorRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth24);

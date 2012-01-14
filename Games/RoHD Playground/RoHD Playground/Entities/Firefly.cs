@@ -35,24 +35,26 @@ namespace RoHD_Playground.Entities
         LightComponent light;
 
         // Lifetime
-        bool alive;                    // Firefly is on/off
-        long maxTimeToRest = 4000;     // Time to stay off before starting a new path
-        long restCounterStart = 0;     // Time rest counter was started
-        long timeToRest = 0;           // How long firefly will rest before respawning
+        bool alive;                     // Firefly is on/off
+        long maxTimeToRest = 4000;      // Time to stay off before starting a new path
+        long restCounterStart = 0;      // Time rest counter was started
+        long timeToRest = 0;            // How long firefly will rest before respawning
 
         // Animation
-        Vector3 startPosition;         // Start position relative to entity
-        Vector3 endPosition;           // End position relative to entity
-        float speed = 0.003f;          // Movement speed
-        float multiplier = 0f;         // Speed multiplier
-        float current = 0f;            // Current position
+        Vector3 startPosition;          // Start position relative to entity
+        Vector3 endPosition;            // End position relative to entity
+        float speed = 0.003f;           // Movement speed
+        float multiplier = 0f;          // Speed multiplier
+        float current = 0f;             // Current position
 
-        // Range
-        float xzRange = 350;           // Maximum distance firefly can travel in the horizontal dimension
-        float yRange = 90;             // Maximum distance firefly can travel in the vertical dimension
+        // Ranges
+        float minBrightness = 0.5f;     // Minimum brightness
+        float maxBrightness = 1.2f;     // Maximum brightness
+        float xzRange = 350;            // Maximum distance firefly can travel in the horizontal dimension
+        float yRange = 90;              // Maximum distance firefly can travel in the vertical dimension
 
         // Appearance
-        Color color = Color.YellowGreen;
+        Color color = Color.GreenYellow;
 
         // Random
         Random rnd;
@@ -210,11 +212,16 @@ namespace RoHD_Playground.Entities
                 MathHelper.Lerp(-yRange, yRange, (float)rnd.NextDouble()),
                 MathHelper.Lerp(-xzRange, xzRange, (float)rnd.NextDouble()));
 
+            // Randomise brightness
+            float intensity = MathHelper.Lerp(minBrightness, maxBrightness, (float)rnd.NextDouble());
+
             // Update components
+            Color newColor = color * intensity;
             Matrix matrix = Matrix.CreateTranslation(startPosition);
-            sphere.Color = new Vector4(color.ToVector3(), 1f);
+            sphere.Color = new Vector4(newColor.ToVector3(), 1f);
             sphere.Matrix = matrix;
-            light.Color = color;
+            light.Color = newColor;
+            light.Intensity = intensity;
             light.Position = startPosition;
 
             // Make alive

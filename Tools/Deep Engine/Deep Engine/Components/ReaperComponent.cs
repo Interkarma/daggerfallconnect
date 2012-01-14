@@ -71,7 +71,7 @@ namespace DeepEngine.Components
             // Test and expire
             if (core.ElapsedMilliseconds > endTime && entity != null)
             {
-                entity.DisposeOnUpdate();
+                entity.DisposeOnUpdate = true;
                 this.Enabled = false;
             }
         }

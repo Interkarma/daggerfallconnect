@@ -129,6 +129,15 @@ namespace DeepEngine.World
             get { return components; }
         }
 
+        /// <summary>
+        /// Gets flag stating if entity should be disposed on next update.
+        /// </summary>
+        public bool DisposeOnUpdate
+        {
+            set { disposeOnUpdate = value; }
+            get { return disposeOnUpdate; }
+        }
+
         #endregion
 
         #region Static Properties
@@ -190,18 +199,6 @@ namespace DeepEngine.World
         /// Called when entity should draw itself.
         /// </summary>
         public abstract void Draw();
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Request the entity dispose itself on next update.
-        /// </summary>
-        public void DisposeOnUpdate()
-        {
-            disposeOnUpdate = true;
-        }
 
         #endregion
 

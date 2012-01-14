@@ -35,7 +35,6 @@ namespace DeepEngine.Rendering
         DeepCore core;
 
         // Rendering
-        Vector2 renderTargetSize;
         Color clearColor = Color.CornflowerBlue;
         GraphicsDevice graphicsDevice;
         FullScreenQuad fullScreenQuad;
@@ -190,12 +189,10 @@ namespace DeepEngine.Rendering
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        /// <param name="renderTargetSize">Size of internal render target.</param></param>
-        public Renderer(DeepCore core, Vector2 renderTargetSize)
+        public Renderer(DeepCore core)
         {
             // Store values
             this.core = core;
-            this.renderTargetSize = renderTargetSize;
 
             // Create arrays
             visibleLights = new LightData[maxVisibleLights];
@@ -223,9 +220,7 @@ namespace DeepEngine.Rendering
             graphicsDevice.SamplerStates[2] = SamplerState.PointClamp;
 
             // Reset render targets
-            gBuffer.CreateGBuffer();
             CreateRenderTargets();
-            bloomProcessor.CreateTargets();
         }
 
         /// <summary>
@@ -278,17 +273,12 @@ namespace DeepEngine.Rendering
 
             // Create rendering classes
             fullScreenQuad = new FullScreenQuad(graphicsDevice);
-            gBuffer = new GBuffer(core, renderTargetSize);
+            gBuffer = new GBuffer(core);
             bloomProcessor = new BloomProcessor(core);
 
             // Wire up GraphicsDevice events
             graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
             graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
-
-            // Create targets for the first time
-            gBuffer.CreateGBuffer();
-            CreateRenderTargets();
-            bloomProcessor.CreateTargets();
         }
 
         /// <summary>
@@ -355,6 +345,14 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void BeginDraw()
         {
+            // Ensure render targets match viewport size
+            if (gBuffer.Size.X != (float)graphicsDevice.Viewport.Width ||
+                gBuffer.Size.Y != (float)graphicsDevice.Viewport.Height)
+            {
+                // Create render targets
+                CreateRenderTargets();
+            }
+            
             // Prepare GBuffer
             gBuffer.SetGBuffer();
             gBuffer.ClearGBuffer(clearBufferEffect, fullScreenQuad, clearColor);
@@ -699,10 +697,9 @@ namespace DeepEngine.Rendering
             core.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             core.GraphicsDevice.SamplerStates[0] = SamplerState.AnisotropicClamp;
 
-            // First pass renders opaque part of texture.
-            // These are depth sorted using depth-stencil buffer.
+            // Draw billboards.
             renderBillboards.Parameters["AlphaTestDirection"].SetValue(1f);
-            for (int i = 0; i < maxVisibleBillboards; i++)
+            for (int i = 0; i < visibleBillboardsCount; i++)
             {
                 DrawBillboardPass(i);
             }
@@ -790,7 +787,7 @@ namespace DeepEngine.Rendering
 
         #endregion
 
-        #region Scene Render Target
+        #region Scene Render Targets
 
         /// <summary>
         /// Creates new render target for post-processing effects.
@@ -798,22 +795,26 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void CreateRenderTargets()
         {
+            // Create new targets on other classes
+            gBuffer.CreateGBuffer();
+            bloomProcessor.CreateTargets();
+
             // Dispose of previous targets
             if (renderTarget != null) renderTarget.Dispose();
             if (fxaaRenderTarget != null) fxaaRenderTarget.Dispose();
             if (bloomRenderTarget != null) bloomRenderTarget.Dispose();
 
+            // Get viewport size
+            int width = graphicsDevice.Viewport.Width;
+            int height = graphicsDevice.Viewport.Height;
+
             // Set rectangles
-            this.renderTargetRectangle = new Rectangle(0, 0, (int)renderTargetSize.X, (int)renderTargetSize.Y);
+            this.renderTargetRectangle = new Rectangle(0, 0, width, height);
             this.graphicsDeviceRectangle = new Rectangle(
                 graphicsDevice.Viewport.X,
                 graphicsDevice.Viewport.Y,
                 graphicsDevice.Viewport.Width,
                 graphicsDevice.Viewport.Height);
-
-            // Get width and height
-            int width = (int)renderTargetSize.X;
-            int height = (int)renderTargetSize.Y;
 
             // Create final render target.
             // Remember to add a depth-stencil buffer if any forward rendering is done in the future.

@@ -39,6 +39,7 @@ namespace DeepEngine.World
 
         // Entity list
         List<BaseEntity> entities;
+        List<int> entitiesToDispose;
 
         // Temporary
         Deprecated.Camera deprecatedCamera;
@@ -99,8 +100,9 @@ namespace DeepEngine.World
             // Create camera
             deprecatedCamera = new Deprecated.Camera();
 
-            // Create entity root
+            // Create entity lists
             entities = new List<BaseEntity>();
+            entitiesToDispose = new List<int>();
         }
 
         #endregion
@@ -121,9 +123,26 @@ namespace DeepEngine.World
             deprecatedCamera.SetAspectRatio(aspectRatio);
 
             // Update entities
-            foreach (var entity in entities)
+            for (int i = 0; i < entities.Count; i++)
             {
-                entity.Update(gameTime);
+                if (entities[i].DisposeOnUpdate)
+                    entitiesToDispose.Add(i);
+                else
+                    entities[i].Update(gameTime);
+            }
+
+            // Dispose of any flagged entities
+            if (entitiesToDispose.Count > 0)
+            {
+                // Dispose of entity
+                foreach (var index in entitiesToDispose)
+                {
+                    entities[index].Dispose();
+                    entities.RemoveAt(index);
+                }
+
+                // Reset list
+                entitiesToDispose.Clear();
             }
         }
 

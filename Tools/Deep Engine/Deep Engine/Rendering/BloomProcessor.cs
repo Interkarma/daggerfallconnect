@@ -51,7 +51,7 @@ namespace DeepEngine.Rendering
         Effect gaussianBlurEffect;
 
         // Settings
-        BloomSettings settings = BloomSettings.PresetSettings[8];
+        BloomSettings settings = BloomSettings.PresetSettings[0];
         IntermediateBuffer showBuffer = IntermediateBuffer.FinalResult;
 
         #endregion
@@ -129,6 +129,9 @@ namespace DeepEngine.Rendering
         /// </summary>
         public void CreateTargets()
         {
+            if (renderTarget1 != null) renderTarget1.Dispose();
+            if (renderTarget2 != null) renderTarget1.Dispose();
+
             int width = graphicsDevice.Viewport.Width / 2;
             int height = graphicsDevice.Viewport.Height / 2;
 
