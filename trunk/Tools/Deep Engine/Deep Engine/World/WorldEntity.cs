@@ -53,8 +53,8 @@ namespace DeepEngine.World
         /// <summary>
         /// Called when entity should update itself.
         /// </summary>
-        /// <param name="gameTime">GameTime.</param>
-        public override void Update(GameTime gameTime)
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
+        public override void Update(TimeSpan elapsedTime)
         {
             // Do nothing if disabled
             if (!enabled)
@@ -64,7 +64,7 @@ namespace DeepEngine.World
             foreach (BaseComponent component in components)
             {
                 // Update component
-                component.Update(gameTime, this);
+                component.Update(elapsedTime, this);
             }
         }
 

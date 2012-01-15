@@ -109,9 +109,9 @@ namespace DeepEngine.Components
         /// <summary>
         /// Called when component should update itself.
         /// </summary>
-        /// <param name="gameTime">GameTime.</param>
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
         /// <param name="caller">The entity calling the update.</param>
-        public virtual void Update(GameTime gameTime, BaseEntity caller)
+        public virtual void Update(TimeSpan elapsedTime, BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)

@@ -193,7 +193,7 @@ namespace DeepEngine.World
         /// Called when entity should update itself.
         /// </summary>
         /// <param name="gameTime">GameTime.</param>
-        public abstract void Update(GameTime gameTime);
+        public abstract void Update(TimeSpan elapsedTime);
 
         /// <summary>
         /// Called when entity should draw itself.

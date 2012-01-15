@@ -32,13 +32,18 @@ namespace DeepEngine.Daggerfall
 
         #region Fields
 
+        // Global scale applied to all geometry, billboards, and positioning.
+        // Daggerfall's base scale is *huge* which causes problems with physics.
+        // Solve this by scaling everything down as it is read from the game files.
+        const float globalScale = 0.03125f;
+
         DeepCore core;
         string arena2Path = string.Empty;
-        private GraphicsDevice graphicsDevice;
-        private Arch3dFile arch3dFile;
-        private Dictionary<uint, ModelData> modelDataDict;
-        private bool cacheModelData = true;
-        private MaterialManager materialManager;
+        GraphicsDevice graphicsDevice;
+        Arch3dFile arch3dFile;
+        Dictionary<uint, ModelData> modelDataDict;
+        bool cacheModelData = true;
+        MaterialManager materialManager;
 
         // Effect
         Effect modelEffect;
@@ -174,6 +179,14 @@ namespace DeepEngine.Daggerfall
         {
             get { return modelEffect_Projection.GetValueMatrix(); }
             set { modelEffect_Projection.SetValue(value); }
+        }
+
+        /// <summary>
+        /// Global scale applied to all geometry, billboards, and positioning.
+        /// </summary>
+        public static float GlobalScale
+        {
+            get { return globalScale; }
         }
 
         #endregion
@@ -452,7 +465,7 @@ namespace DeepEngine.Daggerfall
                         // Daggerfall uses a different axis layout than XNA.
                         // The Y and Z axes should be inverted so the model is displayed correctly.
                         // This also requires a change to winding order in LoadIndices().
-                        Vector3 position = new Vector3(dfPoint.X, -dfPoint.Y, -dfPoint.Z);
+                        Vector3 position = new Vector3(dfPoint.X, -dfPoint.Y, -dfPoint.Z) * GlobalScale;
                         Vector3 normal = new Vector3(dfPoint.NX, -dfPoint.NY, -dfPoint.NZ);
 
                         // Store vertex data

@@ -206,9 +206,9 @@ namespace DeepEngine.Components
         /// <summary>
         /// Called when component should update itself.
         /// </summary>
-        /// <param name="gameTime">GameTime.</param>
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
         /// <param name="caller">The entity calling the update.</param>
-        public override void Update(GameTime gameTime, BaseEntity caller)
+        public override void Update(TimeSpan elapsedTime, BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)
@@ -237,8 +237,8 @@ namespace DeepEngine.Components
 
             // Set transforms
             core.ModelManager.ModelEffect_World = worldMatrix;
-            core.ModelManager.ModelEffect_View = core.ActiveScene.Camera.View;
-            core.ModelManager.ModelEffect_Projection = core.ActiveScene.Camera.Projection;
+            core.ModelManager.ModelEffect_View = core.ActiveScene.Camera.ViewMatrix;
+            core.ModelManager.ModelEffect_Projection = core.ActiveScene.Camera.ProjectionMatrix;
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(staticGeometry.VertexBuffer);
@@ -386,8 +386,11 @@ namespace DeepEngine.Components
 
             // Set component bounding sphere
             this.BoundingSphere = new BoundingSphere(
-                new Vector3(BlocksFile.RMBDimension / 2, 0, BlocksFile.RMBDimension / 2),
-                BlocksFile.RMBDimension);
+                new Vector3(
+                    (BlocksFile.RMBDimension / 2) * ModelManager.GlobalScale,
+                    0,
+                    (BlocksFile.RMBDimension / 2) * ModelManager.GlobalScale),
+                 BlocksFile.RMBDimension * ModelManager.GlobalScale);
         }
 
         /// <summary>
@@ -404,8 +407,11 @@ namespace DeepEngine.Components
 
             // Set component bounding sphere
             this.BoundingSphere = new BoundingSphere(
-                new Vector3(BlocksFile.RDBDimension / 2, 0, -(BlocksFile.RDBDimension / 2)),
-                BlocksFile.RDBDimension);
+                new Vector3(
+                    (BlocksFile.RDBDimension / 2) * ModelManager.GlobalScale,
+                    0,
+                    (-(BlocksFile.RDBDimension / 2)) * ModelManager.GlobalScale),
+                BlocksFile.RDBDimension * ModelManager.GlobalScale);
         }
 
         /// <summary>
@@ -430,7 +436,7 @@ namespace DeepEngine.Components
         private void AddRMBGroundTiles(ref DFBlock blockData)
         {
             // Make ground slightly lower to minimise depth-fighting on ground aligned polygons
-            const float groundHeight = -2f;
+            const float groundHeight = 0f;
 
             // Corner positions
             Vector3 topLeftPos, topRightPos, bottomLeftPos, bottomRightPos;
@@ -443,8 +449,8 @@ namespace DeepEngine.Components
             int[] indices = new int[] {0, 1, 2, 1, 3, 2};
 
             // Loop through tiles
-            const int tileCount = 16;
-            const float tileDimension = 256.0f;
+            int tileCount = 16;
+            float tileDimension = 256.0f * ModelManager.GlobalScale;
             for (int y = 0; y < tileCount; y++)
             {
                 for (int x = 0; x < tileCount; x++)
@@ -523,11 +529,14 @@ namespace DeepEngine.Components
             float degrees;
             foreach (DFBlock.RmbSubRecord subRecord in blockData.RmbBlock.SubRecords)
             {
+                // Get position
+                Vector3 position = new Vector3(subRecord.XPos, 0, subRecord.ZPos) * ModelManager.GlobalScale;
+
                 // Create subrecord transform
                 Matrix subrecordMatrix = Matrix.Identity;
                 degrees = subRecord.YRotation / BlocksFile.RotationDivisor;
                 subrecordMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
-                subrecordMatrix *= Matrix.CreateTranslation(subRecord.XPos, 0, subRecord.ZPos);
+                subrecordMatrix *= Matrix.CreateTranslation(position);
 
                 // Iterate through models in this subrecord
                 foreach (DFBlock.RmbBlock3dObjectRecord obj in subRecord.Exterior.Block3dObjectRecords)
@@ -536,11 +545,14 @@ namespace DeepEngine.Components
                     ModelManager.ModelData modelData;
                     LoadModel(obj.ModelIdNum, out modelData);
 
+                    // Get position
+                    position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale;
+
                     // Create model transform
                     Matrix modelMatrix = Matrix.Identity;
                     degrees = obj.YRotation / BlocksFile.RotationDivisor;
                     modelMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
-                    modelMatrix *= Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
+                    modelMatrix *= Matrix.CreateTranslation(position);
 
                     // Add model data to batch builder
                     staticGeometry.AddToBuilder(ref modelData, modelMatrix * subrecordMatrix);
@@ -562,11 +574,14 @@ namespace DeepEngine.Components
                 ModelManager.ModelData modelData;
                 LoadModel(obj.ModelIdNum, out modelData);
 
+                // Get position
+                Vector3 position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale;
+
                 // Create model transform
                 Matrix modelMatrix = Matrix.Identity;
                 degrees = obj.YRotation / BlocksFile.RotationDivisor;
                 modelMatrix *= Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(degrees), 0, 0);
-                modelMatrix *= Matrix.CreateTranslation(obj.XPos, -obj.YPos, -obj.ZPos);
+                modelMatrix *= Matrix.CreateTranslation(position);
 
                 // Add model data to batch builder
                 staticGeometry.AddToBuilder(ref modelData, modelMatrix);
@@ -587,7 +602,7 @@ namespace DeepEngine.Components
                     Dungeon = false,
                     Archive = obj.TextureArchive,
                     Record = obj.TextureRecord,
-                    Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
+                    Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale,
                     Type = GetFlatType(obj.TextureArchive),
                 };
                 blockFlats.Add(flat);
@@ -618,7 +633,7 @@ namespace DeepEngine.Components
                             Dungeon = false,
                             Archive = climateSettings.SceneryArchive,
                             Record = scenery.TextureRecord,
-                            Position = new Vector3(x * BlocksFile.TileDimension, 0, y * BlocksFile.TileDimension),
+                            Position = new Vector3(x * BlocksFile.TileDimension, 0, y * BlocksFile.TileDimension) * ModelManager.GlobalScale,
                             Type = FlatTypes.ClimateScenery,
                         };
                         blockFlats.Add(flat);
@@ -685,10 +700,7 @@ namespace DeepEngine.Components
             float degreesZ = -obj.Resources.ModelResource.ZRotation / BlocksFile.RotationDivisor;
 
             // Calcuate position
-            Vector3 position = new Vector3(
-                obj.XPos,
-                -obj.YPos,
-                -obj.ZPos);
+            Vector3 position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale;
 
             // Calculate rotation
             Vector3 rotation = new Vector3(
@@ -728,7 +740,7 @@ namespace DeepEngine.Components
                 Dungeon = true,
                 Archive = obj.Resources.FlatResource.TextureArchive,
                 Record = obj.Resources.FlatResource.TextureRecord,
-                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
+                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale,
                 Type = GetFlatType(obj.Resources.FlatResource.TextureArchive),
             };
             blockFlats.Add(flat);
@@ -743,8 +755,8 @@ namespace DeepEngine.Components
             BlockLight light = new BlockLight
             {
                 Dungeon = true,
-                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos),
-                Radius = obj.Resources.LightResource.Radius * 6,
+                Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale,
+                Radius = (obj.Resources.LightResource.Radius * 6) * ModelManager.GlobalScale,
                 Unknown1 = obj.Resources.LightResource.Unknown1,
                 Unknown2 = obj.Resources.LightResource.Unknown2,
             };
