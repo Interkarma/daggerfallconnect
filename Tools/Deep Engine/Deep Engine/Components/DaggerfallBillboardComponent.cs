@@ -32,7 +32,7 @@ namespace DeepEngine.Components
     {
         #region Fields
 
-        Texture2D texture = null;
+        BaseMaterialEffect material = null;
         Vector3 offset = Vector3.Zero;
         Vector2 size = Vector2.Zero;
 
@@ -85,14 +85,14 @@ namespace DeepEngine.Components
         public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled or no texture set
-            if (!enabled || texture == null)
+            if (!enabled || material == null)
                 return;
 
             // Calculate world matrix
             Matrix worldMatrix = caller.Matrix * matrix;
 
             // Submit to renderer
-            core.Renderer.SubmitBillboard(texture, worldMatrix.Translation + offset, size);
+            core.Renderer.SubmitBillboard(material, worldMatrix.Translation + offset, size);
         }
 
         #endregion
@@ -129,17 +129,14 @@ namespace DeepEngine.Components
             finalSize.Y = (size.Height + yChange);
             finalSize *= ModelManager.GlobalScale;
 
-            // Set texture flags
-            MaterialManager.TextureCreateFlags flags =
-                MaterialManager.TextureCreateFlags.Dilate |
-                MaterialManager.TextureCreateFlags.PreMultiplyAlpha |
-                MaterialManager.TextureCreateFlags.MipMaps;
-
-            // Load texture
-            int textureKey = core.MaterialManager.LoadTexture(flat.Archive, flat.Record, flags);
+            // Load material
+            this.material = core.MaterialManager.CreateDaggerfallMaterialEffect(
+                flat.Archive,
+                flat.Record,
+                null,
+                MaterialManager.DefaultBillboardFlags);
 
             // Save settings
-            this.texture = core.MaterialManager.GetTexture(textureKey);
             this.size = finalSize;
 
             // Calcuate offset for correct positioning in scene

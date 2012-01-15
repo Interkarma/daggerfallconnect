@@ -110,8 +110,8 @@ namespace DeepEngine.Rendering
         /// </summary>
         private struct BillboardData
         {
-            /// <summary>Texture to use when drawing billboard.</summary>
-            public Texture2D Texture;
+            /// <summary>Material to use when drawing billboard.</summary>
+            public BaseMaterialEffect Material;
 
             /// <summary>Position of billboard in world space.</summary>
             public Vector3 Position;
@@ -323,14 +323,14 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Submit a billboard to be drawn in GBuffer.
         /// </summary>
-        /// <param name="material">Texture used when rendering the billboard.</param>
+        /// <param name="material">Material used when rendering the billboard.</param>
         /// <param name="position">Position of billboard in world space.</param>
         /// <param name="size">Dimensions of billboard.</param>
-        public void SubmitBillboard(Texture2D texture, Vector3 position, Vector2 size)
+        public void SubmitBillboard(BaseMaterialEffect material, Vector3 position, Vector2 size)
         {
             if (visibleBillboardsCount < maxVisibleBillboards)
             {
-                visibleBillboards[visibleBillboardsCount].Texture = texture;
+                visibleBillboards[visibleBillboardsCount].Material = material;
                 visibleBillboards[visibleBillboardsCount].Position = position;
                 visibleBillboards[visibleBillboardsCount].Size = size;
                 visibleBillboardsCount++;
@@ -713,7 +713,7 @@ namespace DeepEngine.Rendering
         private void DrawBillboardPass(int current)
         {
             // Apply parameters
-            renderBillboards_Texture.SetValue(visibleBillboards[current].Texture);
+            renderBillboards_Texture.SetValue(visibleBillboards[current].Material.DiffuseTexture);
             renderBillboards_Position.SetValue(visibleBillboards[current].Position);
             renderBillboards_Size.SetValue(visibleBillboards[current].Size);
 

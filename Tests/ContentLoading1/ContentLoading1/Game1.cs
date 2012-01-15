@@ -120,7 +120,7 @@ namespace ContentLoading1
 
             //playerInput.CharacterController.Body.Radius = 0.5f;
             playerInput.CharacterController.JumpSpeed = 10;
-            playerInput.CharacterController.HorizontalMotionConstraint.Speed = 9;
+            playerInput.CharacterController.HorizontalMotionConstraint.Speed = 8;
             playerInput.StandingCameraOffset = 1.4f;
 
             playerInput.Activate();

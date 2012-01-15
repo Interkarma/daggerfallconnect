@@ -125,9 +125,9 @@ namespace DeepEngine.Components
                 MaterialManager.TextureCreateFlags.MipMaps;
 
             // Load flat
-            int textureKey;
+            BaseMaterialEffect material;
             Vector2 startSize, finalSize;
-            LoadDaggerfallFlat(archive, record, flags, out textureKey, out startSize, out finalSize);
+            LoadDaggerfallFlat(archive, record, flags, out material, out startSize, out finalSize);
 
             // Calcuate final position
             Vector3 finalPosition = new Vector3(position.X, -position.Y + (finalSize.Y / 2) - 4, -position.Z);
@@ -142,7 +142,7 @@ namespace DeepEngine.Components
             }
 
             // Add to batch
-            staticGeometry.AddToBuilder((uint)textureKey, billboardVertices, billboardIndices, Matrix.Identity);
+            staticGeometry.AddToBuilder(material.ID, billboardVertices, billboardIndices, Matrix.Identity);
         }
 
         /// <summary>
@@ -210,14 +210,14 @@ namespace DeepEngine.Components
         /// <param name="textureArchive">Texture archive index.</param>
         /// <param name="textureRecord">Texture record index.</param>
         /// <param name="textureFlags">Texture create flags.</param>
-        /// <param name="textureKey">Texture key.</param>
+        /// <param name="material">Material.</param>
         /// <param name="startSize">Start size before scaling.</param>
         /// <param name="finalSize">Final size after scaling.</param>
         private void LoadDaggerfallFlat(
             int textureArchive,
             int textureRecord,
             MaterialManager.TextureCreateFlags textureFlags,
-            out int textureKey,
+            out BaseMaterialEffect material,
             out Vector2 startSize,
             out Vector2 finalSize)
         {
@@ -240,11 +240,12 @@ namespace DeepEngine.Components
             finalSize.X = size.Width + xChange;
             finalSize.Y = size.Height + yChange;
 
-            // Load texture
-            textureKey = core.MaterialManager.LoadTexture(
+            // Load material
+            material = core.MaterialManager.CreateDaggerfallMaterialEffect(
                 textureArchive,
                 textureRecord,
-                textureFlags);
+                renderBillboards,
+                MaterialManager.DefaultBillboardFlags);
         }
 
         /// <summary>
@@ -252,6 +253,7 @@ namespace DeepEngine.Components
         /// </summary>
         private void DrawBatches()
         {
+            /*
             // Draw batches
             foreach (var item in staticGeometry.StaticBatches)
             {
@@ -274,6 +276,7 @@ namespace DeepEngine.Components
                         item.Value.PrimitiveCount);
                 }
             }
+            */
         }
 
         #endregion

@@ -32,25 +32,26 @@ namespace DeepEngine.Daggerfall
 
         // Strings
         const string maxMaterialsError = "Maximum number of materials has been reached.";
+        const string noFramesError = "No texture frames found while creating material.";
 
         // XNA
         SpriteBatch spriteBatch = null;
 
         // Class
-        private DeepCore core;
-        private string arena2Path;
-        private GraphicsDevice graphicsDevice;
-        private TextureFile textureFile;
+        DeepCore core;
+        string arena2Path;
+        GraphicsDevice graphicsDevice;
+        TextureFile textureFile;
 
         // Texture dictionaries
-        private const int nullTextureKey = int.MinValue;
-        private Dictionary<int, Texture2D> colorTextureDict;
-        private Dictionary<int, Texture2D> normalTextureDict;
-        private Dictionary<int, uint> textureMaterialDict;
+        const int nullTextureKey = int.MinValue;
+        Dictionary<int, Texture2D> colorTextureDict;
+        Dictionary<int, Texture2D> normalTextureDict;
+        Dictionary<int, uint> textureMaterialDict;
 
         // Material array
-        private const int maxMaterials = 512;
-        private BaseMaterialEffect[] materialEffects;
+        const int maxMaterials = 512;
+        BaseMaterialEffect[] materialEffects;
 
         // Climate and weather
         DFLocation.ClimateBaseType climateType = DFLocation.ClimateBaseType.None;
@@ -58,13 +59,13 @@ namespace DeepEngine.Daggerfall
         bool daytime = true;
 
         // Constants
-        private const int defaultWorldClimate = 231;
-        private const int formatWidth = 4;
-        private const int tileSide = 64;
-        private const string formatError = "DFBitmap not RGBA.";
-        private const float bumpSize = 1f;
-        private Color dayWindowColor = new Color(89, 154, 178, 0x80);
-        private Color nightWindowColor = new Color(255, 182, 56, 0xff);
+        const int defaultWorldClimate = 231;
+        const int formatWidth = 4;
+        const int tileSide = 64;
+        const string formatError = "DFBitmap not RGBA.";
+        const float bumpSize = 1f;
+        Color dayWindowColor = new Color(89, 154, 178, 0x80);
+        Color nightWindowColor = new Color(255, 182, 56, 0xff);
 
         #endregion
 
@@ -157,6 +158,7 @@ namespace DeepEngine.Daggerfall
             /// <summary>
             /// Doubles size of texture after loading using a high quality upscale.
             ///  Improves definition of mipmaps.
+            ///  Not Implemented.
             /// </summary>
             DoubleSize = 0x400,
         }
@@ -202,6 +204,7 @@ namespace DeepEngine.Daggerfall
         /// <summary>
         /// Gets or sets daytime flag.
         ///  Primarily controls colour of building windows.
+        ///  This is a temporary solution until support is added to shaders.
         /// </summary>
         public bool Daytime
         {
@@ -223,6 +226,33 @@ namespace DeepEngine.Daggerfall
         public TextureFile TextureFile
         {
             get { return textureFile; }
+        }
+
+        /// <summary>
+        /// Gets default flags for model materials.
+        /// </summary>
+        public static TextureCreateFlags DefaultModelFlags
+        {
+            get
+            {
+                return MaterialManager.TextureCreateFlags.MipMaps |
+                    MaterialManager.TextureCreateFlags.PowerOfTwo |
+                    MaterialManager.TextureCreateFlags.ExtendedAlpha |
+                    MaterialManager.TextureCreateFlags.ApplyClimate;
+            }
+        }
+
+        /// <summary>
+        /// Gets default flags for billboard materials.
+        /// </summary>
+        public static TextureCreateFlags DefaultBillboardFlags
+        {
+            get
+            {
+                return MaterialManager.TextureCreateFlags.MipMaps |
+                    MaterialManager.TextureCreateFlags.Dilate |
+                    MaterialManager.TextureCreateFlags.PreMultiplyAlpha;
+            }
         }
 
         #endregion
@@ -268,38 +298,51 @@ namespace DeepEngine.Daggerfall
         /// <param name="record">Texture record.</param>
         /// <param name="effect">Effect</param>
         /// <returns>BaseMaterialEffect.</returns>
-        public BaseMaterialEffect CreateTextureMaterialEffect(int archive, int record, Effect effect)
+        public BaseMaterialEffect CreateDaggerfallMaterialEffect(int archive, int record, Effect effect, MaterialManager.TextureCreateFlags flags)
         {
-            // Set flags
-            MaterialManager.TextureCreateFlags flags =
-                MaterialManager.TextureCreateFlags.MipMaps |
-                MaterialManager.TextureCreateFlags.PowerOfTwo |
-                MaterialManager.TextureCreateFlags.ExtendedAlpha |
-                MaterialManager.TextureCreateFlags.ApplyClimate;
+            // Create group key
+            int groupKey = GetTextureKey(archive, record, 0);
+
+            // Only allow one material per Daggerfall texture archive & record index.
+            // The material will group frames under this key when loading material for first time.
+            if (textureMaterialDict.ContainsKey(groupKey))
+                return GetMaterialEffect(textureMaterialDict[groupKey]);
 
             // Load texture
-            int textureKey = LoadTexture(
-                archive,
-                record,
-                flags);
+            List<int> frameKeys = LoadTexture(archive, record, flags);
 
-            // Only allow one default effect per Daggerfall texture
-            if (textureMaterialDict.ContainsKey(textureKey))
-                return GetMaterialEffect(textureMaterialDict[textureKey]);
+            // Create empty material effect
+            BaseMaterialEffect material = CreateMaterialEffect(effect, null, null, null, null, null);
 
-            // Create new material effect
-            BaseMaterialEffect materialEffect = CreateMaterialEffect(
-                    effect,
-                    null,
-                    null,
-                    null,
-                    GetTexture(textureKey),
-                    null);
+            // Build material based on number of frames
+            if (frameKeys.Count == 1)
+            {
+                // Single frame
+                material.IsAnimated = false;
+                material.DiffuseTexture = GetTexture(frameKeys[0]);
+            }
+            else if (frameKeys.Count > 1)
+            {
+                // Setup animation in material
+                material.IsAnimated = true;
+                material.DiffuseTextureFrames = new List<Texture2D>(frameKeys.Count);
+
+                // Multiple frames
+                foreach (var key in frameKeys)
+                {
+                    material.DiffuseTextureFrames.Add(GetTexture(key));
+                }
+            }
+            else
+            {
+                // No frames found
+                throw new Exception(noFramesError);
+            }
 
             // Assign to dictionary
-            textureMaterialDict.Add(textureKey, materialEffect.ID);
+            textureMaterialDict.Add(groupKey, material.ID);
 
-            return materialEffect;
+            return material;
         }
 
         /// <summary>
@@ -315,7 +358,7 @@ namespace DeepEngine.Daggerfall
         /// <param name="diffuseTexture">Diffuse texture to use. Can be null.</param>
         /// <param name="normalTexture">Normal texture to use. Can be null.</param>
         /// <returns>BaseMaterialEffect.</returns>
-        public BaseMaterialEffect CreateMaterialEffect(
+        private BaseMaterialEffect CreateMaterialEffect(
             Effect effect,
             EffectTechnique technique,
             string diffuseTextureParam,
@@ -325,6 +368,7 @@ namespace DeepEngine.Daggerfall
         {
             // Create material
             BaseMaterialEffect material = new BaseMaterialEffect(
+                core,
                 effect,
                 technique,
                 diffuseTextureParam,
@@ -356,31 +400,9 @@ namespace DeepEngine.Daggerfall
             return materialEffects[id];
         }
 
-        /// <summary>
-        /// Loads a texture from archive and record index. Animated textures are
-        ///  not supported at this time and only first frame will be loaded.
-        ///  When using climate swaps the key returned will be stable. This means
-        ///  you can store this key with your mesh/scene and TextureManager will
-        ///  return the correct climate and weather variant for that key when you
-        ///  call GetTexture(key) during rendering.
-        /// </summary>
-        /// <param name="archive">Archive index.</param>
-        /// <param name="record">Record index.</param>
-        /// <param name="flags">TextureCreateFlags.</param>
-        /// <returns>Texture key.</returns>
-        public int LoadTexture(int archive, int record, TextureCreateFlags flags)
-        {
-            // Load based on flags
-            if (TextureCreateFlags.ApplyClimate == (flags & TextureCreateFlags.ApplyClimate) &&
-                climateType != DFLocation.ClimateBaseType.None)
-            {
-                return LoadTextureWithClimate(archive, record, flags);
-            }
-            else
-            {
-                return LoadTextureNoClimate(archive, record, flags);
-            }
-        }
+        #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Gets color map texture by key.
@@ -388,7 +410,7 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>Texture2D.</returns>
-        public Texture2D GetTexture(int key)
+        private Texture2D GetTexture(int key)
         {
             // Otherwise return general texture
             if (!colorTextureDict.ContainsKey(key))
@@ -403,7 +425,7 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>Texture2D.</returns>
-        public Texture2D GetNormalTexture(int key)
+        private Texture2D GetNormalTexture(int key)
         {
             if (!normalTextureDict.ContainsKey(key))
                 return null;
@@ -417,7 +439,7 @@ namespace DeepEngine.Daggerfall
         ///  use ClearAtlases() method instead.
         /// </summary>
         /// <param name="key">Texture key.</param>
-        public void RemoveTexture(int key)
+        private void RemoveTexture(int key)
         {
             // Remove color texture by key
             if (colorTextureDict.ContainsKey(key))
@@ -435,7 +457,7 @@ namespace DeepEngine.Daggerfall
         /// <summary>
         /// Clear all cached textures.
         /// </summary>
-        public void ClearTextures()
+        private void ClearTextures()
         {
             // Remove general and winter dictionaries
             colorTextureDict.Clear();
@@ -449,7 +471,7 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>True if texture exists.</returns>
-        public bool HasColorTexture(int key)
+        private bool HasColorTexture(int key)
         {
             return colorTextureDict.ContainsKey(key);
         }
@@ -459,37 +481,55 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         /// <param name="key">Texture key.</param>
         /// <returns>True if texture exists.</returns>
-        public bool HasNormalTexture(int key)
+        private bool HasNormalTexture(int key)
         {
             return normalTextureDict.ContainsKey(key);
         }
 
-        #endregion
-
-        #region Private Methods
+        /// <summary>
+        /// Loads a texture from archive, record, and frame indices.
+        /// </summary>
+        /// <param name="archive">Archive index.</param>
+        /// <param name="record">Record index.</param>
+        /// <param name="flags">TextureCreateFlags.</param>
+        /// <returns>Texture key.</returns>
+        private List<int> LoadTexture(int archive, int record, TextureCreateFlags flags)
+        {
+            // Load based on flags
+            if (flags.HasFlag(TextureCreateFlags.ApplyClimate) &&
+                climateType != DFLocation.ClimateBaseType.None)
+            {
+                return LoadTextureWithClimate(archive, record, flags);
+            }
+            else
+            {
+                return LoadTextureNoClimate(archive, record, flags);
+            }
+        }
 
         /// <summary>
         /// Gets unique key for a non-climate-aware texture.
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        private int GetTextureKey(int archive, int record)
+        private int GetTextureKey(int archive, int record, int frame)
         {
-            return (archive * -100) - record;
+            return (archive * -10000) - (record * -10) - frame;
         }
 
         /// <summary>
         /// Gets unique key for a climate-aware texture.
+        ///  These textures never have animation frames.
         /// </summary>
         /// <param name="climateType">Climate type.</param>
         /// <param name="climateSet">Climate set.</param>
         /// <param name="record">Record index.</param>
-        /// <param name="frame">Frame index.</param>
         /// <returns>Texture key.</returns>
-        private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record, int frame)
+        private int GetTextureKey(DFLocation.ClimateBaseType climateType, DFLocation.ClimateTextureSet climateSet, int record)
         {
-            return ((int)climateType * 1000000) + ((int)climateSet * 1000) + (record * 10) + frame;
+            return ((int)climateType * 1000000) + ((int)climateSet * 1000) + (record * 10);
         }
 
         /// <summary>
@@ -497,17 +537,15 @@ namespace DeepEngine.Daggerfall
         /// </summary>
         /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
+        /// <param name="frame">Frame index.</param>
         /// <param name="flags">TextureCreateFlags.</param>
-        /// <returns>Texture key.</returns>
-        private int LoadTextureNoClimate(int archive, int record, TextureCreateFlags flags)
+        /// <returns>List of texture keys.</returns>
+        private List<int> LoadTextureNoClimate(int archive, int record, TextureCreateFlags flags)
         {
-            int key = GetTextureKey(archive, record);
-            if (colorTextureDict.ContainsKey(key))
-                return key;
-            else
-                CreateTexture(key, archive, record, false, flags);
+            List<int> frameKeys;
+            CreateTexture(archive, record, flags, out frameKeys);
 
-            return key;
+            return frameKeys;
         }
 
         /// <summary>
@@ -517,7 +555,7 @@ namespace DeepEngine.Daggerfall
         /// <param name="record">Record index.</param>
         /// <param name="flags">TextureCreateFlags.</param>
         /// <returns>Texture key.</returns>
-        private int LoadTextureWithClimate(int archive, int record, TextureCreateFlags flags)
+        private List<int> LoadTextureWithClimate(int archive, int record, TextureCreateFlags flags)
         {
             // Get the base set this archive belongs to regardless of climate
             bool supportsWinter, supportsRain;
@@ -540,11 +578,6 @@ namespace DeepEngine.Daggerfall
                 }
             }
 
-            // Check if key already exists
-            int key = GetTextureKey(climateType, climateSet, record, 0);
-            if (colorTextureDict.ContainsKey(key))
-                return key;
-
             // Handle specific climate sets with missing winter textures
             if (climateType == DFLocation.ClimateBaseType.Desert ||
                 climateType == DFLocation.ClimateBaseType.Swamp)
@@ -560,38 +593,69 @@ namespace DeepEngine.Daggerfall
 
             // Load climate-aware texture
             int newArchive = (int)climateType + (int)climateSet;
-            CreateTexture(key, newArchive, record, supportsWinter, flags);
-            return key;
+
+            // Increment winter textures
+            List<int> frameKeys;
+            if (supportsWinter && climateWeather == DFLocation.ClimateWeather.Winter)
+                CreateTexture(newArchive + 1, record, flags, out frameKeys);
+            else
+                CreateTexture(newArchive, record, flags, out frameKeys);
+
+            // Climate textures only ever have a single frame
+            return frameKeys;
         }
 
         /// <summary>
-        /// Creates texture for the specified archive and record, then
-        ///  adds to dictionary with key. Will attempt to load a
-        ///  winter variant if specified.
+        /// Loads all texture frames for the specified archive and record.
         /// </summary>
-        /// <param name="key">Key to associate with texture.</param>
         /// <param name="archive">Archive index to load.</param>
         /// <param name="record">Record index to load.</param>
-        /// <param name="supportsWinter">True to load winter set (archive+1).</param>
         /// <param name="flags">TextureCreateFlags.</param>
-        private void CreateTexture(int key, int archive, int record, bool supportsWinter, TextureCreateFlags flags)
+        /// <param name="frameKeys">List of frame keys loaded.</param>
+        private void CreateTexture(int archive, int record, TextureCreateFlags flags, out List<int> frameKeys)
         {
-            // Get colour texture in RGBA format
-            DFBitmap colorBitmap;
-            if (supportsWinter && climateWeather == DFLocation.ClimateWeather.Winter)
-                colorBitmap = LoadDFBitmap(archive + 1, record, flags);
-            else
-                colorBitmap = LoadDFBitmap(archive, record, flags);
+            // Load texture file
+            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
 
-            // Perform optional image processing
-            ProcessDFBitmap(ref colorBitmap, flags);
+            // Get frame count
+            int frameCount = textureFile.GetFrameCount(record);
 
-            // Create XNA texture
-            colorTextureDict.Add(key, CreateTexture2D(ref colorBitmap, flags));
+            // Create list of keys to reference each frame
+            frameKeys = new List<int>(frameCount);
 
-            // Create XNA normal texture
-            if (flags.HasFlag(TextureCreateFlags.NormalMap))
-                normalTextureDict.Add(key, CreateNormalTexture2D(ref colorBitmap, flags));
+            // Process each frame
+            for (int frame = 0; frame < frameCount; frame++)
+            {
+                // Get key
+                int key = GetTextureKey(archive, record, frame);
+
+                // Just add key if it already exists so we're not converting textures twice
+                if (colorTextureDict.ContainsKey(key))
+                {
+                    frameKeys.Add(key);
+                    continue;
+                }
+
+                // Get RGBA format
+                DFBitmap colorBitmap;
+                if (flags.HasFlag(TextureCreateFlags.ExtendedAlpha))
+                    colorBitmap = GetEngineRGBA(record, frame);
+                else
+                    colorBitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.RGBA);
+
+                // Perform optional image processing
+                ProcessDFBitmap(ref colorBitmap, flags);
+
+                // Create and store XNA texture
+                colorTextureDict.Add(key, CreateTexture2D(ref colorBitmap, flags));
+
+                // Create XNA normal texture
+                //if (flags.HasFlag(TextureCreateFlags.NormalMap))
+                //    normalTextureDict.Add(key, CreateNormalTexture2D(ref colorBitmap, flags));
+
+                // Add frame to list
+                frameKeys.Add(key);
+            }
         }
 
         /// <summary>
@@ -665,32 +729,6 @@ namespace DeepEngine.Daggerfall
             ConvertToNormalMap(ref normalBitmap);
 
             return CreateTexture2D(ref normalBitmap, flags);
-        }
-
-        /// <summary>
-        /// Gets DFBitmap in RGBA format.
-        /// </summary>
-        /// <param name="archive">Archive index.</param>
-        /// <param name="record">Record index.</param>
-        /// <returns>DFBitmap.</returns>
-        private DFBitmap LoadDFBitmap(int archive, int record, TextureCreateFlags flags)
-        {
-            // Load texture file
-            textureFile.Load(Path.Combine(arena2Path, TextureFile.IndexToFileName(archive)), FileUsage.UseDisk, true);
-
-            // Convert to RGBA
-            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef &&
-                flags.HasFlag(TextureCreateFlags.ExtendedAlpha))
-            {
-                // The hi def renderer packs alphas in a special way.
-                // Need to reimplement indexed to RGBA conversion.
-                return GetEngineRGBA(record, 0);
-            }
-            else
-            {
-                // Just load as normal
-                return textureFile.GetBitmapFormat(record, 0, 0, DFBitmap.Formats.RGBA);
-            }
         }
 
         /// <summary>

@@ -353,7 +353,7 @@ namespace DeepEngine.Daggerfall
         }
 
         /// <summary>
-        /// Creates a new Daggerfall texture material using the default ModelEffect.
+        /// Creates a new Daggerfall texture material.
         /// </summary>
         /// <param name="archive">Texture archive.</param>
         /// <param name="record">Texture record.</param>
@@ -361,7 +361,11 @@ namespace DeepEngine.Daggerfall
         public BaseMaterialEffect CreateModelMaterial(int archive, int record)
         {
             // Create default material effect
-            BaseMaterialEffect material = materialManager.CreateTextureMaterialEffect(archive, record, modelEffect);
+            BaseMaterialEffect material = materialManager.CreateDaggerfallMaterialEffect(
+                archive,
+                record,
+                modelEffect,
+                MaterialManager.DefaultModelFlags);
 
             // Setup material effect
             material.Technique = modelEffect.Techniques["Default"];
