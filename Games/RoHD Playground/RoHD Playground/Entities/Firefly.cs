@@ -50,8 +50,8 @@ namespace RoHD_Playground.Entities
         // Ranges
         float minBrightness = 0.6f;     // Minimum brightness
         float maxBrightness = 1.0f;     // Maximum brightness
-        float xzRange = 350;            // Maximum distance firefly can travel in the horizontal dimension
-        float yRange = 90;              // Maximum distance firefly can travel in the vertical dimension
+        float xzRange = 10.9375f;       // Maximum distance firefly can travel in the horizontal dimension
+        float yRange = 2.8125f;         // Maximum distance firefly can travel in the vertical dimension
 
         // Appearance
         Color color = Color.GreenYellow;
@@ -121,11 +121,11 @@ namespace RoHD_Playground.Entities
         {
             // Create sphere
             sphere = new GeometricPrimitiveComponent(scene.Core);
-            sphere.MakeSphere(1.5f, 4);
+            sphere.MakeSphere(0.03125f, 4);
             Components.Add(sphere);
 
             // Create light
-            light = new LightComponent(scene.Core, Vector3.Zero, 64f, color, 0.5f);
+            light = new LightComponent(scene.Core, Vector3.Zero, 2f, color, 0.5f);
             Components.Add(light);
 
             // Start random generator
@@ -151,9 +151,9 @@ namespace RoHD_Playground.Entities
 
         #region BaseEntity Overrides
 
-        public override void Update(GameTime gameTime)
+        public override void Update(TimeSpan elapsedTime)
         {
-            base.Update(gameTime);
+            base.Update(elapsedTime);
 
             if (alive)
             {

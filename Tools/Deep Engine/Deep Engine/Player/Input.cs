@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using DeepEngine.Daggerfall;
 #endregion
 
 namespace DeepEngine.Player
@@ -25,37 +26,37 @@ namespace DeepEngine.Player
         #region Class Variables
 
         // Keyboard movement
-        private const float keyboardSpinRate = 100f;
-        private const float keyboardMoveRate = 1000f;
-        private const float keyboardShiftKeyMultiplier = 3f;
+        float keyboardSpinRate = 200f;
+        float keyboardMoveRate = 800f;
+        float keyboardShiftKeyMultiplier = 3f;
 
         // Mouse movement
-        private const float mouseSpinRate = 5f;
-        private const float mouseMoveRate = 50f;
-        private const float middleButonMoveRate = 100f;
+        float mouseSpinRate = 0.002f;
+        float mouseMoveRate = 50f;
+        float middleButonMoveRate = 50f;
 
         // GamePad movement
-        private bool gamePadConnected = false;
-        private bool gamePadInputReceived = false;
-        private const float gamePadSpinRate = 180f;
-        private const float gamePadMoveRate = 1100f;
+        bool gamePadConnected = false;
+        bool gamePadInputReceived = false;
+        float gamePadSpinRate = 180f;
+        float gamePadMoveRate = 1100f;
 
         // Look options
-        private bool invertMouseLookY = false;
-        private bool invertGamePadLookY = false;
+        bool invertMouseLookY = false;
+        bool invertGamePadLookY = false;
 
         // Mouse
-        private Point lastMousePos = Point.Zero;
-        private Point mousePos = Point.Zero;
-        private Point mouseDelta = Point.Zero;
+        Point lastMousePos = Point.Zero;
+        Point mousePos = Point.Zero;
+        Point mouseDelta = Point.Zero;
 
         // Changes
-        private float pitch = 0.0f;
-        private float yaw = 0.0f;
-        private Vector3 movement = Vector3.Zero;
+        float pitch = 0.0f;
+        float yaw = 0.0f;
+        Vector3 movement = Vector3.Zero;
 
         // Input flags
-        private DeviceFlags activeDevices = DeviceFlags.None;
+        DeviceFlags activeDevices = DeviceFlags.None;
 
         // Input state
         GamePadState gamePadState;
@@ -208,11 +209,11 @@ namespace DeepEngine.Player
         /// <summary>
         /// Called when input system should poll active devices.
         /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last frame.</param>
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
         public void Update(TimeSpan elapsedTime)
         {
-            // Calculate time delta
-            float timeDelta = (float)elapsedTime.TotalSeconds;
+            // Calculate delta time
+            float dt = (float)elapsedTime.TotalSeconds;
 
             // Get keyboard state
             previousKeyboardState = keyboardState;
@@ -223,17 +224,17 @@ namespace DeepEngine.Player
             {
                 // Movement
                 if (keyboardState.IsKeyDown(Keys.Q))                                            // Look left
-                    yaw += keyboardSpinRate * timeDelta;
+                    yaw += keyboardSpinRate * dt;
                 if (keyboardState.IsKeyDown(Keys.E))                                            // Look right
-                    yaw -= keyboardSpinRate * timeDelta;
+                    yaw -= keyboardSpinRate * dt;
                 if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.Up))        // Move forwards
-                    movement.Z -= keyboardMoveRate * timeDelta;
+                    movement.Z -= keyboardMoveRate * dt;
                 if (keyboardState.IsKeyDown(Keys.S) || keyboardState.IsKeyDown(Keys.Down))      // Move backwards
-                    movement.Z += keyboardMoveRate * timeDelta;
+                    movement.Z += keyboardMoveRate * dt;
                 if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.Left))      // Move left
-                    movement.X -= keyboardMoveRate * timeDelta;
+                    movement.X -= keyboardMoveRate * dt;
                 if (keyboardState.IsKeyDown(Keys.D) || keyboardState.IsKeyDown(Keys.Right))     // Move right
-                    movement.X += keyboardMoveRate * timeDelta;
+                    movement.X += keyboardMoveRate * dt;
 
                 // Multiply keyboard movement when shift is down
                 if (keyboardState.IsKeyDown(Keys.LeftShift) ||
@@ -258,15 +259,18 @@ namespace DeepEngine.Player
                 // Mouse-look with right-button pressed
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
-                    yaw -= (mouseDelta.X * mouseSpinRate) * timeDelta;
-                    pitch -= ((invertMouseLookY) ? -mouseDelta.Y : mouseDelta.Y) * mouseSpinRate * timeDelta;
+                    float yawDegrees = MathHelper.ToDegrees(mouseDelta.X) * mouseSpinRate;
+                    float pitchDegrees = MathHelper.ToDegrees(mouseDelta.Y) * mouseSpinRate;
+
+                    yaw -= yawDegrees;
+                    pitch -= (invertMouseLookY) ? -pitchDegrees : pitchDegrees;
                 }
 
                 // Movement with middle-button pressed
                 if (mouseState.MiddleButton == ButtonState.Pressed)
                 {
-                    movement.X += (mouseDelta.X * middleButonMoveRate) * timeDelta;
-                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * timeDelta;
+                    movement.X += (mouseDelta.X * middleButonMoveRate) * dt;
+                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * dt;
                 }
             }
 
@@ -290,47 +294,47 @@ namespace DeepEngine.Player
 
                     // Look left and right
                     if (gamePadState.ThumbSticks.Right.X < 0)
-                        yaw += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.X) * timeDelta;
+                        yaw += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.X) * dt;
                     if (gamePadState.ThumbSticks.Right.X > 0)
-                        yaw -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.X) * timeDelta;
+                        yaw -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.X) * dt;
 
                     // Look up and down
                     if (invertGamePadLookY)
                     {
                         if (gamePadState.ThumbSticks.Right.Y < 0)
-                            pitch += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                            pitch += (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * dt;
                         if (gamePadState.ThumbSticks.Right.Y > 0)
-                            pitch -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                            pitch -= (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * dt;
                     }
                     else
                     {
                         if (gamePadState.ThumbSticks.Right.Y < 0)
-                            pitch -= (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                            pitch -= (gamePadSpinRate * -gamePadState.ThumbSticks.Right.Y) * dt;
                         if (gamePadState.ThumbSticks.Right.Y > 0)
-                            pitch += (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * timeDelta;
+                            pitch += (gamePadSpinRate * gamePadState.ThumbSticks.Right.Y) * dt;
                     }
 
                     // Move forward and backward
                     if (gamePadState.ThumbSticks.Left.Y > 0)
-                        movement.Z -= (gamePadMoveRate * gamePadState.ThumbSticks.Left.Y) * timeDelta;
+                        movement.Z -= (gamePadMoveRate * gamePadState.ThumbSticks.Left.Y) * dt;
                     if (gamePadState.ThumbSticks.Left.Y < 0)
-                        movement.Z += (gamePadMoveRate * -gamePadState.ThumbSticks.Left.Y) * timeDelta;
+                        movement.Z += (gamePadMoveRate * -gamePadState.ThumbSticks.Left.Y) * dt;
 
                     // Move left and right
                     if (gamePadState.ThumbSticks.Left.X > 0)
-                        movement.X -= (gamePadMoveRate * -gamePadState.ThumbSticks.Left.X) * timeDelta;
+                        movement.X -= (gamePadMoveRate * -gamePadState.ThumbSticks.Left.X) * dt;
                     if (gamePadState.ThumbSticks.Left.X < 0)
-                        movement.X += (gamePadMoveRate * gamePadState.ThumbSticks.Left.X) * timeDelta;
+                        movement.X += (gamePadMoveRate * gamePadState.ThumbSticks.Left.X) * dt;
 
                     // Move up, down, left, and right with d-pad
                     if (gamePadState.DPad.Up == ButtonState.Pressed)
-                        movement.Y += gamePadMoveRate * timeDelta;
+                        movement.Y += gamePadMoveRate * dt;
                     if (gamePadState.DPad.Down == ButtonState.Pressed)
-                        movement.Y -= gamePadMoveRate * timeDelta;
+                        movement.Y -= gamePadMoveRate * dt;
                     if (gamePadState.DPad.Left == ButtonState.Pressed)
-                        movement.X -= gamePadMoveRate * timeDelta;
+                        movement.X -= gamePadMoveRate * dt;
                     if (gamePadState.DPad.Right == ButtonState.Pressed)
-                        movement.X += gamePadMoveRate * timeDelta;
+                        movement.X += gamePadMoveRate * dt;
 
                     // Determine if gamepad used
                     if (yaw != startYaw ||
@@ -357,7 +361,8 @@ namespace DeepEngine.Player
             // Transform camera by changes
             if (camera != null)
             {
-                //camera.Transform(yaw, pitch, movement);
+                if (camera.UseMovementControls)
+                    camera.Transform(yaw, pitch, movement);
                 camera.Transform(yaw, pitch, Vector3.Zero);
                 if (reset)
                     Reset();

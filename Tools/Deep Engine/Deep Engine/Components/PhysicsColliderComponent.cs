@@ -166,9 +166,9 @@ namespace DeepEngine.Components
         /// <summary>
         /// Called when component should update itself.
         /// </summary>
-        /// <param name="gameTime">GameTime.</param>
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public override void Update(GameTime gameTime, BaseEntity caller)
+        public override void Update(TimeSpan elapsedTime, BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)

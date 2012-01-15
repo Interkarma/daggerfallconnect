@@ -29,13 +29,13 @@ namespace DeepEngine.Player
         #region Fields
 
         // Clipping plane extents
-        private float nearPlaneDistance = 1.0f;
-        private float farPlaneDistance = 50000f;
+        float nearPlaneDistance = 0.02f;
+        float farPlaneDistance = 1000f;
 
         // Matrices
-        private Matrix projectionMatrix = Matrix.Identity;
-        private Matrix viewMatrix = Matrix.Identity;
-        private Matrix worldMatrixA = Matrix.Identity;
+        Matrix projectionMatrix = Matrix.Identity;
+        Matrix viewMatrix = Matrix.Identity;
+        Matrix worldMatrix = Matrix.Identity;
 
         // Camera
         float cameraYaw = 0.0f;
@@ -48,6 +48,7 @@ namespace DeepEngine.Player
         BoundingFrustum viewFrustum;
 
         // Movement
+        bool useMovementControls = true;
         BoundingBox cameraMovementBounds;
         float cameraSpeed;
 
@@ -76,7 +77,7 @@ namespace DeepEngine.Player
         /// <summary>
         /// Gets or sets projection matrix.
         /// </summary>
-        public Matrix Projection
+        public Matrix ProjectionMatrix
         {
             get { return projectionMatrix; }
             set { projectionMatrix = value; }
@@ -85,7 +86,7 @@ namespace DeepEngine.Player
         /// <summary>
         /// Gets or sets view matrix.
         /// </summary>
-        public Matrix View
+        public Matrix ViewMatrix
         {
             get { return viewMatrix; }
             set { viewMatrix = value; }
@@ -94,10 +95,10 @@ namespace DeepEngine.Player
         /// <summary>
         /// Gets or sets world matrix.
         /// </summary>
-        public Matrix WorldA
+        public Matrix WorldMatrix
         {
-            get { return worldMatrixA; }
-            set { worldMatrixA = value; }
+            get { return worldMatrix; }
+            set { worldMatrix = value; }
         }
 
         /// <summary>
@@ -177,6 +178,15 @@ namespace DeepEngine.Player
             }
         }
 
+        /// <summary>
+        /// Gets or sets control flag.
+        /// </summary>
+        public bool UseMovementControls
+        {
+            get { return useMovementControls; }
+            set { useMovementControls = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -221,7 +231,7 @@ namespace DeepEngine.Player
             dst.farPlaneDistance = src.farPlaneDistance;
             dst.projectionMatrix = src.projectionMatrix;
             dst.viewMatrix = src.viewMatrix;
-            dst.worldMatrixA = src.worldMatrixA;
+            dst.worldMatrix = src.worldMatrix;
             dst.cameraYaw = src.cameraYaw;
             dst.cameraPitch = src.cameraPitch;
             dst.cameraMovementBounds = src.cameraMovementBounds;
@@ -245,7 +255,7 @@ namespace DeepEngine.Player
             viewFrustum.Matrix = viewMatrix * projectionMatrix;
 
             // Create world matrix for camera
-            worldMatrixA = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(cameraYaw), MathHelper.ToRadians(cameraPitch), 0);
+            worldMatrix = Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(cameraYaw), MathHelper.ToRadians(cameraPitch), 0);
         }
 
         /// <summary>

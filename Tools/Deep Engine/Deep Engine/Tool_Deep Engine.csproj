@@ -70,9 +70,15 @@
     <Compile Include="Components\ReaperComponent.cs" />
     <Compile Include="GameStates\GameState.cs" />
     <Compile Include="GameStates\GameStateManager.cs" />
+    <Compile Include="Player\CharacterController.cs" />
+    <Compile Include="Player\CharacterControllerInput.cs" />
+    <Compile Include="Player\HorizontalMotionConstraint.cs" />
     <Compile Include="Player\Input.cs" />
-    <Compile Include="Player\SimpleCharacterController.cs" />
-    <Compile Include="Player\SimpleCharacterControllerInput.cs" />
+    <Compile Include="Player\QueryManager.cs" />
+    <Compile Include="Player\StanceManager.cs" />
+    <Compile Include="Player\StepManager.cs" />
+    <Compile Include="Player\SupportFinder.cs" />
+    <Compile Include="Player\VerticalMotionConstraint.cs" />
     <Compile Include="Rendering\BloomProcessor.cs" />
     <Compile Include="Rendering\BloomSettings.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />

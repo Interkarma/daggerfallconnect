@@ -37,6 +37,8 @@ namespace DeepEngine.World
 
         // Simulation
         Space space;
+        //float gravityForce = -9.81f;
+        float gravityForce = -19.62f;
 
         // Entity list
         List<BaseEntity> entities;
@@ -81,6 +83,15 @@ namespace DeepEngine.World
             get { return camera; }
         }
 
+        /// <summary>
+        /// Gets or sets gravity force applied to all physics objects.
+        /// </summary>
+        public float GravityForce
+        {
+            get { return gravityForce; }
+            set { gravityForce = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -96,7 +107,7 @@ namespace DeepEngine.World
 
             // Create simulation space
             space = new Space();
-            space.ForceUpdater.Gravity = new Vector3(0, -90f, 0);
+            space.ForceUpdater.Gravity = new Vector3(0, gravityForce, 0);
 
             // Create camera
             camera = new Camera();
@@ -114,10 +125,13 @@ namespace DeepEngine.World
         /// Called when scene should update itself.
         /// </summary>
         /// <param name="gameTime"></param>
-        public void Update(GameTime gameTime)
+        public void Update(TimeSpan elapsedTime)
         {
+            // Calculate delta time
+            float dt = (float)elapsedTime.TotalSeconds;
+
             // Update simulation
-            space.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+            space.Update(dt);
 
             // Update camera
             float aspectRatio = (float)core.GraphicsDevice.Viewport.Width / (float)core.GraphicsDevice.Viewport.Height;
@@ -129,7 +143,7 @@ namespace DeepEngine.World
                 if (entities[i].DisposeOnUpdate)
                     entitiesToDispose.Add(i);
                 else
-                    entities[i].Update(gameTime);
+                    entities[i].Update(elapsedTime);
             }
 
             // Dispose of any flagged entities

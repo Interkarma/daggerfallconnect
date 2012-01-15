@@ -125,8 +125,9 @@ namespace DeepEngine.Components
             Vector2 finalSize;
             int xChange = (int)(size.Width * (scale.Width / BlocksFile.ScaleDivisor));
             int yChange = (int)(size.Height * (scale.Height / BlocksFile.ScaleDivisor));
-            finalSize.X = size.Width + xChange;
-            finalSize.Y = size.Height + yChange;
+            finalSize.X = (size.Width + xChange);
+            finalSize.Y = (size.Height + yChange);
+            finalSize *= ModelManager.GlobalScale;
 
             // Set texture flags
             MaterialManager.TextureCreateFlags flags =
@@ -145,7 +146,7 @@ namespace DeepEngine.Components
             if (flat.Dungeon)
                 this.offset = Vector3.Zero;
             else
-                this.offset = new Vector3(0, (finalSize.Y / 2) - 4, 0);
+                this.offset = new Vector3(0, (finalSize.Y / 2) - (4 * ModelManager.GlobalScale), 0);
 
             // Set bounding sphere
             BoundingSphere sphere;

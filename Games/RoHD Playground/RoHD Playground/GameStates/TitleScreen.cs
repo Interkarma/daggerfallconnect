@@ -74,7 +74,7 @@ namespace RoHD_Playground.GameStates
         {
             // Create scene
             scene = new Scene(core);
-            scene.Camera.Position = new Vector3(1058, 142, 2874);
+            scene.Camera.Position = new Vector3(33.0625f, 4.4375f, 89.8125f);
             scene.Camera.Transform(327, 0, Vector3.Zero);
             scene.Camera.Update();
             core.ActiveScene = scene;
@@ -112,21 +112,21 @@ namespace RoHD_Playground.GameStates
             for (int i = 0; i < 20; i++)
             {
                 Entities.Firefly firefly = new Entities.Firefly(scene);
-                firefly.Matrix = Matrix.CreateTranslation(2000, 100, 1400);
+                firefly.Matrix = Matrix.CreateTranslation(62.5f, 3.125f, 43.75f);
             }
 
             // Create fireflies in left of courtyard
             for (int i = 0; i < 10; i++)
             {
                 Entities.Firefly firefly = new Entities.Firefly(scene);
-                firefly.Matrix = Matrix.CreateTranslation(1000, 100, 1400);
+                firefly.Matrix = Matrix.CreateTranslation(31.25f, 3.125f, 43.75f);
             }
 
             // Create fireflies near camera
             for (int i = 0; i < 10; i++)
             {
                 Entities.Firefly firefly = new Entities.Firefly(scene);
-                firefly.Matrix = Matrix.CreateTranslation(1200, 100, 2400);
+                firefly.Matrix = Matrix.CreateTranslation(37.5f, 3.125f, 75f);
             }
 
             // Load songs

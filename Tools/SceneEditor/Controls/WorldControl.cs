@@ -146,16 +146,14 @@ namespace SceneEditor.Controls
         {
             // Measure elapsed time
             TimeSpan currentTime = stopwatch.Elapsed;
-
-            // Simulate gametime
-            GameTime gameTime = new GameTime(currentTime - startTime, currentTime - lastTime);
+            TimeSpan elapsedTime = currentTime - lastTime;
 
             // Update input
-            input.Update(gameTime.ElapsedGameTime);
+            input.Update(elapsedTime);
             input.Apply(camera, true);
 
             // Update core
-            core.Update(gameTime);
+            core.Update(elapsedTime);
 
             // Store update time
             lastTime = currentTime;

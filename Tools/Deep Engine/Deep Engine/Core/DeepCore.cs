@@ -275,19 +275,20 @@ namespace DeepEngine.Core
         /// <summary>
         /// Called when core should update.
         /// </summary>
-        public void Update(GameTime gameTime)
+        /// <param name="elapsedTime">Elapsed time since last update.</param>
+        public void Update(TimeSpan elapsedTime)
         {
             // Start timer
             long startTime = stopwatch.ElapsedMilliseconds;
 
             // Update scene
-            scene.Update(gameTime);
+            scene.Update(elapsedTime);
 
             // Update renderer
             renderer.Update();
 
             // Update input
-            input.Update(gameTime.ElapsedGameTime);
+            input.Update(elapsedTime);
             input.Apply(scene.Camera, true);
 
             // Get time

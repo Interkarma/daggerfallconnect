@@ -146,7 +146,7 @@ namespace RoHD_Playground
         protected override void Update(GameTime gameTime)
         {
             // Update core
-            core.Update(gameTime);
+            core.Update(gameTime.ElapsedGameTime);
 
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)

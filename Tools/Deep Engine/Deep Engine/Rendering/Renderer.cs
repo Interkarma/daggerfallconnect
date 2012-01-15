@@ -18,6 +18,7 @@ using DeepEngine.World;
 using DeepEngine.Primitives;
 using DeepEngine.Components;
 using DeepEngine.Utility;
+using DeepEngine.Daggerfall;
 #endregion
 
 namespace DeepEngine.Rendering
@@ -62,9 +63,9 @@ namespace DeepEngine.Rendering
         // Geometry
         private Model pointLightSphereModel;
 
-        // Billboard geometry template
-        private VertexBuffer billboardVertexBuffer;
-        private IndexBuffer billboardIndexBuffer;
+        // Billboard geometry template for Daggerfall flats
+        private VertexBuffer daggerfallBillboardVertexBuffer;
+        private IndexBuffer daggerfakkBillboardIndexBuffer;
 
         // Visible lights
         const int maxVisibleLights = 512;
@@ -269,7 +270,7 @@ namespace DeepEngine.Rendering
             pointLightSphereModel = core.ContentManager.Load<Model>("Models/PointLightSphere");
 
             // Create billboard template
-            CreateBillboardTemplate();
+            CreateDaggerfallBillboardTemplate();
 
             // Create rendering classes
             fullScreenQuad = new FullScreenQuad(graphicsDevice);
@@ -580,7 +581,7 @@ namespace DeepEngine.Rendering
 
             // Set camera
             directionalLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
-            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.View * core.ActiveScene.Camera.Projection));
+            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
 
             // Set size
             directionalLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
@@ -610,8 +611,8 @@ namespace DeepEngine.Rendering
             // Scale according to light radius, and translate it to light position.
             Matrix sphereWorldMatrix = Matrix.CreateScale(lightRadius) * Matrix.CreateTranslation(lightPosition);
             pointLightEffect.Parameters["World"].SetValue(sphereWorldMatrix);
-            pointLightEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
-            pointLightEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
+            pointLightEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
+            pointLightEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
 
             // Light position
             pointLightEffect.Parameters["LightPosition"].SetValue(lightPosition);
@@ -623,7 +624,7 @@ namespace DeepEngine.Rendering
 
             // Parameters for specular computations
             pointLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
-            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.View * core.ActiveScene.Camera.Projection));
+            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
 
             // Size of a halfpixel, for texture coordinates alignment
             pointLightEffect.Parameters["HalfPixel"].SetValue(gBuffer.HalfPixel);
@@ -684,12 +685,12 @@ namespace DeepEngine.Rendering
         {
             // Set transforms
             renderBillboards.Parameters["World"].SetValue(Matrix.Identity);
-            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.Camera.View);
-            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.Camera.Projection);
+            renderBillboards.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
+            renderBillboards.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
 
             // Set buffers
-            core.GraphicsDevice.SetVertexBuffer(billboardVertexBuffer);
-            core.GraphicsDevice.Indices = billboardIndexBuffer;
+            core.GraphicsDevice.SetVertexBuffer(daggerfallBillboardVertexBuffer);
+            core.GraphicsDevice.Indices = daggerfakkBillboardIndexBuffer;
 
             // Set render states
             core.GraphicsDevice.BlendState = BlendState.Opaque;
@@ -727,7 +728,7 @@ namespace DeepEngine.Rendering
                     PrimitiveType.TriangleList,
                     0,
                     0,
-                    billboardVertexBuffer.VertexCount,
+                    daggerfallBillboardVertexBuffer.VertexCount,
                     0,
                     2);
             }
@@ -736,11 +737,11 @@ namespace DeepEngine.Rendering
         /// <summary>
         /// Creates billboard template.
         /// </summary>
-        private void CreateBillboardTemplate()
+        private void CreateDaggerfallBillboardTemplate()
         {
             // Set dimensions of billboard 
-            const float w = 0.5f;
-            const float h = 0.5f;
+            float w = 0.5f * ModelManager.GlobalScale;
+            float h = 0.5f * ModelManager.GlobalScale;
 
             // Create vertex array
             VertexPositionNormalTextureBump[] billboardVertices = new VertexPositionNormalTextureBump[4];
@@ -777,12 +778,12 @@ namespace DeepEngine.Rendering
             };
 
             // Create buffers
-            billboardVertexBuffer = new VertexBuffer(core.GraphicsDevice, VertexPositionNormalTextureBump.VertexDeclaration, 4, BufferUsage.WriteOnly);
-            billboardIndexBuffer = new IndexBuffer(core.GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
+            daggerfallBillboardVertexBuffer = new VertexBuffer(core.GraphicsDevice, VertexPositionNormalTextureBump.VertexDeclaration, 4, BufferUsage.WriteOnly);
+            daggerfakkBillboardIndexBuffer = new IndexBuffer(core.GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
 
             // Set data
-            billboardVertexBuffer.SetData(billboardVertices);
-            billboardIndexBuffer.SetData(billboardIndices);
+            daggerfallBillboardVertexBuffer.SetData(billboardVertices);
+            daggerfakkBillboardIndexBuffer.SetData(billboardIndices);
         }
 
         #endregion
