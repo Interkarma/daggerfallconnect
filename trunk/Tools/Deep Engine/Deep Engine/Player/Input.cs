@@ -28,12 +28,11 @@ namespace DeepEngine.Player
         // Keyboard movement
         float keyboardSpinRate = 200f;
         float keyboardMoveRate = 800f;
-        float keyboardShiftKeyMultiplier = 3f;
+        float keyboardShiftKeyMultiplier = 2.5f;
 
         // Mouse movement
         float mouseSpinRate = 0.002f;
-        float mouseMoveRate = 50f;
-        float middleButonMoveRate = 50f;
+        float middleButtonMoveRate = 50f;
 
         // GamePad movement
         bool gamePadConnected = false;
@@ -269,8 +268,8 @@ namespace DeepEngine.Player
                 // Movement with middle-button pressed
                 if (mouseState.MiddleButton == ButtonState.Pressed)
                 {
-                    movement.X += (mouseDelta.X * middleButonMoveRate) * dt;
-                    movement.Y -= (mouseDelta.Y * middleButonMoveRate) * dt;
+                    movement.X += (mouseDelta.X * middleButtonMoveRate) * dt;
+                    movement.Y -= (mouseDelta.Y * middleButtonMoveRate) * dt;
                 }
             }
 
