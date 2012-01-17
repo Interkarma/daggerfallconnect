@@ -183,6 +183,14 @@ namespace DeepEngine.Player
         }
 
         /// <summary>
+        /// Gets mouse movement delta.
+        /// </summary>
+        public Point MouseDelta
+        {
+            get { return mouseDelta; }
+        }
+
+        /// <summary>
         /// Gets movement delta.
         /// </summary>
         public Vector3 MovementDelta
@@ -218,6 +226,7 @@ namespace DeepEngine.Player
             previousKeyboardState = keyboardState;
             keyboardState = Keyboard.GetState();
 
+            /*
             // Keyboard input
             if ((activeDevices & DeviceFlags.Keyboard) == DeviceFlags.Keyboard)
             {
@@ -348,6 +357,7 @@ namespace DeepEngine.Player
                     }
                 }
             }
+            */
         }
 
         /// <summary>
@@ -361,10 +371,11 @@ namespace DeepEngine.Player
             if (camera != null)
             {
                 if (camera.UseMovementControls)
+                {
                     camera.Transform(yaw, pitch, movement);
-                camera.Transform(yaw, pitch, Vector3.Zero);
-                if (reset)
-                    Reset();
+                    if (reset) Reset();
+                }
+                
             }
         }
 

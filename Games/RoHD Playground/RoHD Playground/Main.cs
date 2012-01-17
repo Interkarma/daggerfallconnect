@@ -77,9 +77,6 @@ namespace RoHD_Playground
         /// </summary>
         public Main()
         {
-            // Always using fixed time step
-            this.IsFixedTimeStep = true;
-
             // Setup device
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -89,6 +86,10 @@ namespace RoHD_Playground
 
             // Capture device settings event
             graphics.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(Graphics_PreparingDeviceSettings);
+
+            // Timing
+            this.IsFixedTimeStep = true;
+            graphics.SynchronizeWithVerticalRetrace = true;
 
             // Create engine core
             core = new DeepCore(arena2Path, this.Services);
@@ -102,7 +103,7 @@ namespace RoHD_Playground
             playingGame = new PlayingGame(core, this);
 
             // Set initial game state
-            gameManager.ChangeState(titleScreen);
+            gameManager.ChangeState(playingGame);
         }
 
         #endregion

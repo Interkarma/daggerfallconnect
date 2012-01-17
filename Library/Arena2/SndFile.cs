@@ -75,7 +75,7 @@ namespace DaggerfallConnect.Arena2
         }
 
         /// <summary>
-        /// Number of BSA records in ARCH3D.BSA.
+        /// Number of BSA records in DAGGER.SND.
         /// </summary>
         public int Count
         {

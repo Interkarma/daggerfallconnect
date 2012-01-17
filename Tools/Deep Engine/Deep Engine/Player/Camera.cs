@@ -298,8 +298,8 @@ namespace DeepEngine.Player
         /// <summary>
         /// Transform camera.
         /// </summary>
-        /// <param name="yaw">Amount to change yaw.</param>
-        /// <param name="pitch">Amount to change pitch.</param>
+        /// <param name="yaw">Amount to change yaw in degrees.</param>
+        /// <param name="pitch">Amount to change pitch in degrees.</param>
         /// <param name="movement">Distance to move from current position.</param>
         public void Transform(float yaw, float pitch, Vector3 movement)
         {
