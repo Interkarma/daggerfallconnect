@@ -21,6 +21,7 @@ using DeepEngine.Core;
 using DeepEngine.Components;
 using DeepEngine.GameStates;
 using DeepEngine.World;
+using DeepEngine.Player;
 #endregion
 
 namespace RoHD_Playground.GameStates
@@ -42,6 +43,10 @@ namespace RoHD_Playground.GameStates
         const string titleText = "Ruins of Hill Deep";
         const string versionText = "Playground Build 1.0";
 
+        Color clearColor = Color.Transparent;
+        Color skyDark = Color.Black;
+        Color skyLight = new Color(64, 32, 32);
+
         Scene scene;
         Song song;
 
@@ -51,6 +56,9 @@ namespace RoHD_Playground.GameStates
         Rectangle titleSafeArea;
         Vector2 titlePos;
         Vector2 versionPos;
+
+        float cloudTime = 0;
+        float cloudSpeed = 5.0f;
 
         #endregion
 
@@ -79,8 +87,10 @@ namespace RoHD_Playground.GameStates
             scene.Camera.Update();
             core.ActiveScene = scene;
 
-            // Set clear colour
-            core.Renderer.ClearColor = Color.Black;
+            // Disable core input handling
+            core.Input.ActiveDevices = Input.DeviceFlags.None;
+
+            core.Renderer.ClearColor = clearColor;
 
             // Set day/night mode for window textures
             core.MaterialManager.Daytime = false;
@@ -159,7 +169,15 @@ namespace RoHD_Playground.GameStates
 
         public override void Draw(GameTime gameTime)
         {
-            core.Draw();
+            // Draw
+            core.Draw(false);
+
+            // Draw sky dome
+            core.DrawSkyDome(skyLight, skyDark, 0.3f, cloudTime, true);
+            cloudTime += cloudSpeed * core.DeltaTime;
+
+            // Present
+            core.Present();
 
             // Draw title and version
             scene.Core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);

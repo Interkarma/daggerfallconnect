@@ -104,7 +104,7 @@ namespace SceneEditor.Controls
             }
 
             // Clear device
-            core.Draw();
+            core.Draw(true);
         }
 
         #endregion

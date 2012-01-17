@@ -36,7 +36,7 @@ namespace DeepEngine.Rendering
         DeepCore core;
 
         // Rendering
-        Color clearColor = Color.CornflowerBlue;
+        Color clearColor = Color.Transparent;
         GraphicsDevice graphicsDevice;
         FullScreenQuad fullScreenQuad;
         GBuffer gBuffer;
@@ -125,7 +125,8 @@ namespace DeepEngine.Rendering
         #region Properties
 
         /// <summary>
-        /// Gets or sets clear colour.
+        /// Gets or sets the clear colour to use during frame setup and post processing.
+        ///  Use transparent colours to layer over your scene.
         /// </summary>
         public Color ClearColor
         {
@@ -180,6 +181,14 @@ namespace DeepEngine.Rendering
         {
             get { return showDebugBuffers; }
             set { showDebugBuffers = value; }
+        }
+
+        /// <summary>
+        /// Gets full screen quad renderer.
+        /// </summary>
+        public FullScreenQuad FullScreenQuad
+        {
+            get { return fullScreenQuad; }
         }
 
         #endregion
@@ -293,7 +302,8 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Draw visible content.
+        /// Draw visible content and performs post-processing into a final render target.
+        ///  Must call Present() to copy render target into frame buffer.
         /// </summary>
         /// <param name="scene">Scene to render.</param>
         public void Draw(Scene scene)
@@ -301,6 +311,23 @@ namespace DeepEngine.Rendering
             BeginDraw();
             DrawScene(scene);
             EndDraw();
+        }
+
+        /// <summary>
+        /// Presents render target by copying to frame buffer.
+        ///  Will be alpha blended over anything already in frame buffer, allowing caller to draw
+        ///  what they need before presenting.
+        /// </summary>
+        public void Present()
+        {
+            // Copy renderTarget to frame buffer
+            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            core.SpriteBatch.Draw(renderTarget, graphicsDeviceRectangle, renderTargetRectangle, Color.White);
+            core.SpriteBatch.End();
+
+            // Draw debug buffers
+            if (showDebugBuffers)
+                gBuffer.DrawDebugBuffers(core.SpriteBatch, fullScreenQuad);
         }
 
         /// <summary>
@@ -356,7 +383,7 @@ namespace DeepEngine.Rendering
             
             // Prepare GBuffer
             gBuffer.SetGBuffer();
-            gBuffer.ClearGBuffer(clearBufferEffect, fullScreenQuad, clearColor);
+            gBuffer.ClearGBuffer(clearBufferEffect, fullScreenQuad, Color.Transparent);
         }
 
         /// <summary>
@@ -395,15 +422,6 @@ namespace DeepEngine.Rendering
 
             // Resolve GBuffer
             gBuffer.ResolveGBuffer();
-
-            // Copy renderTarget to frame buffer
-            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
-            core.SpriteBatch.Draw(renderTarget, graphicsDeviceRectangle, renderTargetRectangle, Color.White);
-            core.SpriteBatch.End();
-
-            // Draw debug buffers
-            if (showDebugBuffers)
-                gBuffer.DrawDebugBuffers(core.SpriteBatch, fullScreenQuad);
         }
 
         /// <summary>
@@ -412,13 +430,13 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void ComposeFinal()
         {
-            // No post-processing enabled, just compose into frame buffer
+            // No post-processing enabled, just compose into render target
             if (!fxaaEnabled && !bloomEnabled)
             {
                 // Set render target
                 graphicsDevice.SetRenderTarget(renderTarget);
 
-                // Clear
+                // Clear target
                 graphicsDevice.Clear(clearColor);
 
                 // Compose final image from GBuffer
@@ -432,7 +450,7 @@ namespace DeepEngine.Rendering
                 graphicsDevice.SetRenderTarget(fxaaRenderTarget);
 
                 // Clear target
-                graphicsDevice.Clear(Color.Transparent);
+                graphicsDevice.Clear(clearColor);
 
                 // Compose final image from GBuffer
                 gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
@@ -440,7 +458,7 @@ namespace DeepEngine.Rendering
                 // Set render target
                 graphicsDevice.SetRenderTarget(renderTarget);
 
-                // Clear
+                // Clear target
                 graphicsDevice.Clear(clearColor);
 
                 // Set effect parameters
@@ -465,7 +483,7 @@ namespace DeepEngine.Rendering
                 // Set render target
                 graphicsDevice.SetRenderTarget(bloomRenderTarget);
 
-                // Clear
+                // Clear target
                 graphicsDevice.Clear(clearColor);
 
                 // Compose final image from GBuffer
@@ -482,7 +500,7 @@ namespace DeepEngine.Rendering
                 graphicsDevice.SetRenderTarget(fxaaRenderTarget);
 
                 // Clear target
-                graphicsDevice.Clear(Color.Transparent);
+                graphicsDevice.Clear(clearColor);
 
                 // Compose final image from GBuffer
                 gBuffer.ComposeFinal(finalCombineEffect, fullScreenQuad);
@@ -490,7 +508,7 @@ namespace DeepEngine.Rendering
                 // Next render target
                 graphicsDevice.SetRenderTarget(bloomRenderTarget);
 
-                // Clear
+                // Clear target
                 graphicsDevice.Clear(clearColor);
 
                 // Set effect parameters

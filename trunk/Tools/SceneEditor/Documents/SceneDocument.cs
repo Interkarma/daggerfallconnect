@@ -60,11 +60,7 @@ namespace SceneEditor.Documents
         public System.Drawing.Color ClearColor
         {
             get { return clearColor; }
-            set
-            {
-                clearColor = value;
-                core.Renderer.ClearColor = new Color(clearColor.R, clearColor.G, clearColor.B);
-            }
+            set { clearColor = value; }
         }
 
         #endregion

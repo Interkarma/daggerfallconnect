@@ -86,6 +86,7 @@
     <Compile Include="Rendering\BloomProcessor.cs" />
     <Compile Include="Rendering\BloomSettings.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
+    <Compile Include="Utility\CloudFactory.cs" />
     <Compile Include="Utility\ComponentCollection.cs" />
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Utility\PowerOfTwo.cs" />
+    <Compile Include="Utility\StarFactory.cs" />
     <Compile Include="Utility\StaticGeometryBuilder.cs" />
     <Compile Include="WinForms\GraphicsDeviceService.cs" />
     <Compile Include="WinForms\ServiceContainer.cs" />

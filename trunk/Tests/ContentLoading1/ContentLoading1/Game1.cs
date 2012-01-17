@@ -62,10 +62,10 @@ namespace ContentLoading1
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            //graphics.PreferredBackBufferWidth = 1280;
-            //graphics.PreferredBackBufferHeight = 720;
-            graphics.PreferredBackBufferWidth = 1920;
-            graphics.PreferredBackBufferHeight = 1080;
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
+            //graphics.PreferredBackBufferWidth = 1920;
+            //graphics.PreferredBackBufferHeight = 1080;
             this.IsMouseVisible = true;
 
             // Timing
@@ -220,7 +220,7 @@ namespace ContentLoading1
 
             base.Draw(gameTime);
 
-            core.Draw();
+            core.Draw(true);
 
             // Compose engine statistics
             string status = string.Format(
@@ -244,9 +244,6 @@ namespace ContentLoading1
         /// </summary>
         private void LoadExteriorMapScene()
         {
-            // Set clear colour
-            core.Renderer.ClearColor = Color.Black;
-
             // Set day/night mode for window textures
             core.MaterialManager.Daytime = false;
 
@@ -296,9 +293,6 @@ namespace ContentLoading1
 
         private void LoadBlockScene()
         {
-            // Set clear colour
-            core.Renderer.ClearColor = Color.Black;
-
             // Set day/night mode for window textures
             core.MaterialManager.Daytime = false;
 
