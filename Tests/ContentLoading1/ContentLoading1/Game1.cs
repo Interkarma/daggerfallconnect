@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -34,6 +35,9 @@ namespace ContentLoading1
 
         long nextBallTime = 0;
         long minBallTime = 200;
+
+        int soundIndex = 0;
+        SoundEffect soundEffect;
 
         CharacterControllerInput playerInput;
 
@@ -109,6 +113,10 @@ namespace ContentLoading1
             //LoadModelScene();
             //LoadPhysicsScene();
 
+            // Load and play initial sound
+            LoadSound();
+            PlaySound();
+
             // Show or hide debug buffers
             core.Renderer.ShowDebugBuffers = false;
 
@@ -173,6 +181,32 @@ namespace ContentLoading1
                 Exit();
             }
 
+            // Next sound
+            if (core.Input.KeyboardState.IsKeyDown(Keys.Right) && !core.Input.PreviousKeyboardState.IsKeyDown(Keys.Right))
+            {
+                if (++soundIndex >= core.SoundManager.Count)
+                    soundIndex = core.SoundManager.Count - 1;
+
+                LoadSound();
+                PlaySound();
+            }
+
+            // Next sound
+            if (core.Input.KeyboardState.IsKeyDown(Keys.Left) && !core.Input.PreviousKeyboardState.IsKeyDown(Keys.Left))
+            {
+                if (--soundIndex < 0)
+                    soundIndex = 0;
+
+                LoadSound();
+                PlaySound();
+            }
+
+            // Play sound
+            if (core.Input.KeyboardState.IsKeyDown(Keys.Enter) && !core.Input.PreviousKeyboardState.IsKeyDown(Keys.Enter))
+            {
+                PlaySound();
+            }
+
             base.Update(gameTime);
         }
 
@@ -190,11 +224,12 @@ namespace ContentLoading1
 
             // Compose engine statistics
             string status = string.Format(
-                "Update: {0:00}ms, Draw: {1:00}ms, Lights: {2:000}, Billboards: {3:0000}",
+                "Update: {0:00}ms, Draw: {1:00}ms, Lights: {2:000}, Billboards: {3:0000}, Sound: {4:000}",
                 core.LastUpdateTime,
                 core.LastDrawTime,
                 core.VisibleLightsCount,
-                core.VisibleBillboardsCount);
+                core.VisibleBillboardsCount,
+                soundIndex);
 
             // Draw engine statistics
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
@@ -464,6 +499,37 @@ namespace ContentLoading1
         #region Fun Stuff
 
         /// <summary>
+        /// Loads a sound effect to be played.
+        /// </summary>
+        public void LoadSound()
+        {
+            try
+            {
+                soundEffect = SoundEffect.FromStream(core.SoundManager.GetStream(soundIndex));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                soundEffect = null;
+            }
+
+            //DFSound dfSound = core.SoundManager.GetSound(soundIndex);
+
+            // Test saving sound to disk
+            //FileStream fs = new FileStream("c:\\test\\testwave.wav", FileMode.Create);
+            //BinaryWriter writer = new BinaryWriter(fs);
+            //writer.Write(soundEffect.WaveHeader);
+            //writer.Write(soundEffect.WaveData);
+            //writer.Clo1se();
+        }
+
+        public void PlaySound()
+        {
+            if (soundEffect != null)
+                soundEffect.Play();
+        }
+
+        /// <summary>
         /// Fires a coloured sphere from player's position into world.
         /// </summary>
         public void FireSphere()
@@ -505,6 +571,10 @@ namespace ContentLoading1
 
             // Set entity to expire after 5 minutes
             sphereEntity.Components.Add(new ReaperComponent(core, sphereEntity, 300000));
+
+            soundIndex = 16;
+            LoadSound();
+            PlaySound();
         }
 
         #endregion

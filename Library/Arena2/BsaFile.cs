@@ -149,7 +149,8 @@ namespace DaggerfallConnect.Arena2
         {
             // Ensure filename ends with .BSA
             FilePath = FilePath.ToUpper();
-            if (!FilePath.EndsWith(".BSA"))
+            if (!FilePath.EndsWith(".BSA") &&
+                !FilePath.EndsWith(".SND"))
                 return false;
 
             // Load file into memory

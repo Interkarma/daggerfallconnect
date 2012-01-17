@@ -44,6 +44,7 @@ namespace DeepEngine.Core
         ModelManager modelManager;
         BlocksFile blockManager;
         MapsFile mapManager;
+        SndFile soundManager;
 
         // XNA
         IServiceProvider serviceProvider;
@@ -137,6 +138,14 @@ namespace DeepEngine.Core
         public MapsFile MapManager
         {
             get { return mapManager; }
+        }
+
+        /// <summary>
+        /// Gets Daggerfall sound effect manager.
+        /// </summary>
+        public SndFile SoundManager
+        {
+            get { return soundManager; }
         }
 
         /// <summary>
@@ -267,6 +276,7 @@ namespace DeepEngine.Core
             this.modelManager = new ModelManager(this);
             this.blockManager = new BlocksFile(Path.Combine(arena2Path, BlocksFile.Filename), FileUsage.UseDisk, true);
             this.mapManager = new MapsFile(Path.Combine(arena2Path, MapsFile.Filename), FileUsage.UseDisk, true);
+            this.soundManager = new SndFile(Path.Combine(arena2Path, SndFile.Filename), FileUsage.UseDisk, true);
 
             // Load engine objects content
             renderer.LoadContent();

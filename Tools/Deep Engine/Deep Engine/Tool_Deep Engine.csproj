@@ -47,6 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\BEPUphysics.dll</HintPath>
     </Reference>
+    <Reference Include="INIFileParser">
+      <HintPath>Dependencies\INIFileParser.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
@@ -68,6 +71,7 @@
     <Compile Include="Components\DaggerfallBillboardBatchComponent.cs" />
     <Compile Include="Components\DaggerfallBillboardComponent.cs" />
     <Compile Include="Components\ReaperComponent.cs" />
+    <Compile Include="Core\ConfigManager.cs" />
     <Compile Include="GameStates\GameState.cs" />
     <Compile Include="GameStates\GameStateManager.cs" />
     <Compile Include="Player\CharacterController.cs" />
