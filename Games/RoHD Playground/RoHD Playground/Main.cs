@@ -102,8 +102,12 @@ namespace RoHD_Playground
             titleScreen = new TitleScreen(core, this);
             playingGame = new PlayingGame(core, this);
 
+            // Setup title events
+            titleScreen.OnStartClicked += new EventHandler(TitleScreen_OnStartClicked);
+            titleScreen.OnExitClicked += new EventHandler(TitleScreen_OnExitClicked);
+
             // Set initial game state
-            gameManager.ChangeState(playingGame);
+            gameManager.ChangeState(titleScreen);
         }
 
         #endregion
@@ -219,6 +223,20 @@ namespace RoHD_Playground
             graphicsDeviceInformation.PresentationParameters.BackBufferFormat = displayMode.Format;
             graphicsDeviceInformation.PresentationParameters.BackBufferWidth = displayMode.Width;
             graphicsDeviceInformation.PresentationParameters.BackBufferHeight = displayMode.Height;
+        }
+
+        #endregion
+
+        #region Title Screen Events
+
+        private void TitleScreen_OnStartClicked(object sender, EventArgs e)
+        {
+            gameManager.ChangeState(playingGame);
+        }
+
+        private void TitleScreen_OnExitClicked(object sender, EventArgs e)
+        {
+            this.Exit();
         }
 
         #endregion
