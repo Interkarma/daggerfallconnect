@@ -22,6 +22,7 @@ using DeepEngine.Components;
 using DeepEngine.GameStates;
 using DeepEngine.World;
 using DeepEngine.Player;
+using DeepEngine.UserInterface;
 #endregion
 
 namespace RoHD_Playground.GameStates
@@ -42,6 +43,8 @@ namespace RoHD_Playground.GameStates
 
         const string titleText = "Ruins of Hill Deep";
         const string versionText = "Playground Build 1.0";
+        const string startMenuText = "Start";
+        const string exitMenuText = "Exit";
 
         Color clearColor = Color.Transparent;
         Color skyDark = Color.Black;
@@ -52,6 +55,8 @@ namespace RoHD_Playground.GameStates
 
         SpriteFont titleFont;
         SpriteFont consoleFont;
+        SpriteFont menuFont;
+        SpriteFont menuFont2;
 
         Rectangle titleSafeArea;
         Vector2 titlePos;
@@ -59,6 +64,12 @@ namespace RoHD_Playground.GameStates
 
         float cloudTime = 0;
         float cloudSpeed = 5.0f;
+
+        SimpleMenuItem startMenuItem;
+        SimpleMenuItem exitMenuItem;
+
+        public event EventHandler OnStartClicked;
+        public event EventHandler OnExitClicked;
 
         #endregion
 
@@ -106,7 +117,6 @@ namespace RoHD_Playground.GameStates
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
             block.LoadBlock("CASTAA26.RMB", climateSettings);
-            //block.LoadBlock("CASTAA05.RMB", climateSettings);
             level.Components.Add(block);
 
             // Attach block flats
@@ -147,6 +157,8 @@ namespace RoHD_Playground.GameStates
             // Load fonts
             titleFont = Game.Content.Load<SpriteFont>("Fonts/TitleFont");
             consoleFont = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+            menuFont = Game.Content.Load<SpriteFont>("Fonts/MenuFont");
+            menuFont2 = Game.Content.Load<SpriteFont>("Fonts/MenuFont2");
 
             // Title area
             titleSafeArea = Game.GraphicsDevice.Viewport.TitleSafeArea;
@@ -155,8 +167,25 @@ namespace RoHD_Playground.GameStates
             titlePos = new Vector2(titleSafeArea.Right - titleSize.X - 20, titleSafeArea.Top + 20);
             versionPos = new Vector2(titlePos.X + titleSize.X - versionSize.X, titlePos.Y + titleSize.Y);
 
-            base.Game.IsMouseVisible = true;
+            // Create menu items
+            startMenuItem = new SimpleMenuItem(core, startMenuText, Vector2.Zero, menuFont2);
+            exitMenuItem = new SimpleMenuItem(core, exitMenuText, Vector2.Zero, menuFont2);
+            startMenuItem.Color = Color.LightGray;
+            exitMenuItem.Color = Color.LightGray;
 
+            // Position menu items
+            startMenuItem.Position = new Vector2(titleSafeArea.Right - startMenuItem.Rectangle.Width - 20, versionPos.Y + versionSize.Y + 50);
+            exitMenuItem.Position = new Vector2(titleSafeArea.Right - exitMenuItem.Rectangle.Width - 20, startMenuItem.Rectangle.Bottom + 30);
+
+            // Wire up menu events
+            startMenuItem.OnMouseEnter += new EventHandler(StartMenuItem_OnMouseEnter);
+            startMenuItem.OnMouseLeave += new EventHandler(StartMenuItem_OnMouseLeave);
+            exitMenuItem.OnMouseEnter += new EventHandler(ExitMenuItem_OnMouseEnter);
+            exitMenuItem.OnMouseLeave += new EventHandler(ExitMenuItem_OnMouseLeave);
+            startMenuItem.OnMouseClick += new EventHandler(StartMenuItem_OnMouseClick);
+            exitMenuItem.OnMouseClick += new EventHandler(ExitMenuItem_OnMouseClick);
+
+            base.Game.IsMouseVisible = true;
         }
 
         protected override void UnloadContent()
@@ -165,6 +194,9 @@ namespace RoHD_Playground.GameStates
 
         public override void Update(GameTime gameTime)
         {
+            // Update menus
+            startMenuItem.Update(gameTime.ElapsedGameTime);
+            exitMenuItem.Update(gameTime.ElapsedGameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -179,10 +211,12 @@ namespace RoHD_Playground.GameStates
             // Present
             core.Present();
 
-            // Draw title and version
+            // Draw title and menus
             scene.Core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             scene.Core.SpriteBatch.DrawString(titleFont, titleText, titlePos, Color.AliceBlue);
             scene.Core.SpriteBatch.DrawString(consoleFont, versionText, versionPos, Color.Gold);
+            startMenuItem.DrawMenu(scene.Core.SpriteBatch);
+            exitMenuItem.DrawMenu(scene.Core.SpriteBatch);
             scene.Core.SpriteBatch.End();
         }
 
@@ -220,6 +254,42 @@ namespace RoHD_Playground.GameStates
                     entity.Components.Add(lightComponent);
                 }
             }
+        }
+
+        #endregion
+
+        #region Menu Events
+
+        private void StartMenuItem_OnMouseClick(object sender, EventArgs e)
+        {
+            if (OnStartClicked != null)
+                OnStartClicked(this, null);
+        }
+
+        private void ExitMenuItem_OnMouseClick(object sender, EventArgs e)
+        {
+            if (OnExitClicked != null)
+                OnExitClicked(this, null);
+        }
+
+        private void StartMenuItem_OnMouseEnter(object sender, EventArgs e)
+        {
+            startMenuItem.Color = Color.Goldenrod;
+        }
+
+        private void StartMenuItem_OnMouseLeave(object sender, EventArgs e)
+        {
+            startMenuItem.Color = Color.LightGray;
+        }
+
+        private void ExitMenuItem_OnMouseEnter(object sender, EventArgs e)
+        {
+            exitMenuItem.Color = Color.Goldenrod;
+        }
+
+        private void ExitMenuItem_OnMouseLeave(object sender, EventArgs e)
+        {
+            exitMenuItem.Color = Color.LightGray;
         }
 
         #endregion

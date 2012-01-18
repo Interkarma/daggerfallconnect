@@ -85,6 +85,8 @@
     <Compile Include="Player\VerticalMotionConstraint.cs" />
     <Compile Include="Rendering\BloomProcessor.cs" />
     <Compile Include="Rendering\BloomSettings.cs" />
+    <Compile Include="UserInterface\BaseScreenComponent.cs" />
+    <Compile Include="UserInterface\SimpleMenuItem.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
     <Compile Include="Utility\CloudFactory.cs" />
     <Compile Include="Utility\ComponentCollection.cs" />

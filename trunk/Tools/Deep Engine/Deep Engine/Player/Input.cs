@@ -26,19 +26,19 @@ namespace DeepEngine.Player
         #region Class Variables
 
         // Keyboard movement
-        float keyboardSpinRate = 200f;
-        float keyboardMoveRate = 800f;
-        float keyboardShiftKeyMultiplier = 2.5f;
+        //float keyboardSpinRate = 200f;
+        //float keyboardMoveRate = 800f;
+        //float keyboardShiftKeyMultiplier = 2.5f;
 
         // Mouse movement
-        float mouseSpinRate = 0.002f;
-        float middleButtonMoveRate = 50f;
+        //float mouseSpinRate = 0.002f;
+        //float middleButtonMoveRate = 50f;
 
         // GamePad movement
         bool gamePadConnected = false;
         bool gamePadInputReceived = false;
-        float gamePadSpinRate = 180f;
-        float gamePadMoveRate = 1100f;
+        //float gamePadSpinRate = 180f;
+        //float gamePadMoveRate = 1100f;
 
         // Look options
         bool invertMouseLookY = false;

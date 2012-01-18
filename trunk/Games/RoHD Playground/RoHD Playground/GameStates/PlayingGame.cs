@@ -96,12 +96,13 @@ namespace RoHD_Playground.GameStates
             // Create player controller
             playerInput = new CharacterControllerInput(core.ActiveScene.Space, core.ActiveScene.Camera);
             playerInput.UseCameraSmoothing = true;
-            playerInput.CharacterController.JumpSpeed = 6;
-            playerInput.CharacterController.HorizontalMotionConstraint.Speed = 6;
+            playerInput.CharacterController.JumpSpeed = 7;
+            playerInput.CharacterController.HorizontalMotionConstraint.Speed = 4;
             playerInput.StandingCameraOffset = 1.4f;
             playerInput.Activate();
 
             // Initialise mouse state
+            Game.IsMouseVisible = false;
             Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
             startMouseState = mouseState = Mouse.GetState();
         }
