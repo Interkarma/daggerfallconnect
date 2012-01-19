@@ -29,8 +29,8 @@ namespace DeepEngine.Components
 
         #region Fields
 
-        // Model data
         ModelManager.ModelData modelData;
+        BoundingBox boundingBox;
 
         #endregion
 
@@ -42,6 +42,20 @@ namespace DeepEngine.Components
         public ModelManager.ModelData ModelData
         {
             get { return modelData; }
+        }
+
+        /// <summary>
+        /// Gets model bounding box transformed by matrix.
+        /// </summary>
+        public BoundingBox BoundingBox
+        {
+            get
+            {
+                BoundingBox box;
+                box.Min = Vector3.Transform(boundingBox.Min, matrix);
+                box.Max = Vector3.Transform(boundingBox.Max, matrix);
+                return box;
+            }
         }
 
         #endregion
@@ -75,7 +89,7 @@ namespace DeepEngine.Components
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = caller.Matrix * matrix;
+            Matrix worldMatrix = matrix * caller.Matrix;
 
             // Set transforms
             core.ModelManager.ModelEffect_World = worldMatrix;
@@ -116,7 +130,6 @@ namespace DeepEngine.Components
         /// </summary>
         public override void Dispose()
         {
-            modelData.Dispose();
         }
 
         #endregion
@@ -136,6 +149,7 @@ namespace DeepEngine.Components
                 // Load model data and set bounds
                 modelData = core.ModelManager.GetModelData(id);
                 this.BoundingSphere = modelData.BoundingSphere;
+                this.boundingBox = modelData.BoundingBox;
             }
             catch (Exception e)
             {

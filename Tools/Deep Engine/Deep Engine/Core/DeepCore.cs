@@ -327,7 +327,7 @@ namespace DeepEngine.Core
 
             // Update input
             input.Update(elapsedTime);
-            input.Apply(scene.Camera, true);
+            //input.Apply(scene.Camera, true);
 
             // Get time
             lastUpdateTime = stopwatch.ElapsedMilliseconds - startTime;

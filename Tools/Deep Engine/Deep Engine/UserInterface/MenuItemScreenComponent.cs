@@ -23,16 +23,12 @@ namespace DeepEngine.UserInterface
     /// <summary>
     /// A standalone menu item that raises an event when clicked.
     /// </summary>
-    public class SimpleMenuItem : BaseScreenComponent
+    public class MenuItemScreenComponent : BaseScreenComponent
     {
 
         #region Fields
 
         string text;
-        Vector2 position;
-        Vector2 size;
-        Rectangle rectangle;
-        MouseState mouseState, lastMouseState;
         SpriteFont font;
         Color color = Color.White;
 
@@ -56,12 +52,11 @@ namespace DeepEngine.UserInterface
         }
 
         /// <summary>
-        /// Gets or sets position on screen.
+        /// Gets size of text.
         /// </summary>
-        public Vector2 Position
+        public override Vector2 Size
         {
-            get { return position; }
-            set { position = value; SetText(text); }
+            get { return base.Size; }
         }
 
         /// <summary>
@@ -81,14 +76,6 @@ namespace DeepEngine.UserInterface
             get { return color; }
             set { color = value; }
         }
-
-        /// <summary>
-        /// Gets screen area occupied by the menu item.
-        /// </summary>
-        public Rectangle Rectangle
-        {
-            get { return rectangle; }
-        }
         
         #endregion
 
@@ -101,32 +88,20 @@ namespace DeepEngine.UserInterface
         /// <param name="text">Menu text.</param>
         /// <param name="position">Menu screen position.</param>
         /// <param name="font">Menu font.</param>
-        public SimpleMenuItem(DeepCore core, string text, Vector2 position, SpriteFont font)
-            : base(core)
+        public MenuItemScreenComponent(DeepCore core, string text, Vector2 position, SpriteFont font)
+            : base(core, position, Vector2.Zero)
         {
             this.font = font;
             this.position = position;
             SetText(text);
-            lastMouseState = mouseState = Mouse.GetState();
         }
 
         #endregion
 
-        /// <summary>
-        /// Draws menu at current position.
-        ///  Must be called between SpriteBatch Begin() & End() methods.
-        ///  This allows the caller to group simple menu items as needed
-        ///  and apply their own drawing logic.
-        /// </summary>
-        public void DrawMenu(SpriteBatch spriteBatch)
-        {
-            spriteBatch.DrawString(font, text, position, color);
-        }
-
         #region BaseScreenComponent Overrides
 
         /// <summary>
-        /// Called when the component should update itself.
+        /// Called when screen component should update itself.
         /// </summary>
         /// <param name="elapsedTime">Elapsed time since last update.</param>
         public override void Update(TimeSpan elapsedTime)
@@ -136,11 +111,11 @@ namespace DeepEngine.UserInterface
                 return;
 
             // Update state
-            lastMouseState = mouseState;
-            mouseState = Mouse.GetState();
+            MouseState lastMouseState = core.Input.PreviousMouseState;
+            MouseState mouseState = core.Input.MouseState;
 
             // Check if mouse is inside text rectangle
-            if (rectangle.Contains(mouseState.X, mouseState.Y))
+            if (Rectangle.Contains(mouseState.X, mouseState.Y))
             {
                 if (mouseOverText == false)
                 {
@@ -173,6 +148,20 @@ namespace DeepEngine.UserInterface
             }
         }
 
+        /// <summary>
+        /// Called when screen component should draw itself.
+        ///  Must be called between SpriteBatch Begin() & End() methods.
+        /// </summary>
+        /// <param name="spriteBatch">SpriteBatch to draw with.</param>
+        internal override void Draw(SpriteBatch spriteBatch)
+        {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
+            spriteBatch.DrawString(font, text, position + parent.Position, color);
+        }
+
         #endregion
 
         #region Private Methods
@@ -188,12 +177,6 @@ namespace DeepEngine.UserInterface
 
             // Measure string
             size = font.MeasureString(text);
-
-            // Update rectangle
-            rectangle.X = (int)position.X;
-            rectangle.Y = (int)position.Y;
-            rectangle.Width = (int)size.X;
-            rectangle.Height = (int)size.Y;
         }
 
         #endregion
