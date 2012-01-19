@@ -107,7 +107,7 @@ namespace RoHD_Playground
             titleScreen.OnExitClicked += new EventHandler(TitleScreen_OnExitClicked);
 
             // Set initial game state
-            gameManager.ChangeState(titleScreen);
+            gameManager.ChangeState(playingGame);
         }
 
         #endregion
@@ -132,6 +132,9 @@ namespace RoHD_Playground
         protected override void LoadContent()
         {
             base.LoadContent();
+
+            // Invert mouse
+            core.Input.InvertMouseLook = true;
         }
 
         /// <summary>
@@ -150,19 +153,12 @@ namespace RoHD_Playground
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Update core
-            core.Update(gameTime.ElapsedGameTime);
-
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            // Handle ESC to exit
+            if (core.Input.KeyboardState.IsKeyDown(Keys.Escape))
                 this.Exit();
 
-            // Update key state
-            KeyboardState ks = Keyboard.GetState();
-            if (ks.IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
+            // Update core
+            core.Update(gameTime.ElapsedGameTime);
 
             base.Update(gameTime);
         }

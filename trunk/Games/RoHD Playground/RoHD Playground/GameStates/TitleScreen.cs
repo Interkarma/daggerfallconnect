@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Input;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DeepEngine.Core;
@@ -58,15 +59,15 @@ namespace RoHD_Playground.GameStates
         SpriteFont menuFont;
         SpriteFont menuFont2;
 
-        Rectangle titleSafeArea;
         Vector2 titlePos;
         Vector2 versionPos;
 
         float cloudTime = 0;
         float cloudSpeed = 5.0f;
 
-        SimpleMenuItem startMenuItem;
-        SimpleMenuItem exitMenuItem;
+        InterfaceManager gui;
+        MenuItemScreenComponent startMenuItem;
+        MenuItemScreenComponent exitMenuItem;
 
         public event EventHandler OnStartClicked;
         public event EventHandler OnExitClicked;
@@ -160,22 +161,29 @@ namespace RoHD_Playground.GameStates
             menuFont = Game.Content.Load<SpriteFont>("Fonts/MenuFont");
             menuFont2 = Game.Content.Load<SpriteFont>("Fonts/MenuFont2");
 
+            // Create user interface
+            gui = new InterfaceManager(core);
+
             // Title area
-            titleSafeArea = Game.GraphicsDevice.Viewport.TitleSafeArea;
+            Rectangle rect = gui.Rectangle;
             Vector2 titleSize = titleFont.MeasureString(titleText);
             Vector2 versionSize = consoleFont.MeasureString(versionText);
-            titlePos = new Vector2(titleSafeArea.Right - titleSize.X - 20, titleSafeArea.Top + 20);
+            titlePos = new Vector2(rect.Right - titleSize.X - 20, rect.Top + 20);
             versionPos = new Vector2(titlePos.X + titleSize.X - versionSize.X, titlePos.Y + titleSize.Y);
 
             // Create menu items
-            startMenuItem = new SimpleMenuItem(core, startMenuText, Vector2.Zero, menuFont2);
-            exitMenuItem = new SimpleMenuItem(core, exitMenuText, Vector2.Zero, menuFont2);
+            startMenuItem = new MenuItemScreenComponent(core, startMenuText, Vector2.Zero, menuFont2);
+            exitMenuItem = new MenuItemScreenComponent(core, exitMenuText, Vector2.Zero, menuFont2);
             startMenuItem.Color = Color.LightGray;
             exitMenuItem.Color = Color.LightGray;
 
             // Position menu items
-            startMenuItem.Position = new Vector2(titleSafeArea.Right - startMenuItem.Rectangle.Width - 20, versionPos.Y + versionSize.Y + 50);
-            exitMenuItem.Position = new Vector2(titleSafeArea.Right - exitMenuItem.Rectangle.Width - 20, startMenuItem.Rectangle.Bottom + 30);
+            startMenuItem.Position = new Vector2(rect.Right - startMenuItem.Rectangle.Width - 20, versionPos.Y + versionSize.Y + 50);
+            exitMenuItem.Position = new Vector2(rect.Right - exitMenuItem.Rectangle.Width - 20, startMenuItem.Rectangle.Bottom + 30);
+
+            // Add to gui
+            gui.Components.Add(startMenuItem);
+            gui.Components.Add(exitMenuItem);
 
             // Wire up menu events
             startMenuItem.OnMouseEnter += new EventHandler(StartMenuItem_OnMouseEnter);
@@ -194,9 +202,8 @@ namespace RoHD_Playground.GameStates
 
         public override void Update(GameTime gameTime)
         {
-            // Update menus
-            startMenuItem.Update(gameTime.ElapsedGameTime);
-            exitMenuItem.Update(gameTime.ElapsedGameTime);
+            // Update GUI components
+            gui.Update(gameTime.ElapsedGameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -211,13 +218,14 @@ namespace RoHD_Playground.GameStates
             // Present
             core.Present();
 
-            // Draw title and menus
+            // Draw title
             scene.Core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             scene.Core.SpriteBatch.DrawString(titleFont, titleText, titlePos, Color.AliceBlue);
             scene.Core.SpriteBatch.DrawString(consoleFont, versionText, versionPos, Color.Gold);
-            startMenuItem.DrawMenu(scene.Core.SpriteBatch);
-            exitMenuItem.DrawMenu(scene.Core.SpriteBatch);
             scene.Core.SpriteBatch.End();
+
+            // Draw GUI components
+            gui.Draw();
         }
 
         #endregion

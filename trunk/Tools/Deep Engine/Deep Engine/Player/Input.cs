@@ -151,22 +151,6 @@ namespace DeepEngine.Player
         }
 
         /// <summary>
-        /// Gets current mouse state.
-        /// </summary>
-        public MouseState MouseState
-        {
-            get { return mouseState; }
-        }
-
-        /// <summary>
-        /// Gets previous GamePad state.
-        /// </summary>
-        public GamePadState PreviousGamePadState
-        {
-            get { return previousGamePadState; }
-        }
-
-        /// <summary>
         /// Gets previous keyboard state.
         /// </summary>
         public KeyboardState PreviousKeyboardState
@@ -175,11 +159,27 @@ namespace DeepEngine.Player
         }
 
         /// <summary>
+        /// Gets current mouse state.
+        /// </summary>
+        public MouseState MouseState
+        {
+            get { return mouseState; }
+        }
+
+        /// <summary>
         /// Gets previous mouse state.
         /// </summary>
         public MouseState PreviousMouseState
         {
             get { return previousMouseState; }
+        }
+
+        /// <summary>
+        /// Gets previous GamePad state.
+        /// </summary>
+        public GamePadState PreviousGamePadState
+        {
+            get { return previousGamePadState; }
         }
 
         /// <summary>
@@ -225,6 +225,14 @@ namespace DeepEngine.Player
             // Get keyboard state
             previousKeyboardState = keyboardState;
             keyboardState = Keyboard.GetState();
+
+            // Get mouse state
+            previousMouseState = mouseState;
+            mouseState = Mouse.GetState();
+
+            // Get player 1 gamepad state
+            previousGamePadState = gamePadState;
+            gamePadState = GamePad.GetState(0);
 
             /*
             // Keyboard input

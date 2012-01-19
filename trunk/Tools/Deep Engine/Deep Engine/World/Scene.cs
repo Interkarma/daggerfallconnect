@@ -37,7 +37,8 @@ namespace DeepEngine.World
 
         // Simulation
         Space space;
-        float gravityForce = -9.81f;
+        //float gravityForce = -9.81f;
+        float gravityForce = -19.81f;
 
         // Entity list
         List<BaseEntity> entities;

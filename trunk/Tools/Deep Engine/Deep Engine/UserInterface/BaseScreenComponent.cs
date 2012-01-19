@@ -29,10 +29,14 @@ namespace DeepEngine.UserInterface
 
         #region Fields
 
-        // Property values
         protected DeepCore core;
         protected bool enabled;
         protected object tag;
+        protected PanelScreenComponent parent;
+        protected Vector2 position;
+        protected Vector2 size;
+
+        private Rectangle rectangle;
 
         #endregion
 
@@ -64,6 +68,48 @@ namespace DeepEngine.UserInterface
             set { tag = value; }
         }
 
+        /// <summary>
+        /// Gets or sets position on screen.
+        /// </summary>
+        public virtual Vector2 Position
+        {
+            get { return position; }
+            set { position = value;}
+        }
+
+        /// <summary>
+        /// Gets or sets size of component.
+        /// </summary>
+        public virtual Vector2 Size
+        {
+            get { return size; }
+            set { size = value; }
+        }
+
+        /// <summary>
+        /// Gets parent panel.
+        /// </summary>
+        public PanelScreenComponent Parent
+        {
+            get { return parent; }
+            internal set { parent = value; }
+        }
+
+        /// <summary>
+        /// Gets screen area occupied by component.
+        /// </summary>
+        public Rectangle Rectangle
+        {
+            get
+            {
+                rectangle.X = (int)position.X;
+                rectangle.Y = (int)position.Y;
+                rectangle.Width = (int)size.X;
+                rectangle.Height = (int)size.Y;
+                return rectangle;
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -72,28 +118,32 @@ namespace DeepEngine.UserInterface
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        public BaseScreenComponent(DeepCore core)
+        public BaseScreenComponent(DeepCore core, Vector2 position, Vector2 size)
         {
             // Store values
             this.core = core;
             this.enabled = true;
             this.tag = null;
+            this.position = position;
+            this.size = size;
         }
 
         #endregion
 
-        #region Virtual Methods
+        #region Abstract Methods
 
         /// <summary>
-        /// Called when component should update itself.
+        /// Called when screen component should update itself.
         /// </summary>
         /// <param name="elapsedTime">Elapsed time since last update.</param>
-        public virtual void Update(TimeSpan elapsedTime)
-        {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
-        }
+        public abstract void Update(TimeSpan elapsedTime);
+
+        /// <summary>
+        /// Called when screen component should draw itself.
+        ///  Must be called between SpriteBatch Begin() & End() methods.
+        /// </summary>
+        /// <param name="spriteBatch">SpriteBatch to draw with.</param>
+        internal abstract void Draw(SpriteBatch spriteBatch);
 
         #endregion
 
