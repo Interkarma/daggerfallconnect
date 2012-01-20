@@ -59,9 +59,6 @@ namespace RoHD_Playground.GameStates
         SpriteFont menuFont;
         SpriteFont menuFont2;
 
-        Vector2 titlePos;
-        Vector2 versionPos;
-
         float cloudTime = 0;
         float cloudSpeed = 5.0f;
 
@@ -161,29 +158,43 @@ namespace RoHD_Playground.GameStates
             menuFont = Game.Content.Load<SpriteFont>("Fonts/MenuFont");
             menuFont2 = Game.Content.Load<SpriteFont>("Fonts/MenuFont2");
 
-            // Create user interface
+            // Create gui manager
             gui = new InterfaceManager(core);
+            gui.SetMargins(Margin.All, 20);
 
-            // Title area
-            Rectangle rect = gui.Rectangle;
-            Vector2 titleSize = titleFont.MeasureString(titleText);
-            Vector2 versionSize = consoleFont.MeasureString(versionText);
-            titlePos = new Vector2(rect.Right - titleSize.X - 20, rect.Top + 20);
-            versionPos = new Vector2(titlePos.X + titleSize.X - versionSize.X, titlePos.Y + titleSize.Y);
+            // Create title text
+            TextItemScreenComponent title = new TextItemScreenComponent(core, titleFont, titleText);
+            title.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            title.OutlineColor = Color.Gray;
+            title.EnableOutline = true;
 
-            // Create menu items
-            startMenuItem = new MenuItemScreenComponent(core, startMenuText, Vector2.Zero, menuFont2);
-            exitMenuItem = new MenuItemScreenComponent(core, exitMenuText, Vector2.Zero, menuFont2);
-            startMenuItem.Color = Color.LightGray;
-            exitMenuItem.Color = Color.LightGray;
+            // Create version text
+            TextItemScreenComponent version = new TextItemScreenComponent(core, consoleFont, versionText);
+            version.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            version.TextColor = Color.Gold;
 
-            // Position menu items
-            startMenuItem.Position = new Vector2(rect.Right - startMenuItem.Rectangle.Width - 20, versionPos.Y + versionSize.Y + 50);
-            exitMenuItem.Position = new Vector2(rect.Right - exitMenuItem.Rectangle.Width - 20, startMenuItem.Rectangle.Bottom + 30);
+            // Start menu item
+            startMenuItem = new MenuItemScreenComponent(core, menuFont2, startMenuText);
+            startMenuItem.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            startMenuItem.TextColor = Color.White;
+            startMenuItem.OutlineColor = Color.Goldenrod;
 
-            // Add to gui
+            // Exit menu item
+            exitMenuItem = new MenuItemScreenComponent(core, menuFont2, exitMenuText);
+            exitMenuItem.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            exitMenuItem.TextColor = Color.White;
+            exitMenuItem.OutlineColor = Color.Gold;
+
+            // Add everything to gui manager
+            gui.Components.Add(title);
+            gui.Components.Add(version);
             gui.Components.Add(startMenuItem);
             gui.Components.Add(exitMenuItem);
+
+            // Set positions of gui items
+            version.OffsetFrom(title, Sides.Bottom, 0);
+            startMenuItem.OffsetFrom(version, Sides.Bottom, 50);
+            exitMenuItem.OffsetFrom(startMenuItem, Sides.Bottom, 30);
 
             // Wire up menu events
             startMenuItem.OnMouseEnter += new EventHandler(StartMenuItem_OnMouseEnter);
@@ -217,12 +228,6 @@ namespace RoHD_Playground.GameStates
 
             // Present
             core.Present();
-
-            // Draw title
-            scene.Core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-            scene.Core.SpriteBatch.DrawString(titleFont, titleText, titlePos, Color.AliceBlue);
-            scene.Core.SpriteBatch.DrawString(consoleFont, versionText, versionPos, Color.Gold);
-            scene.Core.SpriteBatch.End();
 
             // Draw GUI components
             gui.Draw();
@@ -282,22 +287,22 @@ namespace RoHD_Playground.GameStates
 
         private void StartMenuItem_OnMouseEnter(object sender, EventArgs e)
         {
-            startMenuItem.Color = Color.Goldenrod;
+            startMenuItem.EnableOutline = true;
         }
 
         private void StartMenuItem_OnMouseLeave(object sender, EventArgs e)
         {
-            startMenuItem.Color = Color.LightGray;
+            startMenuItem.EnableOutline = false;
         }
 
         private void ExitMenuItem_OnMouseEnter(object sender, EventArgs e)
         {
-            exitMenuItem.Color = Color.Goldenrod;
+            exitMenuItem.EnableOutline = true;
         }
 
         private void ExitMenuItem_OnMouseLeave(object sender, EventArgs e)
         {
-            exitMenuItem.Color = Color.LightGray;
+            exitMenuItem.EnableOutline = false;
         }
 
         #endregion

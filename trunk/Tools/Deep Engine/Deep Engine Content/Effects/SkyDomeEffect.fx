@@ -61,7 +61,13 @@ SDPixelToFrame SkyDomePS(SDVertexToPixel PSIn)
 	float4 baseColor = lerp(BottomColor, TopColor, saturate((PSIn.ObjectPosition.y)/0.4f));
 
 	float4 cloudValue = tex2D(CloudSampler, PSIn.TextureCoords).r;
-	float4 starValue = tex2D(StarSampler, PSIn.TextureCoords).r * 0.50f;
+	float4 starValue = tex2D(StarSampler, PSIn.TextureCoords).r * 0.75f;
+
+	// Stars dimmer behind darker clouds
+	if (cloudValue.r > 0.12f)
+	{
+		starValue *= 0.1f;
+	}
     
     Output.Color = lerp(baseColor, 1, cloudValue + starValue);
 

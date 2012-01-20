@@ -32,11 +32,6 @@ namespace DeepEngine.UserInterface
         #endregion
 
         #region Properties
-
-        // Cannot change position and size of this component
-        public override Vector2 Position { set { base.position = base.position; } }
-        public override Vector2 Size { set { base.size = base.size; } }
-
         #endregion
 
         #region Constructors

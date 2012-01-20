@@ -97,7 +97,6 @@ namespace RoHD_Playground.GameStates
             Anvil = 74212,
             Arrow = 99800,
             Octahedron = 74231,
-            Branch = 41737,
         }
 
         #endregion
@@ -121,7 +120,6 @@ namespace RoHD_Playground.GameStates
             physicsObjects.Add(PhysicsObjects.Anvil);
             physicsObjects.Add(PhysicsObjects.Arrow);
             physicsObjects.Add(PhysicsObjects.Octahedron);
-            physicsObjects.Add(PhysicsObjects.Branch);
         }
 
         #endregion
@@ -177,7 +175,7 @@ namespace RoHD_Playground.GameStates
             // Load songs
             MediaPlayer.Stop();
             song1 = Game.Content.Load<Song>("Songs/DanGoodale_DF-D2");
-            //MediaPlayer.Play(song1);
+            MediaPlayer.Play(song1);
 
             UpdatePhysicsObjectText();
         }
@@ -196,6 +194,7 @@ namespace RoHD_Playground.GameStates
 
             // Mouse look
             mouseState = core.Input.MouseState;
+            MouseState lastMouseState = core.Input.PreviousMouseState;
             if (mouseState != startMouseState)
             {
                 mouseState = core.Input.MouseState;
@@ -214,14 +213,16 @@ namespace RoHD_Playground.GameStates
 
             KeyboardState keyState = core.Input.KeyboardState;
             KeyboardState lastKeyState = core.Input.PreviousKeyboardState;
-            if (keyState.IsKeyDown(Keys.F) && core.Stopwatch.ElapsedMilliseconds > nextObjectTime)
+            if ((keyState.IsKeyDown(Keys.F) || mouseState.LeftButton == ButtonState.Pressed) &&
+                core.Stopwatch.ElapsedMilliseconds > nextObjectTime)
             {
                 FireCurrentObject();
                 nextObjectTime = core.Stopwatch.ElapsedMilliseconds + minObjectTime;
             }
 
             // Next physics object
-            if (keyState.IsKeyDown(Keys.Up) && !lastKeyState.IsKeyDown(Keys.Up))
+            if ((keyState.IsKeyDown(Keys.Down) && !lastKeyState.IsKeyDown(Keys.Down)) ||
+                (mouseState.ScrollWheelValue < lastMouseState.ScrollWheelValue))
             {
                 physicsObjectIndex++;
                 if (physicsObjectIndex >= physicsObjects.Count)
@@ -230,7 +231,8 @@ namespace RoHD_Playground.GameStates
             }
 
             // Previous physics object
-            if (keyState.IsKeyDown(Keys.Down) && !lastKeyState.IsKeyDown(Keys.Down))
+            if ((keyState.IsKeyDown(Keys.Up) && !lastKeyState.IsKeyDown(Keys.Up)) ||
+                (mouseState.ScrollWheelValue > lastMouseState.ScrollWheelValue))
             {
                 physicsObjectIndex--;
                 if (physicsObjectIndex < 0)
@@ -344,6 +346,9 @@ namespace RoHD_Playground.GameStates
                 case PhysicsObjects.Arrow:
                     FireArrow();
                     break;
+                case PhysicsObjects.Octahedron:
+                    FireOctahedron();
+                    break;
                 default:
                     return;
             }
@@ -386,8 +391,11 @@ namespace RoHD_Playground.GameStates
             sphereEntity.Components.Add(spherePhysics);
 
             // Attach sphere light
-            LightComponent sphereLight = new LightComponent(core, Vector3.Zero, radius * 2.5f, lightColor, 2.0f);
-            sphereEntity.Components.Add(sphereLight);
+            if (sphereColor.W > 0.5f)
+            {
+                LightComponent sphereLight = new LightComponent(core, Vector3.Zero, radius * 2.5f, lightColor, 2.0f);
+                sphereEntity.Components.Add(sphereLight);
+            }
 
             // Set entity to expire after 5 minutes
             sphereEntity.Components.Add(new ReaperComponent(core, sphereEntity, 300000));
@@ -430,8 +438,11 @@ namespace RoHD_Playground.GameStates
             cubeEntity.Components.Add(cubePhysics);
 
             // Attach cube light
-            LightComponent cubeLight = new LightComponent(core, Vector3.Zero, size * 2.5f, lightColor, 2.0f);
-            cubeEntity.Components.Add(cubeLight);
+            if (cubeColor.W > 0.5f)
+            {
+                LightComponent cubeLight = new LightComponent(core, Vector3.Zero, size * 2.5f, lightColor, 2.0f);
+                cubeEntity.Components.Add(cubeLight);
+            }
 
             // Set entity to expire after 5 minutes
             cubeEntity.Components.Add(new ReaperComponent(core, cubeEntity, 300000));
@@ -455,7 +466,7 @@ namespace RoHD_Playground.GameStates
 
             // Create anvil entity
             WorldEntity anvilEntity = new WorldEntity(core.ActiveScene);
-            anvilEntity.Matrix = Matrix.CreateTranslation(position);
+            anvilEntity.Matrix = Matrix.CreateRotationY(MathHelper.ToRadians(scene.Camera.Yaw)) * Matrix.CreateTranslation(position);
 
             // Attach anvil geometry
             anvilEntity.Components.Add(anvilModel);
@@ -487,11 +498,14 @@ namespace RoHD_Playground.GameStates
 
             // Get start position
             Vector3 position = core.ActiveScene.Camera.Position;
-            position += cameraFacing * (arrowModel.BoundingSphere.Radius);
+            position += cameraFacing * (arrowModel.BoundingSphere.Radius * 2);
 
             // Create arrow entity
             WorldEntity arrowEntity = new WorldEntity(core.ActiveScene);
-            arrowEntity.Matrix = Matrix.CreateTranslation(position);
+            arrowEntity.Matrix = Matrix.CreateFromYawPitchRoll(
+                MathHelper.ToRadians(scene.Camera.Yaw),
+                MathHelper.ToRadians(scene.Camera.Pitch),
+                0) * Matrix.CreateTranslation(position);
 
             // Attach arrow geometry
             arrowEntity.Components.Add(arrowModel);
@@ -502,12 +516,45 @@ namespace RoHD_Playground.GameStates
             float height = box.Max.Y - box.Min.Y;
             float depth = box.Max.Z - box.Min.Z;
             PhysicsColliderComponent arrowPhysics = new PhysicsColliderComponent(core, core.ActiveScene, arrowEntity.Matrix, width, height, depth, 1f);
-            arrowPhysics.PhysicsEntity.LinearVelocity = cameraFacing * 40f;
-            arrowPhysics.PhysicsEntity.Material.Bounciness = 0.1f;
+            arrowPhysics.PhysicsEntity.LinearVelocity = cameraFacing * 30f;
+            arrowPhysics.PhysicsEntity.Material.Bounciness = 0.2f;
             arrowEntity.Components.Add(arrowPhysics);
 
             // Set entity to expire after 2 seconds
             arrowEntity.Components.Add(new ReaperComponent(core, arrowEntity, 2000));
+        }
+
+        /// <summary>
+        /// Fires an octahedron.
+        /// </summary>
+        private void FireOctahedron()
+        {
+            // Get model
+            DaggerfallModelComponent model = new DaggerfallModelComponent(core, (int)PhysicsObjects.Octahedron);
+
+            // Get camera facing
+            Vector3 cameraFacing = core.ActiveScene.Camera.TransformedReference;
+
+            // Get start position
+            Vector3 position = core.ActiveScene.Camera.Position;
+            position += cameraFacing * (model.BoundingSphere.Radius * 3);
+
+            // Create entity
+            WorldEntity entity = new WorldEntity(core.ActiveScene);
+            entity.Matrix = Matrix.CreateRotationY(MathHelper.ToRadians(scene.Camera.Yaw)) * Matrix.CreateTranslation(position);
+
+            // Attach geometry
+            entity.Components.Add(model);
+
+            // Attach physics
+            PhysicsColliderComponent physics = new PhysicsColliderComponent(core, core.ActiveScene, entity.Matrix, model.ModelData.GetPointList(), 2f);
+            //physics.PhysicsEntity.LinearVelocity = cameraFacing * 15f;
+            physics.PhysicsEntity.AngularMomentum = new Vector3(0.0001f, 10, 0.0001f);
+            physics.PhysicsEntity.Material.Bounciness = 0.1f;
+            entity.Components.Add(physics);
+
+            // Set entity to expire after 5 minutes
+            entity.Components.Add(new ReaperComponent(core, entity, 300000));
         }
 
         #endregion

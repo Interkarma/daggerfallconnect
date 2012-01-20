@@ -36,7 +36,10 @@ namespace DeepEngine.UserInterface
         protected Vector2 position;
         protected Vector2 size;
 
-        private Rectangle rectangle;
+        Rectangle rectangle;
+
+        HoriztonalTextAlignment horizontalAlignment = HoriztonalTextAlignment.None;
+        VerticalTextAlignment verticalAlignment = VerticalTextAlignment.None;
 
         #endregion
 
@@ -69,30 +72,30 @@ namespace DeepEngine.UserInterface
         }
 
         /// <summary>
-        /// Gets or sets position on screen.
+        /// Gets position relative to parent panel.
         /// </summary>
         public virtual Vector2 Position
         {
             get { return position; }
-            set { position = value;}
+            internal set { position = value;}
         }
 
         /// <summary>
-        /// Gets or sets size of component.
+        /// Gets size of component.
         /// </summary>
         public virtual Vector2 Size
         {
             get { return size; }
-            set { size = value; }
+            internal set { size = value; }
         }
 
         /// <summary>
         /// Gets parent panel.
         /// </summary>
-        public PanelScreenComponent Parent
+        public virtual PanelScreenComponent Parent
         {
             get { return parent; }
-            internal set { parent = value; }
+            internal set { SetParent(value); }
         }
 
         /// <summary>
@@ -108,6 +111,24 @@ namespace DeepEngine.UserInterface
                 rectangle.Height = (int)size.Y;
                 return rectangle;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets horizontal alignment.
+        /// </summary>
+        public HoriztonalTextAlignment HorizontalAlignment
+        {
+            get { return horizontalAlignment; }
+            set { SetHorizontalAligment(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets vertical alignment.
+        /// </summary>
+        public VerticalTextAlignment VerticalAlignment
+        {
+            get { return verticalAlignment; }
+            set { SetVerticalAlignment(value); }
         }
 
         #endregion
@@ -156,6 +177,134 @@ namespace DeepEngine.UserInterface
         /// </summary>
         public virtual void Dispose()
         {
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Offsets position of component relative to another component.
+        /// </summary>
+        /// <param name="component">Component to offset against.</param>
+        /// <param name="side">The side of the component to offset from.</param>
+        /// <param name="distance">Distance between offset components.</param>
+        public void OffsetFrom(BaseScreenComponent component, Sides side, int distance)
+        {
+            // Exit if invalid offset
+            if (component == null || side == Sides.None)
+                return;
+
+            // Get rectangles
+            Rectangle myRect = Rectangle;
+            Rectangle otherRect = component.Rectangle;
+
+            // Offset based on side
+            switch (side)
+            {
+                case Sides.Left:
+                    position.X = otherRect.Left - distance - myRect.Width;
+                    break;
+                case Sides.Right:
+                    position.X = otherRect.Right + distance;
+                    break;
+                case Sides.Top:
+                    position.Y = otherRect.Top - distance - myRect.Height;
+                    break;
+                case Sides.Bottom:
+                    position.Y = otherRect.Bottom + distance;
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Update position based on alignment options.
+        /// </summary>
+        protected virtual void UpdatePosition()
+        {
+            // Do nothing if not attached to a panel
+            if (parent == null)
+                return;
+
+            // Get rectangles
+            Rectangle myRect = Rectangle;
+            Rectangle parentRect = Parent.Rectangle;
+
+            // Ensure position is inside margins
+            if (myRect.Left < Parent.LeftMargin)
+                position.X = Parent.LeftMargin;
+            if (myRect.Right > parentRect.Width - Parent.RightMargin)
+                position.X = parentRect.Width - Parent.RightMargin - Size.X;
+            if (myRect.Top < Parent.TopMargin)
+                position.Y = Parent.TopMargin;
+            if (myRect.Bottom > parentRect.Height - Parent.BottomMargin)
+                position.Y = parentRect.Height - Parent.BottomMargin - Size.Y;
+
+            // Apply horizontal alignment
+            switch (horizontalAlignment)
+            {
+                case HoriztonalTextAlignment.Left:
+                    position.X = Parent.LeftMargin;
+                    break;
+                case HoriztonalTextAlignment.Right:
+                    position.X = parentRect.Width - Parent.RightMargin - Size.X;
+                    break;
+                case HoriztonalTextAlignment.Center:
+                    position.X = parentRect.Width / 2 - myRect.Width / 2;
+                    break;
+            }
+
+            // Set vertical position based on alignment
+            switch (verticalAlignment)
+            {
+                case VerticalTextAlignment.Top:
+                    position.Y = Parent.TopMargin;
+                    break;
+                case VerticalTextAlignment.Bottom:
+                    position.Y = parentRect.Bottom - Parent.BottomMargin - Size.Y;
+                    break;
+                case VerticalTextAlignment.Middle:
+                    position.Y = parentRect.Height / 2 - myRect.Height / 2;
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Sets horiztonal alignment.
+        /// </summary>
+        /// <param name="alignment">Alignment.</param>
+        private void SetHorizontalAligment(HoriztonalTextAlignment alignment)
+        {
+            horizontalAlignment = alignment;
+            UpdatePosition();
+        }
+
+        /// <summary>
+        /// Sets vertical aligment.
+        /// </summary>
+        /// <param name="alignment">Alignment.</param>
+        private void SetVerticalAlignment(VerticalTextAlignment alignment)
+        {
+            verticalAlignment = alignment;
+            UpdatePosition();
+        }
+
+        /// <summary>
+        /// Sets parent panel.
+        /// </summary>
+        /// <param name="parent">Parent.</param>
+        private void SetParent(PanelScreenComponent parent)
+        {
+            this.parent = parent;
+            UpdatePosition();
         }
 
         #endregion

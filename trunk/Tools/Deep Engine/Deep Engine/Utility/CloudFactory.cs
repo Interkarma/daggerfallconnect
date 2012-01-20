@@ -120,7 +120,7 @@ namespace DeepEngine.Utility
             // Setup effect
             perlinEffect.CurrentTechnique = perlinEffect.Techniques["PerlinNoise"];
             perlinEffect.Parameters["Texture"].SetValue(staticMap);
-            perlinEffect.Parameters["Overcast"].SetValue(1.1f);
+            perlinEffect.Parameters["Overcast"].SetValue(1.4f);
             perlinEffect.Parameters["Brightness"].SetValue(brightness);
             perlinEffect.Parameters["Time"].SetValue(time / 1000.0f);
 

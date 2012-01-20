@@ -89,6 +89,8 @@
     <Compile Include="UserInterface\InterfaceManager.cs" />
     <Compile Include="UserInterface\PanelScreenComponent.cs" />
     <Compile Include="UserInterface\MenuItemScreenComponent.cs" />
+    <Compile Include="UserInterface\Enumerations.cs" />
+    <Compile Include="UserInterface\TextItemScreenComponent.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
     <Compile Include="Utility\CloudFactory.cs" />
     <Compile Include="Utility\ComponentCollection.cs" />
