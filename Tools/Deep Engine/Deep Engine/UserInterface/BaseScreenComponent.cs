@@ -38,8 +38,8 @@ namespace DeepEngine.UserInterface
 
         Rectangle rectangle;
 
-        HoriztonalTextAlignment horizontalAlignment = HoriztonalTextAlignment.None;
-        VerticalTextAlignment verticalAlignment = VerticalTextAlignment.None;
+        HorizontalAlignment horizontalAlignment = HorizontalAlignment.None;
+        VerticalAlignment verticalAlignment = VerticalAlignment.None;
 
         #endregion
 
@@ -103,20 +103,13 @@ namespace DeepEngine.UserInterface
         /// </summary>
         public Rectangle Rectangle
         {
-            get
-            {
-                rectangle.X = (int)position.X;
-                rectangle.Y = (int)position.Y;
-                rectangle.Width = (int)size.X;
-                rectangle.Height = (int)size.Y;
-                return rectangle;
-            }
+            get { return GetRectangle(); }
         }
 
         /// <summary>
         /// Gets or sets horizontal alignment.
         /// </summary>
-        public HoriztonalTextAlignment HorizontalAlignment
+        public HorizontalAlignment HorizontalAlignment
         {
             get { return horizontalAlignment; }
             set { SetHorizontalAligment(value); }
@@ -125,7 +118,7 @@ namespace DeepEngine.UserInterface
         /// <summary>
         /// Gets or sets vertical alignment.
         /// </summary>
-        public VerticalTextAlignment VerticalAlignment
+        public VerticalAlignment VerticalAlignment
         {
             get { return verticalAlignment; }
             set { SetVerticalAlignment(value); }
@@ -139,14 +132,36 @@ namespace DeepEngine.UserInterface
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        public BaseScreenComponent(DeepCore core, Vector2 position, Vector2 size)
+        public BaseScreenComponent(DeepCore core)
         {
-            // Store values
             this.core = core;
             this.enabled = true;
             this.tag = null;
+            this.position = Vector2.Zero;
+            this.size = Vector2.Zero;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="position">Component starting position.</param>
+        /// <param name="size">Component starting size.</param>
+        public BaseScreenComponent(DeepCore core, Vector2 position, Vector2 size)
+            : this(core)
+        {
+            // Store values
             this.position = position;
             this.size = size;
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        public BaseScreenComponent(DeepCore core, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+            : this(core)
+        {
         }
 
         #endregion
@@ -219,12 +234,12 @@ namespace DeepEngine.UserInterface
 
         #endregion
 
-        #region Protected Methods
+        #region Internal Methods
 
         /// <summary>
         /// Update position based on alignment options.
         /// </summary>
-        protected virtual void UpdatePosition()
+        internal virtual void UpdatePosition()
         {
             // Do nothing if not attached to a panel
             if (parent == null)
@@ -247,13 +262,13 @@ namespace DeepEngine.UserInterface
             // Apply horizontal alignment
             switch (horizontalAlignment)
             {
-                case HoriztonalTextAlignment.Left:
+                case HorizontalAlignment.Left:
                     position.X = Parent.LeftMargin;
                     break;
-                case HoriztonalTextAlignment.Right:
+                case HorizontalAlignment.Right:
                     position.X = parentRect.Width - Parent.RightMargin - Size.X;
                     break;
-                case HoriztonalTextAlignment.Center:
+                case HorizontalAlignment.Center:
                     position.X = parentRect.Width / 2 - myRect.Width / 2;
                     break;
             }
@@ -261,13 +276,13 @@ namespace DeepEngine.UserInterface
             // Set vertical position based on alignment
             switch (verticalAlignment)
             {
-                case VerticalTextAlignment.Top:
+                case VerticalAlignment.Top:
                     position.Y = Parent.TopMargin;
                     break;
-                case VerticalTextAlignment.Bottom:
+                case VerticalAlignment.Bottom:
                     position.Y = parentRect.Bottom - Parent.BottomMargin - Size.Y;
                     break;
-                case VerticalTextAlignment.Middle:
+                case VerticalAlignment.Middle:
                     position.Y = parentRect.Height / 2 - myRect.Height / 2;
                     break;
             }
@@ -281,7 +296,7 @@ namespace DeepEngine.UserInterface
         /// Sets horiztonal alignment.
         /// </summary>
         /// <param name="alignment">Alignment.</param>
-        private void SetHorizontalAligment(HoriztonalTextAlignment alignment)
+        private void SetHorizontalAligment(HorizontalAlignment alignment)
         {
             horizontalAlignment = alignment;
             UpdatePosition();
@@ -291,7 +306,7 @@ namespace DeepEngine.UserInterface
         /// Sets vertical aligment.
         /// </summary>
         /// <param name="alignment">Alignment.</param>
-        private void SetVerticalAlignment(VerticalTextAlignment alignment)
+        private void SetVerticalAlignment(VerticalAlignment alignment)
         {
             verticalAlignment = alignment;
             UpdatePosition();
@@ -305,6 +320,30 @@ namespace DeepEngine.UserInterface
         {
             this.parent = parent;
             UpdatePosition();
+        }
+
+        /// <summary>
+        /// Updates rectangle based on current position and size.
+        ///  This done every time we get the Rectangle property as there's
+        ///  no telling how a derived class might operate on the position and size properties.
+        /// </summary>
+        /// <returns>Rectangle.</returns>
+        private Rectangle GetRectangle()
+        {
+            if (parent != null)
+            {
+                rectangle.X = (int)Parent.Position.X + (int)position.X;
+                rectangle.Y = (int)Parent.Position.Y + (int)position.Y;
+            }
+            else
+            {
+                rectangle.X = (int)position.X;
+                rectangle.Y = (int)position.Y;
+            }
+            rectangle.Width = (int)size.X;
+            rectangle.Height = (int)size.Y;
+
+            return rectangle;
         }
 
         #endregion

@@ -49,6 +49,19 @@ namespace DeepEngine.UserInterface
         {
         }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="font">Font.</param>
+        /// <param name="text">Text.</param>
+        /// <param name="horizontalAlignment">Horizontal alignment.</param>
+        /// <param name="verticalAlignment">Vertical alignment.</param>
+        public MenuItemScreenComponent(DeepCore core, SpriteFont font, string text, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+            : base(core, font, text, horizontalAlignment, verticalAlignment)
+        {
+        }
+
         #endregion
 
         #region BaseScreenComponent Overrides

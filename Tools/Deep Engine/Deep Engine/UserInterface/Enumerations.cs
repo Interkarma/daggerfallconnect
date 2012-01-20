@@ -23,7 +23,7 @@ namespace DeepEngine.UserInterface
     /// Defines margins used in panels.
     /// </summary>
     [Flags]
-    public enum Margin
+    public enum Margins
     {
         Top = 1,
         Bottom = 2,
@@ -33,9 +33,9 @@ namespace DeepEngine.UserInterface
     }
 
     /// <summary>
-    /// Defines horizontal text alignment options.
+    /// Defines horizontal alignment options.
     /// </summary>
-    public enum HoriztonalTextAlignment
+    public enum HorizontalAlignment
     {
         None,
         Left,
@@ -44,9 +44,9 @@ namespace DeepEngine.UserInterface
     }
 
     /// <summary>
-    /// Defines vertical text alignment options.
+    /// Defines vertical alignment options.
     /// </summary>
-    public enum VerticalTextAlignment
+    public enum VerticalAlignment
     {
         None,
         Top,
