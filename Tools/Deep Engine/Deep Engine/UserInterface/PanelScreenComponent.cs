@@ -56,6 +56,11 @@ namespace DeepEngine.UserInterface
             set { SetBackgroundColor(value); }
         }
 
+        public int TopMargin { get; set; }
+        public int BottomMargin { get; set; }
+        public int LeftMargin { get; set; }
+        public int RightMargin { get; set; }
+
         #endregion
 
         #region Constructors
@@ -118,6 +123,27 @@ namespace DeepEngine.UserInterface
             {
                 component.Draw(spriteBatch);
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Sets value for one or more margins using flags.
+        /// </summary>
+        /// <param name="margin">Margin flags.</param>
+        /// <param name="value">Value to set.</param>
+        public void SetMargins(Margin margin, int value)
+        {
+            if (margin.HasFlag(Margin.Top))
+                TopMargin = value;
+            if (margin.HasFlag(Margin.Bottom))
+                BottomMargin = value;
+            if (margin.HasFlag(Margin.Left))
+                LeftMargin = value;
+            if (margin.HasFlag(Margin.Right))
+                RightMargin = value;
         }
 
         #endregion

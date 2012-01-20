@@ -100,6 +100,22 @@ namespace DeepEngine.Daggerfall
             }
 
             /// <summary>
+            /// Gets vertex positions as a list of points.
+            ///  Used for creating convex hulls from a model.
+            /// </summary>
+            /// <returns>List of Vector3 positions.</returns>
+            public List<Vector3> GetPointList()
+            {
+                List<Vector3> points = new List<Vector3>(Vertices.Length);
+                for (int i = 0; i < Vertices.Length; i++)
+                {
+                    points.Add(Vertices[i].Position);
+                }
+
+                return points;
+            }
+
+            /// <summary>
             /// Dispose model data.
             /// </summary>
             public void Dispose()

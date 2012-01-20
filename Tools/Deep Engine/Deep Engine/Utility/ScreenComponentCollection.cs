@@ -78,10 +78,12 @@ namespace DeepEngine.Utility
         {
             // Add component
             components.Add(component);
+
+            // Assign new parent
             component.Parent = panel;
 
             // Raise event
-            RaiseComponentAddedEvent(component, false);
+            RaiseComponentAddedEvent(component);
         }
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace DeepEngine.Utility
         /// <summary>
         /// Raise event.
         /// </summary>
-        protected virtual void RaiseComponentAddedEvent(BaseScreenComponent component, bool isStatic)
+        protected virtual void RaiseComponentAddedEvent(BaseScreenComponent component)
         {
             // Raise event
             if (null != ComponentAdded)

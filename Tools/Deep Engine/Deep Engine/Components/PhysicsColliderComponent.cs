@@ -45,7 +45,7 @@ namespace DeepEngine.Components
             Box,
             Sphere,
             Geometry,
-            StaticGeometry,
+            ConvexHull,
         }
 
         #endregion
@@ -157,6 +157,47 @@ namespace DeepEngine.Components
             physicsEntity.WorldTransform = matrix;
             scene.Space.Add(physicsEntity);
             type = PhysicsPrimitiveType.Sphere;
+        }
+
+        /// <summary>
+        /// Dynamic convex hull constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
+        /// <param name="matrix">Starting transform.</param>
+        /// <param name="points">Points defining convex hull.</param>
+        /// <param name="mass">Mass of object.</param>
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, List<Vector3> points, float mass)
+            : base(core)
+        {
+            // Store references
+            this.scene = scene;
+
+            // Add physics entity
+            physicsEntity = new ConvexHull(points, mass);
+            physicsEntity.WorldTransform = matrix;
+            scene.Space.Add(physicsEntity);
+            type = PhysicsPrimitiveType.ConvexHull;
+        }
+
+        /// <summary>
+        /// Kinematic convex hull constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
+        /// <param name="matrix">Starting transform.</param>
+        /// <param name="points">Points defining convex hull.</param>
+        public PhysicsColliderComponent(DeepCore core, Scene scene, Matrix matrix, List<Vector3> points)
+            : base(core)
+        {
+            // Store references
+            this.scene = scene;
+
+            // Add physics entity
+            physicsEntity = new ConvexHull(points);
+            physicsEntity.WorldTransform = matrix;
+            scene.Space.Add(physicsEntity);
+            type = PhysicsPrimitiveType.ConvexHull;
         }
 
         #endregion
