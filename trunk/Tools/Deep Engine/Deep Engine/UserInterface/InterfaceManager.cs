@@ -88,16 +88,13 @@ namespace DeepEngine.UserInterface
             vprect.Width = core.GraphicsDevice.Viewport.Width;
             vprect.Height = core.GraphicsDevice.Viewport.Height;
 
-            // Enable scissoring
-            core.GraphicsDevice.ScissorRectangle = vprect;
-            core.GraphicsDevice.RasterizerState = rasterizerState;
-
             // Begin drawing
-            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, rasterizerState);
 
             // Draw background
             if (BackgroundColor != Color.Transparent)
             {
+                core.GraphicsDevice.ScissorRectangle = vprect;
                 core.SpriteBatch.Draw(backgroundTexture, vprect, Color.White);
             }
 

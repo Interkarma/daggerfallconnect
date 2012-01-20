@@ -160,41 +160,39 @@ namespace RoHD_Playground.GameStates
 
             // Create gui manager
             gui = new InterfaceManager(core);
-            gui.SetMargins(Margin.All, 20);
+            gui.SetMargins(Margins.All, 20);
+
+            // Create a stack panel
+            StackPanelScreenComponent stackPanel = new StackPanelScreenComponent(core, Vector2.Zero, new Vector2(500, 300), 0);
+            stackPanel.HorizontalAlignment = HorizontalAlignment.Right;
+            gui.Components.Add(stackPanel);
 
             // Create title text
-            TextItemScreenComponent title = new TextItemScreenComponent(core, titleFont, titleText);
-            title.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            TextItemScreenComponent title = new TextItemScreenComponent(core, titleFont, titleText, HorizontalAlignment.Right, VerticalAlignment.None);
             title.OutlineColor = Color.Gray;
             title.EnableOutline = true;
 
             // Create version text
-            TextItemScreenComponent version = new TextItemScreenComponent(core, consoleFont, versionText);
-            version.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            TextItemScreenComponent version = new TextItemScreenComponent(core, consoleFont, versionText, HorizontalAlignment.Right, VerticalAlignment.None);
             version.TextColor = Color.Gold;
 
-            // Start menu item
-            startMenuItem = new MenuItemScreenComponent(core, menuFont2, startMenuText);
-            startMenuItem.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            // Create start mewnu item
+            startMenuItem = new MenuItemScreenComponent(core, menuFont2, startMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
             startMenuItem.TextColor = Color.White;
             startMenuItem.OutlineColor = Color.Goldenrod;
 
             // Exit menu item
-            exitMenuItem = new MenuItemScreenComponent(core, menuFont2, exitMenuText);
-            exitMenuItem.HorizontalAlignment = HoriztonalTextAlignment.Right;
+            exitMenuItem = new MenuItemScreenComponent(core, menuFont2, exitMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
             exitMenuItem.TextColor = Color.White;
             exitMenuItem.OutlineColor = Color.Gold;
 
-            // Add everything to gui manager
-            gui.Components.Add(title);
-            gui.Components.Add(version);
-            gui.Components.Add(startMenuItem);
-            gui.Components.Add(exitMenuItem);
-
-            // Set positions of gui items
-            version.OffsetFrom(title, Sides.Bottom, 0);
-            startMenuItem.OffsetFrom(version, Sides.Bottom, 50);
-            exitMenuItem.OffsetFrom(startMenuItem, Sides.Bottom, 30);
+            // Add items to stack panel
+            stackPanel.Components.Add(title);
+            stackPanel.Components.Add(version);
+            stackPanel.Components.Add(new StackSpacerScreenComponent(core, 50));
+            stackPanel.Components.Add(startMenuItem);
+            stackPanel.Components.Add(new StackSpacerScreenComponent(core, 20));
+            stackPanel.Components.Add(exitMenuItem);
 
             // Wire up menu events
             startMenuItem.OnMouseEnter += new EventHandler(StartMenuItem_OnMouseEnter);

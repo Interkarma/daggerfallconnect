@@ -101,6 +101,8 @@ namespace DeepEngine.UserInterface
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
+        /// <param name="font">Font.</param>
+        /// <param name="text">Text.</param>
         public TextItemScreenComponent(DeepCore core, SpriteFont font, string text)
             : base(core, Vector2.Zero, Vector2.Zero)
         {
@@ -108,6 +110,21 @@ namespace DeepEngine.UserInterface
             this.text = text;
             UpdateSize();
             UpdatePosition();
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="font">Font.</param>
+        /// <param name="text">Text.</param>
+        /// <param name="horizontalAlignment">Horizontal alignment.</param>
+        /// <param name="verticalAlignment">Vertical alignment.</param>
+        public TextItemScreenComponent(DeepCore core, SpriteFont font, string text, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+            : this(core, font, text)
+        {
+            this.HorizontalAlignment = horizontalAlignment;
+            this.VerticalAlignment = verticalAlignment;
         }
 
         #endregion

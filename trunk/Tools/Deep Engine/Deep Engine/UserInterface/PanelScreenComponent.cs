@@ -112,6 +112,9 @@ namespace DeepEngine.UserInterface
             if (!enabled)
                 return;
 
+            // Set scissor rect
+            core.GraphicsDevice.ScissorRectangle = Rectangle;
+
             // Draw background
             if (backgroundColor != Color.Transparent)
             {
@@ -134,15 +137,15 @@ namespace DeepEngine.UserInterface
         /// </summary>
         /// <param name="margin">Margin flags.</param>
         /// <param name="value">Value to set.</param>
-        public void SetMargins(Margin margin, int value)
+        public void SetMargins(Margins margin, int value)
         {
-            if (margin.HasFlag(Margin.Top))
+            if (margin.HasFlag(Margins.Top))
                 TopMargin = value;
-            if (margin.HasFlag(Margin.Bottom))
+            if (margin.HasFlag(Margins.Bottom))
                 BottomMargin = value;
-            if (margin.HasFlag(Margin.Left))
+            if (margin.HasFlag(Margins.Left))
                 LeftMargin = value;
-            if (margin.HasFlag(Margin.Right))
+            if (margin.HasFlag(Margins.Right))
                 RightMargin = value;
         }
 
