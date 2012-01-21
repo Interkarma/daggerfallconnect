@@ -88,7 +88,6 @@
     <Compile Include="UserInterface\BaseScreenComponent.cs" />
     <Compile Include="UserInterface\InterfaceManager.cs" />
     <Compile Include="UserInterface\PanelScreenComponent.cs" />
-    <Compile Include="UserInterface\MenuItemScreenComponent.cs" />
     <Compile Include="UserInterface\Enumerations.cs" />
     <Compile Include="UserInterface\StackPanelScreenComponent.cs" />
     <Compile Include="UserInterface\StackSpacerScreenComponent.cs" />

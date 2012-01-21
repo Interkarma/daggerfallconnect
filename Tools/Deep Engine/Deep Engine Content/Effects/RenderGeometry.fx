@@ -72,7 +72,7 @@ Default_VSO Default_VS(Default_VSI input)
     float4 worldPosition = mul(float4(input.Position.xyz,1), World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
-	output.Normal = input.Normal;
+	output.Normal = normalize(mul(input.Normal, World));
     output.TexCoord = input.TexCoord;
     output.Depth.x = output.Position.z;
     output.Depth.y = output.Position.w;
@@ -108,7 +108,7 @@ Diffuse_VSO Diffuse_VS(Diffuse_VSI input)
     float4 worldPosition = mul(float4(input.Position.xyz,1), World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
-	output.Normal = mul(input.Normal, World);
+	output.Normal = normalize(mul(input.Normal, World));
     output.Depth.x = output.Position.z;
     output.Depth.y = output.Position.w;
 

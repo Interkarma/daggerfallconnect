@@ -73,6 +73,9 @@ namespace DeepEngine.UserInterface
 
         #region Private Methods
 
+        /// <summary>
+        /// Apply stacking layout to child components.
+        /// </summary>
         private void UpdateStackPositions()
         {
             // Update stack positions

@@ -191,6 +191,14 @@ namespace DeepEngine.Rendering
             get { return fullScreenQuad; }
         }
 
+        /// <summary>
+        /// Gets contents of last render for screenshots, etc.
+        /// </summary>
+        public Texture2D RenderTargetTexture
+        {
+            get { return (renderTarget as Texture2D); }
+        }
+
         #endregion
 
         #region Constructors

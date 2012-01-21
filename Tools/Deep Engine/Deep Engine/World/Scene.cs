@@ -127,15 +127,15 @@ namespace DeepEngine.World
         /// <param name="gameTime"></param>
         public void Update(TimeSpan elapsedTime)
         {
+            // Update camera
+            float aspectRatio = (float)core.GraphicsDevice.Viewport.Width / (float)core.GraphicsDevice.Viewport.Height;
+            camera.SetAspectRatio(aspectRatio);
+
             // Calculate delta time
             float dt = (float)elapsedTime.TotalSeconds;
 
             // Update simulation
             space.Update(dt);
-
-            // Update camera
-            float aspectRatio = (float)core.GraphicsDevice.Viewport.Width / (float)core.GraphicsDevice.Viewport.Height;
-            camera.SetAspectRatio(aspectRatio);
 
             // Update entities
             for (int i = 0; i < entities.Count; i++)
@@ -152,8 +152,11 @@ namespace DeepEngine.World
                 // Dispose of entity
                 foreach (var index in entitiesToDispose)
                 {
-                    entities[index].Dispose();
-                    entities.RemoveAt(index);
+                    if (index < entities.Count)
+                    {
+                        entities[index].Dispose();
+                        entities.RemoveAt(index);
+                    }
                 }
 
                 // Reset list

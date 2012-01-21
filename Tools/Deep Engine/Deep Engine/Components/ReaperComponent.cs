@@ -20,8 +20,6 @@ namespace DeepEngine.Components
 
     /// <summary>
     /// A time-bomb component to dispose an entity after a fixed amount of time.
-    ///  This just calls the entity DisposeOnUpdate(), which still leaves the empty
-    ///  entity in the scene.
     /// </summary>
     public class ReaperComponent : BaseComponent
     {
@@ -31,7 +29,8 @@ namespace DeepEngine.Components
         BaseEntity entity = null;
 
         // Timing
-        long endTime = 0;
+        long currentCount;
+        long endCount;
 
         #endregion
 
@@ -50,7 +49,8 @@ namespace DeepEngine.Components
             this.entity = entity;
 
             // Set timer
-            endTime = core.ElapsedMilliseconds + lifetime;
+            currentCount = 0;
+            endCount = lifetime;
         }
 
         #endregion
@@ -69,7 +69,8 @@ namespace DeepEngine.Components
                 return;
 
             // Test and expire
-            if (core.ElapsedMilliseconds > endTime && entity != null)
+            currentCount += elapsedTime.Milliseconds;
+            if (currentCount > endCount && entity != null)
             {
                 entity.DisposeOnUpdate = true;
                 this.Enabled = false;

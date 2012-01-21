@@ -50,6 +50,7 @@ namespace RoHD_Playground
         GameStateManager gameManager;
         TitleScreen titleScreen;
         PlayingGame playingGame;
+        ExitMenu gameOptionsMenu;
 
         // Display
         DisplayMode displayMode;
@@ -101,6 +102,7 @@ namespace RoHD_Playground
             // Create game states
             titleScreen = new TitleScreen(core, this);
             playingGame = new PlayingGame(core, this);
+            gameOptionsMenu = new ExitMenu(core, this);
 
             // Setup title events
             titleScreen.OnStartClicked += new EventHandler(TitleScreen_OnStartClicked);
@@ -153,9 +155,16 @@ namespace RoHD_Playground
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Handle ESC to exit
-            if (core.Input.KeyboardState.IsKeyDown(Keys.Escape))
-                this.Exit();
+            // Handle ESC to exit and pop state
+            if (core.Input.KeyPressed(Keys.Escape))
+            {
+                if (gameManager.State == titleScreen)
+                    this.Exit();
+                else if (gameManager.State == playingGame)
+                    gameManager.PushState(gameOptionsMenu);
+                else
+                    gameManager.PopState();   
+            }
 
             // Update core
             core.Update(gameTime.ElapsedGameTime);
@@ -227,7 +236,7 @@ namespace RoHD_Playground
 
         private void TitleScreen_OnStartClicked(object sender, EventArgs e)
         {
-            gameManager.ChangeState(playingGame);
+            gameManager.PushState(playingGame);
         }
 
         private void TitleScreen_OnExitClicked(object sender, EventArgs e)

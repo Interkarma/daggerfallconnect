@@ -13,6 +13,7 @@ using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using DeepEngine.Core;
 using DeepEngine.World;
 #endregion
@@ -40,6 +41,11 @@ namespace DeepEngine.UserInterface
 
         HorizontalAlignment horizontalAlignment = HorizontalAlignment.None;
         VerticalAlignment verticalAlignment = VerticalAlignment.None;
+
+        bool mouseOverComponent = false;
+        public event EventHandler OnMouseEnter;
+        public event EventHandler OnMouseLeave;
+        public event EventHandler OnMouseClick;
 
         #endregion
 
@@ -166,13 +172,62 @@ namespace DeepEngine.UserInterface
 
         #endregion
 
-        #region Abstract Methods
+        #region Public Methods
 
         /// <summary>
         /// Called when screen component should update itself.
         /// </summary>
         /// <param name="elapsedTime">Elapsed time since last update.</param>
-        public abstract void Update(TimeSpan elapsedTime);
+        public virtual void Update(TimeSpan elapsedTime)
+        {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
+            // Update position
+            UpdatePosition();
+
+            // Update state
+            MouseState lastMouseState = core.Input.PreviousMouseState;
+            MouseState mouseState = core.Input.MouseState;
+
+            // Check if mouse is inside rectangle
+            if (Rectangle.Contains(mouseState.X, mouseState.Y))
+            {
+                if (mouseOverComponent == false)
+                {
+                    // Raise mouse entered event
+                    if (OnMouseEnter != null)
+                        OnMouseEnter(this, null);
+
+                    mouseOverComponent = true;
+                }
+            }
+            else
+            {
+                if (mouseOverComponent == true)
+                {
+                    // Raise mouse leaving event
+                    if (OnMouseLeave != null)
+                        OnMouseLeave(this, null);
+
+                    mouseOverComponent = false;
+                }
+            }
+
+            // Handle mouse click
+            if (mouseOverComponent &&
+                lastMouseState.LeftButton == ButtonState.Pressed &&
+                mouseState.LeftButton == ButtonState.Released)
+            {
+                if (OnMouseClick != null)
+                    OnMouseClick(this, null);
+            }
+        }
+
+        #endregion
+
+        #region Abstract Methods
 
         /// <summary>
         /// Called when screen component should draw itself.
@@ -280,7 +335,7 @@ namespace DeepEngine.UserInterface
                     position.Y = Parent.TopMargin;
                     break;
                 case VerticalAlignment.Bottom:
-                    position.Y = parentRect.Bottom - Parent.BottomMargin - Size.Y;
+                    position.Y = parentRect.Height - Parent.BottomMargin - Size.Y;
                     break;
                 case VerticalAlignment.Middle:
                     position.Y = parentRect.Height / 2 - myRect.Height / 2;
