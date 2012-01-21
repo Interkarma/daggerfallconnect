@@ -23,6 +23,7 @@ using DeepEngine.Components;
 using DeepEngine.GameStates;
 using DeepEngine.World;
 using DeepEngine.Player;
+using DeepEngine.UserInterface;
 #endregion
 
 namespace RoHD_Playground.GameStates
@@ -41,6 +42,9 @@ namespace RoHD_Playground.GameStates
 
         #region Fields
 
+        InterfaceManager gui;
+        TextItemScreenComponent physicsTextItem;
+
         Scene scene;
         CharacterControllerInput playerInput;
 
@@ -57,7 +61,7 @@ namespace RoHD_Playground.GameStates
         string physicsObjectText;
         List<PhysicsObjects> physicsObjects;
 
-        Song song1;
+        Song song;
 
         // Alpha value < 0.5 is specular intensity.
         Vector4[] specularColors = new Vector4[]
@@ -133,6 +137,25 @@ namespace RoHD_Playground.GameStates
 
             core.Renderer.ShowDebugBuffers = false;
 
+            // Load fonts
+            SpriteFont menuFont2 = Game.Content.Load<SpriteFont>("Fonts/MenuFont2");
+
+            // Create gui manager
+            gui = new InterfaceManager(core);
+            gui.SetMargins(Margins.All, 20);
+
+            // Create status text
+            physicsTextItem = new TextItemScreenComponent(core, menuFont2, string.Empty);
+            physicsTextItem.EnableOutline = true;
+            physicsTextItem.OutlineColor = Color.Gray;
+            physicsTextItem.ShadowColor = Color.Black;
+            physicsTextItem.ShadowVector = new Vector2(2, 2);
+            physicsTextItem.HorizontalAlignment = HorizontalAlignment.Left;
+            physicsTextItem.VerticalAlignment = VerticalAlignment.Top;
+
+            // Add to gui
+            gui.Components.Add(physicsTextItem);
+
             // Create scene
             scene = new Scene(core);
             scene.Camera.Position = new Vector3(22, 27, -20);
@@ -148,6 +171,11 @@ namespace RoHD_Playground.GameStates
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
             block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings);
+
+            // Increase bounding sphere radius as block component does not current calculate properly
+            block.BoundingSphere = new BoundingSphere(block.BoundingSphere.Center, block.BoundingSphere.Radius * 2);
+            
+            // Add block to level
             level.Components.Add(block);
 
             // Attach block flats
@@ -174,8 +202,8 @@ namespace RoHD_Playground.GameStates
 
             // Load songs
             MediaPlayer.Stop();
-            song1 = Game.Content.Load<Song>("Songs/DanGoodale_DF-D2");
-            MediaPlayer.Play(song1);
+            song = Game.Content.Load<Song>("Songs/DanGoodale_DF-D2");
+            MediaPlayer.Play(song);
 
             UpdatePhysicsObjectText();
         }
@@ -239,6 +267,10 @@ namespace RoHD_Playground.GameStates
                     physicsObjectIndex = physicsObjects.Count - 1;
                 UpdatePhysicsObjectText();
             }
+
+            // Update gui components
+            physicsTextItem.Text = physicsObjectText;
+            gui.Update(gameTime.ElapsedGameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -247,9 +279,30 @@ namespace RoHD_Playground.GameStates
             GraphicsDevice.Clear(Color.Black);
             core.Present();
 
-            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-            core.SpriteBatch.DrawString(consoleFont, physicsObjectText, Vector2.Zero, Color.White);
-            core.SpriteBatch.End();
+            // Draw gui components
+            gui.Draw();
+        }
+
+        #endregion
+
+        #region State Events
+
+        protected override void StateChanged(object sender, EventArgs e)
+        {
+            base.StateChanged(sender, e);
+
+            if (Enabled && Visible)
+            {
+                // Resume scene
+                core.ActiveScene = scene;
+                Game.IsMouseVisible = false;
+
+                // Position mouse
+                if (core.GraphicsDevice != null)
+                {
+                    Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+                }
+            }
         }
 
         #endregion
@@ -314,7 +367,7 @@ namespace RoHD_Playground.GameStates
 
         private void UpdatePhysicsObjectText()
         {
-            physicsObjectText = string.Format("Physics Object: {0}", physicsObjects[physicsObjectIndex].ToString());
+            physicsObjectText = string.Format("{0}", physicsObjects[physicsObjectIndex].ToString());
         }
 
         #endregion

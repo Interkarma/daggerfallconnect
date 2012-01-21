@@ -66,4 +66,13 @@ namespace DeepEngine.UserInterface
         Right,
     }
 
+    /// <summary>
+    /// Defines layout of certain textures, such as panel backgrounds.
+    /// </summary>
+    public enum TextureLayout
+    {
+        Tile,
+        Stretch,
+    }
+
 }

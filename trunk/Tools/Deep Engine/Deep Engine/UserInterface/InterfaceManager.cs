@@ -95,7 +95,7 @@ namespace DeepEngine.UserInterface
             if (BackgroundColor != Color.Transparent)
             {
                 core.GraphicsDevice.ScissorRectangle = vprect;
-                core.SpriteBatch.Draw(backgroundTexture, vprect, Color.White);
+                core.SpriteBatch.Draw(backgroundColorTexture, vprect, Color.White);
             }
 
             // Scissor to title safe area

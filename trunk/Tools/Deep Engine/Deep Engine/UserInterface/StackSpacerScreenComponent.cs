@@ -45,21 +45,12 @@ namespace DeepEngine.UserInterface
         #region BaseScreenComponent Overrides
 
         /// <summary>
-        /// Called when component should update itself.
-        /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last update.</param>
-        public override void Update(TimeSpan elapsedTime)
-        {
-            // Do nothing
-        }
-
-        /// <summary>
         /// Called when component should draw itself.
         /// </summary>
         /// <param name="spriteBatch">Sprite batch to draw with.</param>
         internal override void Draw(SpriteBatch spriteBatch)
         {
-            // Do nothing
+            // Nothing to draw
         }
 
         #endregion

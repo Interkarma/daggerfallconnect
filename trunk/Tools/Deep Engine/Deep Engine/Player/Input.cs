@@ -397,6 +397,19 @@ namespace DeepEngine.Player
             movement = Vector3.Zero;
         }
 
+        /// <summary>
+        /// Check if a key has been pressed.
+        /// </summary>
+        /// <param name="key">Key to test.</param>
+        /// <returns>True if key pressed.</returns>
+        public bool KeyPressed(Keys key)
+        {
+            if (keyboardState.IsKeyUp(key) && previousKeyboardState.IsKeyDown(key))
+                return true;
+            else
+                return false;
+        }
+
         #endregion
     }
 }

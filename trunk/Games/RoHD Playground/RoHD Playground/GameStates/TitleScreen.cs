@@ -63,8 +63,8 @@ namespace RoHD_Playground.GameStates
         float cloudSpeed = 5.0f;
 
         InterfaceManager gui;
-        MenuItemScreenComponent startMenuItem;
-        MenuItemScreenComponent exitMenuItem;
+        TextItemScreenComponent startMenuItem;
+        TextItemScreenComponent exitMenuItem;
 
         public event EventHandler OnStartClicked;
         public event EventHandler OnExitClicked;
@@ -171,20 +171,26 @@ namespace RoHD_Playground.GameStates
             TextItemScreenComponent title = new TextItemScreenComponent(core, titleFont, titleText, HorizontalAlignment.Right, VerticalAlignment.None);
             title.OutlineColor = Color.Gray;
             title.EnableOutline = true;
+            title.ShadowColor = Color.MidnightBlue;
+            title.ShadowVector = new Vector2(3, 3);
 
             // Create version text
             TextItemScreenComponent version = new TextItemScreenComponent(core, consoleFont, versionText, HorizontalAlignment.Right, VerticalAlignment.None);
             version.TextColor = Color.Gold;
 
-            // Create start mewnu item
-            startMenuItem = new MenuItemScreenComponent(core, menuFont2, startMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
+            // Create start menu item
+            startMenuItem = new TextItemScreenComponent(core, menuFont2, startMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
             startMenuItem.TextColor = Color.White;
             startMenuItem.OutlineColor = Color.Goldenrod;
+            startMenuItem.ShadowColor = Color.MidnightBlue;
+            startMenuItem.ShadowVector = new Vector2(2, 2);
 
             // Exit menu item
-            exitMenuItem = new MenuItemScreenComponent(core, menuFont2, exitMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
+            exitMenuItem = new TextItemScreenComponent(core, menuFont2, exitMenuText, HorizontalAlignment.Right, VerticalAlignment.None);
             exitMenuItem.TextColor = Color.White;
             exitMenuItem.OutlineColor = Color.Gold;
+            exitMenuItem.ShadowColor = Color.MidnightBlue;
+            exitMenuItem.ShadowVector = new Vector2(2, 2);
 
             // Add items to stack panel
             stackPanel.Components.Add(title);
@@ -201,8 +207,6 @@ namespace RoHD_Playground.GameStates
             exitMenuItem.OnMouseLeave += new EventHandler(ExitMenuItem_OnMouseLeave);
             startMenuItem.OnMouseClick += new EventHandler(StartMenuItem_OnMouseClick);
             exitMenuItem.OnMouseClick += new EventHandler(ExitMenuItem_OnMouseClick);
-
-            base.Game.IsMouseVisible = true;
         }
 
         protected override void UnloadContent()
@@ -213,6 +217,9 @@ namespace RoHD_Playground.GameStates
         {
             // Update GUI components
             gui.Update(gameTime.ElapsedGameTime);
+
+            // Animate clouds
+            cloudTime += cloudSpeed * core.DeltaTime;
         }
 
         public override void Draw(GameTime gameTime)
@@ -222,7 +229,6 @@ namespace RoHD_Playground.GameStates
 
             // Draw sky dome
             core.DrawSkyDome(skyLight, skyDark, 0.3f, cloudTime, true);
-            cloudTime += cloudSpeed * core.DeltaTime;
 
             // Present
             core.Present();
@@ -263,6 +269,29 @@ namespace RoHD_Playground.GameStates
                     position.Y += billboard.Size.Y;
                     LightComponent lightComponent = new LightComponent(core, block.Matrix.Translation + position, 750f, Color.White, 1.1f);
                     entity.Components.Add(lightComponent);
+                }
+            }
+        }
+
+        #endregion
+
+        #region State Events
+
+        protected override void StateChanged(object sender, EventArgs e)
+        {
+            base.StateChanged(sender, e);
+
+            if (Enabled && Visible)
+            {
+                // Resume scene
+                core.ActiveScene = scene;
+                Game.IsMouseVisible = true;
+
+                // Resume title song
+                if (song != null)
+                {
+                    MediaPlayer.IsRepeating = true;
+                    MediaPlayer.Play(song);
                 }
             }
         }

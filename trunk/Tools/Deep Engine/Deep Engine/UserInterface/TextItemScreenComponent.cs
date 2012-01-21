@@ -20,7 +20,7 @@ namespace DeepEngine.UserInterface
 {
     
     /// <summary>
-    /// A standalone text item supporting outlines, shadows, scaling, fading, and events.
+    /// A standalone text item supporting outlines, shadows, and events.
     /// </summary>
     public class TextItemScreenComponent : BaseScreenComponent
     {
@@ -89,9 +89,9 @@ namespace DeepEngine.UserInterface
         public bool EnableOutline { get; set; }
 
         /// <summary>
-        /// Gets or sets shadow size. Set to Vector2.Zero to disable shadows.
+        /// Gets or sets shadow direction and distance. Set to Vector2.Zero to disable shadows.
         /// </summary>
-        public Vector2 ShadowSize { get; set; }
+        public Vector2 ShadowVector { get; set; }
 
         #endregion
 
@@ -131,15 +131,9 @@ namespace DeepEngine.UserInterface
 
         #region BaseScreenComponent Overrides
 
-        /// <summary>
-        /// Called when screen component should update itself.
-        /// </summary>
-        /// <param name="elapsedTime">Elapsed time since last update.</param>
         public override void Update(TimeSpan elapsedTime)
         {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
+            base.Update(elapsedTime);
         }
 
         /// <summary>
@@ -153,10 +147,17 @@ namespace DeepEngine.UserInterface
             if (!enabled)
                 return;
 
+            // Get position
+            Vector2 position = Parent.Position + Position;
+
+            // Draw shadow
+            if (ShadowVector != Vector2.Zero)
+                spriteBatch.DrawString(font, text, position + ShadowVector, ShadowColor);
+
             // Draw outline
             if (EnableOutline)
             {
-                Vector2 position = Parent.Position + Position;
+                
                 Vector2 tl = new Vector2(position.X - 1, position.Y - 1);
                 Vector2 tr = new Vector2(position.X + 1, position.Y - 1);
                 Vector2 bl = new Vector2(position.X - 1, position.Y + 1);
