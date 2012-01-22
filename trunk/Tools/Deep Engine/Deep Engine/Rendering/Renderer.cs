@@ -199,6 +199,24 @@ namespace DeepEngine.Rendering
             get { return (renderTarget as Texture2D); }
         }
 
+        /// <summary>
+        /// Gets or sets flag to enable/disable FXAA.
+        /// </summary>
+        public bool FXAAEnabled
+        {
+            get { return fxaaEnabled; }
+            set { fxaaEnabled = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets flag to enable/disable Bloom.
+        /// </summary>
+        public bool BloomEnabled
+        {
+            get { return bloomEnabled; }
+            set { bloomEnabled = value; }
+        }
+
         #endregion
 
         #region Constructors

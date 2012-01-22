@@ -32,6 +32,18 @@ namespace DeepEngine.Core
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets a flag stating is file is loaded.
+        /// </summary>
+        public bool IsLoaded
+        {
+            get { return (ini == null) ? true : false; }
+        }
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
