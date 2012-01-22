@@ -37,8 +37,13 @@ namespace RoHD_Playground
 
         #region Fields
 
-        // Set this to your local ARENA2 path
-        string arena2Path = @"c:\dosgames\dagger\arena2";           
+        // Settings
+        ConfigManager ini = new ConfigManager();
+        string arena2Path;
+        float mouseLookSpeed;
+        bool invertMouseVertical;
+        bool bloomEnabled;
+        bool fxaaEnabled;
 
         // XNA
         GraphicsDeviceManager graphics;
@@ -54,7 +59,7 @@ namespace RoHD_Playground
 
         // Display
         DisplayMode displayMode;
-        DisplayPreferences displayPreference = DisplayPreferences.BorderlessWindowed;
+        DisplayPreferences displayPreference = DisplayPreferences.Fullscreen;
 
         #endregion
 
@@ -67,6 +72,7 @@ namespace RoHD_Playground
         {
             Windowed,
             BorderlessWindowed,
+            Fullscreen,
         }
 
         #endregion
@@ -92,6 +98,9 @@ namespace RoHD_Playground
             this.IsFixedTimeStep = true;
             graphics.SynchronizeWithVerticalRetrace = true;
 
+            // Read INI file
+            ReadINISettings();
+
             // Create engine core
             core = new DeepCore(arena2Path, this.Services);
 
@@ -103,6 +112,9 @@ namespace RoHD_Playground
             titleScreen = new TitleScreen(core, this);
             playingGame = new PlayingGame(core, this);
             gameOptionsMenu = new ExitMenu(core, this);
+
+            // Set settings
+            playingGame.MouseLookSpeed = mouseLookSpeed;
 
             // Setup title events
             titleScreen.OnStartClicked += new EventHandler(TitleScreen_OnStartClicked);
@@ -124,7 +136,16 @@ namespace RoHD_Playground
             // Initialise core
             core.Initialize();
 
+            // Assign settings
+            core.Input.InvertMouseLook = invertMouseVertical;
+            core.Renderer.FXAAEnabled = fxaaEnabled;
+            core.Renderer.BloomEnabled = bloomEnabled;
+
             base.Initialize();
+
+            // Toggle fullscreen
+            if (displayPreference == DisplayPreferences.Fullscreen)
+                graphics.ToggleFullScreen();
         }
 
         /// <summary>
@@ -134,9 +155,6 @@ namespace RoHD_Playground
         protected override void LoadContent()
         {
             base.LoadContent();
-
-            // Invert mouse
-            core.Input.InvertMouseLook = true;
         }
 
         /// <summary>
@@ -185,6 +203,35 @@ namespace RoHD_Playground
 
         #endregion
 
+        #region INI File
+
+        private void ReadINISettings()
+        {
+            try
+            {
+                ini.LoadFile("rohd_playgrounds.ini");
+
+                arena2Path = ini.GetValue("Daggerfall", "arena2Path");
+                mouseLookSpeed = float.Parse(ini.GetValue("Controls", "mouseLookSpeed"));
+                invertMouseVertical = bool.Parse(ini.GetValue("Controls", "invertMouseVertical"));
+                fxaaEnabled = bool.Parse(ini.GetValue("Renderer", "fxaaEnabled"));
+                bloomEnabled = bool.Parse(ini.GetValue("Renderer", "bloomEnabled"));
+
+                // Validate arena2 path
+                DFValidator.ValidationResults results;
+                DFValidator.ValidateArena2Folder(arena2Path, out results);
+                if (!results.AppearsValid)
+                    throw new Exception("The specified Arena2 path is invalid or incomplete.");
+            }
+            catch (Exception e)
+            {
+                System.Windows.Forms.MessageBox.Show(e.Message, "Error Parsing INI File", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                this.Exit();
+            }
+        }
+
+        #endregion
+
         #region Display Setup Methods
 
         /// <summary>
@@ -200,6 +247,9 @@ namespace RoHD_Playground
                     break;
                 case DisplayPreferences.BorderlessWindowed:
                     StartBorderlessWindowed(e.GraphicsDeviceInformation);
+                    break;
+                case DisplayPreferences.Fullscreen:
+                    StartFullscreen(e.GraphicsDeviceInformation);
                     break;
             }
         }
@@ -224,6 +274,18 @@ namespace RoHD_Playground
             System.Windows.Forms.Form form = control.FindForm();
             form.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 
+            // Set borderless window resolution to match display resolution
+            graphicsDeviceInformation.PresentationParameters.BackBufferFormat = displayMode.Format;
+            graphicsDeviceInformation.PresentationParameters.BackBufferWidth = displayMode.Width;
+            graphicsDeviceInformation.PresentationParameters.BackBufferHeight = displayMode.Height;
+        }
+
+        /// <summary>
+        /// Starts game in fullscreen at display resolution.
+        /// </summary>
+        /// <param name="graphicsDeviceInformation"></param>
+        private void StartFullscreen(GraphicsDeviceInformation graphicsDeviceInformation)
+        {
             // Set borderless window resolution to match display resolution
             graphicsDeviceInformation.PresentationParameters.BackBufferFormat = displayMode.Format;
             graphicsDeviceInformation.PresentationParameters.BackBufferWidth = displayMode.Width;

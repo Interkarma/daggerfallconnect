@@ -75,6 +75,7 @@
     <Compile Include="Arena2\SkyFile.cs" />
     <Compile Include="Arena2\SndFile.cs" />
     <Compile Include="Arena2\TextureFile.cs" />
+    <Compile Include="Utility\DFValidator.cs" />
     <Compile Include="Arena2\WoodsFile.cs" />
     <Compile Include="DFBitmap.cs" />
     <Compile Include="DFBlock.cs" />

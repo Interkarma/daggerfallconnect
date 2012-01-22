@@ -49,7 +49,8 @@ namespace RoHD_Playground.GameStates
         CharacterControllerInput playerInput;
 
         MouseState startMouseState, mouseState;
-        float mouseLookSpeed = 0.001f;
+        float mouseLookScale = 0.001f;
+        float mouseLookSpeed = 1.0f;
 
         long nextObjectTime = 0;
         long minObjectTime = 200;
@@ -62,6 +63,8 @@ namespace RoHD_Playground.GameStates
         List<PhysicsObjects> physicsObjects;
 
         Song song;
+
+        bool lastGameActive;
 
         // Alpha value < 0.5 is specular intensity.
         Vector4[] specularColors = new Vector4[]
@@ -101,6 +104,19 @@ namespace RoHD_Playground.GameStates
             Anvil = 74212,
             Arrow = 99800,
             Octahedron = 74231,
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets user mouse look speed multiplier.
+        /// </summary>
+        public float MouseLookSpeed
+        {
+            get { return mouseLookSpeed; }
+            set { mouseLookSpeed = value; }
         }
 
         #endregion
@@ -210,6 +226,27 @@ namespace RoHD_Playground.GameStates
 
         public override void Update(GameTime gameTime)
         {
+            // Restore/hide mouse if user alt+tabs out and back
+            if (Game.IsActive && !lastGameActive)
+            {
+                Game.IsMouseVisible = false;
+                lastGameActive = Game.IsActive;
+            }
+            else if (!Game.IsActive && lastGameActive)
+            {
+                Game.IsMouseVisible = true;
+                lastGameActive = Game.IsActive;
+                return;
+            }
+            else if (!Game.IsActive && !lastGameActive)
+            {
+                return;
+            }
+            else
+            {
+                lastGameActive = Game.IsActive;
+            }
+
             if (playerInput != null)
             {
                 playerInput.Update(
@@ -229,8 +266,8 @@ namespace RoHD_Playground.GameStates
                 int mouseChangeX = mouseState.X - startMouseState.X;
                 int mouseChangeY = mouseState.Y - startMouseState.Y;
 
-                float yawDegrees = -MathHelper.ToDegrees(mouseChangeX) * mouseLookSpeed;
-                float pitchDegrees = -MathHelper.ToDegrees(mouseChangeY) * mouseLookSpeed;
+                float yawDegrees = (-MathHelper.ToDegrees(mouseChangeX) * mouseLookScale) * mouseLookSpeed;
+                float pitchDegrees = (-MathHelper.ToDegrees(mouseChangeY) * mouseLookScale) * mouseLookSpeed;
 
                 if (core.Input.InvertMouseLook) pitchDegrees = -pitchDegrees;
 
