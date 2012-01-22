@@ -57,6 +57,12 @@ namespace Launcher
 
             // Set arena2 path
             SetArena2Path(config.GetValue("Daggerfall", "arena2Path"));
+
+            // If path failed to open, show the set arena2 tab
+            if (!playReady)
+                MainTabControl.SelectedItem = SetArena2Tab;
+            else
+                MainTabControl.SelectedItem = AboutTab;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -115,6 +121,21 @@ namespace Launcher
                 PlayLabel.IsEnabled = false;
                 playReady = false;
             }
+        }
+
+        private void OptionsLabel_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            MainTabControl.SelectedItem = OptionsTab;
+        }
+
+        private void SetArena2Label_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            MainTabControl.SelectedItem = SetArena2Tab;
+        }
+
+        private void AboutLabel_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            MainTabControl.SelectedItem = AboutTab;
         }
 
     }
