@@ -1,43 +1,51 @@
 ﻿<Window x:Class="Launcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Ruins of Hill Deep Launcher" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" Background="#00000000" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:my="clr-namespace:Launcher" KeyDown="MainWindow_KeyDown" Loaded="MainWindow_Loaded" d:DesignHeight="472" d:DesignWidth="876" SizeToContent="WidthAndHeight">
+        Title="Ruins of Hill Deep Launcher" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" Background="#00000000" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:my="clr-namespace:Launcher" KeyDown="MainWindow_KeyDown" Loaded="MainWindow_Loaded" d:DesignHeight="472" d:DesignWidth="876" SizeToContent="WidthAndHeight" Icon="/Launcher;component/Images/PlaygroundsThumbnail.png">
     <Grid Width="800" Height="400">
         <Label Content="EXIT" Height="40" HorizontalAlignment="Left" Margin="12,348,0,0" Name="ExitLabel" VerticalAlignment="Top" FontSize="20" MouseUp="ExitLabel_MouseUp" Cursor="Hand" VerticalContentAlignment="Center" Foreground="White" />
         <Label Content="Set Daggerfall Folder" Cursor="Hand" FontSize="20" Height="40" HorizontalAlignment="Left" Margin="12,66,0,0" Name="SetArena2Label" VerticalAlignment="Top" VerticalContentAlignment="Center" Foreground="White" MouseUp="SetArena2Label_MouseUp" />
         <Label Content="Options" Cursor="Hand" FontSize="20" Height="40" HorizontalAlignment="Left" Margin="12,130,0,0" Name="OptionsLabel" VerticalAlignment="Top" VerticalContentAlignment="Center" Foreground="White" MouseUp="OptionsLabel_OnMouseUp" />
         <Label Content="About" Cursor="Hand" FontSize="20" Foreground="White" Height="40" HorizontalAlignment="Left" Margin="12,176,0,0" Name="AboutLabel" VerticalAlignment="Top" VerticalContentAlignment="Center" MouseUp="AboutLabel_MouseUp" />
-        <Label Content="Play" FontSize="26" Height="48" HorizontalAlignment="Left" Margin="12,12,0,0" Name="PlayLabel" VerticalAlignment="Top" VerticalContentAlignment="Center" Foreground="White" />
+        <Label Content="Play" FontSize="26" Height="48" HorizontalAlignment="Left" Margin="12,12,0,0" Name="PlayLabel" VerticalAlignment="Top" VerticalContentAlignment="Center" Foreground="White" MouseUp="PlayLabel_MouseUp" />
         <Label Content="Not currently set" Height="28" HorizontalAlignment="Left" Margin="12,96,0,0" Name="Arena2PathLabel" VerticalAlignment="Top" Foreground="Gold" Width="258" FontSize="10"></Label>
         <TabControl Height="399" HorizontalAlignment="Left" Margin="276,-11,0,0" Name="MainTabControl" VerticalAlignment="Top" Width="512" Background="#20FFFFFF" Visibility="Visible">
             <TabItem Header="SetArena2" Name="SetArena2Tab">
                 <Grid>
-                    <Label Content="Set Daggerfall Folder" Height="38" HorizontalAlignment="Left" Margin="6,4,0,0" Name="label2" VerticalAlignment="Top" Width="490" FontSize="20" Foreground="Orange" />
-                    <TextBox Height="58" HorizontalAlignment="Left" Margin="6,50,0,0" Name="textBox1" VerticalAlignment="Top" Width="490" IsReadOnly="True" Background="#FF0A0000" Text="Ruins of Hill Deep Playgrounds requires a working Daggerfall installation to play. Please set your Daggerfall installation below. This is read-only and does not modify your Daggerfall installation or save games." Foreground="White" TextWrapping="Wrap" />
-                    <Label Content="Arena2 Path" Height="30" HorizontalAlignment="Left" Margin="6,122,0,0" Name="label3" VerticalAlignment="Top" FontSize="14" Foreground="Orange" />
-                    <TextBox Height="23" HorizontalAlignment="Left" Margin="6,151,0,0" Name="Arena2PathTextBox" VerticalAlignment="Top" Width="409" IsReadOnly="True" />
-                    <Button Content="Browse..." Height="23" HorizontalAlignment="Left" Margin="421,151,0,0" Name="BrowseButton" VerticalAlignment="Top" Width="75" Click="BrowseButton_Click" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="88*" />
+                        <ColumnDefinition Width="414*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Set Daggerfall Folder" Height="38" HorizontalAlignment="Left" Margin="6,4,0,0" Name="label2" VerticalAlignment="Top" Width="490" FontSize="20" Foreground="Orange" Grid.ColumnSpan="2" />
+                    <TextBox Height="58" HorizontalAlignment="Left" Margin="6,50,0,0" Name="textBox1" VerticalAlignment="Top" Width="490" IsReadOnly="True" Background="#FF0A0000" Text="Ruins of Hill Deep Playgrounds requires a working Daggerfall installation to play. Please set your Daggerfall installation below. This is read-only and does not modify your Daggerfall installation or save games." Foreground="White" TextWrapping="Wrap" Grid.ColumnSpan="2" />
+                    <Label Content="Arena2 Path" Height="30" HorizontalAlignment="Left" Margin="6,122,0,0" Name="label3" VerticalAlignment="Top" FontSize="14" Foreground="Orange" Grid.ColumnSpan="2" />
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="6,151,0,0" Name="Arena2PathTextBox" VerticalAlignment="Top" Width="409" IsReadOnly="True" Grid.ColumnSpan="2" />
+                    <Button Content="Browse..." Height="23" HorizontalAlignment="Left" Margin="333,151,0,0" Name="BrowseButton" VerticalAlignment="Top" Width="75" Click="BrowseButton_Click" Grid.Column="1" />
                 </Grid>
             </TabItem>
             <TabItem Header="Options" Name="OptionsTab">
                 <Grid ShowGridLines="False">
                     <Label Content="Options" FontSize="20" Foreground="Orange" Height="38" HorizontalAlignment="Left" Margin="6,4,0,0" Name="label4" VerticalAlignment="Top" Width="494" />
-                    <TextBox AcceptsReturn="True" Background="#FF0A0000" Foreground="White" Height="58" HorizontalAlignment="Left" IsReadOnly="True" Margin="6,48,0,0" Name="textBox3" Text="Customize your game by changing the options below." TextWrapping="Wrap" VerticalAlignment="Top" Width="494" />
-                    <CheckBox Content="Invert Mouse Vertical" Height="16" HorizontalAlignment="Left" Margin="10,237,0,0" Name="IntvertMouseVerticalCheckBox" VerticalAlignment="Top" Foreground="White" />
-                    <Slider Height="23" HorizontalAlignment="Left" Margin="10,160,0,0" Name="MouseSensitivitySlider" VerticalAlignment="Top" Width="229" Maximum="4" SmallChange="0.25" Value="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" TickFrequency="0.25" Minimum="0.25" LargeChange="0.25" />
-                    <Label Content="Mouse Sensitivity" Height="28" HorizontalAlignment="Left" Margin="10,126,0,0" Name="label5" VerticalAlignment="Top" Foreground="Orange" FontSize="14"></Label>
-                    <TextBox Height="23" HorizontalAlignment="Right" Margin="0,160,201,0" Name="MouseSensitivityTextBox" VerticalAlignment="Top" Width="56" IsReadOnly="True" Text="{Binding ElementName=MouseSensitivitySlider, Path=Value, StringFormat=0.00}" />
-                    <Label Content="Mouse Look" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="10,203,0,0" Name="label6" VerticalAlignment="Top" />
-                    <Label Content="(Default is 1.00)" Height="28" HorizontalAlignment="Left" Margin="307,158,0,0" Name="label7" VerticalAlignment="Top" Foreground="White" />
-                    <Label Content="Rendering" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="191,203,0,0" Name="label8" VerticalAlignment="Top" />
-                    <CheckBox Content="Fast Approximate Antialiasing (FXAA)" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="191,237,0,0" Name="EnableFXAACheckBox" VerticalAlignment="Top" />
-                    <CheckBox Content="Fullscreen Bloom" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="191,259,0,0" Name="EnableBloomCheckBox" VerticalAlignment="Top" />
+                    <TextBox AcceptsReturn="True" Background="#FF0A0000" Foreground="White" Height="42" HorizontalAlignment="Left" IsReadOnly="True" Margin="6,48,0,0" Name="textBox3" Text="Customize your game by changing the options below." TextWrapping="Wrap" VerticalAlignment="Top" Width="494" />
+                    <CheckBox Content="Invert Mouse Vertical" Height="16" HorizontalAlignment="Left" Margin="6,305,0,0" Name="InvertMouseVerticalCheckBox" VerticalAlignment="Top" Foreground="White" />
+                    <Slider Height="23" HorizontalAlignment="Left" Margin="6,228,0,0" Name="MouseSensitivitySlider" VerticalAlignment="Top" Width="229" Maximum="4" SmallChange="0.25" Value="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" TickFrequency="0.25" Minimum="0.25" LargeChange="0.25" />
+                    <Label Content="Mouse Sensitivity" Height="28" HorizontalAlignment="Left" Margin="6,194,0,0" Name="label5" VerticalAlignment="Top" Foreground="Orange" FontSize="14"></Label>
+                    <TextBox Height="23" HorizontalAlignment="Right" Margin="0,228,205,0" Name="MouseSensitivityTextBox" VerticalAlignment="Top" Width="56" IsReadOnly="True" Text="{Binding ElementName=MouseSensitivitySlider, Path=Value, StringFormat=0.00}" />
+                    <Label Content="Mouse Look" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="6,271,0,0" Name="label6" VerticalAlignment="Top" />
+                    <Label Content="(Default is 1.00)" Height="28" HorizontalAlignment="Left" Margin="303,226,0,0" Name="label7" VerticalAlignment="Top" Foreground="White" />
+                    <Label Content="Rendering" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="241,97,0,0" Name="label8" VerticalAlignment="Top" />
+                    <CheckBox Content="Fast Approximate Antialiasing (FXAA)" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="241,131,0,0" Name="EnableFXAACheckBox" VerticalAlignment="Top" />
+                    <CheckBox Content="Fullscreen Bloom" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="241,160,0,0" Name="EnableBloomCheckBox" VerticalAlignment="Top" />
+                    <Label Content="Resolution" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="6,97,0,0" Name="label9" VerticalAlignment="Top" />
+                    <ComboBox Height="23" Margin="6,131,318,0" Name="ResolutionComboBox" VerticalAlignment="Top" />
+                    <CheckBox Content="Windowed Mode" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="76,160,0,0" Name="WindowedModeCheckBox" VerticalAlignment="Top" />
                 </Grid>
             </TabItem>
             <TabItem Header="About" Name="AboutTab">
                 <Grid>
                     <Label Content="About Ruins of Hill Deep Playgrounds" FontSize="20" Foreground="Orange" Height="38" HorizontalAlignment="Left" Margin="6,4,0,0" Name="label1" VerticalAlignment="Top" Width="490" />
-                    <WebBrowser Height="313" HorizontalAlignment="Left" Margin="6,48,0,0" Name="webBrowser1" VerticalAlignment="Top" Width="490" />
+                    <WebBrowser Height="313" HorizontalAlignment="Left" Margin="6,48,0,0" Name="webBrowser1" VerticalAlignment="Top" Width="490" Source="http://www.ruinsofhilldeep.com/static-files/about-rohd-playgrounds.htm" Opacity="1" />
+                    <Border BorderBrush="Silver" BorderThickness="1" Height="315" HorizontalAlignment="Left" Margin="5,47,0,0" Name="border1" VerticalAlignment="Top" Width="491" />
                 </Grid>
             </TabItem>
         </TabControl>

@@ -43,7 +43,7 @@ namespace RoHD_Playground.Entities
         // Animation
         Vector3 startPosition;          // Start position relative to entity
         Vector3 endPosition;            // End position relative to entity
-        float speed = 0.003f;           // Movement speed
+        float speed = 0.15f;           // Movement speed
         float multiplier = 0f;          // Speed multiplier
         float current = 0f;             // Current position
 
@@ -164,7 +164,7 @@ namespace RoHD_Playground.Entities
                 UpdateFirefly();
 
                 // Increment current position
-                current += speed;
+                current += speed * scene.Core.DeltaTime;
                 if (current >= 1f)
                 {
                     alive = false;

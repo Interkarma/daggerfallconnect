@@ -414,6 +414,53 @@ namespace DeepEngine.Core
 
         #endregion
 
+        #region Static Methods
+
+        /// <summary>
+        /// Descibes a single display mode.
+        /// </summary>
+        public struct DisplayModeDesc
+        {
+            public int Index;
+            public DisplayMode Mode;
+            public string ResolutionText;
+        }
+
+        /// <summary>
+        /// Enumerates supported display modes.
+        /// </summary>
+        /// <returns>List of supported display modes.</returns>
+        public static List<DisplayModeDesc> EnumerateDisplayModes()
+        {
+            List<DisplayModeDesc> enumeratedDisplayModes = new List<DisplayModeDesc>(10);
+
+            int index = 0;
+            foreach (DisplayMode mode in GraphicsAdapter.DefaultAdapter.SupportedDisplayModes)
+            {
+                // Exclude unsupported surface formats
+                if (mode.Format != SurfaceFormat.Color ||
+                    mode.Height < 720)
+                {
+                    continue;
+                }
+
+                // Describe mode
+                DisplayModeDesc desc = new DisplayModeDesc
+                {
+                    Mode = mode,
+                    ResolutionText = string.Format("{0}x{1}", mode.Width, mode.Height),
+                };
+
+                // Add resolution to list
+                desc.Index = index++;
+                enumeratedDisplayModes.Add(desc);
+            }
+
+            return enumeratedDisplayModes;
+        }
+
+        #endregion
+
     }
 
 }
