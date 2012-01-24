@@ -37,6 +37,8 @@ namespace RoHD_Playground
 
         #region Fields
 
+        const string title = "Ruins of Hill Deep Playgrounds";
+
         // Settings
         ConfigManager ini = new ConfigManager();
         string arena2Path;
@@ -44,6 +46,7 @@ namespace RoHD_Playground
         bool invertMouseVertical;
         bool bloomEnabled;
         bool fxaaEnabled;
+        bool windowedMode;
 
         // XNA
         GraphicsDeviceManager graphics;
@@ -59,7 +62,7 @@ namespace RoHD_Playground
 
         // Display
         DisplayMode displayMode;
-        DisplayPreferences displayPreference = DisplayPreferences.Fullscreen;
+        DisplayPreferences displayPreference;
 
         #endregion
 
@@ -88,18 +91,22 @@ namespace RoHD_Playground
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            // Get display mode information
-            displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-
             // Capture device settings event
             graphics.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(Graphics_PreparingDeviceSettings);
 
             // Timing
             this.IsFixedTimeStep = true;
+            this.Window.Title = title;
             graphics.SynchronizeWithVerticalRetrace = true;
 
             // Read INI file
             ReadINISettings();
+
+            // Set display mode
+            if (windowedMode)
+                displayPreference = DisplayPreferences.Windowed;
+            else
+                displayPreference = DisplayPreferences.Fullscreen;
 
             // Create engine core
             core = new DeepCore(arena2Path, this.Services);
@@ -209,19 +216,56 @@ namespace RoHD_Playground
         {
             try
             {
-                ini.LoadFile("rohd_playgrounds.ini");
+                // Open ini file
+                string appStartPath = System.Windows.Forms.Application.StartupPath;
+                string configName = "config.ini";
+                ini.LoadFile(System.IO.Path.Combine(appStartPath, configName));
 
                 arena2Path = ini.GetValue("Daggerfall", "arena2Path");
                 mouseLookSpeed = float.Parse(ini.GetValue("Controls", "mouseLookSpeed"));
                 invertMouseVertical = bool.Parse(ini.GetValue("Controls", "invertMouseVertical"));
                 fxaaEnabled = bool.Parse(ini.GetValue("Renderer", "fxaaEnabled"));
                 bloomEnabled = bool.Parse(ini.GetValue("Renderer", "bloomEnabled"));
+                windowedMode = bool.Parse(ini.GetValue("Renderer", "windowedMode"));
+                string displayResolution = ini.GetValue("Renderer", "displayResolution");
+
+                // Get preferred resolution width and height
+                displayResolution.Replace(" ", string.Empty);
+                string[] split = displayResolution.Split('x');
+                if (split.Length != 2)
+                    throw new Exception("Invalid resolution specified.");
+
+                // Get width and height of desired reolution
+                int width, height;
+                try
+                {
+                    width = int.Parse(split[0]);
+                    height = int.Parse(split[1]);
+                }
+                catch(Exception e)
+                {
+                    throw new Exception("Invalid resolution specified. " + e.Message);
+                }
 
                 // Validate arena2 path
                 DFValidator.ValidationResults results;
                 DFValidator.ValidateArena2Folder(arena2Path, out results);
                 if (!results.AppearsValid)
                     throw new Exception("The specified Arena2 path is invalid or incomplete.");
+
+                // Get current display mode information
+                displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+
+                // Attempt to set preferred resolution
+                List<DeepCore.DisplayModeDesc> displayModes = DeepCore.EnumerateDisplayModes();
+                foreach (var mode in displayModes)
+                {
+                    if (mode.Mode.Width == width && mode.Mode.Height == height)
+                    {
+                        displayMode = mode.Mode;
+                        break;
+                    }
+                }
             }
             catch (Exception e)
             {

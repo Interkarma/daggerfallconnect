@@ -39,7 +39,7 @@ namespace DeepEngine.Core
         /// </summary>
         public bool IsLoaded
         {
-            get { return (ini == null) ? true : false; }
+            get { return (ini == null) ? false : true; }
         }
 
         #endregion

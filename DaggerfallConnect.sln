@@ -21,9 +21,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZTest_ContentLoading1", "Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZTest_ContentLoading1Content", "Tests\ContentLoading1\ContentLoading1Content\ZTest_ContentLoading1Content.contentproj", "{80E3A0C3-384F-40BE-BCBE-C35AE22D3A53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game_RoHD Playground", "Games\RoHD Playground\RoHD Playground\Game_RoHD Playground.csproj", "{7736959D-7E56-4D7C-945F-FD5C3F068B5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game_RoHD Playgrounds", "Games\RoHD Playground\RoHD Playground\Game_RoHD Playgrounds.csproj", "{7736959D-7E56-4D7C-945F-FD5C3F068B5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game_RoHD PlaygroundContent", "Games\RoHD Playground\RoHD PlaygroundContent\Game_RoHD PlaygroundContent.contentproj", "{259375AF-D21F-41F2-A7A9-5CAF15F3C5F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game_RoHD PlaygroundsContent", "Games\RoHD Playground\RoHD PlaygroundContent\Game_RoHD PlaygroundsContent.contentproj", "{259375AF-D21F-41F2-A7A9-5CAF15F3C5F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool_SceneEditor", "Tools\SceneEditor\Tool_SceneEditor.csproj", "{EDD0042D-4137-4F78-8AEC-116870E9744F}"
 EndProject

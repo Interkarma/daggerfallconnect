@@ -100,15 +100,15 @@
       <Project>{240A9FEF-17C0-4190-9F75-7034E67EF983}</Project>
       <Name>Tool_Deep Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RoHD PlaygroundContent\Game_RoHD PlaygroundContent.contentproj">
-      <Name>Game_RoHD PlaygroundContent %28Content%29</Name>
+    <ProjectReference Include="..\RoHD PlaygroundContent\Game_RoHD PlaygroundsContent.contentproj">
+      <Name>Game_RoHD PlaygroundsContent %28Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{259375AF-D21F-41F2-A7A9-5CAF15F3C5F3}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="rohd_playgrounds.ini">
+    <None Include="config.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

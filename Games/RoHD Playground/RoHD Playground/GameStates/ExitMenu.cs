@@ -109,7 +109,7 @@ namespace RoHD_Playground.GameStates
             exitGameText.ShadowVector = new Vector2(3, 3);
 
             // Continue button
-            TextItemScreenComponent continueButton = new TextItemScreenComponent(core, menuFont2, "Continue");
+            TextItemScreenComponent continueButton = new TextItemScreenComponent(core, menuFont2, "Back");
             continueButton.HorizontalAlignment = HorizontalAlignment.Left;
             continueButton.VerticalAlignment = VerticalAlignment.Bottom;
             continueButton.EnableOutline = false;
