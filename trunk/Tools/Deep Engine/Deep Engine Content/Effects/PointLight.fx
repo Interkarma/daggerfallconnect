@@ -133,7 +133,8 @@ float4 Default_PS(Default_VSO input) : COLOR0
     float3 lightVector = LightPosition - position;
 
 	// SpecularPower 255 is reserved for billboard lighting.
-	// Billboards do not use a normal so they always face the light.
+	// Billboards are always treated as if they are facing the point light.
+	// This ensures they don't brighten/darken as they turn to face the player.
 	if (specularPower == 255)
 	{
 		// Compute attenuation based on distance - linear attenuation
@@ -141,7 +142,6 @@ float4 Default_PS(Default_VSO input) : COLOR0
 
 		return attenuation * LightIntensity * float4(Color.rgb,0);
 	}
-
 
     // Compute attenuation based on distance - linear attenuation
     attenuation = saturate(1.0f - length(lightVector)/LightRadius); 

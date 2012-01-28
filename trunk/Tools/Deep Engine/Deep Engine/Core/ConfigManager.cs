@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using IniParser;
 #endregion
 
@@ -53,15 +54,6 @@ namespace DeepEngine.Core
         {
         }
 
-        /// <summary>
-        /// Load constructor.
-        /// </summary>
-        /// <param name="filename">Full path to ini file.</param>
-        public ConfigManager(string filename)
-        {
-            LoadFile(filename);
-        }
-
         #endregion
 
         #region Public Methods
@@ -75,6 +67,30 @@ namespace DeepEngine.Core
         {
             ini = parser.LoadFile(filename);
             this.filename = filename;
+        }
+
+        /// <summary>
+        /// Loads ini file from user's appdata folder.
+        ///  Deploys source defaults ini if appdata ini is missing.
+        /// </summary>
+        /// <param name="appName">Name of application.</param>
+        /// <param name="configName">Name of INI file.</param>
+        /// <param name="defaultsName">Name of source defaults INI file to be deployed if configName is missing.</param>
+        public void LoadFile(string appName, string configName, string defaultsName)
+        {
+            // Ensure appdata folder exists
+            string appDataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+            if (!Directory.Exists(appDataFolder))
+                Directory.CreateDirectory(appDataFolder);
+
+            // Check file exists
+            string filename = System.IO.Path.Combine(appDataFolder, configName);
+            string src = System.IO.Path.Combine(System.Windows.Forms.Application.StartupPath, defaultsName);
+            if (!File.Exists(filename))
+                File.Copy(src, filename);
+
+            // Load the file
+            LoadFile(filename);
         }
 
         /// <summary>

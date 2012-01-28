@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.World;
 #endregion
@@ -19,26 +20,11 @@ namespace DeepEngine.Components
 {
 
     /// <summary>
-    /// Provides direct and point lighting.
+    /// A light component providing control over multiple types of light.
     /// </summary>
     public class LightComponent : BaseComponent
     {
-        #region Fields
-
-        // General
-        LightType type;
-        Color color;
-        float intensity;
-
-        // Directional light
-        Vector3 direction;
         
-        // Point light
-        Vector3 position;
-        float radius;
-
-        #endregion
-
         #region Structures
 
         /// <summary>
@@ -49,6 +35,7 @@ namespace DeepEngine.Components
             Ambient,
             Directional,
             Point,
+            Spot,
         }
 
         #endregion
@@ -56,78 +43,81 @@ namespace DeepEngine.Components
         #region Properties
 
         /// <summary>
-        /// Gets type of light.
+        /// Gets or sets current light type.
         /// </summary>
-        public LightType Type
-        {
-            get { return type; }
-        }
+        public LightType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets colour of light.
+        /// Gets or sets light colour.
         /// </summary>
-        public Color Color
-        {
-            get { return color; }
-            set { color = value; }
-        }
+        public Color Color { get; set; }
 
         /// <summary>
         /// Gets or sets light intensity.
         /// </summary>
-        public float Intensity
-        {
-            get { return intensity; }
-            set { intensity = value; }
-        }
+        public float Intensity { get; set; }
 
         /// <summary>
-        /// Gets or sets directional light direction.
+        /// Gets or sets light position for positional lights (e.g. point, spot).
         /// </summary>
-        public Vector3 Direction
-        {
-            get { return direction; }
-            set { direction = value; }
-        }
+        public Vector3 Position { get; set; }
 
         /// <summary>
-        /// Gets or sets point light position relative to entity.
+        /// Gets or sets light directon for directional lights (e.g. directional, light);
         /// </summary>
-        public Vector3 Position
-        {
-            get { return position; }
-            set { position = value; }
-        }
+        public Vector3 Direction { get; set; }
 
         /// <summary>
-        /// Gets or sets point light radius.
+        /// Gets or sets start distance of spot lights.
         /// </summary>
-        public float Radius
-        {
-            get { return radius; }
-            set { radius = value; }
-        }
+        public float SpotNearPlane { get; set; }
 
         /// <summary>
-        /// Gets matrix of positional lights (e.g. point lights).
+        /// Gets or sets end distance of spot lights.
         /// </summary>
-        public Matrix Matrix
+        public float SpotFarPlane { get; set; }
+
+        /// <summary>
+        /// Gets or sets field of view of spot lights.
+        /// </summary>
+        public float SpotFOV { get; set; }
+
+        /// <summary>
+        /// Gets or sets spot light attenuation texture.
+        /// </summary>
+        public Texture2D SpotAttenuationTexture { get; set; }
+
+        /// <summary>
+        /// Gets or sets radius of point lights.
+        /// </summary>
+        public float PointRadius { get; set; }
+
+        /// <summary>
+        /// Gets or sets flag stating if light casts shadows.
+        ///  Currently only valid for point and spot lights.
+        /// </summary>
+        public bool CastsShadows { get; set; }
+
+        /// <summary>
+        /// Gets translation matrix of positional lights (e.g. point, spot).
+        /// </summary>
+        public Matrix TranslationMatrix
         {
-            get { return Matrix.CreateTranslation(position); }
+            get { return Matrix.CreateTranslation(Position); }
         }
 
         /// <summary>
-        /// Gets bounding sphere of volume lights (e.g. point lights).
+        /// Gets bounding sphere of point lights.
         ///  Getting will return transformed bounding sphere based on Matrix.
         /// </summary>
-        public BoundingSphere BoundingSphere
+        public BoundingSphere PointBoundingSphere
         {
             get
             {
                 BoundingSphere sphere;
                 sphere.Center = Vector3.Zero;
-                sphere.Radius = radius;
-                return sphere.Transform(Matrix);
+                sphere.Radius = PointRadius;
+                return sphere.Transform(TranslationMatrix);
             }
         }
 
@@ -174,6 +164,23 @@ namespace DeepEngine.Components
             MakePoint(position, radius, color, intensity);
         }
 
+        /// <summary>
+        /// Spot light constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        /// <param name="position">Position of light relative to entity.</param>
+        /// <param name="direction">Direction spot light is facing.</param>
+        /// <param name="nearPlane">Distance at which light begins.</param>
+        /// <param name="farPlane">Distance at which light ends.</param>
+        /// <param name="fov">Field of view</param>
+        /// <param name="color">Color of light.</param>
+        /// <param name="intensity">Intensity of light.</param>
+        public LightComponent(DeepCore core, Vector3 position, Vector3 direction, float nearPlane, float farPlane, float fov, Color color, float intensity)
+            : base(core)
+        {
+            MakeSpot(position, direction, nearPlane, farPlane, fov, color, intensity);
+        }
+
         #endregion
 
         #region Public Methods
@@ -186,9 +193,9 @@ namespace DeepEngine.Components
         public void MakeAmbient(Color color, float intensity)
         {
             // Set values
-            this.color = color;
-            this.intensity = intensity;
-            this.type = LightType.Ambient;
+            this.Color = color;
+            this.Intensity = intensity;
+            this.Type = LightType.Ambient;
         }
 
         /// <summary>
@@ -200,10 +207,10 @@ namespace DeepEngine.Components
         public void MakeDirectional(Vector3 direction, Color color, float intensity)
         {
             // Set values
-            this.direction = direction;
-            this.color = color;
-            this.intensity = intensity;
-            this.type = LightType.Directional;
+            this.Direction = direction;
+            this.Color = color;
+            this.Intensity = intensity;
+            this.Type = LightType.Directional;
         }
 
         /// <summary>
@@ -216,14 +223,37 @@ namespace DeepEngine.Components
         public void MakePoint(Vector3 position, float radius, Color color, float intensity)
         {
             // Set values
-            this.position = position;
-            this.radius = radius;
-            this.color = color;
-            this.intensity = intensity;
-            this.type = LightType.Point;
+            this.Position = position;
+            this.PointRadius = radius;
+            this.Color = color;
+            this.Intensity = intensity;
+            this.Type = LightType.Point;
+        }
+
+        /// <summary>
+        /// Change light to a spot light.
+        /// </summary>
+        /// <param name="position">Position of light relative to entity.</param>
+        /// <param name="direction">Direction spot light is facing.</param>
+        /// <param name="nearPlane">Distance at which light begins.</param>
+        /// <param name="farPlane">Distance at which light ends.</param>
+        /// <param name="fov">Field of view</param>
+        /// <param name="color">Color of light.</param>
+        /// <param name="intensity">Intensity of light.</param>
+        public void MakeSpot(Vector3 position, Vector3 direction, float nearPlane, float farPlane, float fov, Color color, float intensity)
+        {
+            this.Position = position;
+            this.Direction = direction;
+            this.SpotNearPlane = nearPlane;
+            this.SpotFarPlane = farPlane;
+            this.SpotFOV = fov;
+            this.Color = color;
+            this.Intensity = intensity;
+            this.Type = LightType.Spot;
         }
 
         #endregion
+
     }
 
 }

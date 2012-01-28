@@ -62,6 +62,8 @@ namespace RoHD_Playground.GameStates
         string physicsObjectText;
         List<PhysicsObjects> physicsObjects;
 
+        LightComponent playerLight;
+
         Song song;
 
         bool lastGameActive;
@@ -200,6 +202,10 @@ namespace RoHD_Playground.GameStates
             // Attach block lights
             AddBlockLights(level, block);
 
+            // Add player point light
+            playerLight = new LightComponent(core, Vector3.Zero, 7f, Color.White, 1f);
+            level.Components.Add(playerLight);
+
             // Disable core input handling
             core.Input.ActiveDevices = Input.DeviceFlags.None;
 
@@ -308,6 +314,9 @@ namespace RoHD_Playground.GameStates
             // Update gui components
             physicsTextItem.Text = physicsObjectText;
             gui.Update(gameTime.ElapsedGameTime);
+
+            // Update player light
+            playerLight.Position = scene.Camera.Position;
         }
 
         public override void Draw(GameTime gameTime)
@@ -388,18 +397,34 @@ namespace RoHD_Playground.GameStates
             // Add lights to entity
             foreach (var light in block.BlockLights)
             {
-                // Get position
+                // Get position and radius
                 Vector3 position = new Vector3(light.Position.X, light.Position.Y, light.Position.Z);
+                float radius = light.Radius * 2.5f;
 
                 // Add light
-                LightComponent lightComponent = new LightComponent(
+                LightComponent pointLightComponent = new LightComponent(
                     core,
                     position,
-                    light.Radius,
+                    radius,
                     Color.White,
                     1.0f);
-                entity.Components.Add(lightComponent);
+                entity.Components.Add(pointLightComponent);
+
+                // Add test sphere to see light overlap
+                //GeometricPrimitiveComponent sphereGeometry = new GeometricPrimitiveComponent(core);
+                //sphereGeometry.MakeSphere(radius, 16);
+                //sphereGeometry.Color = new Vector4(Color.White.ToVector3(), 1);
+                //sphereGeometry.Matrix = block.Matrix * Matrix.CreateTranslation(position);
+                //entity.Components.Add(sphereGeometry);
             }
+
+            // Setup ambient light
+            LightComponent ambientLightComponent = new LightComponent(core, Color.White, 0.1f);
+            entity.Components.Add(ambientLightComponent);
+
+            // Setup directional light
+            //LightComponent directionalLightComponent = new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Forward + Vector3.Right), Color.White, 0.25f);
+            //entity.Components.Add(directionalLightComponent);
         }
 
         private void UpdatePhysicsObjectText()

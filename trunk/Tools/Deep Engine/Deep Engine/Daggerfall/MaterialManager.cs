@@ -154,13 +154,6 @@ namespace DeepEngine.Daggerfall
             ///  emissive texture properties.
             /// </summary>
             ExtendedAlpha = 0x200,
-
-            /// <summary>
-            /// Doubles size of texture after loading using a high quality upscale.
-            ///  Improves definition of mipmaps.
-            ///  Not Implemented.
-            /// </summary>
-            DoubleSize = 0x400,
         }
 
         #endregion
@@ -639,7 +632,7 @@ namespace DeepEngine.Daggerfall
                 // Get RGBA format
                 DFBitmap colorBitmap;
                 if (flags.HasFlag(TextureCreateFlags.ExtendedAlpha))
-                    colorBitmap = GetEngineRGBA(record, frame);
+                    colorBitmap = GetEngineRGBA(archive, record, frame, flags);
                 else
                     colorBitmap = textureFile.GetBitmapFormat(record, frame, 0, DFBitmap.Formats.RGBA);
 
@@ -740,10 +733,12 @@ namespace DeepEngine.Daggerfall
         ///  * 128 is not emissive and 255 is fullbright.
         ///  * A material cannot be specular and emissive at the same time.
         /// </summary>
+        /// <param name="archive">Archive index.</param>
         /// <param name="record">Record index.</param>
         /// <param name="frame">Frame index.</param>
+        /// <param name="flags">Texture flags.</param>
         /// <returns>DFBitmap.</returns>
-        private DFBitmap GetEngineRGBA(int record, int frame)
+        private DFBitmap GetEngineRGBA(int archive, int record, int frame, TextureCreateFlags flags)
         {
             // Daggerfall uses this index to represent a transparent colour
             const int dfChromaIndex = 0x00;
@@ -799,6 +794,7 @@ namespace DeepEngine.Daggerfall
                         a = nightWindowColor.A;
                     }
                 }
+
                 // TODO: Handle light textures
 
                 // Write colour and alpha values
@@ -1135,7 +1131,6 @@ namespace DeepEngine.Daggerfall
                 dstPos = (y * dstBitmap.Stride) + (paddingPixels * dstBitmap.Stride) + (paddingPixels * formatWidth);
                 for (int x = 0; x < dfBitmap.Width; x++)
                 {
-                    /*
                     // Copy pixel to top, bottom, left, right
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride);
@@ -1147,7 +1142,6 @@ namespace DeepEngine.Daggerfall
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos - dstBitmap.Stride + formatWidth);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride - formatWidth);
                     TestCopyPixel(ref dfBitmap.Data, ref dstBitmap.Data, srcPos, dstPos + dstBitmap.Stride + formatWidth);
-                     */
 
                     // Copy central colour pixel
                     dstBitmap.Data[dstPos] = dfBitmap.Data[srcPos];
@@ -1183,7 +1177,7 @@ namespace DeepEngine.Daggerfall
                 dstBuffer[dstPos] = srcBuffer[srcPos];
                 dstBuffer[dstPos + 1] = srcBuffer[srcPos + 1];
                 dstBuffer[dstPos + 2] = srcBuffer[srcPos + 2];
-                dstBuffer[dstPos + 3] = 0x04;
+                dstBuffer[dstPos + 3] = 0x01;
             }
         }
 

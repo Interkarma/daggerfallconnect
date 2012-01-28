@@ -195,10 +195,11 @@ namespace Launcher
             OptionsTab.Visibility = System.Windows.Visibility.Hidden;
             AboutTab.Visibility = System.Windows.Visibility.Hidden;
 
-            // Open ini file
-            string appStartPath = System.Windows.Forms.Application.StartupPath;
+            // Open config file
+            string appName = "Ruins of Hill Deep Playgrounds";
             string configName = "config.ini";
-            ini.LoadFile(System.IO.Path.Combine(appStartPath, configName));
+            string defaultsName = "default_config.ini";
+            ini.LoadFile(appName, configName, defaultsName);
 
             // Set arena2 path
             SetArena2Path(ini.GetValue("Daggerfall", "arena2Path"));
@@ -267,6 +268,7 @@ namespace Launcher
             // Start game
             if (playReady)
             {
+                SaveConfig();
                 string appStartPath = System.Windows.Forms.Application.StartupPath;
                 string appName = "RoHD Playground.exe";
                 System.Diagnostics.Process.Start(System.IO.Path.Combine(appStartPath, appName));

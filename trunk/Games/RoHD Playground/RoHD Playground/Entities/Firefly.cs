@@ -125,7 +125,7 @@ namespace RoHD_Playground.Entities
             Components.Add(sphere);
 
             // Create light
-            light = new LightComponent(scene.Core, Vector3.Zero, 2f, color, 0.5f);
+            light = new LightComponent(scene.Core, Vector3.Zero, 1.5f, color, 0.5f);
             Components.Add(light);
 
             // Start random generator

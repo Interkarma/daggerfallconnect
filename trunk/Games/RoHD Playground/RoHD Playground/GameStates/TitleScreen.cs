@@ -127,7 +127,7 @@ namespace RoHD_Playground.GameStates
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), lightColor, 0.90f));
 
             // Create fireflies in courtyard
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Entities.Firefly firefly = new Entities.Firefly(scene);
                 firefly.Matrix = Matrix.CreateTranslation(62.5f, 3.125f, 43.75f);
