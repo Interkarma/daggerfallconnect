@@ -55,22 +55,56 @@ namespace DeepEngine.Rendering
         RenderTarget2D fxaaRenderTarget;        // Render target to use as source for FXAA post-process.
         RenderTarget2D bloomRenderTarget;       // Render target ro use as source for Bloom post-process.
 
-        // Render parameters
+        // Effect parameters
         EffectParameter renderBillboards_Texture;
         EffectParameter renderBillboards_Position;
         EffectParameter renderBillboards_Size;
+        EffectParameter pointLight_colorMap;
+        EffectParameter pointLight_normalMap;
+        EffectParameter pointLight_depthMap;
+        EffectParameter pointLight_worldMatrix;
+        EffectParameter pointLight_viewMatrix;
+        EffectParameter pointLight_projectionMatrix;
+        EffectParameter pointLight_lightPosition;
+        EffectParameter pointLight_lightColor;
+        EffectParameter pointLight_lightRadius;
+        EffectParameter pointLight_lightIntensity;
+        EffectParameter pointLight_cameraPosition;
+        EffectParameter pointLight_invertViewProjection;
+        EffectParameter pointLight_halfPixel;
+        EffectParameter directionalLight_colorMap;
+        EffectParameter directionalLight_normalMap;
+        EffectParameter directionalLight_depthMap;
+        EffectParameter directionalLight_lightDirection;
+        EffectParameter directionalLight_lightColor;
+        EffectParameter directionalLight_lightIntensity;
+        EffectParameter directionalLight_cameraPosition;
+        EffectParameter directionalLight_invertViewProjection;
+        EffectParameter directionalLight_gBufferTextureSize;
+        EffectParameter emissiveLight_ColorMap;
+        EffectParameter emissiveLight_gBufferTextureSize;
 
-        // Geometry
-        private Model pointLightSphereModel;
+        // Light geometry
+        Model pointLightGeometry;
+        Model spotLightGeometry;
+
+        // Light textures
+        Texture2D spotLightCookie;
 
         // Billboard geometry template for Daggerfall flats
-        private VertexBuffer daggerfallBillboardVertexBuffer;
-        private IndexBuffer daggerfakkBillboardIndexBuffer;
+        VertexBuffer daggerfallBillboardVertexBuffer;
+        IndexBuffer daggerfallBillboardIndexBuffer;
 
         // Visible lights
-        const int maxVisibleLights = 512;
-        int visibleLightsCount;
-        LightData[] visibleLights;
+        const int maxDirectionalLights = 10;
+        const int maxPointLights = 512;
+        const int maxSpotLights = 50;
+        int directionalLightsCount;
+        int pointLightsCount;
+        int spotLightsCount;
+        LightData[] directionalLights;
+        LightData[] pointLights;
+        LightData[] spotLights;
 
         // Visible billboards
         const int maxVisibleBillboards = 2048;
@@ -88,6 +122,9 @@ namespace DeepEngine.Rendering
         // Screen rectangles
         Rectangle renderTargetRectangle;
         Rectangle graphicsDeviceRectangle;
+
+        // Ambient light total
+        Vector4 sumAmbientLightColor;
 
         #endregion
 
@@ -139,7 +176,7 @@ namespace DeepEngine.Rendering
         /// </summary>
         public int VisibleLightsCount
         {
-            get { return visibleLightsCount; }
+            get { return directionalLightsCount + pointLightsCount + spotLightsCount; }
         }
 
         /// <summary>
@@ -231,7 +268,9 @@ namespace DeepEngine.Rendering
             this.core = core;
 
             // Create arrays
-            visibleLights = new LightData[maxVisibleLights];
+            directionalLights = new LightData[maxDirectionalLights];
+            pointLights = new LightData[maxPointLights];
+            spotLights = new LightData[maxSpotLights];
             visibleBillboards = new BillboardData[maxVisibleBillboards];
         }
 
@@ -296,13 +335,47 @@ namespace DeepEngine.Rendering
             renderBillboards = core.ContentManager.Load<Effect>("Effects/RenderBillboards");
             fxaaAntialiasing = core.ContentManager.Load<Effect>("FXAA/fxaa");
 
-            // Get parameters
+            // Get render billboards parameters
             renderBillboards_Texture = renderBillboards.Parameters["Texture"];
             renderBillboards_Position = renderBillboards.Parameters["Position"];
             renderBillboards_Size = renderBillboards.Parameters["Size"];
 
-            // Load models
-            pointLightSphereModel = core.ContentManager.Load<Model>("Models/PointLightSphere");
+            // Get point light parameters
+            pointLight_colorMap = pointLightEffect.Parameters["ColorMap"];
+            pointLight_normalMap = pointLightEffect.Parameters["NormalMap"];
+            pointLight_depthMap = pointLightEffect.Parameters["DepthMap"];
+            pointLight_worldMatrix = pointLightEffect.Parameters["World"];
+            pointLight_viewMatrix = pointLightEffect.Parameters["View"];
+            pointLight_projectionMatrix = pointLightEffect.Parameters["Projection"];
+            pointLight_lightPosition = pointLightEffect.Parameters["LightPosition"];
+            pointLight_lightColor = pointLightEffect.Parameters["Color"];
+            pointLight_lightRadius = pointLightEffect.Parameters["LightRadius"];
+            pointLight_lightIntensity = pointLightEffect.Parameters["LightIntensity"];
+            pointLight_cameraPosition = pointLightEffect.Parameters["CameraPosition"];
+            pointLight_invertViewProjection = pointLightEffect.Parameters["InvertViewProjection"];
+            pointLight_halfPixel = pointLightEffect.Parameters["HalfPixel"];
+
+            // Get directional light paramters
+            directionalLight_colorMap = directionalLightEffect.Parameters["ColorMap"];
+            directionalLight_normalMap = directionalLightEffect.Parameters["NormalMap"];
+            directionalLight_depthMap = directionalLightEffect.Parameters["DepthMap"];
+            directionalLight_lightDirection = directionalLightEffect.Parameters["LightDirection"];
+            directionalLight_lightColor = directionalLightEffect.Parameters["Color"];
+            directionalLight_lightIntensity = directionalLightEffect.Parameters["LightIntensity"];
+            directionalLight_cameraPosition = directionalLightEffect.Parameters["CameraPosition"];
+            directionalLight_invertViewProjection = directionalLightEffect.Parameters["InvertViewProjection"];
+            directionalLight_gBufferTextureSize = directionalLightEffect.Parameters["GBufferTextureSize"];
+
+            // Get emissive light parameters
+            emissiveLight_ColorMap = emissiveLightEffect.Parameters["colorMap"];
+            emissiveLight_gBufferTextureSize = emissiveLightEffect.Parameters["GBufferTextureSize"];
+
+            // Load light geometry
+            pointLightGeometry = core.ContentManager.Load<Model>("Models/PointLightGeometry");
+            spotLightGeometry = core.ContentManager.Load<Model>("Models/SpotLightGeometry");
+
+            // Load light textures
+            spotLightCookie = core.ContentManager.Load<Texture2D>("Textures/SpotLightCookie");
 
             // Create billboard template
             CreateDaggerfallBillboardTemplate();
@@ -323,7 +396,9 @@ namespace DeepEngine.Rendering
         public void Update()
         {
             // Reset visible lights and billboards count
-            visibleLightsCount = 0;
+            directionalLightsCount = 0;
+            pointLightsCount = 0;
+            spotLightsCount = 0;
             visibleBillboardsCount = 0;
         }
 
@@ -347,7 +422,7 @@ namespace DeepEngine.Rendering
         public void Present()
         {
             // Copy renderTarget to frame buffer
-            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            core.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullNone);
             core.SpriteBatch.Draw(renderTarget, graphicsDeviceRectangle, renderTargetRectangle, Color.White);
             core.SpriteBatch.End();
 
@@ -358,18 +433,49 @@ namespace DeepEngine.Rendering
 
         /// <summary>
         /// Submit a light to be drawn in GBuffer.
-        ///  In deferred rendering lights are drawn after other buffers have been filled.
-        ///  Currently just storing pending light operations until end.
+        ///  In deferred rendering, most lights are drawn after other buffers have been filled.
+        ///  One exception being ambient light which is simply accumulated until we're ready to draw.
         /// </summary>
         /// <param name="lightComponent">Light to render.</param>
         /// <param name="caller">The entity submitting the light.</param>
         public void SubmitLight(LightComponent lightComponent, BaseEntity caller)
         {
-            if (visibleLightsCount < maxVisibleLights)
+            // Submit light by type
+            if (lightComponent.Type == LightComponent.LightType.Ambient)
             {
-                visibleLights[visibleLightsCount].LightComponent = lightComponent;
-                visibleLights[visibleLightsCount].Entity = caller;
-                visibleLightsCount++;
+                // Ambient light is just accumulated
+                sumAmbientLightColor += lightComponent.Color.ToVector4() * lightComponent.Intensity;
+                sumAmbientLightColor.W = MathHelper.Clamp(sumAmbientLightColor.W, 0, 1);
+            }
+            else if (lightComponent.Type == LightComponent.LightType.Directional)
+            {
+                // Add light to array
+                if (directionalLightsCount < maxDirectionalLights)
+                {
+                    directionalLights[directionalLightsCount].LightComponent = lightComponent;
+                    directionalLights[directionalLightsCount].Entity = caller;
+                    directionalLightsCount++;
+                }
+            }
+            else if (lightComponent.Type == LightComponent.LightType.Point)
+            {
+                // Add light to array
+                if (pointLightsCount < maxPointLights)
+                {
+                    pointLights[pointLightsCount].LightComponent = lightComponent;
+                    pointLights[pointLightsCount].Entity = caller;
+                    pointLightsCount++;
+                }
+            }
+            else if (lightComponent.Type == LightComponent.LightType.Spot)
+            {
+                // Add light to array
+                if (spotLightsCount < maxSpotLights)
+                {
+                    spotLights[spotLightsCount].LightComponent = lightComponent;
+                    spotLights[spotLightsCount].Entity = caller;
+                    spotLightsCount++;
+                }
             }
         }
 
@@ -383,6 +489,7 @@ namespace DeepEngine.Rendering
         {
             if (visibleBillboardsCount < maxVisibleBillboards)
             {
+                // Add billboard to array
                 visibleBillboards[visibleBillboardsCount].Material = material;
                 visibleBillboards[visibleBillboardsCount].Position = position;
                 visibleBillboards[visibleBillboardsCount].Size = size;
@@ -399,6 +506,9 @@ namespace DeepEngine.Rendering
         /// </summary>
         private void BeginDraw()
         {
+            // Reset ambient light colour
+            sumAmbientLightColor = Vector4.Zero;
+
             // Ensure render targets match viewport size
             if (gBuffer.Size.X != (float)graphicsDevice.Viewport.Width ||
                 gBuffer.Size.Y != (float)graphicsDevice.Viewport.Height)
@@ -443,6 +553,9 @@ namespace DeepEngine.Rendering
             if (showDebugBuffers)
                 gBuffer.UpdateDepthDebugBuffer(fullScreenQuad);
 
+            // Set ambient light
+            gBuffer.AmbientLightColor = sumAmbientLightColor;
+
             // Finish deferred rendering
             ComposeFinal();
 
@@ -470,7 +583,7 @@ namespace DeepEngine.Rendering
             }
 
             // Only fxaa is enabled
-            if (fxaaEnabled && !bloomEnabled)
+            else if (fxaaEnabled && !bloomEnabled)
             {
                 // Set render target
                 graphicsDevice.SetRenderTarget(fxaaRenderTarget);
@@ -504,7 +617,7 @@ namespace DeepEngine.Rendering
             }
 
             // Only bloom is enabled
-            if (bloomEnabled && !fxaaEnabled)
+            else if (bloomEnabled && !fxaaEnabled)
             {
                 // Set render target
                 graphicsDevice.SetRenderTarget(bloomRenderTarget);
@@ -520,7 +633,7 @@ namespace DeepEngine.Rendering
             }
 
             // Both fxaa and bloom are enabled
-            if (fxaaEnabled && bloomEnabled)
+            else if (fxaaEnabled && bloomEnabled)
             {
                 // Set render target
                 graphicsDevice.SetRenderTarget(fxaaRenderTarget);
@@ -574,32 +687,17 @@ namespace DeepEngine.Rendering
             graphicsDevice.BlendState = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.None;
 
-            // Draw visible lights for geometry
-            pointLightEffect.CurrentTechnique = pointLightEffect.Techniques["Default"];
-            for (int i = 0; i < maxVisibleLights; i++)
+            // Draw directional lights
+            for (int i = 0; i < directionalLightsCount; i++)
             {
-                if (i < visibleLightsCount)
-                {
-                    // Draw light
-                    LightComponent light = visibleLights[i].LightComponent;
-                    BaseEntity entity = visibleLights[i].Entity;
-                    switch (light.Type)
-                    {
-                        case LightComponent.LightType.Directional:
-                            DrawDirectionalLight(light.Direction, light.Color, light.Intensity);
-                            break;
-                        case LightComponent.LightType.Point:
-                            DrawPointLight(Vector3.Transform(light.Position, entity.Matrix), light.Radius, light.Color, light.Intensity);
-                            break;
-                    }
-                }
-                else
-                {
-                    // Clear remaining buffer positions to release any references
-                    visibleLights[i].LightComponent = null;
-                    visibleLights[i].Entity = null;
-                }
+                LightComponent light = directionalLights[i].LightComponent;
+                DrawDirectionalLight(light.Direction, light.Color, light.Intensity);
             }
+
+            // Draw point lights
+            DrawPointLights();
+
+            // TODO: Draw spot lights
 
             // Draw emissive light
             DrawEmissiveLight();
@@ -614,21 +712,21 @@ namespace DeepEngine.Rendering
         private void DrawDirectionalLight(Vector3 lightDirection, Color lightColor, float lightIntensity)
         {
             // Set GBuffer
-            directionalLightEffect.Parameters["ColorMap"].SetValue(gBuffer.ColorRT);
-            directionalLightEffect.Parameters["NormalMap"].SetValue(gBuffer.NormalRT);
-            directionalLightEffect.Parameters["DepthMap"].SetValue(gBuffer.DepthRT);
+            directionalLight_colorMap.SetValue(gBuffer.ColorRT);
+            directionalLight_normalMap.SetValue(gBuffer.NormalRT);
+            directionalLight_depthMap.SetValue(gBuffer.DepthRT);
 
             // Set light properties
-            directionalLightEffect.Parameters["LightDirection"].SetValue(lightDirection);
-            directionalLightEffect.Parameters["LightIntensity"].SetValue(lightIntensity);
-            directionalLightEffect.Parameters["Color"].SetValue(lightColor.ToVector3());
+            directionalLight_lightDirection.SetValue(lightDirection);
+            directionalLight_lightColor.SetValue(lightColor.ToVector3());
+            directionalLight_lightIntensity.SetValue(lightIntensity);
 
             // Set camera
-            directionalLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
-            directionalLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
+            directionalLight_cameraPosition.SetValue(core.ActiveScene.Camera.Position);
+            directionalLight_invertViewProjection.SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
 
             // Set size
-            directionalLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
+            directionalLight_gBufferTextureSize.SetValue(gBuffer.Size);
 
             // Apply changes
             directionalLightEffect.CurrentTechnique.Passes[0].Apply();
@@ -638,77 +736,80 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Draws a point light.
+        /// Draws point lights.
         /// </summary>
-        /// <param name="lightPosition">Light position.</param>
-        /// /// <param name="lightRadius">Light radius.</param>
-        /// <param name="color">Light colour.</param>
-        /// <param name="lightIntensity">Light intensity.</param>
-        private void DrawPointLight(Vector3 lightPosition, float lightRadius, Color color, float lightIntensity)
+        private void DrawPointLights()
         {
             // Set GBuffer
-            pointLightEffect.Parameters["ColorMap"].SetValue(gBuffer.ColorRT);
-            pointLightEffect.Parameters["NormalMap"].SetValue(gBuffer.NormalRT);
-            pointLightEffect.Parameters["DepthMap"].SetValue(gBuffer.DepthRT);
+            pointLight_colorMap.SetValue(gBuffer.ColorRT);
+            pointLight_normalMap.SetValue(gBuffer.NormalRT);
+            pointLight_depthMap.SetValue(gBuffer.DepthRT);
 
-            // Compute the light world matrix.
-            // Scale according to light radius, and translate it to light position.
-            Matrix sphereWorldMatrix = Matrix.CreateScale(lightRadius) * Matrix.CreateTranslation(lightPosition);
-            pointLightEffect.Parameters["World"].SetValue(sphereWorldMatrix);
-            pointLightEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
-            pointLightEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
+            // Set geometry
+            ModelMeshPart meshPart = pointLightGeometry.Meshes[0].MeshParts[0];
+            graphicsDevice.Indices = meshPart.IndexBuffer;
+            graphicsDevice.SetVertexBuffer(meshPart.VertexBuffer);
 
-            // Light position
-            pointLightEffect.Parameters["LightPosition"].SetValue(lightPosition);
-
-            // Set the color, radius and intensity
-            pointLightEffect.Parameters["Color"].SetValue(color.ToVector3());
-            pointLightEffect.Parameters["LightRadius"].SetValue(lightRadius);
-            pointLightEffect.Parameters["LightIntensity"].SetValue(lightIntensity);
-
-            // Parameters for specular computations
-            pointLightEffect.Parameters["CameraPosition"].SetValue(core.ActiveScene.Camera.Position);
-            pointLightEffect.Parameters["InvertViewProjection"].SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
-
-            // Size of a halfpixel, for texture coordinates alignment
-            pointLightEffect.Parameters["HalfPixel"].SetValue(gBuffer.HalfPixel);
-
-            // Calculate the distance between the camera and light center
-            float cameraToCenter = Vector3.Distance(core.ActiveScene.Camera.Position, lightPosition);
-
-            // If we are inside the light volume, draw the sphere's inside face
-            if (cameraToCenter < lightRadius)
-                graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-            else
-                graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-
-            graphicsDevice.DepthStencilState = DepthStencilState.None;
-            pointLightEffect.CurrentTechnique.Passes[0].Apply();
-            foreach (ModelMesh mesh in pointLightSphereModel.Meshes)
+            // Draw all point lights
+            LightComponent light;
+            BaseEntity entity;
+            for (int i = 0; i < pointLightsCount; i++)
             {
-                foreach (ModelMeshPart meshPart in mesh.MeshParts)
-                {
-                    graphicsDevice.Indices = meshPart.IndexBuffer;
-                    graphicsDevice.SetVertexBuffer(meshPart.VertexBuffer);
+                // Get light data
+                light = pointLights[i].LightComponent;
+                entity = pointLights[i].Entity;
 
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, meshPart.NumVertices, meshPart.StartIndex, meshPart.PrimitiveCount);
-                }
+                // Light position
+                Vector3 position = Vector3.Transform(light.Position, entity.Matrix);
+
+                // Compute the light world matrix.
+                // Scale according to light radius, and translate it to light position.
+                Matrix sphereWorldMatrix = Matrix.CreateScale(light.PointRadius) * Matrix.CreateTranslation(position);
+                pointLight_worldMatrix.SetValue(sphereWorldMatrix);
+                pointLight_viewMatrix.SetValue(core.ActiveScene.Camera.ViewMatrix);
+                pointLight_projectionMatrix.SetValue(core.ActiveScene.Camera.ProjectionMatrix);
+
+                // Light position
+                pointLight_lightPosition.SetValue(position);
+
+                // Set the color, radius and intensity
+                pointLight_lightColor.SetValue(light.Color.ToVector3());
+                pointLight_lightRadius.SetValue(light.PointRadius);
+                pointLight_lightIntensity.SetValue(light.Intensity);
+
+                // Parameters for specular computations
+                pointLight_cameraPosition.SetValue(core.ActiveScene.Camera.Position);
+                pointLight_invertViewProjection.SetValue(Matrix.Invert(core.ActiveScene.Camera.ViewMatrix * core.ActiveScene.Camera.ProjectionMatrix));
+
+                // Size of a halfpixel, for texture coordinates alignment
+                pointLight_halfPixel.SetValue(gBuffer.HalfPixel);
+
+                // Calculate the distance between the camera and light center
+                float cameraToCenter = Vector3.Distance(core.ActiveScene.Camera.Position, position);
+
+                // If we are inside the light volume, draw the sphere's inside face
+                if (cameraToCenter < light.PointRadius)
+                    graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+                else
+                    graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+
+                // Draw light sphere
+                pointLightEffect.CurrentTechnique.Passes[0].Apply();
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, meshPart.NumVertices, meshPart.StartIndex, meshPart.PrimitiveCount);
             }
-
-            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         /// <summary>
-        /// Draws light from emissive textures.
+        /// Draws light from emissive materials.
         /// </summary>
         private void DrawEmissiveLight()
         {
-            // Set GBuffer
-            emissiveLightEffect.Parameters["colorMap"].SetValue(gBuffer.ColorRT);
+            // Set states
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             // Set parameters
-            emissiveLightEffect.Parameters["GBufferTextureSize"].SetValue(gBuffer.Size);
+            emissiveLight_ColorMap.SetValue(gBuffer.ColorRT);
+            emissiveLight_gBufferTextureSize.SetValue(gBuffer.Size);
 
             // Apply changes
             emissiveLightEffect.Techniques[0].Passes[0].Apply();
@@ -722,8 +823,7 @@ namespace DeepEngine.Rendering
         #region Billboards
 
         /// <summary>
-        /// Draws billboard colors in a forward pass using previously
-        ///  accumulated light information.
+        /// Draws billboards
         /// </summary>
         private void DrawBillboards()
         {
@@ -734,7 +834,7 @@ namespace DeepEngine.Rendering
 
             // Set buffers
             core.GraphicsDevice.SetVertexBuffer(daggerfallBillboardVertexBuffer);
-            core.GraphicsDevice.Indices = daggerfakkBillboardIndexBuffer;
+            core.GraphicsDevice.Indices = daggerfallBillboardIndexBuffer;
 
             // Set render states
             core.GraphicsDevice.BlendState = BlendState.Opaque;
@@ -823,11 +923,11 @@ namespace DeepEngine.Rendering
 
             // Create buffers
             daggerfallBillboardVertexBuffer = new VertexBuffer(core.GraphicsDevice, VertexPositionNormalTextureBump.VertexDeclaration, 4, BufferUsage.WriteOnly);
-            daggerfakkBillboardIndexBuffer = new IndexBuffer(core.GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
+            daggerfallBillboardIndexBuffer = new IndexBuffer(core.GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
 
             // Set data
             daggerfallBillboardVertexBuffer.SetData(billboardVertices);
-            daggerfakkBillboardIndexBuffer.SetData(billboardIndices);
+            daggerfallBillboardIndexBuffer.SetData(billboardIndices);
         }
 
         #endregion

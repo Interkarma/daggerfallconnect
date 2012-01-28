@@ -216,10 +216,11 @@ namespace RoHD_Playground
         {
             try
             {
-                // Open ini file
-                string appStartPath = System.Windows.Forms.Application.StartupPath;
+                // Open config file
+                string appName = "Ruins of Hill Deep Playgrounds";
                 string configName = "config.ini";
-                ini.LoadFile(System.IO.Path.Combine(appStartPath, configName));
+                string defaultsName = "default_config.ini";
+                ini.LoadFile(appName, configName, defaultsName);
 
                 arena2Path = ini.GetValue("Daggerfall", "arena2Path");
                 mouseLookSpeed = float.Parse(ini.GetValue("Controls", "mouseLookSpeed"));

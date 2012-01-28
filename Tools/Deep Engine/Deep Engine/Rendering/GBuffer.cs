@@ -43,8 +43,8 @@ namespace DeepEngine.Rendering
         RenderTarget2D lightRT;             // Lighting
 
         // Ambient lighting
-        Color ambientColor = Color.White;
-        float ambientIntensity = 0.0f;
+        Vector4 ambientLightColor = Color.White.ToVector4();
+        float ambientLightIntensity = 0.0f;
 
         // Size
         Vector2 size;
@@ -77,23 +77,23 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Gets or sets color of basic ambient light.
+        /// Gets or sets color of ambient light.
         ///  Default is Color.White.
         /// </summary>
-        public Color AmbientColor
+        public Vector4 AmbientLightColor
         {
-            get { return ambientColor; }
-            set { ambientColor = value; }
+            get { return ambientLightColor; }
+            set { ambientLightColor = value; }
         }
 
         /// <summary>
-        /// Gets or sets intensity of basic ambient light.
+        /// Gets or sets intensity of ambient light.
         ///  Default is 0.0f;
         /// </summary>
-        public float AmbientIntensity
+        public float AmbientLightIntensity
         {
-            get { return ambientIntensity; }
-            set { ambientIntensity = value; }
+            get { return ambientLightIntensity; }
+            set { ambientLightIntensity = value; }
         }
 
         /// <summary>
@@ -217,16 +217,16 @@ namespace DeepEngine.Rendering
         public void ComposeFinal(Effect finalCombineEffect, FullScreenQuad fullScreenQuad)
         {
             // Set render states
-            graphicsDevice.BlendState = BlendState.AlphaBlend;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.RasterizerState = RasterizerState.CullNone;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
 
             // Set values
             finalCombineEffect.Parameters["ColorMap"].SetValue(colorRT);
             finalCombineEffect.Parameters["LightMap"].SetValue(lightRT);
             finalCombineEffect.Parameters["DepthMap"].SetValue(depthRT);
             finalCombineEffect.Parameters["HalfPixel"].SetValue(halfPixel);
-            finalCombineEffect.Parameters["AmbientColor"].SetValue(ambientColor.ToVector3());
-            finalCombineEffect.Parameters["AmbientIntensity"].SetValue(ambientIntensity);
+            finalCombineEffect.Parameters["AmbientColor"].SetValue(ambientLightColor);
 
             // Apply changes and draw
             finalCombineEffect.Techniques[0].Passes[0].Apply();

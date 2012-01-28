@@ -95,7 +95,7 @@ namespace DeepEngine.World
                     if ((component as LightComponent).Type == LightComponent.LightType.Point)
                     {
                         // Get bounding sphere of component transformed to entity space
-                        BoundingSphere sphere = (component as LightComponent).BoundingSphere.Transform(matrix);
+                        BoundingSphere sphere = (component as LightComponent).PointBoundingSphere.Transform(matrix);
 
                         // Only draw if component is visible by camera
                         if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))

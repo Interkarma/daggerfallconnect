@@ -5,8 +5,7 @@
 texture ColorMap;
 texture LightMap;
 texture DepthMap;
-float3 AmbientColor;
-float AmbientIntensity;
+float4 AmbientColor;
 float2 HalfPixel;
 
 sampler colorSampler = sampler_state
@@ -76,7 +75,7 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
     float4 light = tex2D(lightSampler,input.TexCoord);
     float3 diffuseLight = light.rgb;
     float specularLight = light.a;
-	float3 ambientLight = diffuseColor * AmbientColor * AmbientIntensity;
+	float3 ambientLight = diffuseColor * AmbientColor;
 
 	// Read geometry depth
     float depth = tex2D(depthSampler, input.TexCoord).r;

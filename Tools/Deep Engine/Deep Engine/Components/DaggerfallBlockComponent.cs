@@ -756,7 +756,7 @@ namespace DeepEngine.Components
             {
                 Dungeon = true,
                 Position = new Vector3(obj.XPos, -obj.YPos, -obj.ZPos) * ModelManager.GlobalScale,
-                Radius = (obj.Resources.LightResource.Radius * 6) * ModelManager.GlobalScale,
+                Radius = (obj.Resources.LightResource.Radius) * ModelManager.GlobalScale,
                 Unknown1 = obj.Resources.LightResource.Unknown1,
                 Unknown2 = obj.Resources.LightResource.Unknown2,
             };
