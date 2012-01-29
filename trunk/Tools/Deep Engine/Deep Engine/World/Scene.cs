@@ -32,6 +32,8 @@ namespace DeepEngine.World
 
         #region Fields
 
+        string name;
+
         // Engine
         DeepCore core;
 
@@ -60,6 +62,15 @@ namespace DeepEngine.World
         public DeepCore Core
         {
             get { return core; }
+        }
+
+        /// <summary>
+        /// Gets or sets scene name.
+        /// </summary>
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
         }
 
         /// <summary>

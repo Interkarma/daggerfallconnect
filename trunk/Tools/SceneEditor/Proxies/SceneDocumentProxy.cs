@@ -10,7 +10,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using System.ComponentModel;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using DeepEngine.Core;
+using DeepEngine.Components;
+using DeepEngine.World;
+using DeepEngine.Utility;
 using SceneEditor.Documents;
 #endregion
 
@@ -18,48 +25,26 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// Base proxy interface.
+    /// SceneDocument proxy interface.
     /// </summary>
-    internal interface IBaseEditorProxy : IEditorProxy { }
+    internal interface ISceneDocumentProxy : IEditorProxy { }
 
     /// <summary>
-    /// Defines base requirements of editor proxies.
+    /// Encapsulates scene document properties for the editor.
     /// </summary>
-    internal abstract class BaseEditorProxy : IBaseEditorProxy, IEditorProxy
+    internal sealed class SceneDocumentProxy : BaseEditorProxy, ISceneDocumentProxy, IEditorProxy
     {
 
         #region Fields
 
-        string name;
+        const string defaultName = "New Scene";
+        const string categoryName = "Document";
+
         SceneDocument document;
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets scene document this proxy belongs to.
-        /// </summary>
-        [Browsable(false)]
-        public SceneDocument SceneDocument
-        {
-            get { return document; }
-        }
-
-        /// <summary>
-        /// Gets or sets proxy name.
-        /// </summary>
-        [Browsable(true)]
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                SceneDocument.PushUndo(this, this.GetType().GetProperty("Name"));
-                name = value;
-            }
-        }
-
+        #region Editor Properties
         #endregion
 
         #region Constructors
@@ -68,9 +53,10 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
-        public BaseEditorProxy(SceneDocument document)
+        public SceneDocumentProxy(SceneDocument document)
+            : base(document)
         {
-            // Save references
+            base.Name = defaultName;
             this.document = document;
         }
 

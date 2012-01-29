@@ -31,8 +31,8 @@ namespace SceneEditor
 
         #region Fields
 
-        PropertyGrid propertyGrid;
         SceneDocument document;
+        PropertyGrid propertyGrid;
 
         #endregion
 
@@ -94,7 +94,7 @@ namespace SceneEditor
             // If nothing selected attach properties to scene environment
             if (sceneTreeView.SelectedNode == null)
             {
-                propertyGrid.SelectedObject = document.Environment;
+                //propertyGrid.SelectedObject = 
                 return;
             }
         }

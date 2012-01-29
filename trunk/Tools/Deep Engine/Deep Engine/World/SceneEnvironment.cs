@@ -43,52 +43,52 @@ namespace DeepEngine.World
         /// <summary>
         /// Gets or sets top colour of sky dome gradient.
         /// </summary>
-        public Color SkyDomeTopColor { get; set; }
+        public Color SkyGradientTop { get; set; }
 
         /// <summary>
         /// Gets or sets bottom colour of sky dome gradient.
         /// </summary>
-        public Color SkyDomeBottomColor { get; set; }
+        public Color SkyGradientBottom { get; set; }
 
         /// <summary>
         /// Enables or disables sky dome.
         /// </summary>
-        public bool SkyDomeVisible { get; set; }
+        public bool SkyVisible { get; set; }
 
         /// <summary>
         /// Enables or disables sky dome clouds.
         /// </summary>
-        public bool SkyDomeCloudsVisible { get; set; }
+        public bool CloudsVisible { get; set; }
 
         /// <summary>
         /// Gets or sets sky dome cloud color.
         /// </summary>
-        public Color SkyDomeCloudColor { get; set; }
+        public Color CloudColor { get; set; }
 
         /// <summary>
         /// Gets or sets sky dome cloud brightness.
         /// </summary>
-        public float SkyDomeCloudIntensity { get; set; }
+        public float CloudBrightness { get; set; }
 
         /// <summary>
         /// Gets or sets cloud animation time.
         /// </summary>
-        public float SkyDomeCloudTime { get; set; }
+        public float CloudTime { get; set; }
 
         /// <summary>
         /// Enables or disables sky dome stars.
         /// </summary>
-        public bool SkyDomeStarsVisible { get; set; }
+        public bool StarsVisible { get; set; }
 
         /// <summary>
         /// Gets or sets sky dome star color.
         /// </summary>
-        public Color SkyDomeStarColor { get; set; }
+        public Color StarColor { get; set; }
 
         /// <summary>
         /// Gets or sets sky dome star brightness.
         /// </summary>
-        public float SkyDomeStarIntensity { get; set; }
+        public float StarBrightness { get; set; }
 
         #endregion
 
@@ -101,16 +101,16 @@ namespace DeepEngine.World
         {
             // Set defaults
             ClearColor = Color.CornflowerBlue;
-            SkyDomeTopColor = Color.Blue;
-            SkyDomeBottomColor = Color.LightBlue;
-            SkyDomeVisible = true;
-            SkyDomeCloudsVisible = true;
-            SkyDomeCloudColor = Color.White;
-            SkyDomeCloudIntensity = 1.0f;
-            SkyDomeCloudTime = 1.0f;
-            SkyDomeStarsVisible = false;
-            SkyDomeStarColor = Color.White;
-            SkyDomeStarIntensity = 1.0f;
+            SkyGradientTop = Color.Blue;
+            SkyGradientBottom = Color.LightBlue;
+            SkyVisible = false;
+            CloudsVisible = true;
+            CloudColor = Color.White;
+            CloudBrightness = 1.0f;
+            CloudTime = 0.0f;
+            StarsVisible = false;
+            StarColor = Color.White;
+            StarBrightness = 1.0f;
         }
 
         #endregion

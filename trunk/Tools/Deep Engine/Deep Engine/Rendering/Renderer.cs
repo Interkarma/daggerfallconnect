@@ -430,7 +430,7 @@ namespace DeepEngine.Rendering
             EndDraw();
 
             // Clear frame buffer based on environment settings
-            if (core.ActiveScene.Environment.SkyDomeVisible)
+            if (core.ActiveScene.Environment.SkyVisible)
             {
                 // Draw a sky dome
                 DrawSkyDome();
@@ -707,10 +707,10 @@ namespace DeepEngine.Rendering
             SceneEnvironment environment = core.ActiveScene.Environment;
 
             // Get current cloud texture
-            Texture2D cloudMap = cloudFactory.GetClouds(environment.SkyDomeCloudTime, environment.SkyDomeCloudIntensity);
+            Texture2D cloudMap = cloudFactory.GetClouds(environment.CloudTime, environment.CloudBrightness);
 
             // Clear device to match bottom colour of sky dome
-            graphicsDevice.Clear(environment.SkyDomeBottomColor);
+            graphicsDevice.Clear(environment.SkyGradientBottom);
 
             // Set render states
             core.GraphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -731,8 +731,8 @@ namespace DeepEngine.Rendering
                     currentEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
                     currentEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
                     currentEffect.Parameters["CloudTexture"].SetValue(cloudMap);
-                    currentEffect.Parameters["TopColor"].SetValue(environment.SkyDomeTopColor.ToVector4());
-                    currentEffect.Parameters["BottomColor"].SetValue(environment.SkyDomeBottomColor.ToVector4());
+                    currentEffect.Parameters["TopColor"].SetValue(environment.SkyGradientTop.ToVector4());
+                    currentEffect.Parameters["BottomColor"].SetValue(environment.SkyGradientBottom.ToVector4());
 
                     //if (environment.SkyDomeStarsVisible)
                     //    currentEffect.Parameters["StarTexture"].SetValue(starFactory.StarMap);

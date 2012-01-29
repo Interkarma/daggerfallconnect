@@ -39,8 +39,6 @@ namespace SceneEditor.Documents
         bool isSaved = false;
         bool lockUndoRedo = false;
 
-        SceneEnvironmentProxy environment;
-
         Stack<UndoInfo> undoStack;
         Stack<UndoInfo> redoStack;
 
@@ -83,15 +81,6 @@ namespace SceneEditor.Documents
         }
 
         /// <summary>
-        /// Gets scene environment information.
-        /// </summary>
-        [Browsable(false)]
-        public SceneEnvironmentProxy Environment
-        {
-            get { return environment; }
-        }
-
-        /// <summary>
         /// Gets number of undo operations on stack.
         /// </summary>
         [Browsable(false)]
@@ -128,9 +117,6 @@ namespace SceneEditor.Documents
             // Create undo/redo stacks
             undoStack = new Stack<UndoInfo>(100);
             redoStack = new Stack<UndoInfo>(100);
-
-            // Create environment
-            environment = new SceneEnvironmentProxy(this);
         }
 
         #endregion
