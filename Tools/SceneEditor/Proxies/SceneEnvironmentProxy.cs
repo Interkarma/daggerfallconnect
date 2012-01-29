@@ -25,17 +25,20 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// Environment proxy interface.
+    /// SceneEnvironment proxy interface.
     /// </summary>
-    internal interface IEnvironmentProxy : IEditorProxy { }
+    internal interface ISceneEnvironmentProxy : IEditorProxy { }
 
     /// <summary>
-    /// Encapsulates scene environment for the editor.
+    /// Encapsulates scene environment properties for the editor.
     /// </summary>
-    internal sealed class SceneEnvironmentProxy : BaseEditorProxy, IEnvironmentProxy, IEditorProxy
+    internal sealed class SceneEnvironmentProxy : BaseEditorProxy, ISceneEnvironmentProxy, IEditorProxy
     {
 
         #region Fields
+
+        const string defaultName = "Environment";
+        const string categoryName = "Environment";
 
         SceneEnvironment environment;
 
@@ -46,7 +49,7 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Gets or sets clear colour.
         /// </summary>
-        [Category("Render Target"), DisplayName("Color"), Description("Colour to clear render target.")]
+        [Category(categoryName), Description("Colour to clear render target. Ignored when skydome is visible.")]
         public System.Drawing.Color ClearColor
         {
             get { return ColorHelper.FromXNA(environment.ClearColor); }
@@ -58,72 +61,142 @@ namespace SceneEditor.Proxies
         }
 
         /// <summary>
-        /// Enable or disable sky dome.
-        /// </summary>
-        [Category("Sky Dome"), DisplayName("Visible"), Description("Show sky dome.")]
-        public bool SkyDomeVisible
-        {
-            get { return environment.SkyDomeVisible; }
-            set
-            {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyDomeVisible"));
-                environment.SkyDomeVisible = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets top colour of sky dome gradient.
         /// </summary>
-        [Category("Sky Dome"), DisplayName("TopColor"), Description("Top colour of gradient.")]
-        public System.Drawing.Color SkyDomeTopColor
+        [Category(categoryName), Description("Top colour of skydome gradient.")]
+        public System.Drawing.Color SkyGradientTop
         {
-            get { return ColorHelper.FromXNA(environment.SkyDomeTopColor); }
+            get { return ColorHelper.FromXNA(environment.SkyGradientTop); }
             set
             {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyDomeTopColor"));
-                environment.SkyDomeTopColor = ColorHelper.FromWinForms(value);
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyGradientTop"));
+                environment.SkyGradientTop = ColorHelper.FromWinForms(value);
             }
         }
 
         /// <summary>
         /// Gets or sets bottom colour of sky dome gradient.
         /// </summary>
-        [Category("Sky Dome"), DisplayName("BottomColor"), Description("Bottom colour of gradient.")]
-        public System.Drawing.Color SkyDomeBottomColor
+        [Category(categoryName), Description("Bottom colour of skydome gradient.")]
+        public System.Drawing.Color SkyGradientBottom
         {
-            get { return ColorHelper.FromXNA(environment.SkyDomeBottomColor); }
+            get { return ColorHelper.FromXNA(environment.SkyGradientBottom); }
             set
             {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyDomeBottomColor"));
-                environment.SkyDomeBottomColor = ColorHelper.FromWinForms(value);
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyGradientBottom"));
+                environment.SkyGradientBottom = ColorHelper.FromWinForms(value);
+            }
+        }
+
+        /// <summary>
+        /// Enable or disable sky dome.
+        /// </summary>
+        [Category(categoryName), Description("Show or hide skydome.")]
+        public bool SkyVisible
+        {
+            get { return environment.SkyVisible; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyVisible"));
+                environment.SkyVisible = value;
             }
         }
 
         /// <summary>
         /// Enable or disable clouds.
         /// </summary>
-        [Category("Clouds"), DisplayName("Visible"), Description("Show clouds.")]
-        public bool SkyDomeCloudsVisible
+        [Category(categoryName), Description("Show or hide clouds.")]
+        public bool CloudsVisible
         {
-            get { return environment.SkyDomeCloudsVisible; }
+            get { return environment.CloudsVisible; }
             set
             {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyDomeCloudsVisible"));
-                environment.SkyDomeCloudsVisible = value;
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("CloudsVisible"));
+                environment.CloudsVisible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets cloud colour.
+        /// </summary>
+        [Category(categoryName), Description("Cloud colour.")]
+        public System.Drawing.Color CloudColor
+        {
+            get { return ColorHelper.FromXNA(environment.CloudColor); }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("CloudColor"));
+                environment.CloudColor = ColorHelper.FromWinForms(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets brightness of clouds.
+        /// </summary>
+        [Category(categoryName), Description("Cloud brightness.")]
+        public float CloudBrightness
+        {
+            get { return environment.CloudBrightness; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("CloudBrightness"));
+                environment.CloudBrightness = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets cloud animation time.
+        /// </summary>
+        [Category(categoryName), Description("Cloud animation time.")]
+        public float CloudTime
+        {
+            get { return environment.CloudTime; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("CloudTime"));
+                environment.CloudTime = value;
             }
         }
 
         /// <summary>
         /// Enable or disable stars.
         /// </summary>
-        [Category("Stars"), DisplayName("Visible"), Description("Show stars.")]
-        public bool SkyDomeStarsVisible
+        [Category(categoryName), Description("Show or hide stars.")]
+        public bool StarsVisible
         {
-            get { return environment.SkyDomeStarsVisible; }
+            get { return environment.StarsVisible; }
             set
             {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("SkyDomeStarsVisible"));
-                environment.SkyDomeStarsVisible = value;
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("StarsVisible"));
+                environment.StarsVisible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets star colour.
+        /// </summary>
+        [Category(categoryName), Description("Star light intensity.")]
+        public System.Drawing.Color StarColor
+        {
+            get { return ColorHelper.FromXNA(environment.StarColor); }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("StarColor"));
+                environment.StarColor = ColorHelper.FromWinForms(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets brightness of stars.
+        /// </summary>
+        [Category(categoryName), Description("Star brightness.")]
+        public float StarBrightness
+        {
+            get { return environment.StarBrightness; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("StarBrightness"));
+                environment.StarBrightness = value;
             }
         }
 
@@ -134,12 +207,14 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="sceneDocument">Scene document.</param>
-        public SceneEnvironmentProxy(SceneDocument sceneDocument)
-            : base(sceneDocument)
+        /// <param name="document">Scene document.</param>
+        /// <param name="environment">Scene environment to proxy.</param>
+        public SceneEnvironmentProxy(SceneDocument document, SceneEnvironment environment)
+            : base(document)
         {
             // Get environment from scene document
-            this.environment = base.SceneDocument.EditorScene.Environment;
+            base.Name = defaultName;
+            this.environment = environment;
         }
 
         #endregion

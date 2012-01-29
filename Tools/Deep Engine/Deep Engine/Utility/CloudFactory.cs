@@ -143,7 +143,7 @@ namespace DeepEngine.Utility
         private Texture2D CreateStaticMap(int resolution)
         {
             // Create random image
-            Random rand = new Random();
+            Random rand = new Random(0);
             Color[] noisyColors = new Color[resolution * resolution];
             for (int y = 0; y < resolution; y++)
             {
