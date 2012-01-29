@@ -18,7 +18,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
-using DeepEngine.Player;
 #endregion
 
 namespace SceneEditor.Controls
@@ -33,9 +32,6 @@ namespace SceneEditor.Controls
         #region Fields
 
         DeepCore core;
-
-        Input input;
-        Camera camera;
 
         string arena2Path = string.Empty;
         bool isReady = false;
@@ -75,10 +71,6 @@ namespace SceneEditor.Controls
             // Get start times
             startTime = stopwatch.Elapsed;
             lastTime = stopwatch.Elapsed;
-
-            // Create input and camera
-            input = new Input();
-            camera = new Camera();
         }
 
         /// <summary>
@@ -147,10 +139,6 @@ namespace SceneEditor.Controls
             // Measure elapsed time
             TimeSpan currentTime = stopwatch.Elapsed;
             TimeSpan elapsedTime = currentTime - lastTime;
-
-            // Update input
-            input.Update(elapsedTime);
-            input.Apply(camera, true);
 
             // Update core
             core.Update(elapsedTime);

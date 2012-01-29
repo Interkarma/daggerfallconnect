@@ -12,11 +12,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using System.IO;
 using System.ComponentModel;
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.World;
+using SceneEditor.Proxies;
 #endregion
 
 namespace SceneEditor.Documents
@@ -24,43 +27,86 @@ namespace SceneEditor.Documents
     
     /// <summary>
     /// Wraps a scene into a document for the editor.
+    ///  Supports unlimited undo/redo for non-indexed properties.
     /// </summary>
-    class SceneDocument
+    internal class SceneDocument
     {
 
         #region Fields
 
         DeepCore core;
         Scene editorScene;
-        Scene gameScene;
-        System.Drawing.Color clearColor = System.Drawing.Color.CornflowerBlue;
+        bool isSaved = false;
+        bool lockUndoRedo = false;
 
-        bool gameMode = false;
+        SceneEnvironmentProxy environment;
+
+        Stack<UndoInfo> undoStack;
+        Stack<UndoInfo> redoStack;
+
+        public event EventHandler OnPushUndo;
+
+        #endregion
+
+        #region Structures
+
+        /// <summary>
+        /// Defines a property for undo/redo operations.
+        /// </summary>
+        private struct UndoInfo
+        {
+            public BaseEditorProxy Proxy;
+            public PropertyInfo PropertyInfo;
+            public object Value;
+        }
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets flag to put scene document into Game Mode.
-        ///  While in Game Mode, scene objects receive updates normally.
-        ///  Everything remains at starting positions when returning to Editor Mode.
+        /// Gets flag stating if scene has been saved since last modification.
         /// </summary>
         [Browsable(false)]
-        public bool GameMode
+        public bool IsSaved
         {
-            get { return gameMode; }
-            set { gameMode = value; }
+            get { return isSaved; }
         }
 
         /// <summary>
-        /// Gets or sets clear colour.
+        /// Gets editor scene.
         /// </summary>
-        [Description("Colour to clear scene in draw operations.")]
-        public System.Drawing.Color ClearColor
+        [Browsable(false)]
+        public Scene EditorScene
         {
-            get { return clearColor; }
-            set { clearColor = value; }
+            get { return editorScene; }
+        }
+
+        /// <summary>
+        /// Gets scene environment information.
+        /// </summary>
+        [Browsable(false)]
+        public SceneEnvironmentProxy Environment
+        {
+            get { return environment; }
+        }
+
+        /// <summary>
+        /// Gets number of undo operations on stack.
+        /// </summary>
+        [Browsable(false)]
+        public int UndoCount
+        {
+            get { return undoStack.Count; }
+        }
+
+        /// <summary>
+        /// Gets number of redo operations on stack.
+        /// </summary>
+        [Browsable(false)]
+        public int RedoCount
+        {
+            get { return redoStack.Count; }
         }
 
         #endregion
@@ -78,10 +124,107 @@ namespace SceneEditor.Documents
 
             // Create scene objects
             editorScene = new Scene(core);
-            gameScene = new Scene(core);
 
-            // Set clear colour on engine
-            ClearColor = clearColor;
+            // Create undo/redo stacks
+            undoStack = new Stack<UndoInfo>(100);
+            redoStack = new Stack<UndoInfo>(100);
+
+            // Create environment
+            environment = new SceneEnvironmentProxy(this);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Pushes current property information onto the undo stack.
+        /// </summary>
+        /// <param name="propertyInfo">Property information.</param>
+        public void PushUndo(BaseEditorProxy proxy, PropertyInfo propertyInfo)
+        {
+            // Do nothing if locked
+            if (lockUndoRedo)
+                return;
+
+            // Set undo information
+            UndoInfo undoInfo = new UndoInfo
+            {
+                Proxy = proxy,
+                PropertyInfo = propertyInfo,
+                Value = propertyInfo.GetValue(proxy, null),
+            };
+
+            // Push onto undo stack
+            undoStack.Push(undoInfo);
+
+            // Raise event
+            if (OnPushUndo != null)
+                OnPushUndo(this, null);
+        }
+
+        /// <summary>
+        /// Pops property off undo stack and restores value.
+        ///  Property is then pushed onto redo stack.
+        /// </summary>
+        public void PopUndo()
+        {
+            // Do nothing if locked
+            if (lockUndoRedo)
+                return;
+
+            // Pop
+            if (undoStack.Count > 0)
+            {
+                // Pop from undo stack
+                UndoInfo undoInfo = undoStack.Pop();
+
+                // Gets current live value
+                object liveValue = undoInfo.PropertyInfo.GetValue(undoInfo.Proxy, null);
+
+                // Restore previous property value
+                lockUndoRedo = true;
+                undoInfo.PropertyInfo.SetValue(undoInfo.Proxy, undoInfo.Value, null);
+                lockUndoRedo = false;
+
+                // Update to last live value
+                undoInfo.Value = liveValue;
+
+                // Push onto redo stack
+                redoStack.Push(undoInfo);
+            }
+        }
+
+        /// <summary>
+        /// Pops property off redo stack and restores value.
+        ///  Property is then pushed onto undo stack.
+        /// </summary>
+        public void PopRedo()
+        {
+            // Do nothing if locked
+            if (lockUndoRedo)
+                return;
+
+            // Pop
+            if (redoStack.Count > 0)
+            {
+                // Pop from redo stack
+                UndoInfo undoInfo = redoStack.Pop();
+
+                // Gets current live value
+                object liveValue = undoInfo.PropertyInfo.GetValue(undoInfo.Proxy, null);
+
+                // Restore previous property value
+                lockUndoRedo = true;
+                undoInfo.PropertyInfo.SetValue(undoInfo.Proxy, undoInfo.Value, null);
+                lockUndoRedo = false;
+
+                // Update to last live value
+                undoInfo.Value = liveValue;
+
+                // Push onto undo stack
+                undoStack.Push(undoInfo);
+            }
         }
 
         #endregion
