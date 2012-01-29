@@ -126,6 +126,12 @@ namespace DeepEngine.Rendering
         // Ambient light total
         Vector4 sumAmbientLightColor;
 
+        // Sky dome
+        Effect skyDomeEffect;
+        Model skyDomeModel;
+        CloudFactory cloudFactory;
+        StarFactory starFactory;
+
         #endregion
 
         #region Structures
@@ -385,6 +391,15 @@ namespace DeepEngine.Rendering
             gBuffer = new GBuffer(core);
             bloomProcessor = new BloomProcessor(core);
 
+            // Load content
+            skyDomeEffect = core.ContentManager.Load<Effect>("Effects/SkyDomeEffect");
+            skyDomeModel = core.ContentManager.Load<Model>("Models/SkyDomeModel");
+            skyDomeModel.Meshes[0].MeshParts[0].Effect = skyDomeEffect.Clone();
+
+            // Create factories
+            cloudFactory = new CloudFactory(core);
+            starFactory = new StarFactory(core);
+
             // Wire up GraphicsDevice events
             graphicsDevice.DeviceReset += new EventHandler<EventArgs>(GraphicsDevice_DeviceReset);
             graphicsDevice.DeviceLost += new EventHandler<EventArgs>(GraphicsDevice_DeviceLost);
@@ -409,9 +424,22 @@ namespace DeepEngine.Rendering
         /// <param name="scene">Scene to render.</param>
         public void Draw(Scene scene)
         {
+            // Deferred render scene to render target buffer
             BeginDraw();
             DrawScene(scene);
             EndDraw();
+
+            // Clear frame buffer based on environment settings
+            if (core.ActiveScene.Environment.SkyDomeVisible)
+            {
+                // Draw a sky dome
+                DrawSkyDome();
+            }
+            else
+            {
+                // Just clear to solid colour
+                graphicsDevice.Clear(core.ActiveScene.Environment.ClearColor);
+            }
         }
 
         /// <summary>
@@ -668,6 +696,52 @@ namespace DeepEngine.Rendering
                 // Draw bloom
                 bloomProcessor.Draw(bloomRenderTarget, renderTarget);
             }
+        }
+
+        /// <summary>
+        /// Draws a dynamically generated skydome based on scene environment settings.
+        /// </summary>
+        private void DrawSkyDome()
+        {
+            // Get environment from scene
+            SceneEnvironment environment = core.ActiveScene.Environment;
+
+            // Get current cloud texture
+            Texture2D cloudMap = cloudFactory.GetClouds(environment.SkyDomeCloudTime, environment.SkyDomeCloudIntensity);
+
+            // Clear device to match bottom colour of sky dome
+            graphicsDevice.Clear(environment.SkyDomeBottomColor);
+
+            // Set render states
+            core.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+
+            // Set transforms
+            Matrix[] modelTransforms = new Matrix[skyDomeModel.Bones.Count];
+            skyDomeModel.CopyAbsoluteBoneTransformsTo(modelTransforms);
+
+            // Draw sky dome mesh
+            Matrix wMatrix = Matrix.CreateTranslation(0, -0.3f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(core.ActiveScene.Camera.Position);
+            foreach (ModelMesh mesh in skyDomeModel.Meshes)
+            {
+                foreach (Effect currentEffect in mesh.Effects)
+                {
+                    Matrix worldMatrix = modelTransforms[mesh.ParentBone.Index] * wMatrix;
+                    currentEffect.CurrentTechnique = currentEffect.Techniques["SkyDome"];
+                    currentEffect.Parameters["World"].SetValue(worldMatrix);
+                    currentEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
+                    currentEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
+                    currentEffect.Parameters["CloudTexture"].SetValue(cloudMap);
+                    currentEffect.Parameters["TopColor"].SetValue(environment.SkyDomeTopColor.ToVector4());
+                    currentEffect.Parameters["BottomColor"].SetValue(environment.SkyDomeBottomColor.ToVector4());
+
+                    //if (environment.SkyDomeStarsVisible)
+                    //    currentEffect.Parameters["StarTexture"].SetValue(starFactory.StarMap);
+                }
+                mesh.Draw();
+            }
+
+            // Reset render states
+            core.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         #endregion

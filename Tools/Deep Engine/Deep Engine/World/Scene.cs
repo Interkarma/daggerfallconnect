@@ -35,6 +35,9 @@ namespace DeepEngine.World
         // Engine
         DeepCore core;
 
+        // Environment
+        SceneEnvironment environment;
+
         // Simulation
         Space space;
         //float gravityForce = -9.81f;
@@ -57,6 +60,15 @@ namespace DeepEngine.World
         public DeepCore Core
         {
             get { return core; }
+        }
+
+        /// <summary>
+        /// Gets or sets environment.
+        /// </summary>
+        public SceneEnvironment Environment
+        {
+            get { return environment; }
+            set { environment = value; }
         }
 
         /// <summary>
@@ -105,12 +117,16 @@ namespace DeepEngine.World
             // Store values
             this.core = core;
 
+            // Create environment
+            environment = new SceneEnvironment();
+
             // Create simulation space
             space = new Space();
             space.ForceUpdater.Gravity = new Vector3(0, gravityForce, 0);
 
             // Create camera
             camera = new Camera();
+            camera.Position = Vector3.Zero;
 
             // Create entity lists
             entities = new List<BaseEntity>();

@@ -228,7 +228,7 @@ namespace RoHD_Playground.GameStates
             core.Draw(false);
 
             // Draw sky dome
-            core.DrawSkyDome(skyLight, skyDark, 0.3f, cloudTime, true);
+            //core.DrawSkyDome(skyLight, skyDark, 0.3f, cloudTime, true);
 
             // Present
             core.Present();

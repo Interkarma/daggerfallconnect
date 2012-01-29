@@ -95,6 +95,7 @@
     <Compile Include="UserInterface\TextItemScreenComponent.cs" />
     <Compile Include="Utility\BaseMaterialEffect.cs" />
     <Compile Include="Utility\CloudFactory.cs" />
+    <Compile Include="Utility\ColorHelper.cs" />
     <Compile Include="Utility\ComponentCollection.cs" />
     <Compile Include="Components\DrawableComponent.cs" />
     <Compile Include="Components\GeometricPrimitiveComponent.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="WinForms\ServiceContainer.cs" />
     <Compile Include="World\BaseEntity.cs" />
     <Compile Include="Player\Camera.cs" />
+    <Compile Include="World\SceneEnvironment.cs" />
     <Compile Include="World\WorldEntity.cs" />
     <Compile Include="World\Scene.cs" />
   </ItemGroup>

@@ -62,12 +62,6 @@ namespace DeepEngine.Core
         long lastUpdateTime = 0;
         long lastDrawTime = 0;
 
-        // Sky dome
-        Effect skyDomeEffect;
-        Model skyDomeModel;
-        CloudFactory cloudFactory;
-        StarFactory starFactory;
-
         // Temporary
         Scene scene;
         Input input;
@@ -294,15 +288,6 @@ namespace DeepEngine.Core
             this.mapManager = new MapsFile(Path.Combine(arena2Path, MapsFile.Filename), FileUsage.UseDisk, true);
             this.soundManager = new SndFile(Path.Combine(arena2Path, SndFile.Filename), FileUsage.UseDisk, true);
 
-            // Load content
-            skyDomeEffect = contentManager.Load<Effect>("Effects/SkyDomeEffect");
-            skyDomeModel = contentManager.Load<Model>("Models/SkyDomeModel");
-            skyDomeModel.Meshes[0].MeshParts[0].Effect = skyDomeEffect.Clone();
-
-            // Create factories
-            cloudFactory = new CloudFactory(this);
-            starFactory = new StarFactory(this);
-
             // Load engine objects content
             renderer.LoadContent();
         }
@@ -361,55 +346,6 @@ namespace DeepEngine.Core
         public void Present()
         {
             renderer.Present();
-        }
-
-        /// <summary>
-        /// Draws a dynamically generated skydome.
-        ///  Should be called after Draw(false) and before Present().
-        /// </summary>
-        /// <param name="lightColor">Lightest colour in gradient, drawn at lower part of dome.</param>
-        /// <param name="darkColor">Darkest colour in gradient, drawn at higher part of dome.</param>
-        /// <param name="brightness">Brightness of the clouds drawn.</param>
-        /// <param name="time">Time value for animating clouds.</param>
-        /// <param name="stars">True to draw generated stars behind clouds.</param>
-        public void DrawSkyDome(Color lightColor, Color darkColor, float brightness, float time, bool stars)
-        {
-            // Get cloud texture
-            Texture2D cloudMap = cloudFactory.GetClouds(time, brightness);
-
-            // Clear device to match lightest colour in sky gradient
-            graphicsDevice.Clear(lightColor);
-
-            // Set render states
-            GraphicsDevice.DepthStencilState = DepthStencilState.None;
-
-            // Set transforms
-            Matrix[] modelTransforms = new Matrix[skyDomeModel.Bones.Count];
-            skyDomeModel.CopyAbsoluteBoneTransformsTo(modelTransforms);
-
-            // Draw sky dome mesh
-            Matrix wMatrix = Matrix.CreateTranslation(0, -0.3f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(ActiveScene.Camera.Position);
-            foreach (ModelMesh mesh in skyDomeModel.Meshes)
-            {
-                foreach (Effect currentEffect in mesh.Effects)
-                {
-                    Matrix worldMatrix = modelTransforms[mesh.ParentBone.Index] * wMatrix;
-                    currentEffect.CurrentTechnique = currentEffect.Techniques["SkyDome"];
-                    currentEffect.Parameters["World"].SetValue(worldMatrix);
-                    currentEffect.Parameters["View"].SetValue(ActiveScene.Camera.ViewMatrix);
-                    currentEffect.Parameters["Projection"].SetValue(ActiveScene.Camera.ProjectionMatrix);
-                    currentEffect.Parameters["CloudTexture"].SetValue(cloudMap);
-                    currentEffect.Parameters["TopColor"].SetValue(darkColor.ToVector4());
-                    currentEffect.Parameters["BottomColor"].SetValue(lightColor.ToVector4());
-
-                    if (stars)
-                        currentEffect.Parameters["StarTexture"].SetValue(starFactory.StarMap);
-                }
-                mesh.Draw();
-            }
-
-            // Reset render states
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         #endregion
