@@ -31,47 +31,52 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.ToolboxPanel = new System.Windows.Forms.Panel();
-            this.sceneTreeView = new System.Windows.Forms.TreeView();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.NewSceneButton = new System.Windows.Forms.ToolStripButton();
-            this.OpenSceneButton = new System.Windows.Forms.ToolStripButton();
-            this.SaveSceneButton = new System.Windows.Forms.ToolStripButton();
+            this.ResourceTabControl = new System.Windows.Forms.TabControl();
+            this.SceneTabPage = new System.Windows.Forms.TabPage();
+            this.DocumentTreeView = new System.Windows.Forms.TreeView();
+            this.DocumentImageList = new System.Windows.Forms.ImageList(this.components);
+            this.PrefabsTabPage = new System.Windows.Forms.TabPage();
+            this.SceneToolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.AddEntityDropDown = new System.Windows.Forms.ToolStripDropDownButton();
-            this.AddWorldEntityButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.AddComponentDropDown = new System.Windows.Forms.ToolStripDropDownButton();
-            this.AddGeometricPrimitiveComponentButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.AddLightComponentButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.AddPhysicsColliderComponentButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.AddScreenComponentDropDown = new System.Windows.Forms.ToolStripDropDownButton();
-            this.AddTextScreenComponentButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolsDropDown = new System.Windows.Forms.ToolStripDropDownButton();
             this.PropertiesPanel = new System.Windows.Forms.Panel();
             this.WorldPanel = new System.Windows.Forms.Panel();
-            this.toolStrip2 = new System.Windows.Forms.ToolStrip();
+            this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.worldControl = new SceneEditor.Controls.WorldControl();
+            this.SceneContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.PlayButton = new System.Windows.Forms.ToolStripButton();
             this.StopPlayButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.RestartPlayButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.AboutButton = new System.Windows.Forms.ToolStripButton();
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.worldControl = new SceneEditor.Controls.WorldControl();
-            this.SceneImageList = new System.Windows.Forms.ImageList(this.components);
+            this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.entityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.makePrefabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NewSceneButton = new System.Windows.Forms.ToolStripButton();
+            this.OpenSceneButton = new System.Windows.Forms.ToolStripButton();
+            this.SaveSceneButton = new System.Windows.Forms.ToolStripButton();
             this.ToolboxPanel.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
+            this.ResourceTabControl.SuspendLayout();
+            this.SceneTabPage.SuspendLayout();
+            this.SceneToolStrip.SuspendLayout();
             this.WorldPanel.SuspendLayout();
-            this.toolStrip2.SuspendLayout();
+            this.WorldToolStrip.SuspendLayout();
+            this.SceneContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // ToolboxPanel
             // 
             this.ToolboxPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ToolboxPanel.Controls.Add(this.sceneTreeView);
-            this.ToolboxPanel.Controls.Add(this.toolStrip1);
+            this.ToolboxPanel.Controls.Add(this.ResourceTabControl);
+            this.ToolboxPanel.Controls.Add(this.SceneToolStrip);
             this.ToolboxPanel.Controls.Add(this.PropertiesPanel);
             this.ToolboxPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.ToolboxPanel.Location = new System.Drawing.Point(0, 0);
@@ -79,153 +84,100 @@
             this.ToolboxPanel.Size = new System.Drawing.Size(320, 862);
             this.ToolboxPanel.TabIndex = 2;
             // 
-            // sceneTreeView
+            // ResourceTabControl
             // 
-            this.sceneTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.ResourceTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.sceneTreeView.ImageIndex = 0;
-            this.sceneTreeView.ImageList = this.SceneImageList;
-            this.sceneTreeView.Location = new System.Drawing.Point(0, 26);
-            this.sceneTreeView.Name = "sceneTreeView";
-            this.sceneTreeView.SelectedImageIndex = 0;
-            this.sceneTreeView.Size = new System.Drawing.Size(318, 481);
-            this.sceneTreeView.TabIndex = 4;
-            this.sceneTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SceneTreeView_AfterSelect);
+            this.ResourceTabControl.Appearance = System.Windows.Forms.TabAppearance.Buttons;
+            this.ResourceTabControl.Controls.Add(this.SceneTabPage);
+            this.ResourceTabControl.Controls.Add(this.PrefabsTabPage);
+            this.ResourceTabControl.ImageList = this.DocumentImageList;
+            this.ResourceTabControl.ItemSize = new System.Drawing.Size(80, 19);
+            this.ResourceTabControl.Location = new System.Drawing.Point(0, 25);
+            this.ResourceTabControl.Margin = new System.Windows.Forms.Padding(0);
+            this.ResourceTabControl.Name = "ResourceTabControl";
+            this.ResourceTabControl.SelectedIndex = 0;
+            this.ResourceTabControl.Size = new System.Drawing.Size(319, 481);
+            this.ResourceTabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.ResourceTabControl.TabIndex = 4;
             // 
-            // toolStrip1
+            // SceneTabPage
             // 
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SceneTabPage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.SceneTabPage.Controls.Add(this.DocumentTreeView);
+            this.SceneTabPage.ImageKey = "Scene";
+            this.SceneTabPage.Location = new System.Drawing.Point(4, 23);
+            this.SceneTabPage.Margin = new System.Windows.Forms.Padding(0);
+            this.SceneTabPage.Name = "SceneTabPage";
+            this.SceneTabPage.Size = new System.Drawing.Size(311, 454);
+            this.SceneTabPage.TabIndex = 0;
+            this.SceneTabPage.Text = "Scene";
+            this.SceneTabPage.UseVisualStyleBackColor = true;
+            // 
+            // DocumentTreeView
+            // 
+            this.DocumentTreeView.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.DocumentTreeView.ContextMenuStrip = this.SceneContextMenuStrip;
+            this.DocumentTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DocumentTreeView.ImageIndex = 0;
+            this.DocumentTreeView.ImageList = this.DocumentImageList;
+            this.DocumentTreeView.Location = new System.Drawing.Point(0, 0);
+            this.DocumentTreeView.Margin = new System.Windows.Forms.Padding(0);
+            this.DocumentTreeView.Name = "DocumentTreeView";
+            this.DocumentTreeView.SelectedImageIndex = 0;
+            this.DocumentTreeView.Size = new System.Drawing.Size(309, 452);
+            this.DocumentTreeView.TabIndex = 4;
+            this.DocumentTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SceneTreeView_AfterSelect);
+            // 
+            // DocumentImageList
+            // 
+            this.DocumentImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("DocumentImageList.ImageStream")));
+            this.DocumentImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.DocumentImageList.Images.SetKeyName(0, "Unknown");
+            this.DocumentImageList.Images.SetKeyName(1, "Scene");
+            this.DocumentImageList.Images.SetKeyName(2, "Environment");
+            this.DocumentImageList.Images.SetKeyName(3, "ScreenScene");
+            this.DocumentImageList.Images.SetKeyName(4, "Entity");
+            this.DocumentImageList.Images.SetKeyName(5, "LightComponent");
+            this.DocumentImageList.Images.SetKeyName(6, "Geometry");
+            this.DocumentImageList.Images.SetKeyName(7, "PhysicsCollider");
+            this.DocumentImageList.Images.SetKeyName(8, "Panel");
+            this.DocumentImageList.Images.SetKeyName(9, "StackPanel");
+            this.DocumentImageList.Images.SetKeyName(10, "Text");
+            this.DocumentImageList.Images.SetKeyName(11, "Script");
+            this.DocumentImageList.Images.SetKeyName(12, "Prefab");
+            this.DocumentImageList.Images.SetKeyName(13, "Folder");
+            // 
+            // PrefabsTabPage
+            // 
+            this.PrefabsTabPage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PrefabsTabPage.ImageKey = "Prefab";
+            this.PrefabsTabPage.Location = new System.Drawing.Point(4, 23);
+            this.PrefabsTabPage.Name = "PrefabsTabPage";
+            this.PrefabsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.PrefabsTabPage.Size = new System.Drawing.Size(311, 454);
+            this.PrefabsTabPage.TabIndex = 1;
+            this.PrefabsTabPage.Text = "Prefabs";
+            this.PrefabsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SceneToolStrip
+            // 
+            this.SceneToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.NewSceneButton,
             this.OpenSceneButton,
             this.SaveSceneButton,
-            this.toolStripSeparator1,
-            this.AddEntityDropDown,
-            this.AddComponentDropDown,
-            this.AddScreenComponentDropDown,
-            this.toolStripSeparator2,
-            this.ToolsDropDown});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(318, 25);
-            this.toolStrip1.TabIndex = 3;
-            this.toolStrip1.Text = "toolStrip1";
-            // 
-            // NewSceneButton
-            // 
-            this.NewSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.NewSceneButton.Image = global::SceneEditor.Properties.Resources.page_white;
-            this.NewSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.NewSceneButton.Name = "NewSceneButton";
-            this.NewSceneButton.Size = new System.Drawing.Size(23, 22);
-            this.NewSceneButton.Text = "New Scene";
-            // 
-            // OpenSceneButton
-            // 
-            this.OpenSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.OpenSceneButton.Image = global::SceneEditor.Properties.Resources.folder_page;
-            this.OpenSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.OpenSceneButton.Name = "OpenSceneButton";
-            this.OpenSceneButton.Size = new System.Drawing.Size(23, 22);
-            this.OpenSceneButton.Text = "Open Scene";
-            // 
-            // SaveSceneButton
-            // 
-            this.SaveSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SaveSceneButton.Image = global::SceneEditor.Properties.Resources.disk;
-            this.SaveSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.SaveSceneButton.Name = "SaveSceneButton";
-            this.SaveSceneButton.Size = new System.Drawing.Size(23, 22);
-            this.SaveSceneButton.Text = "Save Scene";
+            this.toolStripSeparator1});
+            this.SceneToolStrip.Location = new System.Drawing.Point(0, 0);
+            this.SceneToolStrip.Name = "SceneToolStrip";
+            this.SceneToolStrip.Size = new System.Drawing.Size(318, 25);
+            this.SceneToolStrip.TabIndex = 3;
+            this.SceneToolStrip.Text = "toolStrip1";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // AddEntityDropDown
-            // 
-            this.AddEntityDropDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.AddEntityDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AddWorldEntityButton});
-            this.AddEntityDropDown.Image = global::SceneEditor.Properties.Resources.database_add;
-            this.AddEntityDropDown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AddEntityDropDown.Name = "AddEntityDropDown";
-            this.AddEntityDropDown.Size = new System.Drawing.Size(29, 22);
-            this.AddEntityDropDown.Text = "Add Entity";
-            // 
-            // AddWorldEntityButton
-            // 
-            this.AddWorldEntityButton.Image = global::SceneEditor.Properties.Resources.database;
-            this.AddWorldEntityButton.Name = "AddWorldEntityButton";
-            this.AddWorldEntityButton.Size = new System.Drawing.Size(139, 22);
-            this.AddWorldEntityButton.Text = "World Entity";
-            // 
-            // AddComponentDropDown
-            // 
-            this.AddComponentDropDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.AddComponentDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AddGeometricPrimitiveComponentButton,
-            this.AddLightComponentButton,
-            this.AddPhysicsColliderComponentButton});
-            this.AddComponentDropDown.Image = global::SceneEditor.Properties.Resources.cog_add;
-            this.AddComponentDropDown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AddComponentDropDown.Name = "AddComponentDropDown";
-            this.AddComponentDropDown.Size = new System.Drawing.Size(29, 22);
-            this.AddComponentDropDown.Text = "Add Component";
-            // 
-            // AddGeometricPrimitiveComponentButton
-            // 
-            this.AddGeometricPrimitiveComponentButton.Image = global::SceneEditor.Properties.Resources.bricks;
-            this.AddGeometricPrimitiveComponentButton.Name = "AddGeometricPrimitiveComponentButton";
-            this.AddGeometricPrimitiveComponentButton.Size = new System.Drawing.Size(179, 22);
-            this.AddGeometricPrimitiveComponentButton.Text = "Geometric Primitive";
-            // 
-            // AddLightComponentButton
-            // 
-            this.AddLightComponentButton.Image = global::SceneEditor.Properties.Resources.lightbulb;
-            this.AddLightComponentButton.Name = "AddLightComponentButton";
-            this.AddLightComponentButton.Size = new System.Drawing.Size(179, 22);
-            this.AddLightComponentButton.Text = "Light";
-            // 
-            // AddPhysicsColliderComponentButton
-            // 
-            this.AddPhysicsColliderComponentButton.Image = global::SceneEditor.Properties.Resources.cog;
-            this.AddPhysicsColliderComponentButton.Name = "AddPhysicsColliderComponentButton";
-            this.AddPhysicsColliderComponentButton.Size = new System.Drawing.Size(179, 22);
-            this.AddPhysicsColliderComponentButton.Text = "Physics Collider";
-            // 
-            // AddScreenComponentDropDown
-            // 
-            this.AddScreenComponentDropDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.AddScreenComponentDropDown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AddTextScreenComponentButton});
-            this.AddScreenComponentDropDown.Image = global::SceneEditor.Properties.Resources.monitor_add;
-            this.AddScreenComponentDropDown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AddScreenComponentDropDown.Name = "AddScreenComponentDropDown";
-            this.AddScreenComponentDropDown.Size = new System.Drawing.Size(29, 22);
-            this.AddScreenComponentDropDown.Text = "Add Screen Component";
-            // 
-            // AddTextScreenComponentButton
-            // 
-            this.AddTextScreenComponentButton.Image = global::SceneEditor.Properties.Resources.text_allcaps;
-            this.AddTextScreenComponentButton.Name = "AddTextScreenComponentButton";
-            this.AddTextScreenComponentButton.Size = new System.Drawing.Size(96, 22);
-            this.AddTextScreenComponentButton.Text = "Text";
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolsDropDown
-            // 
-            this.ToolsDropDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolsDropDown.Image = global::SceneEditor.Properties.Resources.wrench;
-            this.ToolsDropDown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolsDropDown.Name = "ToolsDropDown";
-            this.ToolsDropDown.Size = new System.Drawing.Size(29, 22);
-            this.ToolsDropDown.Text = "Tools";
             // 
             // PropertiesPanel
             // 
@@ -244,16 +196,16 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.WorldPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.WorldPanel.Controls.Add(this.worldControl);
-            this.WorldPanel.Controls.Add(this.toolStrip2);
-            this.WorldPanel.Controls.Add(this.statusStrip1);
+            this.WorldPanel.Controls.Add(this.WorldToolStrip);
+            this.WorldPanel.Controls.Add(this.MainStatusStrip);
             this.WorldPanel.Location = new System.Drawing.Point(323, 0);
             this.WorldPanel.Name = "WorldPanel";
             this.WorldPanel.Size = new System.Drawing.Size(1101, 862);
             this.WorldPanel.TabIndex = 3;
             // 
-            // toolStrip2
+            // WorldToolStrip
             // 
-            this.toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.WorldToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.PlayButton,
             this.StopPlayButton,
             this.toolStripSeparator4,
@@ -262,11 +214,62 @@
             this.AboutButton,
             this.UndoButton,
             this.RedoButton});
-            this.toolStrip2.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip2.Name = "toolStrip2";
-            this.toolStrip2.Size = new System.Drawing.Size(1099, 25);
-            this.toolStrip2.TabIndex = 1;
-            this.toolStrip2.Text = "toolStrip2";
+            this.WorldToolStrip.Location = new System.Drawing.Point(0, 0);
+            this.WorldToolStrip.Name = "WorldToolStrip";
+            this.WorldToolStrip.Size = new System.Drawing.Size(1099, 25);
+            this.WorldToolStrip.TabIndex = 1;
+            this.WorldToolStrip.Text = "toolStrip2";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // MainStatusStrip
+            // 
+            this.MainStatusStrip.Location = new System.Drawing.Point(0, 838);
+            this.MainStatusStrip.Name = "MainStatusStrip";
+            this.MainStatusStrip.Size = new System.Drawing.Size(1099, 22);
+            this.MainStatusStrip.TabIndex = 2;
+            this.MainStatusStrip.Text = "statusStrip1";
+            // 
+            // worldControl
+            // 
+            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.worldControl.Location = new System.Drawing.Point(0, 25);
+            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
+            this.worldControl.Name = "worldControl";
+            this.worldControl.Size = new System.Drawing.Size(1099, 813);
+            this.worldControl.TabIndex = 0;
+            this.worldControl.Text = "DeepEngine - WorldControl";
+            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            // 
+            // SceneContextMenuStrip
+            // 
+            this.SceneContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newToolStripMenuItem,
+            this.toolStripSeparator5,
+            this.renameToolStripMenuItem,
+            this.makePrefabToolStripMenuItem,
+            this.toolStripSeparator6,
+            this.deleteToolStripMenuItem});
+            this.SceneContextMenuStrip.Name = "SceneContextMenuStrip";
+            this.SceneContextMenuStrip.Size = new System.Drawing.Size(153, 126);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(149, 6);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(149, 6);
             // 
             // PlayButton
             // 
@@ -288,11 +291,6 @@
             this.StopPlayButton.Size = new System.Drawing.Size(23, 22);
             this.StopPlayButton.Text = "Stop Playing Scene";
             // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
             // RestartPlayButton
             // 
             this.RestartPlayButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -301,11 +299,6 @@
             this.RestartPlayButton.Name = "RestartPlayButton";
             this.RestartPlayButton.Size = new System.Drawing.Size(23, 22);
             this.RestartPlayButton.Text = "Reset Play State";
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // AboutButton
             // 
@@ -337,39 +330,75 @@
             this.RedoButton.Text = "Redo";
             this.RedoButton.Click += new System.EventHandler(this.RedoButton_Click);
             // 
-            // statusStrip1
+            // newToolStripMenuItem
             // 
-            this.statusStrip1.Location = new System.Drawing.Point(0, 838);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1099, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
+            this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.entityToolStripMenuItem,
+            this.toolStripSeparator2});
+            this.newToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.page_white;
+            this.newToolStripMenuItem.Name = "newToolStripMenuItem";
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Text = "New";
             // 
-            // worldControl
+            // entityToolStripMenuItem
             // 
-            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.worldControl.Location = new System.Drawing.Point(0, 25);
-            this.worldControl.Name = "worldControl";
-            this.worldControl.Size = new System.Drawing.Size(1099, 813);
-            this.worldControl.TabIndex = 0;
-            this.worldControl.Text = "DeepEngine - WorldControl";
-            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            this.entityToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.link;
+            this.entityToolStripMenuItem.Name = "entityToolStripMenuItem";
+            this.entityToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.entityToolStripMenuItem.Text = "Entity";
             // 
-            // SceneImageList
+            // toolStripSeparator2
             // 
-            this.SceneImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("SceneImageList.ImageStream")));
-            this.SceneImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this.SceneImageList.Images.SetKeyName(0, "Scene");
-            this.SceneImageList.Images.SetKeyName(1, "ScreenScene");
-            this.SceneImageList.Images.SetKeyName(2, "Environment");
-            this.SceneImageList.Images.SetKeyName(3, "Entity");
-            this.SceneImageList.Images.SetKeyName(4, "LightComponent");
-            this.SceneImageList.Images.SetKeyName(5, "Geometry");
-            this.SceneImageList.Images.SetKeyName(6, "PhysicsCollider");
-            this.SceneImageList.Images.SetKeyName(7, "Panel");
-            this.SceneImageList.Images.SetKeyName(8, "StackPanel");
-            this.SceneImageList.Images.SetKeyName(9, "Text");
-            this.SceneImageList.Images.SetKeyName(10, "Script");
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            // 
+            // renameToolStripMenuItem
+            // 
+            this.renameToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.textfield_rename;
+            this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.renameToolStripMenuItem.Text = "Rename";
+            // 
+            // makePrefabToolStripMenuItem
+            // 
+            this.makePrefabToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.sport_8ball;
+            this.makePrefabToolStripMenuItem.Name = "makePrefabToolStripMenuItem";
+            this.makePrefabToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.makePrefabToolStripMenuItem.Text = "Make Prefab";
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.cross;
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            // 
+            // NewSceneButton
+            // 
+            this.NewSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.NewSceneButton.Image = global::SceneEditor.Properties.Resources.page_white;
+            this.NewSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.NewSceneButton.Name = "NewSceneButton";
+            this.NewSceneButton.Size = new System.Drawing.Size(23, 22);
+            this.NewSceneButton.Text = "New Scene";
+            // 
+            // OpenSceneButton
+            // 
+            this.OpenSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.OpenSceneButton.Image = global::SceneEditor.Properties.Resources.folder_page;
+            this.OpenSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.OpenSceneButton.Name = "OpenSceneButton";
+            this.OpenSceneButton.Size = new System.Drawing.Size(23, 22);
+            this.OpenSceneButton.Text = "Open Scene";
+            // 
+            // SaveSceneButton
+            // 
+            this.SaveSceneButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.SaveSceneButton.Image = global::SceneEditor.Properties.Resources.disk;
+            this.SaveSceneButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SaveSceneButton.Name = "SaveSceneButton";
+            this.SaveSceneButton.Size = new System.Drawing.Size(23, 22);
+            this.SaveSceneButton.Text = "Save Scene";
             // 
             // MainForm
             // 
@@ -385,12 +414,15 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.ToolboxPanel.ResumeLayout(false);
             this.ToolboxPanel.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            this.ResourceTabControl.ResumeLayout(false);
+            this.SceneTabPage.ResumeLayout(false);
+            this.SceneToolStrip.ResumeLayout(false);
+            this.SceneToolStrip.PerformLayout();
             this.WorldPanel.ResumeLayout(false);
             this.WorldPanel.PerformLayout();
-            this.toolStrip2.ResumeLayout(false);
-            this.toolStrip2.PerformLayout();
+            this.WorldToolStrip.ResumeLayout(false);
+            this.WorldToolStrip.PerformLayout();
+            this.SceneContextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -401,33 +433,35 @@
         private System.Windows.Forms.Panel PropertiesPanel;
         private System.Windows.Forms.Panel WorldPanel;
         private Controls.WorldControl worldControl;
-        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStrip SceneToolStrip;
         private System.Windows.Forms.ToolStripButton NewSceneButton;
         private System.Windows.Forms.ToolStripButton OpenSceneButton;
         private System.Windows.Forms.ToolStripButton SaveSceneButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripDropDownButton AddEntityDropDown;
-        private System.Windows.Forms.ToolStripDropDownButton AddComponentDropDown;
-        private System.Windows.Forms.ToolStripMenuItem AddWorldEntityButton;
-        private System.Windows.Forms.ToolStripMenuItem AddGeometricPrimitiveComponentButton;
-        private System.Windows.Forms.ToolStripMenuItem AddLightComponentButton;
-        private System.Windows.Forms.ToolStripMenuItem AddPhysicsColliderComponentButton;
-        private System.Windows.Forms.ToolStripDropDownButton AddScreenComponentDropDown;
-        private System.Windows.Forms.ToolStripMenuItem AddTextScreenComponentButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripDropDownButton ToolsDropDown;
-        private System.Windows.Forms.TreeView sceneTreeView;
-        private System.Windows.Forms.ToolStrip toolStrip2;
+        private System.Windows.Forms.TreeView DocumentTreeView;
+        private System.Windows.Forms.ToolStrip WorldToolStrip;
         private System.Windows.Forms.ToolStripButton PlayButton;
         private System.Windows.Forms.ToolStripButton StopPlayButton;
         private System.Windows.Forms.ToolStripButton RestartPlayButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.StatusStrip MainStatusStrip;
         private System.Windows.Forms.ToolStripButton AboutButton;
         private System.Windows.Forms.ToolStripButton UndoButton;
         private System.Windows.Forms.ToolStripButton RedoButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ImageList SceneImageList;
+        private System.Windows.Forms.ImageList DocumentImageList;
+        private System.Windows.Forms.TabControl ResourceTabControl;
+        private System.Windows.Forms.TabPage SceneTabPage;
+        private System.Windows.Forms.TabPage PrefabsTabPage;
+        private System.Windows.Forms.ContextMenuStrip SceneContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem entityToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem makePrefabToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
     }
 }
 

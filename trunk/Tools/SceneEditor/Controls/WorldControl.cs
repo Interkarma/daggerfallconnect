@@ -145,7 +145,7 @@ namespace SceneEditor.Controls
 
             // Store update time
             lastTime = currentTime;
-            
+
             // Redraw
             CustomRefresh();
         }

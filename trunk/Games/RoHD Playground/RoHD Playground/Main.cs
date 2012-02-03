@@ -94,19 +94,16 @@ namespace RoHD_Playground
             // Capture device settings event
             graphics.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(Graphics_PreparingDeviceSettings);
 
-            // Timing
-            this.IsFixedTimeStep = true;
-            this.Window.Title = title;
-            graphics.SynchronizeWithVerticalRetrace = true;
-
             // Read INI file
             ReadINISettings();
 
+            // Timing
+            this.IsFixedTimeStep = true;
+            graphics.SynchronizeWithVerticalRetrace = true;
+            this.Window.Title = title;
+
             // Set display mode
-            if (windowedMode)
-                displayPreference = DisplayPreferences.Windowed;
-            else
-                displayPreference = DisplayPreferences.Fullscreen;
+            displayPreference = (windowedMode) ? DisplayPreferences.Windowed : DisplayPreferences.Fullscreen;
 
             // Create engine core
             core = new DeepCore(arena2Path, this.Services);
