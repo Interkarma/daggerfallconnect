@@ -56,8 +56,9 @@ namespace RoHD_Playground
 
         // States
         GameStateManager gameManager;
-        TitleScreen titleScreen;
-        PlayingGame playingGame;
+        TitleScreen1 titleScreen;
+        Playground1 playground1;
+        Playground2 playground2;
         ExitMenu gameOptionsMenu;
 
         // Display
@@ -113,19 +114,21 @@ namespace RoHD_Playground
             Components.Add(gameManager);
 
             // Create game states
-            titleScreen = new TitleScreen(core, this);
-            playingGame = new PlayingGame(core, this);
+            titleScreen = new TitleScreen1(core, this);
+            playground1 = new Playground1(core, this);
+            playground2 = new Playground2(core, this);
             gameOptionsMenu = new ExitMenu(core, this);
 
-            // Set settings
-            playingGame.MouseLookSpeed = mouseLookSpeed;
+            // Apply settings
+            playground1.MouseLookSpeed = mouseLookSpeed;
+            playground2.MouseLookSpeed = mouseLookSpeed;
 
             // Setup title events
             titleScreen.OnStartClicked += new EventHandler(TitleScreen_OnStartClicked);
             titleScreen.OnExitClicked += new EventHandler(TitleScreen_OnExitClicked);
 
             // Set initial game state
-            gameManager.ChangeState(titleScreen);
+            gameManager.ChangeState(playground2);
         }
 
         #endregion
@@ -182,7 +185,9 @@ namespace RoHD_Playground
             {
                 if (gameManager.State == titleScreen)
                     this.Exit();
-                else if (gameManager.State == playingGame)
+                else if (gameManager.State == playground2)
+                    this.Exit();
+                else if (gameManager.State == playground1)
                     gameManager.PushState(gameOptionsMenu);
                 else
                     gameManager.PopState();   
@@ -340,7 +345,7 @@ namespace RoHD_Playground
 
         private void TitleScreen_OnStartClicked(object sender, EventArgs e)
         {
-            gameManager.PushState(playingGame);
+            gameManager.PushState(playground1);
         }
 
         private void TitleScreen_OnExitClicked(object sender, EventArgs e)

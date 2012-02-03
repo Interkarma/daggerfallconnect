@@ -39,6 +39,9 @@
                     <Label Content="Resolution" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="6,97,0,0" Name="label9" VerticalAlignment="Top" />
                     <ComboBox Height="23" Margin="6,131,318,0" Name="ResolutionComboBox" VerticalAlignment="Top" />
                     <CheckBox Content="Windowed Mode" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="76,160,0,0" Name="WindowedModeCheckBox" VerticalAlignment="Top" />
+                    <Label Content="Timing" FontSize="14" Foreground="Orange" Height="28" HorizontalAlignment="Left" Margin="241,271,0,0" Name="label10" VerticalAlignment="Top" />
+                    <CheckBox Content="Fixed time-step (Recommended)" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="241,305,0,0" Name="EnableFixedTimeStepCheckBox" VerticalAlignment="Top" />
+                    <CheckBox Content="Vertical sync (Recommended)" Foreground="White" Height="16" HorizontalAlignment="Left" Margin="241,332,0,0" Name="EnableVerticalSyncCheckBox" VerticalAlignment="Top" />
                 </Grid>
             </TabItem>
             <TabItem Header="About" Name="AboutTab">

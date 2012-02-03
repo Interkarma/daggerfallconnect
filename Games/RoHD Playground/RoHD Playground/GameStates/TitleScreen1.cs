@@ -37,7 +37,7 @@ namespace RoHD_Playground.GameStates
     /// <summary>
     /// Title screen class.
     /// </summary>
-    public sealed class TitleScreen : GameState, ITitleScreenState
+    public sealed class TitleScreen1 : GameState, ITitleScreenState
     {
 
         #region Fields
@@ -78,7 +78,7 @@ namespace RoHD_Playground.GameStates
         /// </summary>
         /// <param name="core">Engine core.</param>
         /// <param name="game">Game object.</param>
-        public TitleScreen(DeepCore core, Game game)
+        public TitleScreen1(DeepCore core, Game game)
             : base(core, game)
         {
         }
