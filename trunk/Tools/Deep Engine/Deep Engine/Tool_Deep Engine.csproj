@@ -74,6 +74,7 @@
     <Compile Include="Components\BaseComponent.cs" />
     <Compile Include="Components\DaggerfallBillboardBatchComponent.cs" />
     <Compile Include="Components\DaggerfallBillboardComponent.cs" />
+    <Compile Include="Components\QuadTerrainComponent.cs" />
     <Compile Include="Components\ReaperComponent.cs" />
     <Compile Include="Core\ConfigManager.cs" />
     <Compile Include="GameStates\GameState.cs" />
@@ -122,7 +123,9 @@
     <Compile Include="Rendering\FullScreenQuad.cs" />
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\Renderer.cs" />
+    <Compile Include="Utility\Grid.cs" />
     <Compile Include="Utility\PowerOfTwo.cs" />
+    <Compile Include="Utility\QuadNode.cs" />
     <Compile Include="Utility\ScreenComponentCollection.cs" />
     <Compile Include="Utility\StarFactory.cs" />
     <Compile Include="Utility\StaticGeometryBuilder.cs" />

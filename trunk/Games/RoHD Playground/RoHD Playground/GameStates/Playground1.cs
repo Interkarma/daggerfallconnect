@@ -32,12 +32,12 @@ namespace RoHD_Playground.GameStates
     /// <summary>
     /// Playing game interface.
     /// </summary>
-    public interface IPlayingGameState : IGameState { }
+    public interface IPlayground1State : IGameState { }
 
     /// <summary>
-    /// Playing game.
+    /// Playground1.
     /// </summary>
-    class PlayingGame : GameState, IPlayingGameState
+    class Playground1 : GameState, IPlayground1State
     {
 
         #region Fields
@@ -130,7 +130,7 @@ namespace RoHD_Playground.GameStates
         /// </summary>
         /// <param name="core">Engine core.</param>
         /// <param name="game">Game object.</param>
-        public PlayingGame(DeepCore core, Game game)
+        public Playground1(DeepCore core, Game game)
             : base(core, game)
         {
             // Build list of physics objects we're going to use
@@ -322,7 +322,6 @@ namespace RoHD_Playground.GameStates
         public override void Draw(GameTime gameTime)
         {
             core.Draw(false);
-            GraphicsDevice.Clear(Color.Black);
             core.Present();
 
             // Draw gui components
@@ -419,7 +418,7 @@ namespace RoHD_Playground.GameStates
             }
 
             // Setup ambient light
-            LightComponent ambientLightComponent = new LightComponent(core, Color.White, 0.1f);
+            LightComponent ambientLightComponent = new LightComponent(core, Color.White, 0.25f);
             entity.Components.Add(ambientLightComponent);
 
             // Setup directional light

@@ -79,8 +79,9 @@
   <ItemGroup>
     <Compile Include="Entities\Firefly.cs" />
     <Compile Include="GameStates\ExitMenu.cs" />
-    <Compile Include="GameStates\PlayingGame.cs" />
-    <Compile Include="GameStates\TitleScreen.cs" />
+    <Compile Include="GameStates\Playground1.cs" />
+    <Compile Include="GameStates\Playground2.cs" />
+    <Compile Include="GameStates\TitleScreen1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Main.cs" />
