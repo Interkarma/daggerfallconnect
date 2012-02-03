@@ -95,6 +95,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap cog1 {
+            get {
+                object obj = ResourceManager.GetObject("cog1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap control_pause_blue {
             get {
                 object obj = ResourceManager.GetObject("control_pause_blue", resourceCulture);
@@ -123,6 +130,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap cross {
+            get {
+                object obj = ResourceManager.GetObject("cross", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap database {
             get {
                 object obj = ResourceManager.GetObject("database", resourceCulture);
@@ -140,6 +154,20 @@ namespace SceneEditor.Properties {
         internal static System.Drawing.Bitmap disk {
             get {
                 object obj = ResourceManager.GetObject("disk", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap folder {
+            get {
+                object obj = ResourceManager.GetObject("folder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap folder_add {
+            get {
+                object obj = ResourceManager.GetObject("folder_add", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -165,9 +193,30 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap link {
+            get {
+                object obj = ResourceManager.GetObject("link", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap monitor_add {
             get {
                 object obj = ResourceManager.GetObject("monitor_add", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap package {
+            get {
+                object obj = ResourceManager.GetObject("package", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap package_add {
+            get {
+                object obj = ResourceManager.GetObject("package_add", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -179,9 +228,23 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap sport_8ball {
+            get {
+                object obj = ResourceManager.GetObject("sport_8ball", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap text_allcaps {
             get {
                 object obj = ResourceManager.GetObject("text_allcaps", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap textfield_rename {
+            get {
+                object obj = ResourceManager.GetObject("textfield_rename", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

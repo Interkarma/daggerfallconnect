@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Forms;
 using System.ComponentModel;
 using SceneEditor.Documents;
 #endregion
@@ -30,8 +31,9 @@ namespace SceneEditor.Proxies
 
         #region Fields
 
-        string name;
-        SceneDocument document;
+        protected string name;
+        protected TreeNode treeNode;
+        protected SceneDocument document;
 
         #endregion
 
@@ -47,17 +49,23 @@ namespace SceneEditor.Proxies
         }
 
         /// <summary>
+        /// Gets or sets TreeNode linked to this proxy.
+        /// </summary>
+        [Browsable(false)]
+        public TreeNode TreeNode
+        {
+            get { return treeNode; }
+            set { treeNode = value; }
+        }
+
+        /// <summary>
         /// Gets or sets proxy name.
         /// </summary>
         [Browsable(true)]
         public string Name
         {
             get { return name; }
-            set
-            {
-                SceneDocument.PushUndo(this, this.GetType().GetProperty("Name"));
-                name = value;
-            }
+            set { SetName(value, true); }
         }
 
         #endregion
@@ -72,6 +80,27 @@ namespace SceneEditor.Proxies
         {
             // Save references
             this.document = document;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Set name of object.
+        /// </summary>
+        /// <param name="name">New name.</param>
+        /// <param name="pushUndo">True to push change onto undo stack.</param>
+        public void SetName(string name, bool pushUndo)
+        {
+            // Push undo
+            if (pushUndo)
+                SceneDocument.PushUndo(this, this.GetType().GetProperty("Name"));
+
+            // Set name
+            this.name = name;
+            if (treeNode != null)
+                treeNode.Text = name;
         }
 
         #endregion

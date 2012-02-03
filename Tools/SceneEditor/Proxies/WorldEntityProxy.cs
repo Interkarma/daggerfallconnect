@@ -105,7 +105,7 @@ namespace SceneEditor.Proxies
         public WorldEntityProxy(SceneDocument document, WorldEntity entity)
             : base(document)
         {
-            base.Name = defaultName;
+            base.name = defaultName;
             this.entity = entity;
         }
 
