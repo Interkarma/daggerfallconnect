@@ -26,10 +26,12 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Defines base requirements of editor proxies.
     /// </summary>
-    internal abstract class BaseEditorProxy : IBaseEditorProxy, IEditorProxy
+    internal abstract class BaseEditorProxy : IBaseEditorProxy
     {
 
         #region Fields
+
+        const string categoryName = "Base";
 
         protected string name;
         protected TreeNode treeNode;
@@ -58,10 +60,14 @@ namespace SceneEditor.Proxies
             set { treeNode = value; }
         }
 
+        #endregion
+
+        #region Editor Properties
+
         /// <summary>
         /// Gets or sets proxy name.
         /// </summary>
-        [Browsable(true)]
+        [Category(categoryName), Description("Name of object.")]
         public string Name
         {
             get { return name; }

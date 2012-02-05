@@ -251,7 +251,7 @@ namespace ContentLoading1
             core.ActiveScene.Camera.Position = new Vector3(0, 0, 0);
 
             // Create level entity
-            WorldEntity level = new WorldEntity(core.ActiveScene);
+            DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Get location
             DFLocation location = core.MapManager.GetLocation("Wayrest", "Wayrest");
@@ -286,7 +286,7 @@ namespace ContentLoading1
 
             // Create directional light
             float lightIntensity = 0.25f;
-            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            DynamicEntity directionalLight = new DynamicEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), Color.White, lightIntensity));
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), Color.White, lightIntensity));
         }
@@ -300,7 +300,7 @@ namespace ContentLoading1
             core.ActiveScene.Camera.Position = new Vector3(22, 27, -20);
 
             // Create level entity
-            WorldEntity level = new WorldEntity(core.ActiveScene);
+            DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
@@ -416,11 +416,11 @@ namespace ContentLoading1
             core.ActiveScene.Camera.Position = new Vector3(0, 7, 50);
 
             // Create directional light
-            WorldEntity lightEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity lightEntity = new DynamicEntity(core.ActiveScene);
             lightEntity.Components.Add(new LightComponent(core, Vector3.Right, Color.White, 1.0f));
 
             // Create model entity
-            WorldEntity modelEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity modelEntity = new DynamicEntity(core.ActiveScene);
             modelEntity.Matrix = Matrix.CreateTranslation(0, 0, 0);
             modelEntity.Components.Add(new DaggerfallModelComponent(core, 456));
 
@@ -439,14 +439,14 @@ namespace ContentLoading1
             core.ActiveScene.Camera.Position = new Vector3(-100, -300, 800);
 
             // Create cube entity
-            WorldEntity cubeEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity cubeEntity = new DynamicEntity(core.ActiveScene);
             cubeEntity.Matrix = Matrix.CreateTranslation(-555, -1024, 0);
 
             // Create torus entity
-            WorldEntity torusEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity torusEntity = new DynamicEntity(core.ActiveScene);
 
             // Create sphere entity
-            WorldEntity sphereEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity sphereEntity = new DynamicEntity(core.ActiveScene);
             sphereEntity.Matrix = Matrix.CreateTranslation(-555, 0, 0);
 
             // Attach cube geometry
@@ -544,7 +544,7 @@ namespace ContentLoading1
             position += cameraFacing * radius;
 
             // Create sphere entity
-            WorldEntity sphereEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity sphereEntity = new DynamicEntity(core.ActiveScene);
             sphereEntity.Matrix = Matrix.CreateTranslation(position);
 
             // Attach sphere geometry

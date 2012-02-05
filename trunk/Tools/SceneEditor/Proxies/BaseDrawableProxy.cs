@@ -17,6 +17,7 @@ using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Components;
 using DeepEngine.World;
+using DeepEngine.Utility;
 using SceneEditor.Documents;
 #endregion
 
@@ -24,72 +25,71 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// WorldEntity proxy interface.
+    /// Drawable item proxy interface.
     /// </summary>
-    internal interface IWorldEntityProxy : IEditorProxy { }
+    internal interface IBaseDrawableProxy : IEditorProxy { }
 
     /// <summary>
-    /// Encapsulates a world entity for the editor.
+    /// Common items to encapsulate for all drawable proxies.
     /// </summary>
-    internal sealed class WorldEntityProxy : BaseEditorProxy, IWorldEntityProxy, IEditorProxy
+    internal abstract class BaseDrawableProxy : BaseEditorProxy, IBaseDrawableProxy
     {
 
         #region Fields
 
-        const string defaultName = "Entity";
-        const string categoryName = "Entity";
+        const string transformCategoryName = "Transform";
 
-        WorldEntity entity;
-        Vector3 scale = Vector3.One;
-        Vector3 rotation = Vector3.Zero;
-        Vector3 position = Vector3.Zero;
+        protected Matrix matrix = Matrix.Identity;
+        protected Vector3 scale = Vector3.One;
+        protected Vector3 rotation = Vector3.Zero;
+        protected Vector3 position = Vector3.Zero;
 
         #endregion
 
-        #region Properties
+        #region Editor Properties
 
         /// <summary>
         /// Gets or sets scale.
         /// </summary>
-        [Category(categoryName), Description("Scaling of entity.")]
+        [Category(transformCategoryName), Description("Scaling of entity.")]
         public Vector3 Scale
         {
             get { return scale; }
             set
             {
-                scale = value;
                 base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Scale"));
-                UpdateEntityMatrix();
+                scale = value;
+                UpdateMatrix();
             }
         }
 
         /// <summary>
         /// Gets or sets rotation in degrees.
         /// </summary>
-        [Category(categoryName), Description("Rotation of entity in degrees.")]
+        [Category(transformCategoryName), Description("Rotation of entity in degrees.")]
         public Vector3 Rotation
         {
             get { return rotation; }
             set
             {
-                rotation = value;
                 base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Rotation"));
-                UpdateEntityMatrix();
+                rotation = value;
+                UpdateMatrix();
             }
         }
 
         /// <summary>
         /// Gets or sets position.
         /// </summary>
-        [Category(categoryName), Description("Position of entity.")]
+        [Category(transformCategoryName), Description("Position of entity.")]
         public Vector3 Position
         {
             get { return position; }
             set
             {
-                position = value;
                 base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Position"));
-                UpdateEntityMatrix();
+                position = value;
+                UpdateMatrix();
             }
         }
 
@@ -101,22 +101,19 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
-        /// <param name="entity">Entity to proxy.</param>
-        public WorldEntityProxy(SceneDocument document, WorldEntity entity)
+        public BaseDrawableProxy(SceneDocument document)
             : base(document)
         {
-            base.name = defaultName;
-            this.entity = entity;
         }
 
         #endregion
 
-        #region Private Methods
+        #region Protected Methods
 
         /// <summary>
-        /// Updates entity matrix from scale, rotation, position.
+        /// Updates matrix using current scale, rotation, position.
         /// </summary>
-        private void UpdateEntityMatrix()
+        protected virtual void UpdateMatrix()
         {
             // Convert rotation to radians
             float yaw = MathHelper.ToRadians(Rotation.Y);
@@ -128,8 +125,8 @@ namespace SceneEditor.Proxies
             Matrix rotation = Matrix.CreateFromYawPitchRoll(yaw, pitch, roll);
             Matrix translation = Matrix.CreateTranslation(Position);
 
-            // Set entity matrix
-            entity.Matrix = scale * rotation * translation;
+            // Set matrix
+            matrix = scale * rotation * translation;
         }
 
         #endregion

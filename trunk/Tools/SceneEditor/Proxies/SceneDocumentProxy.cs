@@ -32,7 +32,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Encapsulates scene document properties for the editor.
     /// </summary>
-    internal sealed class SceneDocumentProxy : BaseEditorProxy, ISceneDocumentProxy, IEditorProxy
+    internal sealed class SceneDocumentProxy : BaseEditorProxy, ISceneDocumentProxy
     {
 
         #region Fields

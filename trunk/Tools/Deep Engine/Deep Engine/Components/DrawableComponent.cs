@@ -51,7 +51,7 @@ namespace DeepEngine.Components
         public virtual Matrix Matrix
         {
             get { return matrix; }
-            set { if (!base.isStatic) matrix = value; }
+            set { matrix = value; }
         }
 
         #endregion

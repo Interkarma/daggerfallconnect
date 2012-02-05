@@ -137,8 +137,9 @@
     <Compile Include="World\BaseEntity.cs" />
     <Compile Include="Player\Camera.cs" />
     <Compile Include="World\SceneEnvironment.cs" />
-    <Compile Include="World\WorldEntity.cs" />
+    <Compile Include="World\DynamicEntity.cs" />
     <Compile Include="World\Scene.cs" />
+    <Compile Include="World\StaticEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Library\DaggerfallConnect.csproj">
