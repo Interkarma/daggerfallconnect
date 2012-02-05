@@ -215,8 +215,11 @@ namespace DeepEngine.Components
             if (!enabled)
                 return;
 
-            // Adjust scene entity world transform based on physics entity
-            caller.Matrix = physicsEntity.WorldTransform;
+            // Adjust dynamic entity world transform based on physics entity
+            if (caller is DynamicEntity)
+            {
+                (caller as DynamicEntity).Matrix = physicsEntity.WorldTransform;
+            }
         }
 
         /// <summary>

@@ -715,17 +715,12 @@ namespace DeepEngine.Rendering
             // Set render states
             core.GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
-            // Set transforms
-            Matrix[] modelTransforms = new Matrix[skyDomeModel.Bones.Count];
-            skyDomeModel.CopyAbsoluteBoneTransformsTo(modelTransforms);
-
             // Draw sky dome mesh
-            Matrix wMatrix = Matrix.CreateTranslation(0, -0.3f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(core.ActiveScene.Camera.Position);
+            Matrix worldMatrix = Matrix.CreateTranslation(0, -0.3f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(core.ActiveScene.Camera.Position);
             foreach (ModelMesh mesh in skyDomeModel.Meshes)
             {
                 foreach (Effect currentEffect in mesh.Effects)
                 {
-                    Matrix worldMatrix = modelTransforms[mesh.ParentBone.Index] * wMatrix;
                     currentEffect.CurrentTechnique = currentEffect.Techniques["SkyDome"];
                     currentEffect.Parameters["World"].SetValue(worldMatrix);
                     currentEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);

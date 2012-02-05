@@ -26,13 +26,13 @@ namespace DeepEngine.Player
         #region Class Variables
 
         // Keyboard movement
-        //float keyboardSpinRate = 200f;
-        //float keyboardMoveRate = 800f;
-        //float keyboardShiftKeyMultiplier = 2.5f;
+        float keyboardSpinRate = 100f;
+        float keyboardMoveRate = 100f;
+        float keyboardShiftKeyMultiplier = 2.5f;
 
         // Mouse movement
-        //float mouseSpinRate = 0.002f;
-        //float middleButtonMoveRate = 50f;
+        float mouseSpinRate = 0.001f;
+        float middleButtonMoveRate = 5f;
 
         // GamePad movement
         bool gamePadConnected = false;
@@ -234,7 +234,6 @@ namespace DeepEngine.Player
             previousGamePadState = gamePadState;
             gamePadState = GamePad.GetState(0);
 
-            /*
             // Keyboard input
             if ((activeDevices & DeviceFlags.Keyboard) == DeviceFlags.Keyboard)
             {
@@ -260,18 +259,16 @@ namespace DeepEngine.Player
                 }
             }
 
-            // Get mouse state
-            previousMouseState = mouseState;
-            mouseState = Mouse.GetState();
-            lastMousePos = mousePos;
-            mousePos.X = mouseState.X;
-            mousePos.Y = mouseState.Y;
-            mouseDelta.X = mousePos.X - lastMousePos.X;
-            mouseDelta.Y = mousePos.Y - lastMousePos.Y;
-
             // Mouse input
             if ((activeDevices & DeviceFlags.Mouse) == DeviceFlags.Mouse)
             {
+                // Get mouse state
+                lastMousePos = mousePos;
+                mousePos.X = mouseState.X;
+                mousePos.Y = mouseState.Y;
+                mouseDelta.X = mousePos.X - lastMousePos.X;
+                mouseDelta.Y = mousePos.Y - lastMousePos.Y;
+
                 // Mouse-look with right-button pressed
                 if (mouseState.RightButton == ButtonState.Pressed)
                 {
@@ -285,11 +282,12 @@ namespace DeepEngine.Player
                 // Movement with middle-button pressed
                 if (mouseState.MiddleButton == ButtonState.Pressed)
                 {
-                    movement.X += (mouseDelta.X * middleButtonMoveRate) * dt;
-                    movement.Y -= (mouseDelta.Y * middleButtonMoveRate) * dt;
+                    movement.X -= (mouseDelta.X * middleButtonMoveRate) * dt;
+                    movement.Y += (mouseDelta.Y * middleButtonMoveRate) * dt;
                 }
             }
 
+            /*
             // Get player 1 gamepad state
             previousGamePadState = gamePadState;
             gamePadState = GamePad.GetState(0);

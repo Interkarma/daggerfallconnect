@@ -81,6 +81,15 @@ namespace SceneEditor.Documents
         }
 
         /// <summary>
+        /// Flag to prevent changes from being pushed to the undo and redo stacks.
+        /// </summary>
+        public bool LockUndoRedo
+        {
+            get { return lockUndoRedo; }
+            set { lockUndoRedo = value; }
+        }
+
+        /// <summary>
         /// Gets number of undo operations on stack.
         /// </summary>
         [Browsable(false)]
@@ -114,9 +123,9 @@ namespace SceneEditor.Documents
             // Create scene objects
             editorScene = new Scene(core);
 
-            // Create undo/redo stacks
-            undoStack = new Stack<UndoInfo>(100);
-            redoStack = new Stack<UndoInfo>(100);
+            // Create large initial undo/redo stacks
+            undoStack = new Stack<UndoInfo>(1000);
+            redoStack = new Stack<UndoInfo>(1000);
         }
 
         #endregion

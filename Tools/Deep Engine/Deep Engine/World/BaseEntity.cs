@@ -103,12 +103,11 @@ namespace DeepEngine.World
         }
 
         /// <summary>
-        /// Gets or sets transformation matrix.
+        /// Gets transformation matrix.
         /// </summary>
         public Matrix Matrix
         {
             get { return matrix; }
-            set { matrix = value; }
         }
 
         /// <summary>

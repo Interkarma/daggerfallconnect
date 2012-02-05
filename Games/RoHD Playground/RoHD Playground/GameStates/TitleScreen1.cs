@@ -110,7 +110,7 @@ namespace RoHD_Playground.GameStates
             climateSettings.SceneryArchive = 510;
 
             // Create level entity
-            WorldEntity level = new WorldEntity(core.ActiveScene);
+            DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
@@ -122,7 +122,7 @@ namespace RoHD_Playground.GameStates
 
             // Create directional lights
             Color lightColor = new Color(100, 100, 200);
-            WorldEntity directionalLight = new WorldEntity(core.ActiveScene);
+            DynamicEntity directionalLight = new DynamicEntity(core.ActiveScene);
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Down + Vector3.Right), lightColor, 0.60f));
             directionalLight.Components.Add(new LightComponent(core, Vector3.Normalize(Vector3.Forward + Vector3.Left), lightColor, 0.90f));
 

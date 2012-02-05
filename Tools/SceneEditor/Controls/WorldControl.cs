@@ -143,6 +143,17 @@ namespace SceneEditor.Controls
             // Update core
             core.Update(elapsedTime);
 
+            // Apply input to camera when control has focus
+            if (this.Focused)
+            {
+                core.Input.Apply(core.ActiveScene.Camera, true);
+                core.ActiveScene.Camera.Update();
+            }
+            else
+            {
+                core.Input.Reset();
+            }
+
             // Store update time
             lastTime = currentTime;
 

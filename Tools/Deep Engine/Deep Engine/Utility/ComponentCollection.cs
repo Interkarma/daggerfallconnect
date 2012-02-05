@@ -76,37 +76,11 @@ namespace DeepEngine.Utility
         /// <param name="component">Component to add.</param>
         public void Add(BaseComponent component)
         {
-            // Cannot add a static component
-            if (component.IsStatic)
-                throw new Exception(componentIsStaticError);
-
             // Add component
             components.Add(component);
 
             // Raise event
             RaiseComponentAddedEvent(component, false);
-        }
-
-        /// <summary>
-        /// Adds a static component to collection.
-        ///  It is up to the component itself and the hosting entity how this behaviour is implemented.
-        ///  A static component cannot be shared between entities.
-        /// </summary>
-        /// <param name="component">Component to add as static.</param>
-        public void AddStatic(BaseComponent component)
-        {
-            // Cannot add a static component
-            if (component.IsStatic)
-                throw new Exception(componentIsStaticError);
-
-            // Add component
-            components.Add(component);
-
-            // Flag as static
-            component.MakeStatic();
-
-            // Raise event
-            RaiseComponentAddedEvent(component, true);
         }
 
         /// <summary>
@@ -146,8 +120,7 @@ namespace DeepEngine.Utility
         /// </summary>
         public class ComponentAddedEventArgs : EventArgs
         {
-            public object Component;
-            public bool IsStatic;
+            public BaseComponent Component;
         }
 
         /// <summary>
@@ -162,7 +135,6 @@ namespace DeepEngine.Utility
                 ComponentAddedEventArgs e = new ComponentAddedEventArgs()
                 {
                     Component = component,
-                    IsStatic = isStatic,
                 };
 
                 // Raise event

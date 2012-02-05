@@ -24,12 +24,25 @@ namespace DeepEngine.World
     /// <summary>
     /// Default world entity that can move freely within the scene.
     /// </summary>
-    public class WorldEntity : BaseEntity
+    public class DynamicEntity : BaseEntity
     {
 
         #region Fields
 
         DeepCore core;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets transformation matrix.
+        /// </summary>
+        public new Matrix Matrix
+        {
+            get { return matrix; }
+            set { matrix = value; }
+        }
 
         #endregion
 
@@ -39,7 +52,7 @@ namespace DeepEngine.World
         /// Constructor.
         /// </summary>
         /// <param name="scene">Scene to attach entity.</param>
-        public WorldEntity(Scene scene)
+        public DynamicEntity(Scene scene)
             :base(scene)
         {
             // Save references
@@ -80,7 +93,7 @@ namespace DeepEngine.World
             // Draw all components
             foreach (BaseComponent component in components)
             {
-                if (component is DrawableComponent && !component.IsStatic)
+                if (component is DrawableComponent)
                 {
                     // Get bounding sphere of component transformed to entity space
                     BoundingSphere sphere = (component as DrawableComponent).BoundingSphere.Transform(matrix);
@@ -111,7 +124,6 @@ namespace DeepEngine.World
 
         /// <summary>
         /// Frees resources used by this object when they are no longer needed.
-        ///  Destroys all static geometry.
         /// </summary>
         public override void Dispose()
         {

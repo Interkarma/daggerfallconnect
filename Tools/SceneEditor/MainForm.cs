@@ -81,6 +81,9 @@ namespace SceneEditor
 
             // Update toolbars
             UpdateUndoRedoToolbarItems();
+
+            // Create default document
+            CreateSphereOnTerrainDocument();
         }
 
         #endregion
@@ -194,6 +197,12 @@ namespace SceneEditor
             string imageKey;
             if (proxy is SceneDocumentProxy)
                 imageKey = "Scene";
+            else if (proxy is EntityProxy)
+                imageKey = "Entity";
+            else if (proxy is QuadTerrainProxy)
+                imageKey = "QuadTerrain";
+            else if (proxy is SphereProxy)
+                imageKey = "Geometry";
             else
                 imageKey = "Unknown";
 
@@ -210,32 +219,111 @@ namespace SceneEditor
             else
                 parent.Nodes.Add(node);
 
+            // Set node in proxt
+            proxy.TreeNode = node;
+
             return node;
         }
 
         #endregion
 
         #region Toolbar Events
+        #endregion
 
-        /*
+        #region Default Documents
+
         /// <summary>
-        /// Add a new world entity.
+        /// Builds a default scene document.
         /// </summary>
-        private void AddWorldEntityButton_Click(object sender, EventArgs e)
+        private void CreateSphereOnTerrainDocument()
+        {
+            // Lock stacks
+            document.LockUndoRedo = true;
+
+            // Set camera position
+            document.EditorScene.Camera.Position = new Vector3(0, 10, 100);
+            document.EditorScene.Camera.Update();
+
+            // Create entity
+            EntityProxy entityProxy = AddEntityProxy();
+
+            // Add sphere primitive component
+            SphereProxy sphereProxy = AddSphereProxy(entityProxy);
+
+            // Add quad terrain component
+            QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
+
+            // Expand tree view
+            documentProxy.TreeNode.Expand();
+
+            // Unlock stacks
+            document.LockUndoRedo = false;
+        }
+
+        #endregion
+
+        #region Document Building
+
+        /// <summary>
+        /// Creates a new entity proxy.
+        /// </summary>
+        private EntityProxy AddEntityProxy()
         {
             // Create new entity
-            WorldEntity entity = new WorldEntity(document.EditorScene);
+            DynamicEntity entity = new DynamicEntity(document.EditorScene);
+
+            // Add to document scene
+            document.EditorScene.Entities.Add(entity);
 
             // Create new entity proxy
-            WorldEntityProxy entityProxy = new WorldEntityProxy(document, entity);
+            EntityProxy entityProxy = new EntityProxy(document, entity);
 
-            // Add new world entity proxy to tree view
+            // Add new entity proxy to tree view
             TreeNode entityNode = AddTreeNode(documentProxy.TreeNode, entityProxy);
 
             // Assign tree node to proxy
             entityProxy.TreeNode = entityNode;
+
+            return entityProxy;
         }
-        */
+
+        /// <summary>
+        /// Creates a new quad terrain proxy.
+        /// </summary>
+        private QuadTerrainProxy AddQuadTerrainComponentProxy(EntityProxy parent)
+        {
+            // Create test textures
+            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 64, 64, false, SurfaceFormat.Color);
+            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 64, 64, false, SurfaceFormat.Color);
+
+            // Create new quad terrain
+            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 1, 1f, 10f);
+
+            // Add to parent entity
+            parent.Entity.Components.Add(quadTerrain);
+
+            // Create new quad terrain proxy
+            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, quadTerrain);
+
+            // Add new quad terrain proxy to tree view
+            TreeNode quadTerrainNode = AddTreeNode(parent.TreeNode, quadTerrainProxy);
+
+            // Assign tree node to proxy
+            quadTerrainProxy.TreeNode = quadTerrainNode;
+
+            return quadTerrainProxy;
+        }
+
+        /// <summary>
+        /// Creates a new sphere primitive proxy
+        /// </summary>
+        private SphereProxy AddSphereProxy(EntityProxy parent)
+        {
+            SphereProxy sphere = new SphereProxy(document, parent.Entity);
+            TreeNode node = AddTreeNode(parent.TreeNode, sphere);
+
+            return sphere;
+        }
 
         #endregion
 

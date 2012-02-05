@@ -184,7 +184,7 @@ namespace RoHD_Playground.GameStates
             core.MaterialManager.Daytime = false;
 
             // Create level entity
-            WorldEntity level = new WorldEntity(core.ActiveScene);
+            DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
@@ -489,7 +489,7 @@ namespace RoHD_Playground.GameStates
             position += cameraFacing * radius;
 
             // Create sphere entity
-            WorldEntity sphereEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity sphereEntity = new DynamicEntity(core.ActiveScene);
             sphereEntity.Matrix = Matrix.CreateTranslation(position);
 
             // Attach sphere geometry
@@ -536,7 +536,7 @@ namespace RoHD_Playground.GameStates
             position += cameraFacing * size;
 
             // Create cube entity
-            WorldEntity cubeEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity cubeEntity = new DynamicEntity(core.ActiveScene);
             cubeEntity.Matrix = Matrix.CreateTranslation(position);
 
             // Attach cube geometry
@@ -579,7 +579,7 @@ namespace RoHD_Playground.GameStates
             position += cameraFacing * (anvilModel.BoundingSphere.Radius * 2);
 
             // Create anvil entity
-            WorldEntity anvilEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity anvilEntity = new DynamicEntity(core.ActiveScene);
             anvilEntity.Matrix = Matrix.CreateRotationY(MathHelper.ToRadians(scene.Camera.Yaw)) * Matrix.CreateTranslation(position);
 
             // Attach anvil geometry
@@ -615,7 +615,7 @@ namespace RoHD_Playground.GameStates
             position += cameraFacing * (arrowModel.BoundingSphere.Radius * 2);
 
             // Create arrow entity
-            WorldEntity arrowEntity = new WorldEntity(core.ActiveScene);
+            DynamicEntity arrowEntity = new DynamicEntity(core.ActiveScene);
             arrowEntity.Matrix = Matrix.CreateFromYawPitchRoll(
                 MathHelper.ToRadians(scene.Camera.Yaw),
                 MathHelper.ToRadians(scene.Camera.Pitch),
@@ -654,7 +654,7 @@ namespace RoHD_Playground.GameStates
             position += cameraFacing * (model.BoundingSphere.Radius * 3);
 
             // Create entity
-            WorldEntity entity = new WorldEntity(core.ActiveScene);
+            DynamicEntity entity = new DynamicEntity(core.ActiveScene);
             entity.Matrix = Matrix.CreateRotationY(MathHelper.ToRadians(scene.Camera.Yaw)) * Matrix.CreateTranslation(position);
 
             // Attach geometry

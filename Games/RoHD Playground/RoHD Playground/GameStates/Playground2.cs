@@ -89,7 +89,7 @@ namespace RoHD_Playground.GameStates
             core.ActiveScene = scene;
 
             // Create level entity
-            WorldEntity level = new WorldEntity(core.ActiveScene);
+            DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Disable core input handling
             core.Input.ActiveDevices = Input.DeviceFlags.None;

@@ -25,7 +25,7 @@ namespace RoHD_Playground.Entities
     /// A firefly that moves along a path before winking out.
     ///  Will randomly repawn and follow a different path based on parameters.
     /// </summary>
-    class Firefly : WorldEntity
+    class Firefly : DynamicEntity
     {
 
         #region Fields
