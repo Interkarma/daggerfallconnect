@@ -71,6 +71,7 @@
     <Compile Include="Proxies\BaseDrawableProxy.cs" />
     <Compile Include="Proxies\BaseEditorProxy.cs" />
     <Compile Include="Proxies\BasePrimitiveProxy.cs" />
+    <Compile Include="Proxies\DaggerfallModelProxy.cs" />
     <Compile Include="Proxies\QuadTerrainProxy.cs" />
     <Compile Include="Proxies\SceneDocumentProxy.cs" />
     <Compile Include="Proxies\IEditorProxy.cs" />

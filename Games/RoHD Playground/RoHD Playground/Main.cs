@@ -128,7 +128,7 @@ namespace RoHD_Playground
             titleScreen.OnExitClicked += new EventHandler(TitleScreen_OnExitClicked);
 
             // Set initial game state
-            gameManager.ChangeState(playground2);
+            gameManager.ChangeState(titleScreen);
         }
 
         #endregion

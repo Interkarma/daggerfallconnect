@@ -24,7 +24,9 @@ namespace DeepEngine.Components
 {
     
     /// <summary>
-    /// Quad-tree terrain component.
+    /// Static quad-tree terrain component.
+    ///  This component is always centred on origin and cannot be transformed.
+    ///  Parent entity transform is ignored.
     /// </summary>
     public class QuadTerrainComponent : DrawableComponent
     {
@@ -55,6 +57,15 @@ namespace DeepEngine.Components
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Terrain cannot be transformed.
+        /// </summary>
+        public new Matrix Matrix
+        {
+            get { return base.matrix; }
+            set { base.matrix = base.Matrix; }
+        }
 
         /// <summary>
         /// Gets or sets normal strength.
@@ -289,6 +300,15 @@ namespace DeepEngine.Components
                     terrainData[pos].W = ((srcData[pos].R + srcData[pos].G + srcData[pos].B) / 3) / 255.0f;
                 }
             }
+
+            // Set bounding sphere
+            float diameter = (maxHeight > dimension * scale) ? maxHeight : dimension * scale;
+            this.boundingSphere = new BoundingSphere(
+                new Vector3(diameter / 2, 0, diameter / 2),
+                diameter * 0.70f);
+
+            // Centre terrain bounds on origin
+            this.boundingSphere.Center -= new Vector3(diameter / 2, 0, diameter / 2);
         }
 
         /// <summary>
@@ -375,12 +395,9 @@ namespace DeepEngine.Components
                 sampleOffset.X = node.X / dimension;
                 sampleOffset.Y = node.Y / dimension;
 
-                // Calculate world matrix
-                Matrix worldMatrix = node.Matrix * caller.Matrix;
-
                 // Set effect textures for this quad
                 terrainEffect.Parameters["SampleOffset"].SetValue(sampleOffset);
-                terrainEffect.Parameters["World"].SetValue(worldMatrix);
+                terrainEffect.Parameters["World"].SetValue(node.Matrix);
 
                 // Apply effect
                 terrainEffect.Techniques[0].Passes[0].Apply();

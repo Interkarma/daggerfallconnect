@@ -89,7 +89,7 @@ namespace DeepEngine.Components
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = caller.Matrix * matrix;
+            Matrix worldMatrix = matrix * caller.Matrix;
 
             // Submit to renderer
             core.Renderer.SubmitBillboard(material, worldMatrix.Translation + offset, size);

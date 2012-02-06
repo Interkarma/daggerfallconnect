@@ -241,7 +241,7 @@ namespace SceneEditor
             document.LockUndoRedo = true;
 
             // Set camera position
-            document.EditorScene.Camera.Position = new Vector3(0, 10, 100);
+            document.EditorScene.Camera.Position = new Vector3(0, 2, 50);
             document.EditorScene.Camera.Update();
 
             // Create entity
@@ -249,6 +249,7 @@ namespace SceneEditor
 
             // Add sphere primitive component
             SphereProxy sphereProxy = AddSphereProxy(entityProxy);
+            sphereProxy.Position = new Vector3(0, 1, 0);
 
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
@@ -293,11 +294,11 @@ namespace SceneEditor
         private QuadTerrainProxy AddQuadTerrainComponentProxy(EntityProxy parent)
         {
             // Create test textures
-            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 64, 64, false, SurfaceFormat.Color);
-            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 64, 64, false, SurfaceFormat.Color);
+            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
+            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
 
             // Create new quad terrain
-            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 1, 1f, 10f);
+            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 2, 2f, 128f);
 
             // Add to parent entity
             parent.Entity.Components.Add(quadTerrain);

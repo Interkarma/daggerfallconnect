@@ -233,7 +233,7 @@ namespace DeepEngine.Components
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = caller.Matrix * matrix;
+            Matrix worldMatrix = matrix * caller.Matrix;
 
             // Set transforms
             core.ModelManager.ModelEffect_World = worldMatrix;

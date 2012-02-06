@@ -716,7 +716,7 @@ namespace DeepEngine.Rendering
             core.GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
             // Draw sky dome mesh
-            Matrix worldMatrix = Matrix.CreateTranslation(0, -0.3f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(core.ActiveScene.Camera.Position);
+            Matrix worldMatrix = Matrix.CreateTranslation(0, -0.2f, 0) * Matrix.CreateScale(100) * Matrix.CreateTranslation(core.ActiveScene.Camera.Position);
             foreach (ModelMesh mesh in skyDomeModel.Meshes)
             {
                 foreach (Effect currentEffect in mesh.Effects)

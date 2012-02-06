@@ -211,7 +211,7 @@ namespace DeepEngine.Components
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = caller.Matrix * matrix;
+            Matrix worldMatrix = matrix * caller.Matrix;
 
             // Set technique
             renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Diffuse"];
