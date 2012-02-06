@@ -78,7 +78,7 @@ namespace DeepEngine.Components
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = caller.Matrix * matrix;
+            Matrix worldMatrix = matrix * caller.Matrix;
 
             // Set render states
             core.GraphicsDevice.DepthStencilState = DepthStencilState.Default;

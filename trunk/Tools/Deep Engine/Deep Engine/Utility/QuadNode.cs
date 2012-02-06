@@ -31,6 +31,7 @@ namespace DeepEngine.Utility
         float maxHeight;
         BoundingBox boundingBox;
         Matrix matrix;
+        QuadNode root;
         QuadNode parent;
         QuadNode[] children;
 
@@ -147,15 +148,25 @@ namespace DeepEngine.Utility
         public QuadNode(int dimension, float scale, float maxHeight)
         {
             // Store values
+            this.root = this;
             this.level = 0;
             this.scale = scale;
             this.hasChildren = false;
             this.maxHeight = maxHeight;
             this.rectangle = new Rectangle(0, 0, dimension, dimension);
-            this.boundingBox.Min = Vector3.Zero;
-            this.boundingBox.Max = new Vector3(dimension * scale, maxHeight, dimension * scale);
             this.parent = null;
             this.children = new QuadNode[4];
+
+            // Calculate bounding box
+            Vector3 origin = new Vector3(rectangle.X * scale, 0, rectangle.Y * scale);
+            origin.X -= (root.Rectangle.Width * scale) / 2;
+            origin.Z -= (root.Rectangle.Height * scale) / 2;
+            this.boundingBox = new BoundingBox(
+                origin,
+                new Vector3(origin.X + rectangle.Width * scale, maxHeight * scale, origin.Z + rectangle.Height * scale));
+
+            // Set transform
+            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(origin);
         }
 
         /// <summary>
@@ -167,6 +178,7 @@ namespace DeepEngine.Utility
             : this(0, parent.scale, parent.maxHeight)
         {
             // Store values
+            this.root = parent.root;
             this.parent = parent;
             this.parent.children[(int)quadrant] = this;
             this.parent.hasChildren = true;
@@ -208,12 +220,14 @@ namespace DeepEngine.Utility
 
             // Calculate bounding box
             Vector3 origin = new Vector3(rectangle.X * scale, 0, rectangle.Y * scale);
+            origin.X -= (root.Rectangle.Width * scale) / 2;
+            origin.Z -= (root.Rectangle.Height * scale) / 2;
             this.boundingBox = new BoundingBox(
                 origin,
                 new Vector3(origin.X + rectangle.Width * scale, maxHeight * scale, origin.Z + rectangle.Height * scale));
-
+            
             // Set transform
-            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(this.boundingBox.Min);
+            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(origin);
         }
 
         #endregion
