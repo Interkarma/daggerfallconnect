@@ -46,7 +46,6 @@ namespace DeepEngine.Components
 
         /// <summary>
         /// Gets or sets local transform relative to entity.
-        ///  Cannot change matrix of static components.
         /// </summary>
         public virtual Matrix Matrix
         {
@@ -56,7 +55,7 @@ namespace DeepEngine.Components
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Constructor.
@@ -65,8 +64,6 @@ namespace DeepEngine.Components
         public DrawableComponent(DeepCore core)
             : base(core)
         {
-            // Store values
-            this.core = core;
         }
 
         #endregion

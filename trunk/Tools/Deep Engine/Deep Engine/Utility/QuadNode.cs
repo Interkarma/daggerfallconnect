@@ -25,7 +25,6 @@ namespace DeepEngine.Utility
         #region Fields
 
         int level;
-        float scale;
         bool hasChildren;
         Rectangle rectangle;
         float maxHeight;
@@ -79,12 +78,11 @@ namespace DeepEngine.Utility
         }
 
         /// <summary>
-        /// Gets or sets bounding box for this node in world space.
+        /// Gets bounding box for this node.
         /// </summary>
         public BoundingBox BoundingBox
         {
             get { return boundingBox; }
-            set { boundingBox = value; }
         }
 
         /// <summary>
@@ -143,14 +141,12 @@ namespace DeepEngine.Utility
         /// Constructs a root node.
         /// </summary>
         /// <param name="dimension">Dimension of root quad.</param>
-        /// <param name="scale">Scale of each quad.</param>
         /// <param name="maxHeight">Maximum height of node.</param>
-        public QuadNode(int dimension, float scale, float maxHeight)
+        public QuadNode(int dimension, float maxHeight)
         {
             // Store values
             this.root = this;
             this.level = 0;
-            this.scale = scale;
             this.hasChildren = false;
             this.maxHeight = maxHeight;
             this.rectangle = new Rectangle(0, 0, dimension, dimension);
@@ -158,15 +154,13 @@ namespace DeepEngine.Utility
             this.children = new QuadNode[4];
 
             // Calculate bounding box
-            Vector3 origin = new Vector3(rectangle.X * scale, 0, rectangle.Y * scale);
-            origin.X -= (root.Rectangle.Width * scale) / 2;
-            origin.Z -= (root.Rectangle.Height * scale) / 2;
             this.boundingBox = new BoundingBox(
-                origin,
-                new Vector3(origin.X + rectangle.Width * scale, maxHeight * scale, origin.Z + rectangle.Height * scale));
+                Vector3.Zero,
+                new Vector3(rectangle.Width, maxHeight, rectangle.Height));
 
             // Set transform
-            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(origin);
+            Vector3 origin = new Vector3(rectangle.X, 0, rectangle.Y);
+            this.matrix = Matrix.CreateTranslation(origin);
         }
 
         /// <summary>
@@ -175,7 +169,7 @@ namespace DeepEngine.Utility
         /// <param name="parent">Parent node.</param>
         /// <param name="quadrant">Position index.</param>
         public QuadNode(QuadNode parent, Quadrants quadrant)
-            : this(0, parent.scale, parent.maxHeight)
+            : this(0, parent.maxHeight)
         {
             // Store values
             this.root = parent.root;
@@ -219,15 +213,13 @@ namespace DeepEngine.Utility
             }
 
             // Calculate bounding box
-            Vector3 origin = new Vector3(rectangle.X * scale, 0, rectangle.Y * scale);
-            origin.X -= (root.Rectangle.Width * scale) / 2;
-            origin.Z -= (root.Rectangle.Height * scale) / 2;
             this.boundingBox = new BoundingBox(
-                origin,
-                new Vector3(origin.X + rectangle.Width * scale, maxHeight * scale, origin.Z + rectangle.Height * scale));
+                Vector3.Zero,
+                new Vector3(rectangle.Width, maxHeight, rectangle.Height));
             
             // Set transform
-            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(origin);
+            Vector3 origin = new Vector3(rectangle.X, 0, rectangle.Y);
+            this.matrix = Matrix.CreateTranslation(origin);
         }
 
         #endregion

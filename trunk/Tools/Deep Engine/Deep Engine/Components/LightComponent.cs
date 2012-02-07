@@ -126,6 +126,16 @@ namespace DeepEngine.Components
         #region Constructors
 
         /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="core">Engine core.</param>
+        public LightComponent(DeepCore core)
+            : base(core)
+        {
+            MakeAmbient(Color.White, 1.0f);
+        }
+
+        /// <summary>
         /// Ambient light constructor
         /// </summary>
         /// <param name="core">Engine core.</param>

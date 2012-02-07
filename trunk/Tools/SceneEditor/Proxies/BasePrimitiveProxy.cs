@@ -40,8 +40,8 @@ namespace SceneEditor.Proxies
         const string categoryName = "Primitive";
 
         protected GeometricPrimitiveComponent primitive;
-        protected Microsoft.Xna.Framework.Color colorRGB = Microsoft.Xna.Framework.Color.White;
-        protected float colorW = 1.0f;
+        protected Microsoft.Xna.Framework.Color colorRGB;
+        protected float colorW;
 
         #endregion
 
@@ -90,8 +90,11 @@ namespace SceneEditor.Proxies
             : base(document)
         {
             primitive = new GeometricPrimitiveComponent(document.EditorScene.Core);
-            entity.Components.Add(primitive);
+            this.ColorRGB = System.Drawing.Color.White;
+            this.ColorW = 0.0f;
             UpdatePrimitive();
+
+            entity.Components.Add(primitive);
         }
 
         #endregion

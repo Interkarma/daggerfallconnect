@@ -39,8 +39,47 @@ namespace SceneEditor.Proxies
 
         const string defaultName = "Terrain";
         const string categoryName = "Terrain";
+        const string transformCategoryName = "Transform";
 
         QuadTerrainComponent quadTerrain;
+
+        Matrix matrix = Matrix.Identity;
+        Vector3 scale = Vector3.One;
+        Vector3 position = Vector3.Zero;
+
+        #endregion
+
+        #region Editor Properties
+
+        /// <summary>
+        /// Gets or sets scale.
+        /// </summary>
+        [Category(transformCategoryName), Description("Scaling of entity.")]
+        public Vector3 Scale
+        {
+            get { return scale; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Scale"));
+                scale = value;
+                UpdateMatrix();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets position.
+        /// </summary>
+        [Category(transformCategoryName), Description("Position of entity.")]
+        public Vector3 Position
+        {
+            get { return position; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Position"));
+                position = value;
+                UpdateMatrix();
+            }
+        }
 
         #endregion
 
@@ -56,6 +95,24 @@ namespace SceneEditor.Proxies
         {
             base.name = defaultName;
             this.quadTerrain = quadTerrain;
+        }
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Updates matrix using current scale and position.
+        /// </summary>
+        private void UpdateMatrix()
+        {
+            // Create matrices
+            Matrix scale = Matrix.CreateScale(Scale);
+            Matrix translation = Matrix.CreateTranslation(Position);
+
+            // Set matrix
+            matrix = scale * translation;
+            quadTerrain.Matrix = matrix;
         }
 
         #endregion
