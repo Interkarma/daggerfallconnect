@@ -24,9 +24,10 @@ namespace DeepEngine.Components
 {
     
     /// <summary>
-    /// Static quad-tree terrain component.
-    ///  This component is always centred on origin and cannot be transformed.
-    ///  Parent entity transform is ignored.
+    /// Terrain component using nested axis-aligned boxes in a quad-tree for visibility culling.
+    ///  Can be translated and scaled using the component matrix, but rotations will be ignored.
+    ///  Inherits translations from parent entity, but ignores entity rotation and scale.
+    ///  This component is best placed in its own static entity.
     /// </summary>
     public class QuadTerrainComponent : DrawableComponent
     {
@@ -38,10 +39,9 @@ namespace DeepEngine.Components
         // Quadtree root
         QuadNode rootNode;
         int levels;
-        float scale;
         
         // Map data
-        float maxHeight;
+        float maxHeight = 256f;
         float normalStrength = 8f;
         int dimension;
         int leafDimension;
@@ -59,12 +59,13 @@ namespace DeepEngine.Components
         #region Properties
 
         /// <summary>
-        /// Terrain cannot be transformed.
+        /// Gets or sets matrix for terrain component.
+        ///  Rotations will be ignored.
         /// </summary>
         public new Matrix Matrix
         {
             get { return base.matrix; }
-            set { base.matrix = base.Matrix; }
+            set { SetMatrix(value); }
         }
 
         /// <summary>
@@ -98,6 +99,15 @@ namespace DeepEngine.Components
         public QuadNode Root
         {
             get { return rootNode; }
+        }
+
+        /// <summary>
+        /// Gets or sets maximum height.
+        /// </summary>
+        public float MaxHeight
+        {
+            get { return maxHeight; }
+            set { maxHeight = value; }
         }
 
         /// <summary>
@@ -135,10 +145,8 @@ namespace DeepEngine.Components
         /// <param name="core">Engine core.</param>
         /// <param name="heightMap">Source heightmap. Must be POW2 grayscale image with equal width and height.</param>
         /// <param name="blendMap">Blend map. Must be POW2 image with equal width and height.</param>
-        /// <param name="levels">Number of quad levels to divide heightmap into. Determines how many render calls are made per frame.</param>
-        /// <param name="scale">Scale of each vertex. Determines final XZ size of each terrain node.</param>
-        /// <param name="maxHeight">Maximum height of terrain.</param>
-        public QuadTerrainComponent(DeepCore core, Texture2D heightMap, Texture2D blendMap, int levels, float scale, float maxHeight)
+        /// <param name="levels">Number of quad levels to divide heightmap into. Use as few levels as possible.</param>
+        public QuadTerrainComponent(DeepCore core, Texture2D heightMap, Texture2D blendMap, int levels)
             : base(core)
         {
             // Ensure heightmap image is POW2 with equal dimensions
@@ -158,8 +166,6 @@ namespace DeepEngine.Components
             // Store values
             this.dimension = heightMap.Width;
             this.levels = levels;
-            this.maxHeight = maxHeight / scale;
-            this.scale = scale;
             this.terrainBlendMap = blendMap;
 
             // Create arrays
@@ -282,7 +288,7 @@ namespace DeepEngine.Components
         #region Private Methods
 
         /// <summary>
-        /// Unpacks height texture to local arrays.
+        /// Unpacks height texture to local arrays and sets course bounding sphere.
         /// </summary>
         /// <param name="heightMap">Source height map.</param>
         private void SetHeightData(Texture2D heightMap)
@@ -302,13 +308,10 @@ namespace DeepEngine.Components
             }
 
             // Set bounding sphere
-            float diameter = (maxHeight > dimension * scale) ? maxHeight : dimension * scale;
+            float diameter = (maxHeight > dimension) ? maxHeight : dimension;
             this.boundingSphere = new BoundingSphere(
                 new Vector3(diameter / 2, 0, diameter / 2),
                 diameter * 0.70f);
-
-            // Centre terrain bounds on origin
-            this.boundingSphere.Center -= new Vector3(diameter / 2, 0, diameter / 2);
         }
 
         /// <summary>
@@ -317,7 +320,7 @@ namespace DeepEngine.Components
         private void BuildQuadTree()
         {
             // Create parent node
-            rootNode = new QuadNode(dimension, scale, maxHeight);
+            rootNode = new QuadNode(dimension, maxHeight);
             AddQuadChildren(rootNode);
         }
 
@@ -348,6 +351,22 @@ namespace DeepEngine.Components
             }
         }
 
+        /// <summary>
+        /// Updates matrix with valid transforms.
+        /// </summary>
+        /// <param name="matrix">Transformation matrix.</param>
+        private void SetMatrix(Matrix matrix)
+        {
+            // Decompose matrix
+            Vector3 scale;
+            Quaternion rotation;
+            Vector3 translation;
+            matrix.Decompose(out scale, out rotation, out translation);
+
+            // Create new matrix ignoring rotation
+            this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(translation);
+        }
+
         #endregion
 
         #region Drawing Methods
@@ -361,8 +380,16 @@ namespace DeepEngine.Components
             if (node == null)
                 return;
 
+            // Calculate world matrix
+            Matrix worldMatrix = node.Matrix * this.matrix * Matrix.CreateTranslation(caller.Matrix.Translation);
+
+            // Transform bounds for this node
+            BoundingBox bounds;
+            bounds.Min = Vector3.Transform(node.BoundingBox.Min, worldMatrix);
+            bounds.Max = Vector3.Transform(node.BoundingBox.Max, worldMatrix);
+
             // Test node against frustum
-            if (!node.BoundingBox.Intersects(core.ActiveScene.Camera.BoundingFrustum))
+            if (!bounds.Intersects(core.ActiveScene.Camera.BoundingFrustum))
                 return;
 
             // Recurse children
@@ -397,7 +424,7 @@ namespace DeepEngine.Components
 
                 // Set effect textures for this quad
                 terrainEffect.Parameters["SampleOffset"].SetValue(sampleOffset);
-                terrainEffect.Parameters["World"].SetValue(node.Matrix);
+                terrainEffect.Parameters["World"].SetValue(worldMatrix);
 
                 // Apply effect
                 terrainEffect.Techniques[0].Passes[0].Apply();

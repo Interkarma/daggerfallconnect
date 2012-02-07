@@ -203,6 +203,8 @@ namespace SceneEditor
                 imageKey = "QuadTerrain";
             else if (proxy is SphereProxy)
                 imageKey = "Geometry";
+            else if (proxy is LightProxy)
+                imageKey = "Light";
             else
                 imageKey = "Unknown";
 
@@ -254,6 +256,9 @@ namespace SceneEditor
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
 
+            // Add light component
+            LightProxy lightProxy = AddLightProxy(entityProxy);
+
             // Expand tree view
             documentProxy.TreeNode.Expand();
 
@@ -293,12 +298,12 @@ namespace SceneEditor
         /// </summary>
         private QuadTerrainProxy AddQuadTerrainComponentProxy(EntityProxy parent)
         {
-            // Create test textures
-            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
-            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
+            // Create default textures
+            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 256, 256, false, SurfaceFormat.Color);
+            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 256, 256, false, SurfaceFormat.Color);
 
             // Create new quad terrain
-            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 2, 2f, 128f);
+            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 1);
 
             // Add to parent entity
             parent.Entity.Components.Add(quadTerrain);
@@ -316,7 +321,7 @@ namespace SceneEditor
         }
 
         /// <summary>
-        /// Creates a new sphere primitive proxy
+        /// Creates a new sphere primitive proxy.
         /// </summary>
         private SphereProxy AddSphereProxy(EntityProxy parent)
         {
@@ -324,6 +329,17 @@ namespace SceneEditor
             TreeNode node = AddTreeNode(parent.TreeNode, sphere);
 
             return sphere;
+        }
+
+        /// <summary>
+        /// Creates a new light proxy.
+        /// </summary>
+        private LightProxy AddLightProxy(EntityProxy parent)
+        {
+            LightProxy light = new LightProxy(document, parent.Entity);
+            TreeNode node = AddTreeNode(parent.TreeNode, light);
+
+            return light;
         }
 
         #endregion

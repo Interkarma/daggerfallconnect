@@ -23,8 +23,7 @@ namespace DeepEngine.Components
     /// <summary>
     /// Provides features common to all world components.
     /// </summary>
-    public abstract class BaseComponent :
-        IDisposable
+    public abstract class BaseComponent : IDisposable
     {
 
         #region Fields
