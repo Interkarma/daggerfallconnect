@@ -83,7 +83,7 @@ namespace SceneEditor
             UpdateUndoRedoToolbarItems();
 
             // Create default document
-            CreateSphereOnTerrainDocument();
+            CreateDefaultDocument();
         }
 
         #endregion
@@ -237,7 +237,7 @@ namespace SceneEditor
         /// <summary>
         /// Builds a default scene document.
         /// </summary>
-        private void CreateSphereOnTerrainDocument()
+        private void CreateDefaultDocument()
         {
             // Lock stacks
             document.LockUndoRedo = true;
@@ -255,12 +255,14 @@ namespace SceneEditor
 
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
+            terrainProxy.Position = new Vector3(-128, 0, -128);
 
             // Add light component
             LightProxy lightProxy = AddLightProxy(entityProxy);
 
-            // Expand tree view
+            // Expand nodes
             documentProxy.TreeNode.Expand();
+            entityProxy.TreeNode.Expand();
 
             // Unlock stacks
             document.LockUndoRedo = false;
@@ -277,9 +279,6 @@ namespace SceneEditor
         {
             // Create new entity
             DynamicEntity entity = new DynamicEntity(document.EditorScene);
-
-            // Add to document scene
-            document.EditorScene.Entities.Add(entity);
 
             // Create new entity proxy
             EntityProxy entityProxy = new EntityProxy(document, entity);
@@ -303,7 +302,7 @@ namespace SceneEditor
             Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 256, 256, false, SurfaceFormat.Color);
 
             // Create new quad terrain
-            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 1);
+            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 2);
 
             // Add to parent entity
             parent.Entity.Components.Add(quadTerrain);

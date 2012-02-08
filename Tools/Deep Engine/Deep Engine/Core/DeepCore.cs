@@ -38,6 +38,7 @@ namespace DeepEngine.Core
 
         // Constant strings
         const string contentRootDirectory = "Deep Engine Content";
+        const string errorMultipleDrawCalls = "Draw() called more than once before present.";
 
         // Daggerfall
         string arena2Path;
@@ -61,6 +62,7 @@ namespace DeepEngine.Core
         Stopwatch stopwatch = Stopwatch.StartNew();
         long lastUpdateTime = 0;
         long lastDrawTime = 0;
+        int drawCount = 0;
 
         // Temporary
         Scene scene;
@@ -333,6 +335,9 @@ namespace DeepEngine.Core
             // Get time
             lastDrawTime = stopwatch.ElapsedMilliseconds - startTime;
 
+            // Increment drawcount
+            drawCount++;
+
             // Present render target over frame buffer
             if (present)
                 Present();
@@ -345,7 +350,17 @@ namespace DeepEngine.Core
         /// </summary>
         public void Present()
         {
+            // Throw if draw called multiple times before present
+            if (drawCount > 1)
+            {
+                throw new Exception(errorMultipleDrawCalls);
+            }
+
+            // Present render
             renderer.Present();
+
+            // Reset drawcount
+            drawCount = 0;
         }
 
         #endregion

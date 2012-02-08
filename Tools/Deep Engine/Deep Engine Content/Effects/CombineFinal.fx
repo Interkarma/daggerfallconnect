@@ -84,7 +84,7 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
 	// Output final color on every pixel except those still at max depth (i.e. the sky).
 	// Instead draw a tranparent pixel, allowing the background to be seen.
 	if (depth.r < 1.0f)
-		output.Color = float4((diffuseColor * diffuseLight + specularLight + ambientLight),1);
+		output.Color = float4((diffuseColor * (diffuseLight + specularLight)) + ambientLight,1);
 	else
 		output.Color = float4(0,0,0,0);
 
