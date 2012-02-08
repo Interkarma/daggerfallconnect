@@ -117,6 +117,11 @@ namespace SceneEditor.Controls
             core = new DeepCore(arena2Path, base.Services);
             core.Initialize();
 
+            // Set effects
+            core.Renderer.ShowDebugBuffers = false;
+            core.Renderer.FXAAEnabled = false;
+            core.Renderer.BloomEnabled = false;
+
             // Hook idle event to run as fast as possible
             Application.Idle += TickWhileIdle;
 

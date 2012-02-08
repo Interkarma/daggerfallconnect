@@ -248,6 +248,18 @@ namespace DeepEngine.Daggerfall
             }
         }
 
+        /// <summary>
+        /// Gets default flags for terrain tile materials.
+        /// </summary>
+        public static TextureCreateFlags DefaultTerrainFlags
+        {
+            get
+            {
+                return MaterialManager.TextureCreateFlags.MipMaps |
+                    MaterialManager.TextureCreateFlags.PowerOfTwo;
+            }
+        }
+
         #endregion
 
         #region Constructors

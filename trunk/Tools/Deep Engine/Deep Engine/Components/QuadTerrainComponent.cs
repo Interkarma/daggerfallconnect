@@ -18,6 +18,7 @@ using DeepEngine.Core;
 using DeepEngine.Utility;
 using DeepEngine.Player;
 using DeepEngine.World;
+using DeepEngine.Daggerfall;
 #endregion
 
 namespace DeepEngine.Components
@@ -167,6 +168,13 @@ namespace DeepEngine.Components
             this.dimension = heightMap.Width;
             this.levels = levels;
             this.terrainBlendMap = blendMap;
+
+            // Set default textures
+            Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(402, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse4 = core.MaterialManager.CreateDaggerfallMaterialEffect(402, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
 
             // Create arrays
             terrainData = new Vector4[dimension * dimension];

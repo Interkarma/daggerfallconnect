@@ -110,9 +110,9 @@ struct Default_VSO
 
 struct Default_PSO
 {
-    half4 Color			: COLOR0;
-    half4 Normal		: COLOR1;
-    half4 Depth			: COLOR2;
+    float4 Color		: COLOR0;
+    float4 Normal		: COLOR1;
+    float4 Depth		: COLOR2;
 };
 
 
@@ -180,8 +180,8 @@ Default_PSO RenderTerrain_PS(Default_VSO input)
 	diffuse += tex2D(Diffuse5Sampler, uv) * blendfactor;
 
 	// Set output
-	output.Color = half4(diffuse,0);
-	output.Normal = half4(0.5f*(input.Normal+1.0f),0);
+	output.Color = float4(diffuse, 0);
+	output.Normal = float4(0.5f * (input.Normal + 1.0f), 0);
 	output.Depth = input.Depth.x / input.Depth.y;
 	
 	return output;

@@ -93,7 +93,7 @@ namespace DeepEngine.World
         /// <summary>
         /// Gets entity list.
         /// </summary>
-        public List<BaseEntity> Entities
+        internal List<BaseEntity> Entities
         {
             get { return entities; }
         }
