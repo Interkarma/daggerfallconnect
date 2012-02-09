@@ -71,7 +71,8 @@ namespace DeepEngine.Components
         ///  This yields decent results and is much less expensive than a CPU sort.
         /// </summary>
         /// <param name="caller"></param>
-        public override void Draw(BaseEntity caller)
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public override void Draw(BaseEntity caller, uint identity)
         {
             // Do nothing if disabled
             if (!enabled)

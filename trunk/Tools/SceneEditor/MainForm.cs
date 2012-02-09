@@ -251,11 +251,12 @@ namespace SceneEditor
 
             // Add sphere primitive component
             SphereProxy sphereProxy = AddSphereProxy(entityProxy);
-            sphereProxy.Position = new Vector3(0, 1, 0);
+            sphereProxy.Position = new Vector3(0, 0.5f, 0);
 
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
-            terrainProxy.Position = new Vector3(-128, 0, -128);
+            terrainProxy.Position = new Vector3(-512, 0, -512);
+            terrainProxy.Scale = new Vector3(2, 2, 2);
 
             // Add light component
             LightProxy lightProxy = AddLightProxy(entityProxy);
@@ -298,8 +299,8 @@ namespace SceneEditor
         private QuadTerrainProxy AddQuadTerrainComponentProxy(EntityProxy parent)
         {
             // Create default textures
-            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 256, 256, false, SurfaceFormat.Color);
-            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 256, 256, false, SurfaceFormat.Color);
+            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
+            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
 
             // Create new quad terrain
             QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 2);

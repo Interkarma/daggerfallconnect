@@ -68,13 +68,34 @@ namespace DeepEngine.Components
 
         #endregion
 
+        #region Protected Methods
+
+        /// <summary>
+        /// Packs an identity into a float4 structure.
+        /// </summary>
+        /// <param name="identity">Identity to pack.</param>
+        /// <returns>Packed identity vector.</returns>
+        protected Vector4 PackIdentity(uint identity)
+        {
+            Color packedIdentity = Color.Transparent;
+            packedIdentity.A = (byte)(identity & 0xff);
+            packedIdentity.B = (byte)((identity >> 8) & 0xff);
+            packedIdentity.G = (byte)((identity >> 16) & 0xff);
+            packedIdentity.R = (byte)((identity >> 24) & 0xff);
+
+            return packedIdentity.ToVector4();
+        }
+
+        #endregion
+
         #region Abstract Methods
 
         /// <summary>
         /// Called when component should draw itself.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public abstract void Draw(BaseEntity caller);
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public abstract void Draw(BaseEntity caller, uint identity);
 
         #endregion
     }

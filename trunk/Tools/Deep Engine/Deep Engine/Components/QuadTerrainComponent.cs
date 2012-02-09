@@ -203,14 +203,15 @@ namespace DeepEngine.Components
         /// Draws component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public override void Draw(BaseEntity caller)
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public override void Draw(BaseEntity caller, uint identity)
         {
             // Do nothing if disabled
             if (!enabled)
                 return;
 
             // Draw quad tree
-            DrawNode(rootNode, caller);
+            DrawNode(rootNode, caller, identity);
         }
 
         #endregion
@@ -383,7 +384,9 @@ namespace DeepEngine.Components
         /// Draw this node and all child nodes.
         /// </summary>
         /// <param name="node">Node to draw.</param>
-        private void DrawNode(QuadNode node, BaseEntity caller)
+        /// <param name="caller">Entity calling the draw operation.</param>
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        private void DrawNode(QuadNode node, BaseEntity caller, uint identity)
         {
             if (node == null)
                 return;
@@ -402,7 +405,7 @@ namespace DeepEngine.Components
 
             // Recurse children
             foreach (QuadNode child in node.Children)
-                DrawNode(child, caller);
+                DrawNode(child, caller, identity);
 
             // Calculate sample scale
             Vector2 sampleScale;
@@ -424,6 +427,7 @@ namespace DeepEngine.Components
                 terrainEffect.Parameters["Diffuse5Texture"].SetValue(Diffuse5);
                 terrainEffect.Parameters["MaxHeight"].SetValue(maxHeight);
                 terrainEffect.Parameters["SampleScale"].SetValue(sampleScale);
+                terrainEffect.Parameters["Identity"].SetValue(PackIdentity(identity));
 
                 // Calculate sample offset
                 Vector2 sampleOffset;

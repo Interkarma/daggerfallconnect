@@ -201,6 +201,19 @@ namespace DeepEngine.Components
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Gets static geometry.
+        /// </summary>
+        /// <returns>Static geometry builder.</returns>
+        public StaticGeometryBuilder GetStaticGeometry()
+        {
+            return staticGeometry;
+        }
+
+        #endregion
+
         #region DrawableComponent Overrides
 
         /// <summary>
@@ -222,7 +235,8 @@ namespace DeepEngine.Components
         /// Draws the component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public override void Draw(BaseEntity caller)
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public override void Draw(BaseEntity caller, uint identity)
         {
             // Do nothing if no static geometry
             if (staticGeometry == null)
@@ -267,15 +281,6 @@ namespace DeepEngine.Components
                         item.Value.PrimitiveCount);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets static geometry.
-        /// </summary>
-        /// <returns>Static geometry builder.</returns>
-        public StaticGeometryBuilder GetStaticGeometry()
-        {
-            return staticGeometry;
         }
 
         /// <summary>

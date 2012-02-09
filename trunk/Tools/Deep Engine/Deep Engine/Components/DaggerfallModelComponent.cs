@@ -82,7 +82,8 @@ namespace DeepEngine.Components
         /// Draws component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        public override void Draw(BaseEntity caller)
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public override void Draw(BaseEntity caller, uint identity)
         {
             // Do nothing if disabled
             if (!enabled)
