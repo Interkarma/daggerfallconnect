@@ -153,7 +153,7 @@ namespace RoHD_Playground.GameStates
             // Load fonts
             consoleFont = Game.Content.Load<SpriteFont>("Fonts/MenuFont");
 
-            core.Renderer.ShowDebugBuffers = false;
+            core.Renderer.ShowDebugBuffers = true;
 
             // Load fonts
             SpriteFont menuFont2 = Game.Content.Load<SpriteFont>("Fonts/MenuFont2");

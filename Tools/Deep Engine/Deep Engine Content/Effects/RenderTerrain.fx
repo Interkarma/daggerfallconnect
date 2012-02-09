@@ -20,6 +20,9 @@ float2 SampleOffset;
 float2 SampleScale;
 float MaxHeight;
 
+// Engine
+float4 Identity = 0;
+
 
 ///////////////////////////////////////////////////////////////////
 // Samplers
@@ -113,6 +116,7 @@ struct Default_PSO
     float4 Color		: COLOR0;
     float4 Normal		: COLOR1;
     float4 Depth		: COLOR2;
+	float4 Identity		: COLOR3;
 };
 
 
@@ -183,6 +187,7 @@ Default_PSO RenderTerrain_PS(Default_VSO input)
 	output.Color = float4(diffuse, 0);
 	output.Normal = float4(0.5f * (input.Normal + 1.0f), 0);
 	output.Depth = input.Depth.x / input.Depth.y;
+	output.Identity = Identity;
 	
 	return output;
 }

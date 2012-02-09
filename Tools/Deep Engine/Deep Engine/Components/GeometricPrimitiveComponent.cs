@@ -196,36 +196,6 @@ namespace DeepEngine.Components
             this.BoundingSphere = primitive.BoundingSphere;
         }
 
-        #endregion
-
-        #region DrawableComponent Overrides
-
-        /// <summary>
-        /// Draws component.
-        /// </summary>
-        /// <param name="caller">Entity calling the draw operation.</param>
-        public override void Draw(BaseEntity caller)
-        {
-            // Do nothing if disabled
-            if (!enabled)
-                return;
-
-            // Calculate world matrix
-            Matrix worldMatrix = matrix * caller.Matrix;
-
-            // Set technique
-            renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Diffuse"];
-
-            // Update effect
-            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
-            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
-            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
-            renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color);
-
-            // Draw primitive
-            primitive.Draw(renderGeometryEffect);
-        }
-
         /// <summary>
         /// Gets static geometry.
         /// </summary>
@@ -256,6 +226,38 @@ namespace DeepEngine.Components
             builder.AddToBuilder((uint)MaterialManager.NullTextureKey, batchData, this.Matrix);
 
             return builder;
+        }
+
+        #endregion
+
+        #region DrawableComponent Overrides
+
+        /// <summary>
+        /// Draws component.
+        /// </summary>
+        /// <param name="caller">Entity calling the draw operation.</param>
+        /// <param name="identity">Identity to associate with draw operation.</param>
+        public override void Draw(BaseEntity caller, uint identity)
+        {
+            // Do nothing if disabled
+            if (!enabled)
+                return;
+
+            // Calculate world matrix
+            Matrix worldMatrix = matrix * caller.Matrix;
+
+            // Set technique
+            renderGeometryEffect.CurrentTechnique = renderGeometryEffect.Techniques["Diffuse"];
+
+            // Update effect
+            renderGeometryEffect.Parameters["World"].SetValue(worldMatrix);
+            renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
+            renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
+            renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color);
+            renderGeometryEffect.Parameters["Identity"].SetValue(PackIdentity(identity));
+
+            // Draw primitive
+            primitive.Draw(renderGeometryEffect);
         }
 
         /// <summary>

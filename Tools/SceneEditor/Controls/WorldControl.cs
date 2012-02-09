@@ -117,8 +117,8 @@ namespace SceneEditor.Controls
             core = new DeepCore(arena2Path, base.Services);
             core.Initialize();
 
-            // Set effects
-            core.Renderer.ShowDebugBuffers = false;
+            // Set options
+            core.Renderer.ShowDebugBuffers = true;
             core.Renderer.FXAAEnabled = false;
             core.Renderer.BloomEnabled = false;
 

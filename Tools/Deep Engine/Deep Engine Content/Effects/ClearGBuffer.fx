@@ -26,6 +26,7 @@ struct PixelShaderOutput
 	float4 Color		: COLOR0;
     float4 Normal		: COLOR1;
 	float4 Depth		: COLOR2;
+	float4 Identity		: COLOR3;
 };
 
 PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
@@ -44,6 +45,9 @@ PixelShaderOutput PixelShaderFunction(VertexShaderOutput input)
 
 	// Max depth
     output.Depth = 1.0f;
+
+	// Max identity
+	output.Identity = 1.0f;
 
     return output;
 }

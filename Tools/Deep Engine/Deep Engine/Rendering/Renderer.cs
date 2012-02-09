@@ -1037,10 +1037,14 @@ namespace DeepEngine.Rendering
             // Create FXAA post-processing target
             if (fxaaEnabled)
                 fxaaRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            else
+                fxaaRenderTarget = null;
 
             // Create Bloom post-processing target
             if (bloomEnabled)
                 bloomRenderTarget = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
+            else
+                bloomRenderTarget = null;
         }
 
         #endregion
