@@ -236,8 +236,7 @@ namespace DeepEngine.Components
         /// Draws component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        /// <param name="identity">Identity to associate with draw operation.</param>
-        public override void Draw(BaseEntity caller, uint identity)
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)
@@ -254,7 +253,6 @@ namespace DeepEngine.Components
             renderGeometryEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
             renderGeometryEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
             renderGeometryEffect.Parameters["DiffuseColor"].SetValue(color);
-            renderGeometryEffect.Parameters["Identity"].SetValue(PackIdentity(identity));
 
             // Draw primitive
             primitive.Draw(renderGeometryEffect);

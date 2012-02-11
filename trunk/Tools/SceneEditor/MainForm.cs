@@ -36,6 +36,9 @@ namespace SceneEditor
         SceneDocumentProxy documentProxy;
         PropertyGrid propertyGrid;
 
+        bool terrainEditMode = false;
+        QuadTerrainProxy currentTerrainProxy = null;
+
         #endregion
 
         #region Constructors
@@ -51,6 +54,11 @@ namespace SceneEditor
             propertyGrid = new PropertyGrid();
             propertyGrid.Dock = DockStyle.Fill;
             PropertiesPanel.Controls.Add(propertyGrid);
+            
+            // Init terrain editor panel
+            TerrainEditorPanel.Visible = false;
+            ToggleTerrainEditorButton.Enabled = false;
+            ToggleTerrainEditorButton.Checked = false;
         }
 
         #endregion
@@ -153,6 +161,34 @@ namespace SceneEditor
         private void SceneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             UpdatePropertyGrid();
+
+            // Get selected proxy
+            BaseEditorProxy proxy = DocumentTreeView.SelectedNode.Tag as BaseEditorProxy;
+            
+            // Enable/disable terrain editor
+            if (proxy is QuadTerrainProxy)
+            {
+                ToggleTerrainEditorButton.Enabled = true;
+                TerrainEditorPanel.Visible = true;
+                ToggleTerrainEditorButton.Checked = true;
+                terrainEditMode = true;
+                currentTerrainProxy = (QuadTerrainProxy)proxy;
+                (proxy as QuadTerrainProxy).Component.EnablePicking = true;
+                
+            }
+            else
+            {
+                ToggleTerrainEditorButton.Enabled = false;
+                TerrainEditorPanel.Visible = false;
+                ToggleTerrainEditorButton.Checked = false;
+                terrainEditMode = false;
+                if (currentTerrainProxy != null)
+                {
+                    currentTerrainProxy.Component.EnablePicking = false;
+                    currentTerrainProxy = null;
+                }
+
+            }
         }
 
         #endregion
@@ -170,6 +206,24 @@ namespace SceneEditor
 
             // Set core to render new scene
             worldControl.Core.ActiveScene = document.EditorScene;
+        }
+
+        /// <summary>
+        /// Called whenever World Control tick, and before scene is drawn/presented.
+        /// </summary>
+        private void WorldControl_OnTick(object sender, EventArgs e)
+        {
+            // Check mouse is inside world view
+            if (currentTerrainProxy != null && terrainEditMode)
+            {
+                // Get current pointer intersection
+                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
+                if (pi.Distance != null)
+                {
+                    // Position crosshair
+                    terrainEditor1.PositionCrosshair(pi.MapPosition.X, pi.MapPosition.Y);
+                }
+            }
         }
 
         #endregion
@@ -264,6 +318,9 @@ namespace SceneEditor
             // Expand nodes
             documentProxy.TreeNode.Expand();
             entityProxy.TreeNode.Expand();
+
+            // Select terrain node
+            DocumentTreeView.SelectedNode = terrainProxy.TreeNode;
 
             // Unlock stacks
             document.LockUndoRedo = false;

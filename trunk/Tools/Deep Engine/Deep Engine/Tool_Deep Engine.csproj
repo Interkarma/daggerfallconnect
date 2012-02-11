@@ -124,6 +124,7 @@
     <Compile Include="Rendering\GBuffer.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Utility\Grid.cs" />
+    <Compile Include="Utility\Intersection.cs" />
     <Compile Include="Utility\PowerOfTwo.cs" />
     <Compile Include="Utility\QuadNode.cs" />
     <Compile Include="Utility\ScreenComponentCollection.cs" />

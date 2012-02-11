@@ -91,12 +91,8 @@ namespace DeepEngine.World
                 return;
 
             // Draw all component            
-            int componentIndex = 0;
             foreach (BaseComponent component in components)
             {
-                // Pack identity
-                uint identity = (uint)((this.id << 16) + componentIndex++);
-
                 if (component is DrawableComponent)
                 {
                     // Get bounding sphere of component transformed to entity space
@@ -104,7 +100,7 @@ namespace DeepEngine.World
 
                     // Only draw if component is visible by camera
                     if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
-                        (component as DrawableComponent).Draw(this, identity);
+                        (component as DrawableComponent).Draw(this);
                 }
                 else if (component is LightComponent)
                 {

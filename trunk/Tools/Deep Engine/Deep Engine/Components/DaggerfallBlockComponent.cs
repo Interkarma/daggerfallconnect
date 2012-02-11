@@ -235,8 +235,7 @@ namespace DeepEngine.Components
         /// Draws the component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        /// <param name="identity">Identity to associate with draw operation.</param>
-        public override void Draw(BaseEntity caller, uint identity)
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if no static geometry
             if (staticGeometry == null)

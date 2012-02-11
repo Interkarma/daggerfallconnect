@@ -132,6 +132,13 @@ namespace DeepEngine.Rendering
         CloudFactory cloudFactory;
         StarFactory starFactory;
 
+        // Identity
+        Color[] identityRead = new Color[1];
+        Rectangle identityRect = new Rectangle(0, 0, 1, 1);
+
+        // Pointer
+        private Ray pointerRay = new Ray();
+
         #endregion
 
         #region Structures
@@ -258,6 +265,15 @@ namespace DeepEngine.Rendering
         {
             get { return bloomEnabled; }
             set { bloomEnabled = value; }
+        }
+
+        /// <summary>
+        /// Gets current pointer ray.
+        ///  Must have already called UpdatePointerRay() with current mouse position in viewport.
+        /// </summary>
+        public Ray PointerRay
+        {
+            get { return pointerRay; }
         }
 
         #endregion
@@ -415,6 +431,30 @@ namespace DeepEngine.Rendering
             pointLightsCount = 0;
             spotLightsCount = 0;
             visibleBillboardsCount = 0;
+        }
+
+        /// <summary>
+        /// Update pointer ray for picking.
+        ///  Uses view and projection matrices from current camera.
+        /// </summary>
+        /// <param name="x">Pointer X in viewport.</param>
+        /// <param name="y">Pointer Y in viewport.</param>
+        public void UpdatePointerRay(int x, int y)
+        {
+            // Get matrices
+            Matrix view = core.ActiveScene.Camera.ViewMatrix;
+            Matrix projection = core.ActiveScene.Camera.ProjectionMatrix;
+
+            // Unproject vectors into view area
+            Viewport vp = graphicsDevice.Viewport;
+            Vector3 near = vp.Unproject(new Vector3(x, y, 0), projection, view, Matrix.Identity);
+            Vector3 far = vp.Unproject(new Vector3(x, y, 1), projection, view, Matrix.Identity);
+
+            // Create ray
+            Vector3 direction = far - near;
+            direction.Normalize();
+            pointerRay.Position = near;
+            pointerRay.Direction = direction;
         }
 
         /// <summary>

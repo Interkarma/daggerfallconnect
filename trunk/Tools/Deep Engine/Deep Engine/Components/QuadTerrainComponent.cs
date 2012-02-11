@@ -55,6 +55,29 @@ namespace DeepEngine.Components
         // Grid
         Grid grid;
 
+        // Picking
+        bool enablePicking = false;
+        const int defaultIntersectionCapacity = 35;
+        List<Intersection.ObjectIntersection<QuadNode>> pointerNodeIntersections;
+        TerrainIntersectionData pointerIntersection;
+
+        #endregion
+
+        #region Class Structures
+
+        /// <summary>
+        /// Information about where an intersection has occurred on the terrain.
+        /// </summary>
+        public struct TerrainIntersectionData
+        {
+            /// <summary>Distance to intersection point in world. Null if no collision.</summary>
+            public float? Distance;
+            /// <summary>Intersection point in world.</summary>
+            public Vector3 WorldPosition;
+            /// <summary>Intersection point in heightmap.</summary>
+            public Vector2 MapPosition;
+        }
+
         #endregion
 
         #region Properties
@@ -109,6 +132,24 @@ namespace DeepEngine.Components
         {
             get { return maxHeight; }
             set { maxHeight = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets flag to enable or disable mouse picking.
+        ///  Application must keep pointer ray updated in renderer.
+        /// </summary>
+        public bool EnablePicking
+        {
+            get { return enablePicking; }
+            set { enablePicking = value; }
+        }
+
+        /// <summary>
+        /// Gets current pointer intersection.
+        /// </summary>
+        public TerrainIntersectionData PointerIntersection
+        {
+            get { return pointerIntersection; }
         }
 
         /// <summary>
@@ -193,6 +234,9 @@ namespace DeepEngine.Components
 
             // Load effects
             terrainEffect = core.ContentManager.Load<Effect>("Effects/RenderTerrain");
+
+            // Create intersections list
+            pointerNodeIntersections = new List<Intersection.ObjectIntersection<QuadNode>>();
         }
 
         #endregion
@@ -203,15 +247,29 @@ namespace DeepEngine.Components
         /// Draws component.
         /// </summary>
         /// <param name="caller">Entity calling the draw operation.</param>
-        /// <param name="identity">Identity to associate with draw operation.</param>
-        public override void Draw(BaseEntity caller, uint identity)
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)
                 return;
 
-            // Draw quad tree
-            DrawNode(rootNode, caller, identity);
+            if (enablePicking)
+            {
+                // Reset intersections
+                pointerNodeIntersections.Clear();
+                pointerNodeIntersections.Capacity = defaultIntersectionCapacity;
+
+                // Draw quad tree
+                DrawNode(rootNode, caller);
+
+                // Test intersections
+                TestPointerIntersections();
+            }
+            else
+            {
+                // Draw quad tree
+                DrawNode(rootNode, caller);
+            }
         }
 
         #endregion
@@ -385,19 +443,18 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="node">Node to draw.</param>
         /// <param name="caller">Entity calling the draw operation.</param>
-        /// <param name="identity">Identity to associate with draw operation.</param>
-        private void DrawNode(QuadNode node, BaseEntity caller, uint identity)
+        private void DrawNode(QuadNode node, BaseEntity caller)
         {
             if (node == null)
                 return;
 
             // Calculate world matrix
-            Matrix worldMatrix = node.Matrix * this.matrix * Matrix.CreateTranslation(caller.Matrix.Translation);
+            node.WorldMatrix = node.Matrix * this.matrix * Matrix.CreateTranslation(caller.Matrix.Translation);
 
             // Transform bounds for this node
             BoundingBox bounds;
-            bounds.Min = Vector3.Transform(node.BoundingBox.Min, worldMatrix);
-            bounds.Max = Vector3.Transform(node.BoundingBox.Max, worldMatrix);
+            bounds.Min = Vector3.Transform(node.BoundingBox.Min, node.WorldMatrix);
+            bounds.Max = Vector3.Transform(node.BoundingBox.Max, node.WorldMatrix);
 
             // Test node against frustum
             if (!bounds.Intersects(core.ActiveScene.Camera.BoundingFrustum))
@@ -405,7 +462,7 @@ namespace DeepEngine.Components
 
             // Recurse children
             foreach (QuadNode child in node.Children)
-                DrawNode(child, caller, identity);
+                DrawNode(child, caller);
 
             // Calculate sample scale
             Vector2 sampleScale;
@@ -415,6 +472,19 @@ namespace DeepEngine.Components
             // Only draw terrain grid for leaf nodes
             if (!node.HasChildren)
             {
+                if (enablePicking)
+                {
+                    // Test for node-ray intersection
+                    float? intersectDistance = core.Renderer.PointerRay.Intersects(bounds);
+                    if (intersectDistance != null)
+                    {
+                        // Add to intersection list
+                        Intersection.ObjectIntersection<QuadNode> ni =
+                            new Intersection.ObjectIntersection<QuadNode>(intersectDistance, node);
+                        pointerNodeIntersections.Add(ni);
+                    }
+                }
+
                 // Initialise effect
                 terrainEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
                 terrainEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
@@ -427,7 +497,6 @@ namespace DeepEngine.Components
                 terrainEffect.Parameters["Diffuse5Texture"].SetValue(Diffuse5);
                 terrainEffect.Parameters["MaxHeight"].SetValue(maxHeight);
                 terrainEffect.Parameters["SampleScale"].SetValue(sampleScale);
-                terrainEffect.Parameters["Identity"].SetValue(PackIdentity(identity));
 
                 // Calculate sample offset
                 Vector2 sampleOffset;
@@ -436,7 +505,7 @@ namespace DeepEngine.Components
 
                 // Set effect textures for this quad
                 terrainEffect.Parameters["SampleOffset"].SetValue(sampleOffset);
-                terrainEffect.Parameters["World"].SetValue(worldMatrix);
+                terrainEffect.Parameters["World"].SetValue(node.WorldMatrix);
 
                 // Apply effect
                 terrainEffect.Techniques[0].Passes[0].Apply();
@@ -452,6 +521,92 @@ namespace DeepEngine.Components
                     0,
                     grid.IndexBuffer.IndexCount / 3);
             }
+        }
+
+        #endregion
+
+        #region Intersections
+
+        /// <summary>
+        /// Tests pointer intersections against elevation data.
+        /// </summary>
+        private void TestPointerIntersections()
+        {
+            if (pointerNodeIntersections.Count == 0)
+            {
+                // Clear previous intersection
+                pointerIntersection.Distance = null;
+                pointerIntersection.MapPosition = Vector2.Zero;
+                pointerIntersection.WorldPosition = Vector3.Zero;
+                return;
+            }
+            else
+            {
+                // Test for terrain intersections
+                pointerNodeIntersections.Sort();
+                RayIntersectsTerrain(pointerNodeIntersections[0], out pointerIntersection);
+            }
+        }
+
+        /// <summary>
+        /// Test if terrain intersects a sub-rect of terrain.
+        /// </summary>
+        private void RayIntersectsTerrain(Intersection.ObjectIntersection<QuadNode> ni, out TerrainIntersectionData terrainCollisionData)
+        {
+            // Get node
+            QuadNode node = ni.Object;
+
+            // Transform ray back to object space
+            Ray ray;
+            Matrix inverseTransform = Matrix.Invert(node.WorldMatrix);
+            ray.Position = Vector3.Transform(core.Renderer.PointerRay.Position, inverseTransform);
+            ray.Direction = Vector3.TransformNormal(core.Renderer.PointerRay.Direction, inverseTransform);
+
+            int index;
+            float height = 0;
+            Vector2 position = Vector2.Zero;
+            int loopCounter = 0;
+            Vector3 step = ray.Direction * 10.0f;
+            while (ray.Position.Y > 0)
+            {
+                // Step ray along direction
+                ray.Position += step;
+
+                // Break loop if running too long
+                if (++loopCounter > 1000)
+                {
+                    terrainCollisionData.Distance = null;
+                    terrainCollisionData.WorldPosition = Vector3.Zero;
+                    terrainCollisionData.MapPosition = Vector2.Zero;
+                    return;
+                }
+
+                // Get position
+                position.X = ray.Position.X + node.Rectangle.X;
+                position.Y = ray.Position.Z + node.Rectangle.Y;
+                if (position.X < 0 || position.X > dimension - 1) continue;
+                if (position.Y < 0 || position.Y > dimension - 1) continue;
+
+                // Get index into arrays
+                index = (int)position.Y * (int)dimension + (int)position.X;
+
+                // Get height of terrain at this position
+                height = terrainData[index].W * maxHeight;
+                if (ray.Position.Y <= height)
+                    break;
+            }
+
+            // Store map collision in 0,1 space
+            terrainCollisionData.MapPosition.X = position.X / dimension;
+            terrainCollisionData.MapPosition.Y = position.Y / dimension;
+
+            // Store world collision in world space
+            terrainCollisionData.WorldPosition.X = position.X;
+            terrainCollisionData.WorldPosition.Y = height;
+            terrainCollisionData.WorldPosition.Z = position.Y;
+
+            // Set distance
+            terrainCollisionData.Distance = Vector3.Distance(core.ActiveScene.Camera.Position, terrainCollisionData.WorldPosition);
         }
 
         #endregion
