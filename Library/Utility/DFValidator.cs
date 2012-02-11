@@ -32,14 +32,31 @@ namespace DaggerfallConnect.Utility
         /// </summary>
         public struct ValidationResults
         {
+            /// <summary>The full path that was tested.</summary>
             public string PathTested;
+
+            /// <summary>True if all tests succeeded.</summary>
             public bool AppearsValid;
+
+            /// <summary>True if folder exists.</summary>
             public bool FolderValid;
+
+            /// <summary>True if texture count is correct.</summary>
             public bool TexturesValid;
+
+            /// <summary>True if ARCH3D.BSA exists.</summary>
             public bool ModelsValid;
+
+            /// <summary>True if BLOCKS.BSA exists.</summary>
             public bool BlocksValid;
+
+            /// <summary>True if MAPS.BSA exists.</summary>
             public bool MapsValid;
+
+            /// <summary>True if DAGGER.SND exists.</summary>
             public bool SoundsValid;
+
+            /// <summary>True if WOODS.WLD exists.</summary>
             public bool WoodsValid;
         }
 

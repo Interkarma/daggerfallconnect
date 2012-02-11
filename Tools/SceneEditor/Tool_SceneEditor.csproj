@@ -78,6 +78,12 @@
     <Compile Include="Proxies\IEditorProxy.cs" />
     <Compile Include="Proxies\SphereProxy.cs" />
     <Compile Include="Proxies\EntityProxy.cs" />
+    <Compile Include="UserControls\TerrainEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControls\TerrainEditor.Designer.cs">
+      <DependentUpon>TerrainEditor.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -91,6 +97,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="UserControls\TerrainEditor.resx">
+      <DependentUpon>TerrainEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -207,6 +216,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\vector.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Crosshair.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

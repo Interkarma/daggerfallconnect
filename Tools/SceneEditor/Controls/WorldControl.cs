@@ -18,6 +18,8 @@ using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
+using DeepEngine.Components;
+using DeepEngine.World;
 #endregion
 
 namespace SceneEditor.Controls
@@ -43,6 +45,7 @@ namespace SceneEditor.Controls
         TimeSpan lastTime;
 
         public event EventHandler InitializeCompleted;
+        public event EventHandler OnTick;
 
         #endregion
 
@@ -118,7 +121,7 @@ namespace SceneEditor.Controls
             core.Initialize();
 
             // Set options
-            core.Renderer.ShowDebugBuffers = true;
+            core.Renderer.ShowDebugBuffers = false;
             core.Renderer.FXAAEnabled = false;
             core.Renderer.BloomEnabled = false;
 
@@ -158,6 +161,10 @@ namespace SceneEditor.Controls
             {
                 core.Input.Reset();
             }
+
+            // Call tick event
+            if (OnTick != null)
+                OnTick(this, null);
 
             // Store update time
             lastTime = currentTime;
@@ -203,6 +210,10 @@ namespace SceneEditor.Controls
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
+            
+            // Update pointer ray
+            if (isReady)
+                core.Renderer.UpdatePointerRay(e.X, e.Y);
         }
 
         /// <summary>
@@ -282,6 +293,9 @@ namespace SceneEditor.Controls
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
+
+            // Set focus to this control
+            this.Focus();
         }
 
         /// <summary>

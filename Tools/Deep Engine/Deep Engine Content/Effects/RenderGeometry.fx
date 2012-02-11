@@ -8,7 +8,6 @@ texture Texture;
 float SpecularIntensity = 0.0f;
 float SpecularPower = 0.5f;
 float4 DiffuseColor = float4(1,1,1,0);
-float4 Identity = 0;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -43,7 +42,6 @@ struct Default_PSO
     float4 Color			: COLOR0;
     float4 Normal			: COLOR1;
 	float4 Depth			: COLOR2;
-	float4 Identity			: COLOR3;
 };
 
 
@@ -96,9 +94,6 @@ Default_PSO Default_PS(Default_VSO input)
 	// Depth
     output.Depth = input.Depth.x / input.Depth.y;
 
-	// Identity
-	output.Identity = Identity;
-
     return output;
 }
 
@@ -133,9 +128,6 @@ Default_PSO Diffuse_PS(Diffuse_VSO input)
 
 	// Depth
     output.Depth = input.Depth.x / input.Depth.y;
-
-	// Identity
-	output.Identity = Identity;
 
     return output;
 }

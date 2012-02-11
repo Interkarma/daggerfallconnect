@@ -94,6 +94,11 @@ namespace DeepEngine.Utility
         }
 
         /// <summary>
+        /// Gets or sets a matrix that is the sum transform of the node.
+        /// </summary>
+        public Matrix WorldMatrix { get; set; }
+
+        /// <summary>
         /// Gets 2D coordinates of quad node in source data.
         /// </summary>
         public Rectangle Rectangle

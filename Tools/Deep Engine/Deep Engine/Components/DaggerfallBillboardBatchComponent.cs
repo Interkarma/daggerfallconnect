@@ -70,9 +70,8 @@ namespace DeepEngine.Components
         ///  Second pass renders unsorted alpha fringe of texture.
         ///  This yields decent results and is much less expensive than a CPU sort.
         /// </summary>
-        /// <param name="caller"></param>
-        /// <param name="identity">Identity to associate with draw operation.</param>
-        public override void Draw(BaseEntity caller, uint identity)
+        /// <param name="caller">Entity calling the draw operation.</param>
+        public override void Draw(BaseEntity caller)
         {
             // Do nothing if disabled
             if (!enabled)

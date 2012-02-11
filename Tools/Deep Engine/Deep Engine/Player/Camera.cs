@@ -30,7 +30,7 @@ namespace DeepEngine.Player
 
         // Clipping plane extents
         float nearPlaneDistance = 0.02f;
-        float farPlaneDistance = 1000f;
+        float farPlaneDistance = 2000f;
 
         // Matrices
         Matrix projectionMatrix = Matrix.Identity;

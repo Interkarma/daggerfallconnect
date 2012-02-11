@@ -151,6 +151,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap Crosshair {
+            get {
+                object obj = ResourceManager.GetObject("Crosshair", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap database {
             get {
                 object obj = ResourceManager.GetObject("database", resourceCulture);

@@ -49,6 +49,19 @@ namespace SceneEditor.Proxies
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the QuadTerrainComponent being proxied.
+        /// </summary>
+        [Browsable(false)]
+        public QuadTerrainComponent Component
+        {
+            get { return quadTerrain; }
+        }
+
+        #endregion
+
         #region Editor Properties
 
         /// <summary>

@@ -40,7 +40,6 @@ namespace DeepEngine.Rendering
         RenderTarget2D colorRT;             // Color and specular intensity
         RenderTarget2D normalRT;            // Normals + specular power
         RenderTarget2D depthRT;             // Depth
-        RenderTarget2D identityRT;          // Identity
         RenderTarget2D lightRT;             // Lighting
 
         // Ambient lighting
@@ -122,14 +121,6 @@ namespace DeepEngine.Rendering
         }
 
         /// <summary>
-        /// Gets identity render target.
-        /// </summary>
-        public RenderTarget2D IdentityRT
-        {
-            get { return identityRT; }
-        }
-
-        /// <summary>
         /// Gets lighting render target.
         /// </summary>
         public RenderTarget2D LightRT
@@ -168,7 +159,6 @@ namespace DeepEngine.Rendering
             if (colorRT != null) colorRT.Dispose();
             if (normalRT != null) normalRT.Dispose();
             if (depthRT != null) depthRT.Dispose();
-            if (identityRT != null) identityRT.Dispose();
             if (lightRT != null) lightRT.Dispose();
 
             // Save viewport size as this needs to be restored every time SetRenderTarget(null)
@@ -185,7 +175,6 @@ namespace DeepEngine.Rendering
             colorRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.Depth24);
             normalRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
             depthRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Single, DepthFormat.None);
-            identityRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
             lightRT = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
         }
 
@@ -194,7 +183,7 @@ namespace DeepEngine.Rendering
         /// </summary>
         public void SetGBuffer()
         {
-            graphicsDevice.SetRenderTargets(colorRT, normalRT, depthRT, identityRT);
+            graphicsDevice.SetRenderTargets(colorRT, normalRT, depthRT);
         }
 
         /// <summary>
@@ -281,10 +270,6 @@ namespace DeepEngine.Rendering
                 rect.X += width;
                 spriteBatch.Draw(depthDebugBuffer, rect, Color.White);
             }
-
-            // Draw identity
-            rect.X += width;
-            spriteBatch.Draw(identityRT, rect, Color.White);
 
             // Draw light accumulation target
             rect.X += width;
