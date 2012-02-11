@@ -132,10 +132,6 @@ namespace DeepEngine.Rendering
         CloudFactory cloudFactory;
         StarFactory starFactory;
 
-        // Identity
-        Color[] identityRead = new Color[1];
-        Rectangle identityRect = new Rectangle(0, 0, 1, 1);
-
         // Pointer
         private Ray pointerRay = new Ray();
 

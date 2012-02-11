@@ -57,7 +57,12 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.PropertiesPanel = new System.Windows.Forms.Panel();
             this.WorldPanel = new System.Windows.Forms.Panel();
+            this.TerrainEditorPanel = new System.Windows.Forms.Panel();
+            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
+            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
+            this.ToggleTerrainEditorButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.PlayButton = new System.Windows.Forms.ToolStripButton();
             this.RestartPlayButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -65,19 +70,14 @@
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.ToggleTerrainEditorButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.TerrainEditorPanel = new System.Windows.Forms.Panel();
-            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
-            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.ToolboxPanel.SuspendLayout();
             this.ResourceTabControl.SuspendLayout();
             this.SceneTabPage.SuspendLayout();
             this.SceneContextMenuStrip.SuspendLayout();
             this.SceneToolStrip.SuspendLayout();
             this.WorldPanel.SuspendLayout();
-            this.WorldToolStrip.SuspendLayout();
             this.TerrainEditorPanel.SuspendLayout();
+            this.WorldToolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // ToolboxPanel
@@ -343,6 +343,35 @@
             this.WorldPanel.Size = new System.Drawing.Size(1101, 862);
             this.WorldPanel.TabIndex = 3;
             // 
+            // TerrainEditorPanel
+            // 
+            this.TerrainEditorPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TerrainEditorPanel.Controls.Add(this.terrainEditor1);
+            this.TerrainEditorPanel.Location = new System.Drawing.Point(0, 25);
+            this.TerrainEditorPanel.Name = "TerrainEditorPanel";
+            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 386);
+            this.TerrainEditorPanel.TabIndex = 3;
+            // 
+            // terrainEditor1
+            // 
+            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
+            this.terrainEditor1.Name = "terrainEditor1";
+            this.terrainEditor1.Size = new System.Drawing.Size(260, 376);
+            this.terrainEditor1.TabIndex = 0;
+            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
+            // 
+            // worldControl
+            // 
+            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.worldControl.Location = new System.Drawing.Point(0, 25);
+            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
+            this.worldControl.Name = "worldControl";
+            this.worldControl.Size = new System.Drawing.Size(1099, 813);
+            this.worldControl.TabIndex = 0;
+            this.worldControl.Text = "DeepEngine - WorldControl";
+            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
+            // 
             // WorldToolStrip
             // 
             this.WorldToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -359,6 +388,20 @@
             this.WorldToolStrip.Size = new System.Drawing.Size(1099, 25);
             this.WorldToolStrip.TabIndex = 1;
             this.WorldToolStrip.Text = "toolStrip2";
+            // 
+            // ToggleTerrainEditorButton
+            // 
+            this.ToggleTerrainEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToggleTerrainEditorButton.Image = global::SceneEditor.Properties.Resources.color_swatch;
+            this.ToggleTerrainEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToggleTerrainEditorButton.Name = "ToggleTerrainEditorButton";
+            this.ToggleTerrainEditorButton.Size = new System.Drawing.Size(23, 22);
+            this.ToggleTerrainEditorButton.Text = "Toggle Terrain Editor";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
             // PlayButton
             // 
@@ -421,48 +464,6 @@
             this.MainStatusStrip.TabIndex = 2;
             this.MainStatusStrip.Text = "statusStrip1";
             // 
-            // ToggleTerrainEditorButton
-            // 
-            this.ToggleTerrainEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToggleTerrainEditorButton.Image = global::SceneEditor.Properties.Resources.color_swatch;
-            this.ToggleTerrainEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToggleTerrainEditorButton.Name = "ToggleTerrainEditorButton";
-            this.ToggleTerrainEditorButton.Size = new System.Drawing.Size(23, 22);
-            this.ToggleTerrainEditorButton.Text = "Toggle Terrain Editor";
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // TerrainEditorPanel
-            // 
-            this.TerrainEditorPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.TerrainEditorPanel.Controls.Add(this.terrainEditor1);
-            this.TerrainEditorPanel.Location = new System.Drawing.Point(0, 25);
-            this.TerrainEditorPanel.Name = "TerrainEditorPanel";
-            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 329);
-            this.TerrainEditorPanel.TabIndex = 3;
-            // 
-            // terrainEditor1
-            // 
-            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
-            this.terrainEditor1.Name = "terrainEditor1";
-            this.terrainEditor1.Size = new System.Drawing.Size(260, 322);
-            this.terrainEditor1.TabIndex = 0;
-            // 
-            // worldControl
-            // 
-            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.worldControl.Location = new System.Drawing.Point(0, 25);
-            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
-            this.worldControl.Name = "worldControl";
-            this.worldControl.Size = new System.Drawing.Size(1099, 813);
-            this.worldControl.TabIndex = 0;
-            this.worldControl.Text = "DeepEngine - WorldControl";
-            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
-            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -484,9 +485,9 @@
             this.SceneToolStrip.PerformLayout();
             this.WorldPanel.ResumeLayout(false);
             this.WorldPanel.PerformLayout();
+            this.TerrainEditorPanel.ResumeLayout(false);
             this.WorldToolStrip.ResumeLayout(false);
             this.WorldToolStrip.PerformLayout();
-            this.TerrainEditorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

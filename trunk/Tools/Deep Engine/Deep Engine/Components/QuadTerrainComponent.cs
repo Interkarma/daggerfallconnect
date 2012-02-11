@@ -34,6 +34,9 @@ namespace DeepEngine.Components
     {
         #region Fields
 
+        // Strings
+        const string errorInvalidDimensions = "Source texture must equal terrain dimensions.";
+
         // Effects
         Effect terrainEffect;
 
@@ -43,7 +46,7 @@ namespace DeepEngine.Components
         
         // Map data
         float maxHeight = 256f;
-        float normalStrength = 8f;
+        float normalStrength = 64f;
         int dimension;
         int leafDimension;
         Vector4[] terrainData;
@@ -212,10 +215,10 @@ namespace DeepEngine.Components
 
             // Set default textures
             Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(402, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse4 = core.MaterialManager.CreateDaggerfallMaterialEffect(402, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse4 = core.MaterialManager.CreateDaggerfallMaterialEffect(303, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
 
             // Create arrays
             terrainData = new Vector4[dimension * dimension];
@@ -225,9 +228,7 @@ namespace DeepEngine.Components
             grid = new Grid(core.GraphicsDevice, leafDimension, 1.0f);
 
             // Initialise map data
-            SetHeightData(heightMap);
-            UpdateNormalData();
-            UpdateTerrainVertexTexture();
+            SetHeight(heightMap);
 
             // Initialise quad tree
             BuildQuadTree();
@@ -299,6 +300,43 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
+        /// Sets height from a Texture2D.
+        /// </summary>
+        /// <param name="heightMap">Height map texture.</param>
+        public void SetHeight(Texture2D heightMap)
+        {
+            // Esnure source dimensions are equal to terrain dimensions
+            if (heightMap.Width != dimension ||
+                heightMap.Height != dimension)
+            {
+                throw new Exception(errorInvalidDimensions);
+            }
+
+            // Get color data from heightmap
+            Color[] heightData = new Color[heightMap.Width * heightMap.Height];
+            heightMap.GetData<Color>(heightData);
+
+            // Set height data
+            SetHeightData(heightData);
+        }
+
+        /// <summary>
+        /// Sets height from a Color[] array.
+        /// </summary>
+        /// <param name="heightData">Color array.</param>
+        public void SetHeight(Color[] heightData)
+        {
+            // Esnure source dimensions are equal to terrain dimensions
+            if (heightData.Length != dimension * dimension)
+            {
+                throw new Exception(errorInvalidDimensions);
+            }
+
+            // Set height data
+            SetHeightData(heightData);
+        }
+
+        /// <summary>
         /// Updates normal data based on current height data.
         /// </summary>
         public void UpdateNormalData()
@@ -355,24 +393,24 @@ namespace DeepEngine.Components
         #region Private Methods
 
         /// <summary>
-        /// Unpacks height texture to local arrays and sets course bounding sphere.
+        /// Unpacks height data to local arrays and sets course bounding sphere.
         /// </summary>
-        /// <param name="heightMap">Source height map.</param>
-        private void SetHeightData(Texture2D heightMap)
+        /// <param name="srcData">Source height map data.</param>
+        private void SetHeightData(Color[] srcData)
         {
-            // Get color data from heightmap
-            Color[] srcData = new Color[heightMap.Width * heightMap.Height];
-            heightMap.GetData<Color>(srcData);
-
             // Compute heights
-            for (int y = 0; y < heightMap.Height; y++)
+            for (int y = 0; y < dimension; y++)
             {
-                for (int x = 0; x < heightMap.Width; x++)
+                for (int x = 0; x < dimension; x++)
                 {
-                    int pos = y * heightMap.Width + x;
+                    int pos = y * dimension + x;
                     terrainData[pos].W = ((srcData[pos].R + srcData[pos].G + srcData[pos].B) / 3) / 255.0f;
                 }
             }
+
+            // Update normals and vertex texture
+            UpdateNormalData();
+            UpdateTerrainVertexTexture();
 
             // Set bounding sphere
             float diameter = (maxHeight > dimension) ? maxHeight : dimension;

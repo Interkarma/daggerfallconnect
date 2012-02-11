@@ -22,6 +22,7 @@ using DeepEngine.World;
 using DeepEngine.Components;
 using SceneEditor.Documents;
 using SceneEditor.Proxies;
+using DeepEngine.Utility;
 #endregion
 
 namespace SceneEditor
@@ -221,7 +222,7 @@ namespace SceneEditor
                 if (pi.Distance != null)
                 {
                     // Position crosshair
-                    terrainEditor1.PositionCrosshair(pi.MapPosition.X, pi.MapPosition.Y);
+                    terrainEditor1.SetCursorPosition(pi.MapPosition.X, pi.MapPosition.Y);
                 }
             }
         }
@@ -283,7 +284,31 @@ namespace SceneEditor
 
         #endregion
 
-        #region Toolbar Events
+        #region TerrainEditor Events
+
+        /// <summary>
+        /// Height map changed in terrain editor.
+        /// </summary>
+        private void TerrainEditor_OnHeightMapChanged(object sender, EventArgs e)
+        {
+            // Send new height map to terrain node
+            if (currentTerrainProxy != null)
+            {
+                // Transform GDI colour array to XNA colour array.
+                // This will be improved later to something more direct and optimal.
+                // However it will serve for testing now.
+                System.Drawing.Color[] srcData = terrainEditor1.GetHeightMapColorArray();
+                Microsoft.Xna.Framework.Color[] dstData = new Microsoft.Xna.Framework.Color[srcData.Length];
+                for (int i = 0; i < srcData.Length; i++)
+                {
+                    dstData[i] = ColorHelper.FromWinForms(srcData[i]);
+                }
+
+                // Set color data
+                currentTerrainProxy.Component.SetHeight(dstData);
+            }
+        }
+
         #endregion
 
         #region Default Documents
