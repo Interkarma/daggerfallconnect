@@ -60,6 +60,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap arrow_down {
+            get {
+                object obj = ResourceManager.GetObject("arrow_down", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap arrow_redo {
             get {
                 object obj = ResourceManager.GetObject("arrow_redo", resourceCulture);
@@ -74,6 +81,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap arrow_up {
+            get {
+                object obj = ResourceManager.GetObject("arrow_up", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap brick {
             get {
                 object obj = ResourceManager.GetObject("brick", resourceCulture);
@@ -84,6 +98,20 @@ namespace SceneEditor.Properties {
         internal static System.Drawing.Bitmap bricks {
             get {
                 object obj = ResourceManager.GetObject("bricks", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap bullet_arrow_down {
+            get {
+                object obj = ResourceManager.GetObject("bullet_arrow_down", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap bullet_arrow_up {
+            get {
+                object obj = ResourceManager.GetObject("bullet_arrow_up", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

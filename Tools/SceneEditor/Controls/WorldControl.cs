@@ -121,7 +121,7 @@ namespace SceneEditor.Controls
             core.Initialize();
 
             // Set options
-            core.Renderer.ShowDebugBuffers = false;
+            core.Renderer.ShowDebugBuffers = true;
             core.Renderer.FXAAEnabled = false;
             core.Renderer.BloomEnabled = false;
 
