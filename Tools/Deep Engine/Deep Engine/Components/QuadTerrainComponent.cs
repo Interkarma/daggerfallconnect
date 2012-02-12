@@ -46,7 +46,7 @@ namespace DeepEngine.Components
         
         // Map data
         float maxHeight = 256f;
-        float normalStrength = 64f;
+        float normalStrength = 32f;
         int dimension;
         int leafDimension;
         Vector4[] terrainData;
@@ -214,11 +214,11 @@ namespace DeepEngine.Components
             this.terrainBlendMap = blendMap;
 
             // Set default textures
-            Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(402, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
             Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
             Diffuse3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
             Diffuse4 = core.MaterialManager.CreateDaggerfallMaterialEffect(303, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
 
             // Create arrays
             terrainData = new Vector4[dimension * dimension];
@@ -321,7 +321,7 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
-        /// Sets height from a Color[] array.
+        /// Sets height map from a Color[] array.
         /// </summary>
         /// <param name="heightData">Color array.</param>
         public void SetHeight(Color[] heightData)
@@ -334,6 +334,22 @@ namespace DeepEngine.Components
 
             // Set height data
             SetHeightData(heightData);
+        }
+
+        /// <summary>
+        /// Sets blend map from a Color[] array.
+        /// </summary>
+        /// <param name="blendData">Color array.</param>
+        public void SetBlend(Color[] blendData)
+        {
+            // Esnure source dimensions are equal to terrain dimensions
+            if (blendData.Length != dimension * dimension)
+            {
+                throw new Exception(errorInvalidDimensions);
+            }
+
+            // Set blend data
+            SetBlendData(blendData);
         }
 
         /// <summary>
@@ -417,6 +433,15 @@ namespace DeepEngine.Components
             this.boundingSphere = new BoundingSphere(
                 new Vector3(diameter / 2, 0, diameter / 2),
                 diameter * 0.70f);
+        }
+
+        /// <summary>
+        /// Sets blend texture data
+        /// </summary>
+        /// <param name="srcData">Source height map data.</param>
+        private void SetBlendData(Color[] srcData)
+        {
+            terrainBlendMap.SetData<Color>(srcData);
         }
 
         /// <summary>

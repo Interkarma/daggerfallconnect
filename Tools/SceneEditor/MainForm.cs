@@ -297,15 +297,26 @@ namespace SceneEditor
                 // Transform GDI colour array to XNA colour array.
                 // This will be improved later to something more direct and optimal.
                 // However it will serve for testing now.
-                System.Drawing.Color[] srcData = terrainEditor1.GetHeightMapColorArray();
-                Microsoft.Xna.Framework.Color[] dstData = new Microsoft.Xna.Framework.Color[srcData.Length];
-                for (int i = 0; i < srcData.Length; i++)
+                System.Drawing.Color[] srcHeight = terrainEditor1.GetHeightMapColorArray();
+                Microsoft.Xna.Framework.Color[] dstHeight = new Microsoft.Xna.Framework.Color[srcHeight.Length];
+                for (int i = 0; i < srcHeight.Length; i++)
                 {
-                    dstData[i] = ColorHelper.FromWinForms(srcData[i]);
+                    dstHeight[i] = ColorHelper.FromWinForms(srcHeight[i]);
                 }
 
-                // Set color data
-                currentTerrainProxy.Component.SetHeight(dstData);
+                // Set height data
+                currentTerrainProxy.Component.SetHeight(dstHeight);
+
+                // Same for blend
+                System.Drawing.Color[] srcBlend = terrainEditor1.GetBlendMapColorArray();
+                Microsoft.Xna.Framework.Color[] dstBlend = new Microsoft.Xna.Framework.Color[srcBlend.Length];
+                for (int i = 0; i < srcBlend.Length; i++)
+                {
+                    dstBlend[i] = ColorHelper.FromWinForms(srcBlend[i]);
+                }
+
+                // Set blend data
+                currentTerrainProxy.Component.SetBlend(dstBlend);
             }
         }
 
@@ -335,7 +346,7 @@ namespace SceneEditor
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
             terrainProxy.Position = new Vector3(-512, 0, -512);
-            terrainProxy.Scale = new Vector3(2, 2, 2);
+            terrainProxy.Scale = new Vector3(2, 0.1f, 2);
 
             // Add light component
             LightProxy lightProxy = AddLightProxy(entityProxy);

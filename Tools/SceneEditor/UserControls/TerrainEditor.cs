@@ -38,7 +38,11 @@ namespace SceneEditor.UserControls
         Bitmap foliageMap;
         Bitmap previewImage;
 
-        byte[] perlinMap;
+        byte[] perlinMapData;
+        byte[] heightMapData;
+        byte[] blendMapData;
+
+        const int formatWidth = 4;
 
         bool manuallyModified = false;
 
@@ -111,6 +115,27 @@ namespace SceneEditor.UserControls
             return colors;
         }
 
+        /// <summary>
+        /// Gets blendmap as a color array.
+        ///  Array is equal to MapDimension*MapDimension elements.
+        /// </summary>
+        public Color[] GetBlendMapColorArray()
+        {
+            // Create array
+            Color[] colors = new Color[mapDimension * mapDimension];
+
+            // Get colors
+            for (int y = 0; y < blendMap.Height; y++)
+            {
+                for (int x = 0; x < blendMap.Width; x++)
+                {
+                    colors[y * blendMap.Width + x] = blendMap.GetPixel(x, y);
+                }
+            }
+
+            return colors;
+        }
+
         #endregion
 
         #region Private Methods
@@ -149,7 +174,7 @@ namespace SceneEditor.UserControls
 
             // Create initial perlin map
             GenerateNoise((int)GlobalSeedUpDown.Value);
-            perlinMap = new byte[dimension * dimension];
+            perlinMapData = new byte[dimension * dimension];
             GeneratePerlinMap();
         }
 
@@ -180,7 +205,7 @@ namespace SceneEditor.UserControls
                 for (int x = 0; x < heightMap.Width; x++)
                 {
                     float value = GetRandomHeight(x, y, 127.5f, (float)GlobalFrequencyUpDown.Value, (float)GlobalAmplitudeUpDown.Value, 0.5f, 16) + 127.5f;
-                    perlinMap[y * heightMap.Width + x] = (byte)value;
+                    perlinMapData[y * heightMap.Width + x] = (byte)value;
                 }
             }
         }
@@ -190,6 +215,25 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void RepaintBlendMap()
         {
+            for (int y = 0; y < heightMap.Height; y++)
+            {
+                for (int x = 0; x < heightMap.Width; x++)
+                {
+                    // Set blend weights
+                    float height = (float)heightMap.GetPixel(x, y).R / 255f;
+                    float x1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.2f) / 0.2f, 0f, 1f);
+                    float y1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.45f) / 0.25f, 0f, 1f);
+                    float z1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.7f) / 0.25f, 0f, 1f);
+                    float w1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.95f) / 0.25f, 0f, 1f);
+                    
+                    // Set blend pixel
+                    int r = (int)(255f * x1);
+                    int g = (int)(255f * y1);
+                    int b = (int)(255f * z1);
+                    int a = (int)(255f * w1);
+                    blendMap.SetPixel(x, y, Color.FromArgb(a, r, g, b));
+                }
+            }
         }
 
         /// <summary>
@@ -309,7 +353,7 @@ namespace SceneEditor.UserControls
                 {
                     for (int x = 0; x < heightMap.Width; x++)
                     {
-                        byte value = perlinMap[y * heightMap.Width + x];
+                        byte value = perlinMapData[y * heightMap.Width + x];
                         heightMap.SetPixel(x, y, Color.FromArgb(value, value, value));
                     }
                 }
