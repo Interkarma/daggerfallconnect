@@ -160,7 +160,7 @@ namespace DeepEngine.Utility
 
             // Calculate bounding box
             this.boundingBox = new BoundingBox(
-                Vector3.Zero,
+                new Vector3(0, -maxHeight, 0),
                 new Vector3(rectangle.Width, maxHeight, rectangle.Height));
 
             // Set transform
@@ -219,7 +219,7 @@ namespace DeepEngine.Utility
 
             // Calculate bounding box
             this.boundingBox = new BoundingBox(
-                Vector3.Zero,
+                new Vector3(0, -maxHeight, 0),
                 new Vector3(rectangle.Width, maxHeight, rectangle.Height));
             
             // Set transform

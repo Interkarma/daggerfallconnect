@@ -359,6 +359,7 @@
             this.terrainEditor1.Size = new System.Drawing.Size(260, 376);
             this.terrainEditor1.TabIndex = 0;
             this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
+            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
             // 
             // worldControl
             // 

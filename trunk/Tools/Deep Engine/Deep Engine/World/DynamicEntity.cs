@@ -95,28 +95,32 @@ namespace DeepEngine.World
             {
                 if (component is DrawableComponent)
                 {
+                    DrawableComponent drawableComponent = component as DrawableComponent;
+
                     // Get bounding sphere of component transformed to entity space
-                    BoundingSphere sphere = (component as DrawableComponent).BoundingSphere.Transform(matrix);
+                    BoundingSphere sphere = drawableComponent.BoundingSphere.Transform(matrix);
 
                     // Only draw if component is visible by camera
-                    if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
-                        (component as DrawableComponent).Draw(this);
+                    if (drawableComponent.Infinite || sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
+                        drawableComponent.Draw(this);
                 }
                 else if (component is LightComponent)
                 {
+                    LightComponent lightComponent = component as LightComponent;
+
                     // Point lights must be visible to camera
                     if ((component as LightComponent).Type == LightComponent.LightType.Point)
                     {
                         // Get bounding sphere of component transformed to entity space
-                        BoundingSphere sphere = (component as LightComponent).PointBoundingSphere.Transform(matrix);
+                        BoundingSphere sphere = lightComponent.PointBoundingSphere.Transform(matrix);
 
                         // Only draw if component is visible by camera
                         if (sphere.Intersects(core.ActiveScene.Camera.BoundingFrustum))
-                            core.Renderer.SubmitLight(component as LightComponent, this);
+                            core.Renderer.SubmitLight(lightComponent, this);
                     }
                     else
                     {
-                        core.Renderer.SubmitLight(component as LightComponent, this);
+                        core.Renderer.SubmitLight(lightComponent, this);
                     }
                 }
             }

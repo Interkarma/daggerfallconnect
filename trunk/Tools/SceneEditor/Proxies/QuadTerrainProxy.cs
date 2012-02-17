@@ -65,9 +65,48 @@ namespace SceneEditor.Proxies
         #region Editor Properties
 
         /// <summary>
-        /// Gets or sets scale.
+        /// Gets map dimension.
         /// </summary>
-        [Category(transformCategoryName), Description("Scaling of entity.")]
+        [Category(categoryName), Description("Horizontal dimension of map along each side. Set at creation.")]
+        public int MapDimension
+        {
+            get { return quadTerrain.Dimension; }
+        }
+
+        /// <summary>
+        /// Gets or sets texture scale.
+        /// </summary>
+        [Category(categoryName), Description("How often textures tile per quad node.")]
+        public float TextureRepeat
+        {
+            get { return quadTerrain.TextureRepeat; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("TextureRepeat"));
+                quadTerrain.TextureRepeat = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets normal strength.
+        /// </summary>
+        [Category(categoryName), Description("Controls generation of surface normals.")]
+        public float NormalStrength
+        {
+            get { return quadTerrain.NormalStrength; }
+            set
+            {
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("NormalStrength"));
+                quadTerrain.NormalStrength = value;
+                quadTerrain.UpdateNormalData();
+                quadTerrain.UpdateTerrainVertexTexture();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets terrain scale.
+        /// </summary>
+        [Category(transformCategoryName), Description("Scaling of terrain.")]
         public Vector3 Scale
         {
             get { return scale; }
@@ -80,9 +119,9 @@ namespace SceneEditor.Proxies
         }
 
         /// <summary>
-        /// Gets or sets position.
+        /// Gets or sets terrain position.
         /// </summary>
-        [Category(transformCategoryName), Description("Position of entity.")]
+        [Category(transformCategoryName), Description("Position of terrain.")]
         public Vector3 Position
         {
             get { return position; }

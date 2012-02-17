@@ -116,6 +116,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap chart_curve {
+            get {
+                object obj = ResourceManager.GetObject("chart_curve", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap cog {
             get {
                 object obj = ResourceManager.GetObject("cog", resourceCulture);
@@ -140,6 +147,13 @@ namespace SceneEditor.Properties {
         internal static System.Drawing.Bitmap color_swatch {
             get {
                 object obj = ResourceManager.GetObject("color_swatch", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap contrast_low {
+            get {
+                object obj = ResourceManager.GetObject("contrast_low", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -280,6 +294,13 @@ namespace SceneEditor.Properties {
         internal static System.Drawing.Bitmap page_white {
             get {
                 object obj = ResourceManager.GetObject("page_white", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap paintbrush {
+            get {
+                object obj = ResourceManager.GetObject("paintbrush", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
