@@ -27,12 +27,22 @@ namespace DeepEngine.Components
     {
         #region Fields
 
+        protected bool infinite = false;
         protected BoundingSphere boundingSphere;
         protected Matrix matrix = Matrix.Identity;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets flag to make object infinite so as to always be drawn.
+        /// </summary>
+        public bool Infinite
+        {
+            get { return infinite; }
+            set { infinite = value; }
+        }
 
         /// <summary>
         /// Gets or sets bounding sphere for visibility tests.

@@ -18,6 +18,7 @@ texture2D Diffuse5Texture;
 // Vertical scale
 float2 SampleOffset;
 float2 SampleScale;
+float TextureRepeat;
 float MaxHeight;
 
 
@@ -158,7 +159,7 @@ Default_PSO RenderTerrain_PS(Default_VSO input)
 	float4 blendlayers = tex2D(BlendSampler, blenduv);
 
 	// Scale diffuse coordinates
-	float2 uv = input.TexCoord * 16;
+	float2 uv = input.TexCoord * TextureRepeat;
 	
 	// Texture1
 	float3 diffuse = tex2D(Diffuse1Sampler, uv) * blendfactor * blendlayers.x;

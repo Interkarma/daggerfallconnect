@@ -247,33 +247,34 @@ namespace DeepEngine.Rendering
             int width = (int)size.X / 8;
             int height = (int)size.Y / 8;
 
-            // Begin sprite batch
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, null, null);
-
             //Set up Drawing Rectangle
             Rectangle rect;
-            rect.X = 0;
+            rect.X = (int)size.X;
             rect.Y = 0;
             rect.Width = width;
             rect.Height = height;
 
-            // Draw colour target
-            spriteBatch.Draw(colorRT, rect, Color.White);
+            // Begin sprite batch
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, null, null);
 
-            // Draw normal target
-            rect.X += width;
-            spriteBatch.Draw(normalRT, rect, Color.White);
+            // Draw light accumulation target
+            rect.X -= width;
+            spriteBatch.Draw(lightRT, rect, Color.White);
 
             // Draw depth
             if (depthDebugBuffer != null)
             {
-                rect.X += width;
+                rect.X -= width;
                 spriteBatch.Draw(depthDebugBuffer, rect, Color.White);
             }
 
-            // Draw light accumulation target
-            rect.X += width;
-            spriteBatch.Draw(lightRT, rect, Color.White);
+            // Draw normal target
+            rect.X -= width;
+            spriteBatch.Draw(normalRT, rect, Color.White);
+
+            // Draw colour target
+            rect.X -= width;
+            spriteBatch.Draw(colorRT, rect, Color.White);
 
             // End sprite batch
             spriteBatch.End();

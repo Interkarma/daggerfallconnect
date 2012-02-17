@@ -33,26 +33,26 @@
             this.CrosshairImage = new System.Windows.Forms.PictureBox();
             this.HeightMapPreview = new System.Windows.Forms.PictureBox();
             this.TerrainEditorToolTips = new System.Windows.Forms.ToolTip(this.components);
-            this.UniformRaiseButton = new System.Windows.Forms.Button();
-            this.PerlinLowerButton = new System.Windows.Forms.Button();
-            this.UniformLowerButton = new System.Windows.Forms.Button();
-            this.PerlinRaiseButton = new System.Windows.Forms.Button();
-            this.MaxTerrainButton = new System.Windows.Forms.Button();
-            this.MinTerrainButton = new System.Windows.Forms.Button();
-            this.PerlinTerrainButton = new System.Windows.Forms.Button();
-            this.GlobalDeformationsGroupBox = new System.Windows.Forms.GroupBox();
-            this.GlobalSeedUpDown = new System.Windows.Forms.NumericUpDown();
-            this.GlobalAmplitudeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.GlobalFrequencyUpDown = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
-            this.GlobalStepUpDown = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.SmoothButton = new System.Windows.Forms.Button();
+            this.AutoPaintButton = new System.Windows.Forms.Button();
+            this.PerlinTerrainButton = new System.Windows.Forms.Button();
+            this.UniformLowerButton = new System.Windows.Forms.Button();
+            this.UniformRaiseButton = new System.Windows.Forms.Button();
+            this.PerlinLowerButton = new System.Windows.Forms.Button();
+            this.PerlinRaiseButton = new System.Windows.Forms.Button();
+            this.GlobalGroupBox = new System.Windows.Forms.GroupBox();
+            this.GlobalSeedUpDown = new System.Windows.Forms.NumericUpDown();
+            this.GlobalAmplitudeUpDown = new System.Windows.Forms.NumericUpDown();
+            this.GlobalFrequencyUpDown = new System.Windows.Forms.NumericUpDown();
+            this.GlobalStepUpDown = new System.Windows.Forms.NumericUpDown();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).BeginInit();
-            this.GlobalDeformationsGroupBox.SuspendLayout();
+            this.GlobalGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalSeedUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).BeginInit();
@@ -80,16 +80,101 @@
             // HeightMapPreview
             // 
             this.HeightMapPreview.BackColor = System.Drawing.Color.Black;
+            this.HeightMapPreview.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.HeightMapPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.HeightMapPreview.Location = new System.Drawing.Point(0, 0);
             this.HeightMapPreview.Name = "HeightMapPreview";
             this.HeightMapPreview.Size = new System.Drawing.Size(256, 256);
+            this.HeightMapPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.HeightMapPreview.TabIndex = 0;
             this.HeightMapPreview.TabStop = false;
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(153, 53);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(38, 13);
+            this.label4.TabIndex = 14;
+            this.label4.Text = "Height";
+            this.TerrainEditorToolTips.SetToolTip(this.label4, "Amplitude for Perlin noise (overall height)");
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(63, 53);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(32, 13);
+            this.label3.TabIndex = 12;
+            this.label3.Text = "Seed";
+            this.TerrainEditorToolTips.SetToolTip(this.label3, "Seed for Perlin noise");
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(153, 24);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(39, 13);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Bumps";
+            this.TerrainEditorToolTips.SetToolTip(this.label2, "Frequency for Perlin noise (overall bumpiness)");
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(63, 24);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(29, 13);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Step";
+            this.TerrainEditorToolTips.SetToolTip(this.label1, "Step height for global deformations");
+            // 
+            // SmoothButton
+            // 
+            this.SmoothButton.Image = global::SceneEditor.Properties.Resources.contrast_low;
+            this.SmoothButton.Location = new System.Drawing.Point(35, 77);
+            this.SmoothButton.Name = "SmoothButton";
+            this.SmoothButton.Size = new System.Drawing.Size(23, 23);
+            this.SmoothButton.TabIndex = 24;
+            this.TerrainEditorToolTips.SetToolTip(this.SmoothButton, "Smooth terrain height map");
+            this.SmoothButton.UseVisualStyleBackColor = true;
+            this.SmoothButton.Click += new System.EventHandler(this.SmoothButton_Click);
+            // 
+            // AutoPaintButton
+            // 
+            this.AutoPaintButton.Image = global::SceneEditor.Properties.Resources.paintbrush;
+            this.AutoPaintButton.Location = new System.Drawing.Point(64, 77);
+            this.AutoPaintButton.Name = "AutoPaintButton";
+            this.AutoPaintButton.Size = new System.Drawing.Size(23, 23);
+            this.AutoPaintButton.TabIndex = 21;
+            this.TerrainEditorToolTips.SetToolTip(this.AutoPaintButton, "Auto-paint blend map based on height");
+            this.AutoPaintButton.UseVisualStyleBackColor = true;
+            this.AutoPaintButton.Click += new System.EventHandler(this.AutoPaintButton_Click);
+            // 
+            // PerlinTerrainButton
+            // 
+            this.PerlinTerrainButton.Image = global::SceneEditor.Properties.Resources.chart_curve;
+            this.PerlinTerrainButton.Location = new System.Drawing.Point(6, 77);
+            this.PerlinTerrainButton.Name = "PerlinTerrainButton";
+            this.PerlinTerrainButton.Size = new System.Drawing.Size(23, 23);
+            this.PerlinTerrainButton.TabIndex = 20;
+            this.TerrainEditorToolTips.SetToolTip(this.PerlinTerrainButton, "Set terrain to Perlin based on seed, bumps, and height");
+            this.PerlinTerrainButton.UseVisualStyleBackColor = true;
+            this.PerlinTerrainButton.Click += new System.EventHandler(this.PerlinTerrainButton_Click);
+            // 
+            // UniformLowerButton
+            // 
+            this.UniformLowerButton.Image = global::SceneEditor.Properties.Resources.arrow_down;
+            this.UniformLowerButton.Location = new System.Drawing.Point(6, 48);
+            this.UniformLowerButton.Name = "UniformLowerButton";
+            this.UniformLowerButton.Size = new System.Drawing.Size(23, 23);
+            this.UniformLowerButton.TabIndex = 4;
+            this.TerrainEditorToolTips.SetToolTip(this.UniformLowerButton, "Uniform lower by step");
+            this.UniformLowerButton.UseVisualStyleBackColor = true;
+            this.UniformLowerButton.Click += new System.EventHandler(this.UniformLowerButton_Click);
+            // 
             // UniformRaiseButton
             // 
-            this.UniformRaiseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.UniformRaiseButton.Image = global::SceneEditor.Properties.Resources.arrow_up;
             this.UniformRaiseButton.Location = new System.Drawing.Point(6, 19);
             this.UniformRaiseButton.Name = "UniformRaiseButton";
@@ -101,7 +186,6 @@
             // 
             // PerlinLowerButton
             // 
-            this.PerlinLowerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.PerlinLowerButton.Image = global::SceneEditor.Properties.Resources.bullet_arrow_down;
             this.PerlinLowerButton.Location = new System.Drawing.Point(35, 48);
             this.PerlinLowerButton.Name = "PerlinLowerButton";
@@ -111,21 +195,8 @@
             this.PerlinLowerButton.UseVisualStyleBackColor = true;
             this.PerlinLowerButton.Click += new System.EventHandler(this.PerlinLowerButton_Click);
             // 
-            // UniformLowerButton
-            // 
-            this.UniformLowerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.UniformLowerButton.Image = global::SceneEditor.Properties.Resources.arrow_down;
-            this.UniformLowerButton.Location = new System.Drawing.Point(6, 48);
-            this.UniformLowerButton.Name = "UniformLowerButton";
-            this.UniformLowerButton.Size = new System.Drawing.Size(23, 23);
-            this.UniformLowerButton.TabIndex = 4;
-            this.TerrainEditorToolTips.SetToolTip(this.UniformLowerButton, "Uniform lower by step");
-            this.UniformLowerButton.UseVisualStyleBackColor = true;
-            this.UniformLowerButton.Click += new System.EventHandler(this.UniformLowerButton_Click);
-            // 
             // PerlinRaiseButton
             // 
-            this.PerlinRaiseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.PerlinRaiseButton.Image = global::SceneEditor.Properties.Resources.bullet_arrow_up;
             this.PerlinRaiseButton.Location = new System.Drawing.Point(35, 19);
             this.PerlinRaiseButton.Name = "PerlinRaiseButton";
@@ -135,65 +206,29 @@
             this.PerlinRaiseButton.UseVisualStyleBackColor = true;
             this.PerlinRaiseButton.Click += new System.EventHandler(this.PerlinRaiseButton_Click);
             // 
-            // MaxTerrainButton
+            // GlobalGroupBox
             // 
-            this.MaxTerrainButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.MaxTerrainButton.Location = new System.Drawing.Point(90, 77);
-            this.MaxTerrainButton.Name = "MaxTerrainButton";
-            this.MaxTerrainButton.Size = new System.Drawing.Size(77, 23);
-            this.MaxTerrainButton.TabIndex = 18;
-            this.MaxTerrainButton.Text = "Raised";
-            this.TerrainEditorToolTips.SetToolTip(this.MaxTerrainButton, "Set terrain to maximum height");
-            this.MaxTerrainButton.UseVisualStyleBackColor = true;
-            this.MaxTerrainButton.Click += new System.EventHandler(this.MaxTerrainButton_Click);
-            // 
-            // MinTerrainButton
-            // 
-            this.MinTerrainButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.MinTerrainButton.Location = new System.Drawing.Point(6, 77);
-            this.MinTerrainButton.Name = "MinTerrainButton";
-            this.MinTerrainButton.Size = new System.Drawing.Size(77, 23);
-            this.MinTerrainButton.TabIndex = 19;
-            this.MinTerrainButton.Text = "Lowered";
-            this.TerrainEditorToolTips.SetToolTip(this.MinTerrainButton, "Set terrain to minimum height");
-            this.MinTerrainButton.UseVisualStyleBackColor = true;
-            this.MinTerrainButton.Click += new System.EventHandler(this.MinTerrainButton_Click);
-            // 
-            // PerlinTerrainButton
-            // 
-            this.PerlinTerrainButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.PerlinTerrainButton.Location = new System.Drawing.Point(173, 77);
-            this.PerlinTerrainButton.Name = "PerlinTerrainButton";
-            this.PerlinTerrainButton.Size = new System.Drawing.Size(77, 23);
-            this.PerlinTerrainButton.TabIndex = 20;
-            this.PerlinTerrainButton.Text = "Perlin";
-            this.TerrainEditorToolTips.SetToolTip(this.PerlinTerrainButton, "Set terrain to Perlin based on seed, bumps, and height");
-            this.PerlinTerrainButton.UseVisualStyleBackColor = true;
-            this.PerlinTerrainButton.Click += new System.EventHandler(this.PerlinTerrainButton_Click);
-            // 
-            // GlobalDeformationsGroupBox
-            // 
-            this.GlobalDeformationsGroupBox.Controls.Add(this.PerlinTerrainButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.MinTerrainButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.MaxTerrainButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.GlobalSeedUpDown);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.GlobalAmplitudeUpDown);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.label4);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.UniformLowerButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.label3);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.GlobalFrequencyUpDown);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.label2);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.GlobalStepUpDown);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.label1);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.UniformRaiseButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.PerlinLowerButton);
-            this.GlobalDeformationsGroupBox.Controls.Add(this.PerlinRaiseButton);
-            this.GlobalDeformationsGroupBox.Location = new System.Drawing.Point(3, 265);
-            this.GlobalDeformationsGroupBox.Name = "GlobalDeformationsGroupBox";
-            this.GlobalDeformationsGroupBox.Size = new System.Drawing.Size(256, 109);
-            this.GlobalDeformationsGroupBox.TabIndex = 8;
-            this.GlobalDeformationsGroupBox.TabStop = false;
-            this.GlobalDeformationsGroupBox.Text = "Global Deformations";
+            this.GlobalGroupBox.Controls.Add(this.SmoothButton);
+            this.GlobalGroupBox.Controls.Add(this.AutoPaintButton);
+            this.GlobalGroupBox.Controls.Add(this.PerlinTerrainButton);
+            this.GlobalGroupBox.Controls.Add(this.GlobalSeedUpDown);
+            this.GlobalGroupBox.Controls.Add(this.GlobalAmplitudeUpDown);
+            this.GlobalGroupBox.Controls.Add(this.label4);
+            this.GlobalGroupBox.Controls.Add(this.UniformLowerButton);
+            this.GlobalGroupBox.Controls.Add(this.label3);
+            this.GlobalGroupBox.Controls.Add(this.GlobalFrequencyUpDown);
+            this.GlobalGroupBox.Controls.Add(this.label2);
+            this.GlobalGroupBox.Controls.Add(this.GlobalStepUpDown);
+            this.GlobalGroupBox.Controls.Add(this.label1);
+            this.GlobalGroupBox.Controls.Add(this.UniformRaiseButton);
+            this.GlobalGroupBox.Controls.Add(this.PerlinLowerButton);
+            this.GlobalGroupBox.Controls.Add(this.PerlinRaiseButton);
+            this.GlobalGroupBox.Location = new System.Drawing.Point(3, 265);
+            this.GlobalGroupBox.Name = "GlobalGroupBox";
+            this.GlobalGroupBox.Size = new System.Drawing.Size(256, 109);
+            this.GlobalGroupBox.TabIndex = 8;
+            this.GlobalGroupBox.TabStop = false;
+            this.GlobalGroupBox.Text = "Global";
             // 
             // GlobalSeedUpDown
             // 
@@ -210,15 +245,15 @@
             // 
             // GlobalAmplitudeUpDown
             // 
-            this.GlobalAmplitudeUpDown.DecimalPlaces = 2;
+            this.GlobalAmplitudeUpDown.DecimalPlaces = 4;
             this.GlobalAmplitudeUpDown.Increment = new decimal(new int[] {
             5,
             0,
             0,
-            131072});
+            262144});
             this.GlobalAmplitudeUpDown.Location = new System.Drawing.Point(191, 51);
             this.GlobalAmplitudeUpDown.Maximum = new decimal(new int[] {
-            4,
+            1,
             0,
             0,
             0});
@@ -226,29 +261,11 @@
             this.GlobalAmplitudeUpDown.Size = new System.Drawing.Size(59, 20);
             this.GlobalAmplitudeUpDown.TabIndex = 15;
             this.GlobalAmplitudeUpDown.Value = new decimal(new int[] {
-            75,
+            90,
             0,
             0,
             131072});
             this.GlobalAmplitudeUpDown.ValueChanged += new System.EventHandler(this.GlobalAmplitudeUpDown_ValueChanged);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(153, 53);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(38, 13);
-            this.label4.TabIndex = 14;
-            this.label4.Text = "Height";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(63, 53);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(32, 13);
-            this.label3.TabIndex = 12;
-            this.label3.Text = "Seed";
             // 
             // GlobalFrequencyUpDown
             // 
@@ -274,15 +291,6 @@
             262144});
             this.GlobalFrequencyUpDown.ValueChanged += new System.EventHandler(this.GlobalFrequencyUpDown_ValueChanged);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(153, 24);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 13);
-            this.label2.TabIndex = 10;
-            this.label2.Text = "Bumps";
-            // 
             // GlobalStepUpDown
             // 
             this.GlobalStepUpDown.Location = new System.Drawing.Point(97, 22);
@@ -305,28 +313,19 @@
             0,
             0});
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(63, 24);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(29, 13);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Step";
-            // 
             // TerrainEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.GlobalDeformationsGroupBox);
+            this.Controls.Add(this.GlobalGroupBox);
             this.Controls.Add(this.panel1);
             this.Name = "TerrainEditor";
             this.Size = new System.Drawing.Size(260, 505);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).EndInit();
-            this.GlobalDeformationsGroupBox.ResumeLayout(false);
-            this.GlobalDeformationsGroupBox.PerformLayout();
+            this.GlobalGroupBox.ResumeLayout(false);
+            this.GlobalGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalSeedUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).EndInit();
@@ -345,7 +344,7 @@
         private System.Windows.Forms.Button PerlinLowerButton;
         private System.Windows.Forms.PictureBox CrosshairImage;
         private System.Windows.Forms.ToolTip TerrainEditorToolTips;
-        private System.Windows.Forms.GroupBox GlobalDeformationsGroupBox;
+        private System.Windows.Forms.GroupBox GlobalGroupBox;
         private System.Windows.Forms.NumericUpDown GlobalAmplitudeUpDown;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
@@ -355,7 +354,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown GlobalSeedUpDown;
         private System.Windows.Forms.Button PerlinTerrainButton;
-        private System.Windows.Forms.Button MinTerrainButton;
-        private System.Windows.Forms.Button MaxTerrainButton;
+        private System.Windows.Forms.Button AutoPaintButton;
+        private System.Windows.Forms.Button SmoothButton;
     }
 }

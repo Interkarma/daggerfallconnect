@@ -294,29 +294,21 @@ namespace SceneEditor
             // Send new height map to terrain node
             if (currentTerrainProxy != null)
             {
-                // Transform GDI colour array to XNA colour array.
-                // This will be improved later to something more direct and optimal.
-                // However it will serve for testing now.
-                System.Drawing.Color[] srcHeight = terrainEditor1.GetHeightMapColorArray();
-                Microsoft.Xna.Framework.Color[] dstHeight = new Microsoft.Xna.Framework.Color[srcHeight.Length];
-                for (int i = 0; i < srcHeight.Length; i++)
-                {
-                    dstHeight[i] = ColorHelper.FromWinForms(srcHeight[i]);
-                }
-
                 // Set height data
-                currentTerrainProxy.Component.SetHeight(dstHeight);
+                currentTerrainProxy.Component.SetHeight(terrainEditor1.GetHeightMapData());
+            }
+        }
 
-                // Same for blend
-                System.Drawing.Color[] srcBlend = terrainEditor1.GetBlendMapColorArray();
-                Microsoft.Xna.Framework.Color[] dstBlend = new Microsoft.Xna.Framework.Color[srcBlend.Length];
-                for (int i = 0; i < srcBlend.Length; i++)
-                {
-                    dstBlend[i] = ColorHelper.FromWinForms(srcBlend[i]);
-                }
-
+        /// <summary>
+        /// Blend map changed in terrain editor.
+        /// </summary>
+        private void TerrainEditor_OnBlendMapChanged(object sender, EventArgs e)
+        {
+            // Send new height map to terrain node
+            if (currentTerrainProxy != null)
+            {
                 // Set blend data
-                currentTerrainProxy.Component.SetBlend(dstBlend);
+                currentTerrainProxy.Component.SetBlend(terrainEditor1.GetBlendMapData());
             }
         }
 
@@ -346,10 +338,13 @@ namespace SceneEditor
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
             terrainProxy.Position = new Vector3(-512, 0, -512);
-            terrainProxy.Scale = new Vector3(2, 0.1f, 2);
+            terrainProxy.Scale = new Vector3(2, 0.08f, 2);
+            terrainProxy.NormalStrength = 0.01f;
 
             // Add light component
             LightProxy lightProxy = AddLightProxy(entityProxy);
+            lightProxy.LightType = LightProxy.LightProxyTypes.Directional;
+            lightProxy.Direction = new Vector3(0.25f, -1.0f, 0f);
 
             // Expand nodes
             documentProxy.TreeNode.Expand();

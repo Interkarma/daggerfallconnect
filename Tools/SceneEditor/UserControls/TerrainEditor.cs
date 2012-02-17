@@ -28,25 +28,23 @@ namespace SceneEditor.UserControls
 
         #region Fields
 
+        const int previewDimension = 64;
+
         int mapDimension;
         int leafDimension;
         int gridDivisions;
         int levelCount;
 
-        Bitmap heightMap;
-        Bitmap blendMap;
-        Bitmap foliageMap;
         Bitmap previewImage;
 
-        byte[] perlinMapData;
-        byte[] heightMapData;
+        float[] perlinMapData;
+        float[] heightMapData;
         byte[] blendMapData;
 
-        const int formatWidth = 4;
-
-        bool manuallyModified = false;
+        bool manuallyPainted = false;
 
         public event EventHandler OnHeightMapChanged;
+        public event EventHandler OnBlendMapChanged;
 
         #endregion
 
@@ -95,45 +93,21 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
-        /// Gets heightmap as a color array.
+        /// Gets heightmap data.
         ///  Array is equal to MapDimension*MapDimension elements.
         /// </summary>
-        public Color[] GetHeightMapColorArray()
+        public float[] GetHeightMapData()
         {
-            // Create array
-            Color[] colors = new Color[mapDimension * mapDimension];
-
-            // Get colors
-            for (int y = 0; y < heightMap.Height; y++)
-            {
-                for (int x = 0; x < heightMap.Width; x++)
-                {
-                    colors[y * heightMap.Width + x] = heightMap.GetPixel(x, y);
-                }
-            }
-
-            return colors;
+            return heightMapData;
         }
 
         /// <summary>
-        /// Gets blendmap as a color array.
-        ///  Array is equal to MapDimension*MapDimension elements.
+        /// Gets blendmap as an RGBA byte array.
+        ///  Array is equal to MapDimension*MapDimension elements long.
         /// </summary>
-        public Color[] GetBlendMapColorArray()
+        public byte[] GetBlendMapData()
         {
-            // Create array
-            Color[] colors = new Color[mapDimension * mapDimension];
-
-            // Get colors
-            for (int y = 0; y < blendMap.Height; y++)
-            {
-                for (int x = 0; x < blendMap.Width; x++)
-                {
-                    colors[y * blendMap.Width + x] = blendMap.GetPixel(x, y);
-                }
-            }
-
-            return colors;
+            return blendMapData;
         }
 
         #endregion
@@ -163,29 +137,31 @@ namespace SceneEditor.UserControls
             this.gridDivisions = dimension / leafDimension;
             this.levelCount = levelCount;
 
-            // Create maps
-            heightMap = new Bitmap(dimension, dimension);
-            blendMap = new Bitmap(dimension, dimension);
-            foliageMap = new Bitmap(dimension, dimension);
+            // Create map data
+            perlinMapData = new float[dimension * dimension];
+            heightMapData = new float[dimension * dimension];
+            blendMapData = new byte[dimension * dimension * 4];
 
             // Create preview image
-            previewImage = new Bitmap(HeightMapPreview.Width, HeightMapPreview.Height);
+            previewImage = new Bitmap(previewDimension, previewDimension);
             HeightMapPreview.Image = previewImage;
 
             // Create initial perlin map
             GenerateNoise((int)GlobalSeedUpDown.Value);
-            perlinMapData = new byte[dimension * dimension];
             GeneratePerlinMap();
+
+            // Set initial preview
+            UpdatePreview();
         }
 
         /// <summary>
-        /// Warn user a change is about to overwrite their manual changes.
+        /// Warn user a change is about to overwrite their manually painted changes.
         /// </summary>
         private bool WarnOverwrite()
         {
-            if (manuallyModified)
+            if (manuallyPainted)
             {
-                DialogResult result = MessageBox.Show("Your manual changes will be overwritten.", "Overwrite Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show("Your manually painted changes will be overwritten.", "Overwrite Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.OK)
                     return true;
                 else
@@ -196,62 +172,156 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
-        /// Regenerates perlin map.
+        /// Called whenever height map has been globally modified.
         /// </summary>
-        private void GeneratePerlinMap()
+        private void UpdateHeightMapGlobal()
         {
-            for (int y = 0; y < heightMap.Height; y++)
-            {
-                for (int x = 0; x < heightMap.Width; x++)
-                {
-                    float value = GetRandomHeight(x, y, 127.5f, (float)GlobalFrequencyUpDown.Value, (float)GlobalAmplitudeUpDown.Value, 0.5f, 16) + 127.5f;
-                    perlinMapData[y * heightMap.Width + x] = (byte)value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Repaints blend map after height changes.
-        /// </summary>
-        private void RepaintBlendMap()
-        {
-            for (int y = 0; y < heightMap.Height; y++)
-            {
-                for (int x = 0; x < heightMap.Width; x++)
-                {
-                    // Set blend weights
-                    float height = (float)heightMap.GetPixel(x, y).R / 255f;
-                    float x1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.2f) / 0.2f, 0f, 1f);
-                    float y1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.45f) / 0.25f, 0f, 1f);
-                    float z1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.7f) / 0.25f, 0f, 1f);
-                    float w1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.95f) / 0.25f, 0f, 1f);
-                    
-                    // Set blend pixel
-                    int r = (int)(255f * x1);
-                    int g = (int)(255f * y1);
-                    int b = (int)(255f * z1);
-                    int a = (int)(255f * w1);
-                    blendMap.SetPixel(x, y, Color.FromArgb(a, r, g, b));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates preview map after height change.
-        /// </summary>
-        private void UpdatePreview()
-        {
-            // Get handle to destination image
-            Graphics gr = Graphics.FromImage(HeightMapPreview.Image);
-
-            // Draw preview
-            Rectangle dstRect = new Rectangle(0, 0, previewImage.Width, previewImage.Height);
-            gr.DrawImage(heightMap, dstRect);
-            HeightMapPreview.Refresh();
+            // Update preview image
+            UpdatePreview();
 
             // Raise event
             if (OnHeightMapChanged != null)
                 OnHeightMapChanged(this, null);
+        }
+
+        /// <summary>
+        /// Called whenever blend map has been globally modified.
+        /// </summary>
+        private void UpdateBlendMapGlobal()
+        {
+            // Raise event
+            if (OnBlendMapChanged != null)
+                OnBlendMapChanged(this, null);
+        }
+
+        #endregion
+
+        #region Image Processing Methods
+
+        /// <summary>
+        /// Gets averaged perlin data.
+        /// </summary>
+        /// <param name="x">X position in source data.</param>
+        /// <param name="y">Y position in source data.</param>
+        /// <param name="dimension">Width*Height dimension of source data.</param>
+        /// <param name="data">Source data array.</param>
+        /// <returns>Averaged value.</returns>
+        private float AverageSample(int x, int y, int dimension, float[] data)
+        {
+            int x1 = (x + 1 >= dimension) ? dimension - 1 : x + 1;
+            int y1 = (y + 1 >= dimension) ? dimension - 1 : y + 1;
+
+            float value00 = data[y * dimension + x];
+            float value10 = data[y * dimension + x1];
+            float value01 = data[y1 * dimension + x];
+            float value11 = data[y1 * dimension + x1];
+
+            float value = (value00 + value10 + value01 + value11) / 4f;
+
+            return value;
+        }
+
+        /// <summary>
+        /// C# implementation of frac function.
+        /// </summary>
+        /// <param name="value">Value in.</param>
+        /// <returns>Value out.</returns>
+        private decimal Frac(decimal value)
+        {
+            return value - Math.Truncate(value);
+        }
+
+        /// <summary>
+        /// Repaints blend map based on height.
+        /// </summary>
+        private void RepaintBlendMap()
+        {
+            int pos = 0;
+            byte r, g, b, a;
+            for (int y = 0; y < mapDimension; y++)
+            {
+                for (int x = 0; x < mapDimension; x++)
+                {
+                    // Set blend weights
+                    float height = (heightMapData[y * mapDimension + x] * 0.5f + 0.5f);
+                    float x1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.2f) / 0.2f, 0f, 1f);
+                    float y1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.45f) / 0.25f, 0f, 1f);
+                    float z1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.7f) / 0.25f, 0f, 1f);
+                    float w1 = Microsoft.Xna.Framework.MathHelper.Clamp(1.0f - Math.Abs(height - 0.95f) / 0.25f, 0f, 1f);
+
+                    // Get blend pixel
+                    r = (byte)(255f * x1);
+                    g = (byte)(255f * y1);
+                    b = (byte)(255f * z1);
+                    a = (byte)(255f * w1);
+
+                    // Set blend pixel
+                    blendMapData[pos++] = r;
+                    blendMapData[pos++] = g;
+                    blendMapData[pos++] = b;
+                    blendMapData[pos++] = a;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Regenerates perlin map. This map is used for perlin operations like raise/lower
+        ///  and generating a whole terrain from perlin noide.
+        /// </summary>
+        private void GeneratePerlinMap()
+        {
+            // Generate perlin map
+            for (int y = 0; y < mapDimension; y++)
+            {
+                for (int x = 0; x < mapDimension; x++)
+                {
+                    perlinMapData[y * mapDimension + x] =
+                        GetRandomHeight(x, y, 1.0f, (float)GlobalFrequencyUpDown.Value, (float)GlobalAmplitudeUpDown.Value, 0.5f, 8);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Smooths height map data.
+        /// </summary>
+        private void SmoothHeightMap()
+        {
+            for (int y = 0; y < mapDimension; y++)
+            {
+                for (int x = 0; x < mapDimension; x++)
+                {
+                    heightMapData[y * mapDimension + x] = AverageSample(x, y, mapDimension, heightMapData);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates preview image.
+        /// </summary>
+        private void UpdatePreview()
+        {
+            // Create grayscale preview of heightmap data
+            for (int y = 0; y < mapDimension; y++)
+            {
+                float v = (float)y / (float)mapDimension;
+                for (int x = 0; x < mapDimension; x++)
+                {
+                    float u = (float)x / (float)mapDimension;
+
+                    // Get source colour value
+                    float half = (float)byte.MaxValue / 2f;
+                    byte value = (byte)(half * heightMapData[y * mapDimension + x] + half);
+                    Color color = Color.FromArgb(value, value, value);
+
+                    // Calculate destination position and set colour
+                    int xpos = (int)((float)previewImage.Width * u);
+                    int ypos = (int)((float)previewImage.Height * v);
+                    previewImage.SetPixel(xpos, ypos, color);
+                }
+            }
+
+            // Refresh preview picturebox
+            HeightMapPreview.Refresh();
         }
 
         #endregion
@@ -312,53 +382,39 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
-        /// Min terrain clicked.
-        /// </summary>
-        private void MinTerrainButton_Click(object sender, EventArgs e)
-        {
-            if (WarnOverwrite())
-            {
-                // Set entire terrain to min
-                Graphics gr = Graphics.FromImage(heightMap);
-                gr.Clear(Color.Black);
-                RepaintBlendMap();
-                UpdatePreview();
-            }
-        }
-
-        /// <summary>
-        /// Max terrain clicked.
-        /// </summary>
-        private void MaxTerrainButton_Click(object sender, EventArgs e)
-        {
-            if (WarnOverwrite())
-            {
-                // Set entire terrain to max
-                Graphics gr = Graphics.FromImage(heightMap);
-                gr.Clear(Color.White);
-                RepaintBlendMap();
-                UpdatePreview();
-            }
-        }
-
-        /// <summary>
         /// Perlin button clicked.
         /// </summary>
         private void PerlinTerrainButton_Click(object sender, EventArgs e)
         {
             if (WarnOverwrite())
             {
-                // Generate new map from perlin settings
-                for (int y = 0; y < heightMap.Height; y++)
-                {
-                    for (int x = 0; x < heightMap.Width; x++)
-                    {
-                        byte value = perlinMapData[y * heightMap.Width + x];
-                        heightMap.SetPixel(x, y, Color.FromArgb(value, value, value));
-                    }
-                }
+                // Copy map from perlin settings
+                heightMapData = (float[])perlinMapData.Clone();
+                UpdateHeightMapGlobal();
+            }
+        }
+
+        /// <summary>
+        /// Smooth terrain button clicked.
+        /// </summary>
+        private void SmoothButton_Click(object sender, EventArgs e)
+        {
+            if (WarnOverwrite())
+            {
+                SmoothHeightMap();
+                UpdateHeightMapGlobal();
+            }
+        }
+
+        /// <summary>
+        /// Auto paint blend map button clicked.
+        /// </summary>
+        private void AutoPaintButton_Click(object sender, EventArgs e)
+        {
+            if (WarnOverwrite())
+            {
                 RepaintBlendMap();
-                UpdatePreview();
+                UpdateBlendMapGlobal();
             }
         }
 
