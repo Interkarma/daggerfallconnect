@@ -643,26 +643,32 @@ namespace DeepEngine.Components
             float height = 0;
             Vector2 position = Vector2.Zero;
             int loopCounter = 0;
-            Vector3 step = ray.Direction * 10.0f;
-            while (ray.Position.Y > 0)
+            Vector3 step = ray.Direction * 1f;
+            bool found = false;
+            while (true)
             {
                 // Step ray along direction
                 ray.Position += step;
 
                 // Break loop if running too long
-                if (++loopCounter > 1000)
+                if (++loopCounter > 5000)
                 {
-                    terrainCollisionData.Distance = null;
-                    terrainCollisionData.WorldPosition = Vector3.Zero;
-                    terrainCollisionData.MapPosition = Vector2.Zero;
-                    return;
+                    found = false;
+                    break;
                 }
 
                 // Get position
                 position.X = ray.Position.X + node.Rectangle.X;
                 position.Y = ray.Position.Z + node.Rectangle.Y;
-                if (position.X < 0 || position.X > dimension - 1) continue;
-                if (position.Y < 0 || position.Y > dimension - 1) continue;
+                if (position.X < 0 || position.X > dimension - 1 ||
+                    position.Y < 0 || position.Y > dimension - 1)
+                {
+                    found = false;
+                    continue;
+                }
+
+                // If we've come this far then an intersection is likely
+                found = true;
 
                 // Get index into arrays
                 index = (int)position.Y * (int)dimension + (int)position.X;
@@ -670,7 +676,19 @@ namespace DeepEngine.Components
                 // Get height of terrain at this position
                 height = terrainData[index].W * mapHeight;
                 if (ray.Position.Y <= height)
+                {
+                    ray.Position -= step;
                     break;
+                }
+            }
+
+            // Exit if no intersection found
+            if (!found)
+            {
+                terrainCollisionData.Distance = null;
+                terrainCollisionData.WorldPosition = Vector3.Zero;
+                terrainCollisionData.MapPosition = Vector2.Zero;
+                return;
             }
 
             // Store map collision in 0,1 space
@@ -684,7 +702,7 @@ namespace DeepEngine.Components
                 Y = height,
                 Z = position.Y,
             };
-            terrainCollisionData.WorldPosition = Vector3.Transform(worldPosition, node.WorldMatrix);
+            terrainCollisionData.WorldPosition = Vector3.Transform(worldPosition, this.Matrix);
 
             // Set distance
             terrainCollisionData.Distance = Vector3.Distance(core.ActiveScene.Camera.Position, terrainCollisionData.WorldPosition);

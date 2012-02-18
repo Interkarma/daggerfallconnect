@@ -190,7 +190,7 @@ namespace DeepEngine.Rendering
         /// Resets render targets back to null and restores viewport.
         ///  Only use this at end of render pipeline.
         /// </summary>
-        public void ResolveGBuffer()
+        public void SetViewport()
         {
             graphicsDevice.SetRenderTargets(null);
             graphicsDevice.Viewport = viewport;
@@ -287,7 +287,7 @@ namespace DeepEngine.Rendering
         public void UpdateDepthDebugBuffer(FullScreenQuad fullScreenQuad)
         {
             // Clear render target
-            ResolveGBuffer();
+            SetViewport();
 
             // Create render target if it doesn't exist or is lost
             if (depthDebugBuffer == null)
