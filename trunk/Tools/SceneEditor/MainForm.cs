@@ -39,6 +39,9 @@ namespace SceneEditor
 
         bool terrainEditMode = false;
         QuadTerrainProxy currentTerrainProxy = null;
+        LightComponent terrainCursor;
+
+        SphereProxy sphereProxy;
 
         #endregion
 
@@ -207,6 +210,9 @@ namespace SceneEditor
 
             // Set core to render new scene
             worldControl.Core.ActiveScene = document.EditorScene;
+
+            // Create terrain cursor
+            terrainCursor = new LightComponent(worldControl.Core, Vector3.Zero, 10f, Microsoft.Xna.Framework.Color.Red, 4.0f);
         }
 
         /// <summary>
@@ -223,6 +229,12 @@ namespace SceneEditor
                 {
                     // Position crosshair
                     terrainEditor1.SetCursorPosition(pi.MapPosition.X, pi.MapPosition.Y);
+
+                    // Submit a light at cursor position in world
+                    //terrainCursor.Position = pi.WorldPosition + new Vector3(0, 10, 0);
+                    //terrainCursor.PointRadius = 20f;
+                    //worldControl.Core.Renderer.SubmitLight(terrainCursor, null);
+                    //sphereProxy.Position = pi.WorldPosition + new Vector3(0, 1, 0);
                 }
             }
         }
@@ -332,7 +344,7 @@ namespace SceneEditor
             EntityProxy entityProxy = AddEntityProxy();
 
             // Add sphere primitive component
-            SphereProxy sphereProxy = AddSphereProxy(entityProxy);
+            sphereProxy = AddSphereProxy(entityProxy);
             sphereProxy.Position = new Vector3(0, 0.5f, 0);
 
             // Add quad terrain component

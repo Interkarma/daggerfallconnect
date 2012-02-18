@@ -624,7 +624,7 @@ namespace DeepEngine.Rendering
             ComposeFinal();
 
             // Resolve GBuffer
-            gBuffer.ResolveGBuffer();
+            gBuffer.SetViewport();
         }
 
         /// <summary>
@@ -865,7 +865,7 @@ namespace DeepEngine.Rendering
                 entity = pointLights[i].Entity;
 
                 // Light position
-                Vector3 position = Vector3.Transform(light.Position, entity.Matrix);
+                Vector3 position = (entity != null) ? Vector3.Transform(light.Position, entity.Matrix) : light.Position;
 
                 // Compute the light world matrix.
                 // Scale according to light radius, and translate it to light position.
