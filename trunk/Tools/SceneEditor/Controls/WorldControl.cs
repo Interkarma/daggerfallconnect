@@ -61,6 +61,46 @@ namespace SceneEditor.Controls
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Tick to update and draw in variable timestep.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        public void Tick()
+        {
+            // Measure elapsed time
+            TimeSpan currentTime = stopwatch.Elapsed;
+            TimeSpan elapsedTime = currentTime - lastTime;
+
+            // Update core
+            core.Update(elapsedTime);
+
+            // Apply input to camera when control has focus
+            if (this.Focused)
+            {
+                core.Input.Apply(core.ActiveScene.Camera, true);
+                core.ActiveScene.Camera.Update();
+            }
+            else
+            {
+                core.Input.Reset();
+            }
+
+            // Call tick event
+            if (OnTick != null)
+                OnTick(this, null);
+
+            // Store update time
+            lastTime = currentTime;
+
+            // Redraw
+            CustomRefresh();
+        }
+
+        #endregion
+
         #region GraphicsDeviceService Overrides
 
         /// <summary>
@@ -98,7 +138,7 @@ namespace SceneEditor.Controls
                 }
             }
 
-            // Clear device
+            // Draw scene
             core.Draw(true);
         }
 
@@ -135,42 +175,6 @@ namespace SceneEditor.Controls
             InitializeCompleted(this, null);
 
             return true;
-        }
-
-        /// <summary>
-        /// Tick to update and draw in variable timestep.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void Tick(object sender, EventArgs e)
-        {
-            // Measure elapsed time
-            TimeSpan currentTime = stopwatch.Elapsed;
-            TimeSpan elapsedTime = currentTime - lastTime;
-
-            // Update core
-            core.Update(elapsedTime);
-
-            // Apply input to camera when control has focus
-            if (this.Focused)
-            {
-                core.Input.Apply(core.ActiveScene.Camera, true);
-                core.ActiveScene.Camera.Update();
-            }
-            else
-            {
-                core.Input.Reset();
-            }
-
-            // Call tick event
-            if (OnTick != null)
-                OnTick(this, null);
-
-            // Store update time
-            lastTime = currentTime;
-
-            // Redraw
-            CustomRefresh();
         }
 
         /// <summary>
@@ -339,7 +343,7 @@ namespace SceneEditor.Controls
             NativeMethods.Message message;
             while (!NativeMethods.PeekMessage(out message, IntPtr.Zero, 0, 0, 0))
             {
-                Tick(sender, e);
+                Tick();
             }
         }
 

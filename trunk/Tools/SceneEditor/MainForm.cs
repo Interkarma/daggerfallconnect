@@ -40,6 +40,8 @@ namespace SceneEditor
         bool terrainEditMode = false;
         QuadTerrainProxy currentTerrainProxy = null;
 
+        int deformStartY;
+
         #endregion
 
         #region Constructors
@@ -244,6 +246,7 @@ namespace SceneEditor
                 QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
                 if (pi.Distance != null)
                 {
+                    deformStartY = e.Y;
                     terrainEditor1.BeginDeformUpDown(0);
                 }
             }
@@ -260,11 +263,8 @@ namespace SceneEditor
                 terrainEditMode &&
                 terrainEditor1.DeformInProgress)
             {
-                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
-                if (pi.Distance != null)
-                {
-                    terrainEditor1.SetDeformUpDown(0);
-                }
+                float amount = (float)(deformStartY - e.Y) * 0.002f;
+                terrainEditor1.SetDeformUpDown(amount);
             }
         }
 
@@ -278,11 +278,40 @@ namespace SceneEditor
                 currentTerrainProxy != null &&
                 terrainEditMode)
             {
-                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
-                if (pi.Distance != null)
-                {
-                    terrainEditor1.EndDeformUpDown();
-                }
+                terrainEditor1.EndDeformUpDown();
+            }
+        }
+
+        #endregion
+
+        #region TerrainEditor Events
+
+        /// <summary>
+        /// Height map changed in terrain editor.
+        /// </summary>
+        private void TerrainEditor_OnHeightMapChanged(object sender, EventArgs e)
+        {
+            // Send new height map to terrain node
+            if (currentTerrainProxy != null)
+            {
+                // Set height data
+                currentTerrainProxy.Component.SetHeight(terrainEditor1.GetHeightMapData());
+
+                // Message pump is no longer idle, so keep on ticking manually
+                worldControl.Tick();
+            }
+        }
+
+        /// <summary>
+        /// Blend map changed in terrain editor.
+        /// </summary>
+        private void TerrainEditor_OnBlendMapChanged(object sender, EventArgs e)
+        {
+            // Send new height map to terrain node
+            if (currentTerrainProxy != null)
+            {
+                // Set blend data
+                currentTerrainProxy.Component.SetBlend(terrainEditor1.GetBlendMapData());
             }
         }
 
@@ -339,36 +368,6 @@ namespace SceneEditor
             proxy.TreeNode = node;
 
             return node;
-        }
-
-        #endregion
-
-        #region TerrainEditor Events
-
-        /// <summary>
-        /// Height map changed in terrain editor.
-        /// </summary>
-        private void TerrainEditor_OnHeightMapChanged(object sender, EventArgs e)
-        {
-            // Send new height map to terrain node
-            if (currentTerrainProxy != null)
-            {
-                // Set height data
-                currentTerrainProxy.Component.SetHeight(terrainEditor1.GetHeightMapData());
-            }
-        }
-
-        /// <summary>
-        /// Blend map changed in terrain editor.
-        /// </summary>
-        private void TerrainEditor_OnBlendMapChanged(object sender, EventArgs e)
-        {
-            // Send new height map to terrain node
-            if (currentTerrainProxy != null)
-            {
-                // Set blend data
-                currentTerrainProxy.Component.SetBlend(terrainEditor1.GetBlendMapData());
-            }
         }
 
         #endregion
