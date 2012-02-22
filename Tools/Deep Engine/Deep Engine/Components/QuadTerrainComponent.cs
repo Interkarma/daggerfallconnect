@@ -53,7 +53,9 @@ namespace DeepEngine.Components
         Vector4[] terrainData;
 
         // Terrain textures
+        bool flipFlopHeightMaps = false;
         Texture2D terrainVertexMap;
+        Texture2D terrainVertexMapUpdated;
         Texture2D terrainBlendMap;
 
         // Grid
@@ -224,6 +226,14 @@ namespace DeepEngine.Components
             this.terrainBlendMap = blendMap;
             this.mapHeight = dimension * 4;
 
+            // Create vertex texture
+            terrainVertexMap = new Texture2D(
+                core.GraphicsDevice,
+                dimension,
+                dimension,
+                false,
+                SurfaceFormat.Vector4);
+
             // Set default textures
             Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(102, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
             Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
@@ -265,6 +275,16 @@ namespace DeepEngine.Components
             if (!enabled)
                 return;
 
+            // Flip-flop height maps
+            if (flipFlopHeightMaps)
+            {
+                Texture2D temp = terrainVertexMap;
+                terrainVertexMap = terrainVertexMapUpdated;
+                terrainVertexMapUpdated = temp;
+                flipFlopHeightMaps = false;
+            }
+
+            // Draw
             if (enablePicking)
             {
                 // Reset intersections
@@ -356,15 +376,10 @@ namespace DeepEngine.Components
                 throw new Exception(errorInvalidDimensions);
             }
 
-            // Compute heights
-            for (int y = 0; y < dimension; y++)
+            // Assign heights
+            for (int pos = 0; pos < dimension * dimension; pos++)
             {
-                for (int x = 0; x < dimension; x++)
-                {
-                    // Set height as average of colour image
-                    int pos = y * dimension + x;
-                    terrainData[pos].W = heightData[pos];
-                }
+                terrainData[pos].W = heightData[pos];
             }
 
             // Update other data
@@ -431,14 +446,20 @@ namespace DeepEngine.Components
             if (terrainData == null)
                 return;
 
-            // Create destination texture
-            terrainVertexMap = new Texture2D(
-                core.GraphicsDevice,
-                dimension,
-                dimension,
-                false,
-                SurfaceFormat.Vector4);
-            terrainVertexMap.SetData<Vector4>(terrainData);
+            // Create update texture if it doesn't exist
+            if (terrainVertexMapUpdated == null)
+            {
+                terrainVertexMapUpdated = new Texture2D(
+                    core.GraphicsDevice,
+                    dimension,
+                    dimension,
+                    false,
+                    SurfaceFormat.Vector4);
+            }
+
+            // Update destination texture
+            terrainVertexMapUpdated.SetData<Vector4>(terrainData);
+            flipFlopHeightMaps = true;
         }
 
         #endregion

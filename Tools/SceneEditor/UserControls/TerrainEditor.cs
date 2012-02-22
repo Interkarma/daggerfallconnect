@@ -45,10 +45,11 @@ namespace SceneEditor.UserControls
 
         PointF? cursorPosition = null;
         CursorEditAction currentEditAction = CursorEditAction.DeformUpDown;
-        int deformRadius = 64;
+        int deformRadius = 32;
         bool deformInProgress = false;
         float deformStartValue;
 
+        float[] heightMapUndo = null;
         float[] radialBrush = null;
 
         public event EventHandler OnHeightMapChanged;
@@ -119,7 +120,7 @@ namespace SceneEditor.UserControls
         public void ClearCursorPosition()
         {
             // Cannot change while deforming up and down
-            if (currentEditAction == CursorEditAction.DeformUpDown)
+            if (deformInProgress)
                 return;
 
             cursorPosition = null;
@@ -153,7 +154,14 @@ namespace SceneEditor.UserControls
         /// <param name="startValue">Starting value for relative deformation.</param>
         public void BeginDeformUpDown(float startValue)
         {
-            currentEditAction = CursorEditAction.DeformUpDown;
+            // Cursor position must be valid
+            if (cursorPosition == null)
+                return;
+
+            // Store height map data under cursor
+            SaveHeightMapUndo();
+
+            // Start deform
             deformInProgress = true;
             deformStartValue = startValue;
         }
@@ -168,6 +176,7 @@ namespace SceneEditor.UserControls
             // Must be in correct edit action
             if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
             {
+                DeformHeightMap(currentValue);
             }
         }
 
@@ -265,9 +274,14 @@ namespace SceneEditor.UserControls
             {
                 DialogResult result = MessageBox.Show("Your manually painted changes will be overwritten.", "Overwrite Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.OK)
+                {
+                    manuallyPainted = false;
                     return true;
+                }
                 else
+                {
                     return false;
+                }
             }
 
             return true;
@@ -657,7 +671,7 @@ namespace SceneEditor.UserControls
 
         #endregion
 
-        #region Brush Creation Methods
+        #region Brush Operations
 
         /// <summary>
         /// Creates radial brush.
@@ -665,7 +679,7 @@ namespace SceneEditor.UserControls
         /// <param name="radius">Radius of new brush.</param>
         /// <param name="intensity">Intensity for attenuation equation.</param>
         /// <returns>New radial brush.</returns>
-        private float[] CreateRadialBrush(int radius, float intensity = 1.0f)
+        private float[] CreateRadialBrush(int radius, float intensity = 1.05f)
         {
             // Create brush array
             int dimension = radius * 2;
@@ -694,6 +708,105 @@ namespace SceneEditor.UserControls
             }
 
             return brush;
+        }
+
+        /// <summary>
+        /// Deforms the height map at cursor using brush.
+        /// </summary>
+        /// <param name="scale">Scale of deform operation.</param>
+        private void DeformHeightMap(float scale)
+        {
+            // Cannot do anything if cursor position invalid
+            if (cursorPosition == null)
+                return;
+
+            // Get start position of rectangle
+            int dimension = deformRadius * 2;
+            int xs = (int)(mapDimension * cursorPosition.Value.X - deformRadius);
+            int ys = (int)(mapDimension * cursorPosition.Value.Y - deformRadius);
+
+            // Deform all valid height pixels
+            for (int y = ys; y < ys + dimension; y++)
+            {
+                // Cannot go out of bounds
+                if (y < 0 || y >= mapDimension)
+                    continue;
+
+                for (int x = xs; x < xs + dimension; x++)
+                {
+                    // Cannot go out of bounds
+                    if (x < 0 || x >= mapDimension)
+                        continue;
+
+                    // Get brush value
+                    int brushx = (x - xs);
+                    int brushy = (y - ys);
+                    if (brushx < 0 || brushx >= dimension) continue;
+                    if (brushy < 0 || brushy >= dimension) continue;
+                    float brushValue = radialBrush[brushy * dimension + brushx];
+
+                    // Get start value
+                    float startValue = heightMapUndo[brushy * dimension + brushx];
+
+                    // Get new value
+                    float newValue = Microsoft.Xna.Framework.MathHelper.Clamp(startValue + brushValue * scale, -1.0f, 1.0f);
+
+                    // Set new value
+                    heightMapData[y * mapDimension + x] = newValue;
+                }
+            }
+
+            // Set manually painted flag
+            manuallyPainted = true;
+
+            // Raise update event
+            OnHeightMapChanged(this, null);
+        }
+
+        /// <summary>
+        /// Saves the height map data under the brush.
+        /// </summary>
+        private void SaveHeightMapUndo()
+        {
+            // Cannot do anything if cursor position invalid
+            if (cursorPosition == null)
+                return;
+
+            // Create undo array
+            int dimension = deformRadius * 2;
+            float[] undo = new float[dimension * dimension];
+
+            // Get start position of rectangle
+            int xs = (int)(mapDimension * cursorPosition.Value.X - deformRadius);
+            int ys = (int)(mapDimension * cursorPosition.Value.Y - deformRadius);
+
+            // Capture all valid height pixels
+            for (int y = ys; y < ys + dimension; y++)
+            {
+                // Cannot go out of bounds
+                if (y < 0 || y >= mapDimension)
+                    continue;
+
+                for (int x = xs; x < xs + dimension; x++)
+                {
+                    // Cannot go out of bounds
+                    if (x < 0 || x >= mapDimension)
+                        continue;
+
+                    // Get height pixel
+                    float value = heightMapData[y * mapDimension + x];
+
+                    // Save height pixel
+                    int xd = (x - xs);
+                    int yd = (y - ys);
+                    if (xd < 0 || xd >= dimension) continue;
+                    if (yd < 0 || yd >= dimension) continue;
+                    undo[yd * dimension + xd] = value;
+                }
+            }
+
+            // Assign undo array
+            heightMapUndo = undo;
         }
 
         #endregion
