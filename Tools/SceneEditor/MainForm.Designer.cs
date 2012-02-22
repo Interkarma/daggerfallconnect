@@ -58,8 +58,6 @@
             this.PropertiesPanel = new System.Windows.Forms.Panel();
             this.WorldPanel = new System.Windows.Forms.Panel();
             this.TerrainEditorPanel = new System.Windows.Forms.Panel();
-            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
-            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
             this.ToggleTerrainEditorButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -70,6 +68,8 @@
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
+            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.ToolboxPanel.SuspendLayout();
             this.ResourceTabControl.SuspendLayout();
             this.SceneTabPage.SuspendLayout();
@@ -349,29 +349,8 @@
             this.TerrainEditorPanel.Controls.Add(this.terrainEditor1);
             this.TerrainEditorPanel.Location = new System.Drawing.Point(0, 25);
             this.TerrainEditorPanel.Name = "TerrainEditorPanel";
-            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 386);
+            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 437);
             this.TerrainEditorPanel.TabIndex = 3;
-            // 
-            // terrainEditor1
-            // 
-            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
-            this.terrainEditor1.Name = "terrainEditor1";
-            this.terrainEditor1.Size = new System.Drawing.Size(260, 376);
-            this.terrainEditor1.TabIndex = 0;
-            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
-            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
-            // 
-            // worldControl
-            // 
-            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.worldControl.Location = new System.Drawing.Point(0, 25);
-            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
-            this.worldControl.Name = "worldControl";
-            this.worldControl.Size = new System.Drawing.Size(1099, 813);
-            this.worldControl.TabIndex = 0;
-            this.worldControl.Text = "DeepEngine - WorldControl";
-            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
-            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
             // 
             // WorldToolStrip
             // 
@@ -464,6 +443,30 @@
             this.MainStatusStrip.Size = new System.Drawing.Size(1099, 22);
             this.MainStatusStrip.TabIndex = 2;
             this.MainStatusStrip.Text = "statusStrip1";
+            // 
+            // terrainEditor1
+            // 
+            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
+            this.terrainEditor1.Name = "terrainEditor1";
+            this.terrainEditor1.Size = new System.Drawing.Size(260, 430);
+            this.terrainEditor1.TabIndex = 0;
+            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
+            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
+            // 
+            // worldControl
+            // 
+            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.worldControl.Location = new System.Drawing.Point(0, 25);
+            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
+            this.worldControl.Name = "worldControl";
+            this.worldControl.Size = new System.Drawing.Size(1099, 813);
+            this.worldControl.TabIndex = 0;
+            this.worldControl.Text = "DeepEngine - WorldControl";
+            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
+            this.worldControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseDown);
+            this.worldControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseMove);
+            this.worldControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseUp);
             // 
             // MainForm
             // 

@@ -39,9 +39,6 @@ namespace SceneEditor
 
         bool terrainEditMode = false;
         QuadTerrainProxy currentTerrainProxy = null;
-        LightComponent terrainCursor;
-
-        SphereProxy sphereProxy;
 
         #endregion
 
@@ -210,31 +207,81 @@ namespace SceneEditor
 
             // Set core to render new scene
             worldControl.Core.ActiveScene = document.EditorScene;
-
-            // Create terrain cursor
-            terrainCursor = new LightComponent(worldControl.Core, Vector3.Zero, 10f, Microsoft.Xna.Framework.Color.Red, 4.0f);
         }
 
         /// <summary>
-        /// Called whenever World Control tick, and before scene is drawn/presented.
+        /// Called whenever World Control ticks, before scene is presented.
         /// </summary>
         private void WorldControl_OnTick(object sender, EventArgs e)
         {
-            // Check mouse is inside world view
             if (currentTerrainProxy != null && terrainEditMode)
             {
                 // Get current pointer intersection
                 QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
                 if (pi.Distance != null)
                 {
-                    // Position crosshair
+                    // Position cursor
                     terrainEditor1.SetCursorPosition(pi.MapPosition.X, pi.MapPosition.Y);
+                }
+                else
+                {
+                    // Clear cursor
+                    terrainEditor1.ClearCursorPosition();
+                }
+            }
+        }
 
-                    // Submit a light at cursor position in world
-                    //terrainCursor.Position = pi.WorldPosition + new Vector3(0, 10, 0);
-                    //terrainCursor.PointRadius = 20f;
-                    //worldControl.Core.Renderer.SubmitLight(terrainCursor, null);
-                    //sphereProxy.Position = pi.WorldPosition + new Vector3(0, 1, 0);
+        /// <summary>
+        /// Called when mouse is clicked in world control.
+        /// </summary>
+        private void WorldControl_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Start deformation
+            if (e.Button == MouseButtons.Left &&
+                currentTerrainProxy != null &&
+                terrainEditMode)
+            {
+                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
+                if (pi.Distance != null)
+                {
+                    terrainEditor1.BeginDeformUpDown(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when mouse moves in world control.
+        /// </summary>
+        private void WorldControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Set current deformation
+            if (e.Button == MouseButtons.Left &&
+                currentTerrainProxy != null &&
+                terrainEditMode &&
+                terrainEditor1.DeformInProgress)
+            {
+                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
+                if (pi.Distance != null)
+                {
+                    terrainEditor1.SetDeformUpDown(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when mouse is released.
+        /// </summary>
+        private void WorldControl_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Start deformation
+            if (e.Button == MouseButtons.Left &&
+                currentTerrainProxy != null &&
+                terrainEditMode)
+            {
+                QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
+                if (pi.Distance != null)
+                {
+                    terrainEditor1.EndDeformUpDown();
                 }
             }
         }
@@ -344,7 +391,7 @@ namespace SceneEditor
             EntityProxy entityProxy = AddEntityProxy();
 
             // Add sphere primitive component
-            sphereProxy = AddSphereProxy(entityProxy);
+            SphereProxy sphereProxy = AddSphereProxy(entityProxy);
             sphereProxy.Position = new Vector3(0, 0.5f, 0);
 
             // Add quad terrain component

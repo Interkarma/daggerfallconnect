@@ -43,8 +43,30 @@ namespace SceneEditor.UserControls
 
         bool manuallyPainted = false;
 
+        PointF? cursorPosition = null;
+        CursorEditAction currentEditAction = CursorEditAction.DeformUpDown;
+        int deformRadius = 64;
+        bool deformInProgress = false;
+        float deformStartValue;
+
+        float[] radialBrush = null;
+
         public event EventHandler OnHeightMapChanged;
         public event EventHandler OnBlendMapChanged;
+
+        #endregion
+
+        #region Structures
+
+        /// <summary>
+        /// Edit action to perform under the cursor.
+        /// </summary>
+        private enum CursorEditAction
+        {
+            DeformUpDown,
+            DeformSmooth,
+            DeformBumps,
+        }
 
         #endregion
 
@@ -56,6 +78,14 @@ namespace SceneEditor.UserControls
         public int MapDimension
         {
             get { return mapDimension; }
+        }
+
+        /// <summary>
+        /// Gets flag stating if a deform is in progress.
+        /// </summary>
+        public bool DeformInProgress
+        {
+            get { return deformInProgress; }
         }
 
         #endregion
@@ -71,11 +101,30 @@ namespace SceneEditor.UserControls
 
             // Set default maps
             InitialiseMaps(512);
+            
+            // Set default values
+            DeformRadiusTextBox.Text = deformRadius.ToString();
+
+            // Create initial brush
+            radialBrush = CreateRadialBrush(deformRadius);
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Clears the cursor position.
+        /// </summary>
+        public void ClearCursorPosition()
+        {
+            // Cannot change while deforming up and down
+            if (currentEditAction == CursorEditAction.DeformUpDown)
+                return;
+
+            cursorPosition = null;
+            CrosshairImage.Visible = false;
+        }
 
         /// <summary>
         /// Set cursor position in maps.
@@ -84,12 +133,65 @@ namespace SceneEditor.UserControls
         /// <param name="v">V position.</param>
         public void SetCursorPosition(float u, float v)
         {
+            // Cannot change while deforming up and down
+            if (deformInProgress)
+                return;
+
             // Get coordinates
+            cursorPosition = new PointF(u, v);
             int x = (int)((float)this.HeightMapPreview.Width * u) - 2;
             int y = (int)((float)this.HeightMapPreview.Height * v) - 2;
 
             // Position crosshair
             CrosshairImage.Location = new Point(x, y);
+            CrosshairImage.Visible = true;
+        }
+
+        /// <summary>
+        /// Begins deforming terrain at current cursor position.
+        /// </summary>
+        /// <param name="startValue">Starting value for relative deformation.</param>
+        public void BeginDeformUpDown(float startValue)
+        {
+            currentEditAction = CursorEditAction.DeformUpDown;
+            deformInProgress = true;
+            deformStartValue = startValue;
+        }
+
+        /// <summary>
+        /// Sets terrain deformation at cursor position.
+        ///  Must call BeginDeformUpDown() first.
+        /// </summary>
+        /// <param name="currentValue">Current value for deformation relative to start value.</param>
+        public void SetDeformUpDown(float currentValue)
+        {
+            // Must be in correct edit action
+            if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
+            {
+            }
+        }
+
+        /// <summary>
+        /// Completes deformation process.
+        /// </summary>
+        public void EndDeformUpDown()
+        {
+            // Must be in correct edit action
+            if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
+            {
+                deformInProgress = false;
+            }
+        }
+
+        /// <summary>
+        /// Cancels a deformation process and restores starting height pixels.
+        /// </summary>
+        public void CancelDeformUpDown()
+        {
+            // Must be in correct edit action
+            if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
+            {
+            }
         }
 
         /// <summary>
@@ -208,14 +310,17 @@ namespace SceneEditor.UserControls
         /// <returns>Averaged value.</returns>
         private float AverageSample(int x, int y, int dimension, float[] data)
         {
+            // Clamp position
             int x1 = (x + 1 >= dimension) ? dimension - 1 : x + 1;
             int y1 = (y + 1 >= dimension) ? dimension - 1 : y + 1;
 
+            // Get values
             float value00 = data[y * dimension + x];
             float value10 = data[y * dimension + x1];
             float value01 = data[y1 * dimension + x];
             float value11 = data[y1 * dimension + x1];
 
+            // Average values
             float value = (value00 + value10 + value01 + value11) / 4f;
 
             return value;
@@ -266,7 +371,7 @@ namespace SceneEditor.UserControls
 
         /// <summary>
         /// Regenerates perlin map. This map is used for perlin operations like raise/lower
-        ///  and generating a whole terrain from perlin noide.
+        ///  and generating a whole terrain from perlin noise.
         /// </summary>
         private void GeneratePerlinMap()
         {
@@ -282,10 +387,11 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
-        /// Smooths height map data.
+        /// Smooth height map data.
         /// </summary>
         private void SmoothHeightMap()
         {
+            // Make every height pixel an average of its surrounding height pixels
             for (int y = 0; y < mapDimension; y++)
             {
                 for (int x = 0; x < mapDimension; x++)
@@ -326,7 +432,7 @@ namespace SceneEditor.UserControls
 
         #endregion
 
-        #region TerrainEditor Events
+        #region Global Editor Events
 
         /// <summary>
         /// Seed value changed.
@@ -420,6 +526,68 @@ namespace SceneEditor.UserControls
 
         #endregion
 
+        #region Deformation Editor Events
+
+        /// <summary>
+        /// Called when key pressed.
+        /// </summary>
+        private void DeformRadiusTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Handle enter key
+            if (e.KeyChar == '\r')
+            {
+                this.Validate();
+                e.Handled = true;
+                return;
+            }
+
+            // Only allow numerical
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when validating.
+        /// </summary>
+        private void DeformRadiusTextBox_Validating(object sender, CancelEventArgs e)
+        {
+            // Attempt to parse into an integer
+            int result;
+            if (int.TryParse(DeformRadiusTextBox.Text, out result))
+            {
+                // Clamp value
+                deformRadius = ClampDeformRadiusValue(result);
+
+                // Update text to clamped value
+                DeformRadiusTextBox.Text = deformRadius.ToString();
+
+                // Update brush with new radius
+                radialBrush = CreateRadialBrush(deformRadius);
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        /// <summary>
+        /// Clamps deform radius to valid range.
+        /// </summary>
+        /// <param name="value">Value to test.</param>
+        /// <returns>Clamped value.</returns>
+        private int ClampDeformRadiusValue(int value)
+        {
+            // Clamp radius to valid range
+            if (value <= 0) value = 1;
+            if (value > 256) value = 256;
+
+            return value;
+        }
+
+        #endregion
+
         #region Perlin Noise
 
         // Thanks to James Craig for this Perlin Noise code.
@@ -485,6 +653,47 @@ namespace SceneEditor.UserControls
                     noise[x, y] = ((float)(randomGenerator.NextDouble()) - 0.5f) * 2.0f;  //Generate noise between -1 and 1
                 }
             }
+        }
+
+        #endregion
+
+        #region Brush Creation Methods
+
+        /// <summary>
+        /// Creates radial brush.
+        /// </summary>
+        /// <param name="radius">Radius of new brush.</param>
+        /// <param name="intensity">Intensity for attenuation equation.</param>
+        /// <returns>New radial brush.</returns>
+        private float[] CreateRadialBrush(int radius, float intensity = 1.0f)
+        {
+            // Create brush array
+            int dimension = radius * 2;
+            float[] brush = new float[dimension * dimension];
+            Microsoft.Xna.Framework.Vector2 centre = new Microsoft.Xna.Framework.Vector2(radius, radius);
+
+            // Populate brush array
+            float distance;
+            Microsoft.Xna.Framework.Vector2 pos;
+            for (int y = 0; y < dimension; y++)
+            {
+                for (int x = 0; x < dimension; x++)
+                {
+                    // Get distance to centre pixel
+                    pos.X = x;
+                    pos.Y = y;
+                    distance = Microsoft.Xna.Framework.Vector2.Distance(pos, centre);
+
+                    // Compute attenuation based on distance
+                    float value = (1.0f - distance / radius) * intensity;
+                    value = Microsoft.Xna.Framework.MathHelper.Clamp(value, 0.0f, 1.0f);
+
+                    // Set value
+                    brush[y * dimension + x] = value;
+                }
+            }
+
+            return brush;
         }
 
         #endregion

@@ -116,6 +116,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap Bumps {
+            get {
+                object obj = ResourceManager.GetObject("Bumps", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap chart_curve {
             get {
                 object obj = ResourceManager.GetObject("chart_curve", resourceCulture);
@@ -256,6 +263,13 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap image {
+            get {
+                object obj = ResourceManager.GetObject("image", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap lightbulb {
             get {
                 object obj = ResourceManager.GetObject("lightbulb", resourceCulture);
@@ -301,6 +315,27 @@ namespace SceneEditor.Properties {
         internal static System.Drawing.Bitmap paintbrush {
             get {
                 object obj = ResourceManager.GetObject("paintbrush", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap RaiseLower {
+            get {
+                object obj = ResourceManager.GetObject("RaiseLower", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Smooth {
+            get {
+                object obj = ResourceManager.GetObject("Smooth", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Smooth1 {
+            get {
+                object obj = ResourceManager.GetObject("Smooth1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
