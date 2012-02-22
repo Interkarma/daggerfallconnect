@@ -49,6 +49,16 @@
             this.GlobalAmplitudeUpDown = new System.Windows.Forms.NumericUpDown();
             this.GlobalFrequencyUpDown = new System.Windows.Forms.NumericUpDown();
             this.GlobalStepUpDown = new System.Windows.Forms.NumericUpDown();
+            this.DeformationsGroupBox = new System.Windows.Forms.GroupBox();
+            this.DeformationsToolStrip = new System.Windows.Forms.ToolStrip();
+            this.DeformUpDownButton = new System.Windows.Forms.ToolStripButton();
+            this.DeformSmoothButton = new System.Windows.Forms.ToolStripButton();
+            this.DeformBumpsButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.DeformRadiusTextBox = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.DeformFromImageButton = new System.Windows.Forms.ToolStripButton();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).BeginInit();
@@ -57,6 +67,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalStepUpDown)).BeginInit();
+            this.DeformationsGroupBox.SuspendLayout();
+            this.DeformationsToolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -313,14 +325,105 @@
             0,
             0});
             // 
+            // DeformationsGroupBox
+            // 
+            this.DeformationsGroupBox.Controls.Add(this.DeformationsToolStrip);
+            this.DeformationsGroupBox.Location = new System.Drawing.Point(3, 380);
+            this.DeformationsGroupBox.Name = "DeformationsGroupBox";
+            this.DeformationsGroupBox.Size = new System.Drawing.Size(256, 46);
+            this.DeformationsGroupBox.TabIndex = 9;
+            this.DeformationsGroupBox.TabStop = false;
+            this.DeformationsGroupBox.Text = "Deformations";
+            // 
+            // DeformationsToolStrip
+            // 
+            this.DeformationsToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.DeformationsToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel1,
+            this.DeformRadiusTextBox,
+            this.toolStripSeparator2,
+            this.DeformUpDownButton,
+            this.DeformSmoothButton,
+            this.DeformBumpsButton,
+            this.toolStripSeparator1,
+            this.DeformFromImageButton});
+            this.DeformationsToolStrip.Location = new System.Drawing.Point(3, 16);
+            this.DeformationsToolStrip.Name = "DeformationsToolStrip";
+            this.DeformationsToolStrip.Size = new System.Drawing.Size(250, 25);
+            this.DeformationsToolStrip.TabIndex = 0;
+            this.DeformationsToolStrip.Text = "toolStrip1";
+            // 
+            // DeformUpDownButton
+            // 
+            this.DeformUpDownButton.Checked = true;
+            this.DeformUpDownButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.DeformUpDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.DeformUpDownButton.Image = global::SceneEditor.Properties.Resources.RaiseLower;
+            this.DeformUpDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.DeformUpDownButton.Name = "DeformUpDownButton";
+            this.DeformUpDownButton.Size = new System.Drawing.Size(23, 22);
+            this.DeformUpDownButton.Text = "Deform Up Down";
+            // 
+            // DeformSmoothButton
+            // 
+            this.DeformSmoothButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.DeformSmoothButton.Image = global::SceneEditor.Properties.Resources.Smooth1;
+            this.DeformSmoothButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.DeformSmoothButton.Name = "DeformSmoothButton";
+            this.DeformSmoothButton.Size = new System.Drawing.Size(23, 22);
+            this.DeformSmoothButton.Text = "Smooth";
+            // 
+            // DeformBumpsButton
+            // 
+            this.DeformBumpsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.DeformBumpsButton.Image = global::SceneEditor.Properties.Resources.Bumps;
+            this.DeformBumpsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.DeformBumpsButton.Name = "DeformBumpsButton";
+            this.DeformBumpsButton.Size = new System.Drawing.Size(23, 22);
+            this.DeformBumpsButton.Text = "Bumps";
+            // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(45, 22);
+            this.toolStripLabel1.Text = "Radius:";
+            // 
+            // DeformRadiusTextBox
+            // 
+            this.DeformRadiusTextBox.Name = "DeformRadiusTextBox";
+            this.DeformRadiusTextBox.Size = new System.Drawing.Size(50, 25);
+            this.DeformRadiusTextBox.Text = "32";
+            this.DeformRadiusTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DeformRadiusTextBox_KeyPress);
+            this.DeformRadiusTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.DeformRadiusTextBox_Validating);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // DeformFromImageButton
+            // 
+            this.DeformFromImageButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.DeformFromImageButton.Image = global::SceneEditor.Properties.Resources.image;
+            this.DeformFromImageButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.DeformFromImageButton.Name = "DeformFromImageButton";
+            this.DeformFromImageButton.Size = new System.Drawing.Size(23, 22);
+            this.DeformFromImageButton.Text = "Deform From Image";
+            // 
             // TerrainEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.DeformationsGroupBox);
             this.Controls.Add(this.GlobalGroupBox);
             this.Controls.Add(this.panel1);
             this.Name = "TerrainEditor";
-            this.Size = new System.Drawing.Size(260, 505);
+            this.Size = new System.Drawing.Size(260, 549);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).EndInit();
@@ -330,6 +433,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalStepUpDown)).EndInit();
+            this.DeformationsGroupBox.ResumeLayout(false);
+            this.DeformationsGroupBox.PerformLayout();
+            this.DeformationsToolStrip.ResumeLayout(false);
+            this.DeformationsToolStrip.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -356,5 +463,15 @@
         private System.Windows.Forms.Button PerlinTerrainButton;
         private System.Windows.Forms.Button AutoPaintButton;
         private System.Windows.Forms.Button SmoothButton;
+        private System.Windows.Forms.GroupBox DeformationsGroupBox;
+        private System.Windows.Forms.ToolStrip DeformationsToolStrip;
+        private System.Windows.Forms.ToolStripButton DeformUpDownButton;
+        private System.Windows.Forms.ToolStripButton DeformSmoothButton;
+        private System.Windows.Forms.ToolStripButton DeformBumpsButton;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripTextBox DeformRadiusTextBox;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton DeformFromImageButton;
     }
 }
