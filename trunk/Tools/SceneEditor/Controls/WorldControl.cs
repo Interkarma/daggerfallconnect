@@ -74,6 +74,13 @@ namespace SceneEditor.Controls
             TimeSpan currentTime = stopwatch.Elapsed;
             TimeSpan elapsedTime = currentTime - lastTime;
 
+            // Smooth frame stuttering on some cards
+            while (elapsedTime.Milliseconds < 16)
+            {
+                currentTime = stopwatch.Elapsed;
+                elapsedTime = currentTime - lastTime;
+            }
+
             // Update core
             core.Update(elapsedTime);
 

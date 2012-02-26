@@ -36,27 +36,30 @@ namespace DeepEngine.Components
 
         // Strings
         const string errorInvalidDimensions = "Source texture must equal terrain dimensions.";
+        const string errorInvalidBlendMapndex = "Invalid blend map index.";
 
-        // Effects
-        Effect terrainEffect;
+        // Constants
+        const int heightMultiplier = 8;
+        const int formatWidth = 4;
 
         // Quadtree root
         QuadNode rootNode;
-        int levels;
         
         // Map data
         float normalStrength = 0.25f;
         float textureRepeat = 20f;
-        int dimension;
-        float mapHeight;
+        int mapDimension;
         int leafDimension;
+        int levelCount;
+        float mapHeight;
         Vector4[] terrainData;
 
         // Terrain textures
         bool flipFlopHeightMaps = false;
         Texture2D terrainVertexMap;
         Texture2D terrainVertexMapUpdated;
-        Texture2D terrainBlendMap;
+        Texture2D terrainBlendMap0;
+        Texture2D terrainBlendMap1;
 
         // Grid
         Grid grid;
@@ -67,9 +70,43 @@ namespace DeepEngine.Components
         List<Intersection.ObjectIntersection<QuadNode>> pointerNodeIntersections;
         TerrainIntersectionData pointerIntersection;
 
+        // Effects
+        Effect terrainEffect;
+
+        // Effect parameters
+        EffectParameter terrainEffect_View;
+        EffectParameter terrainEffect_Projection;
+        EffectParameter terrainEffect_World;
+        EffectParameter terrainEffect_VertexTexture;
+        EffectParameter terrainEffect_BlendTexture0;
+        EffectParameter terrainEffect_BlendTexture1;
+        EffectParameter terrainEffect_Texture0;
+        EffectParameter terrainEffect_Texture1;
+        EffectParameter terrainEffect_Texture2;
+        EffectParameter terrainEffect_Texture3;
+        EffectParameter terrainEffect_Texture4;
+        EffectParameter terrainEffect_Texture5;
+        EffectParameter terrainEffect_Texture6;
+        EffectParameter terrainEffect_Texture7;
+        EffectParameter terrainEffect_Texture8;
+        EffectParameter terrainEffect_MaxHeight;
+        EffectParameter terrainEffect_SampleScale;
+        EffectParameter terrainEffect_SampleOffset;
+        EffectParameter terrainEffect_TextureRepeat;
+
         #endregion
 
         #region Class Structures
+
+        /// <summary>
+        /// Size of terrain.
+        /// </summary>
+        public enum TerrainSize
+        {
+            Small = 512,
+            Medium = 1024,
+            Large = 2048,
+        }
 
         /// <summary>
         /// Information about where an intersection has occurred on the terrain.
@@ -117,11 +154,27 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
-        /// Gets dimension of data.
+        /// Gets subdivision level count.
         /// </summary>
-        public int Dimension
+        public int LevelCount
         {
-            get { return dimension; }
+            get { return levelCount; }
+        }
+
+        /// <summary>
+        /// Gets dimension of maps along each side.
+        /// </summary>
+        public int MapDimension
+        {
+            get { return mapDimension; }
+        }
+
+        /// <summary>
+        /// Gets dimension of map leaf nodes along each side.
+        /// </summary>
+        public int LeafDimension
+        {
+            get { return leafDimension; }
         }
 
         /// <summary>
@@ -141,7 +194,7 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
-        /// Gets map height. Always 4x dimension.
+        /// Gets map height.
         /// </summary>
         public float MapHeight
         {
@@ -167,29 +220,49 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
-        /// First diffuse texture.
+        /// Diffuse texture used for clearing (zero value in blend map).
         /// </summary>
-        public Texture2D Diffuse1 { get; set; }
+        public Texture2D Texture0 { get; private set; }
 
         /// <summary>
-        /// Second diffuse texture.
+        /// Diffuse texture.
         /// </summary>
-        public Texture2D Diffuse2 { get; set; }
+        public Texture2D Texture1 { get; private set; }
 
         /// <summary>
-        /// Third diffuse texture.
+        /// Diffuse texture.
         /// </summary>
-        public Texture2D Diffuse3 { get; set; }
+        public Texture2D Texture2 { get; private set; }
 
         /// <summary>
-        /// Fourth diffuse texture.
+        /// Diffuse texture.
         /// </summary>
-        public Texture2D Diffuse4 { get; set; }
+        public Texture2D Texture3 { get; private set; }
 
         /// <summary>
-        /// Fifth diffuse texture.
+        /// Diffuse texture.
         /// </summary>
-        public Texture2D Diffuse5 { get; set; }
+        public Texture2D Texture4 { get; private set; }
+
+        /// <summary>
+        /// Diffuse texture.
+        /// </summary>
+        public Texture2D Texture5 { get; private set; }
+
+        /// <summary>
+        /// Diffuse texture.
+        /// </summary>
+        public Texture2D Texture6 { get; private set; }
+
+        /// <summary>
+        /// Diffuse texture.
+        /// </summary>
+        public Texture2D Texture7 { get; private set; }
+
+        /// <summary>
+        /// Diffuse texture.
+        /// </summary>
+        public Texture2D Texture8 { get; private set; }
 
         #endregion
 
@@ -199,66 +272,90 @@ namespace DeepEngine.Components
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        /// <param name="heightMap">Source heightmap. Must be POW2 grayscale image with equal width and height.</param>
-        /// <param name="blendMap">Blend map. Must be POW2 image with equal width and height.</param>
-        /// <param name="levels">Number of quad levels to divide heightmap into. Use as few levels as possible.</param>
-        /// <param name="maxHeight">Maximum height above and below sea level.</param>
-        public QuadTerrainComponent(DeepCore core, Texture2D heightMap, Texture2D blendMap, int levels)
+        /// <param name="size">Size of terrain.</param>
+        public QuadTerrainComponent(DeepCore core, TerrainSize size)
             : base(core)
         {
-            // Ensure heightmap image is POW2 with equal dimensions
-            if (heightMap.Width != heightMap.Height ||
-                !PowerOfTwo.IsPowerOfTwo(heightMap.Width))
+            // Get dimensions
+            this.mapDimension = (int)size;
+
+            // Height maps must always subdivide into 128x128 or smaller leaf nodes.
+            // This is to ensure each leaf tile fits within a single vertex buffer.
+            leafDimension = mapDimension;
+            int levelCount = 0;
+            while (leafDimension > 128)
             {
-                throw new Exception("Heightmap must be POW2 and width equal to height.");
+                levelCount++;
+                leafDimension /= 2;
             }
 
-            // Ensure blendmap image is POW2 with equal dimensions
-            if (blendMap.Width != blendMap.Height ||
-                !PowerOfTwo.IsPowerOfTwo(blendMap.Width))
-            {
-                throw new Exception("Blendmap must be POW2 and width equal to height.");
-            }
-            
             // Store values
-            this.dimension = heightMap.Width;
-            this.levels = levels;
-            this.terrainBlendMap = blendMap;
-            this.mapHeight = dimension * 4;
+            this.levelCount = levelCount;
+            this.terrainBlendMap0 = new Texture2D(core.GraphicsDevice, mapDimension, mapDimension, false, SurfaceFormat.Color);
+            this.terrainBlendMap1 = new Texture2D(core.GraphicsDevice, mapDimension, mapDimension, false, SurfaceFormat.Color);
+            this.mapHeight = mapDimension * heightMultiplier;
+
+            // Clear blend maps
+            ClearBlendMaps();
 
             // Create vertex texture
             terrainVertexMap = new Texture2D(
                 core.GraphicsDevice,
-                dimension,
-                dimension,
+                mapDimension,
+                mapDimension,
                 false,
                 SurfaceFormat.Vector4);
 
             // Set default textures
-            Diffuse1 = core.MaterialManager.CreateDaggerfallMaterialEffect(102, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse4 = core.MaterialManager.CreateDaggerfallMaterialEffect(303, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Diffuse5 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture0 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture1 = core.MaterialManager.CreateDaggerfallMaterialEffect(102, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture4 = core.MaterialManager.CreateDaggerfallMaterialEffect(303, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+
+            //Texture5 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            //Texture6 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            //Texture7 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            Texture8 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
 
             // Create arrays
-            terrainData = new Vector4[dimension * dimension];
+            terrainData = new Vector4[mapDimension * mapDimension];
 
             // Create grid
-            leafDimension = PowerOfTwo.MipMapSize(dimension, levels);
             grid = new Grid(core.GraphicsDevice, leafDimension, 1.0f);
 
             // Initialise map data
-            SetHeight(heightMap);
+            SetHeight(0);
 
             // Initialise quad tree
             BuildQuadTree();
 
+            // Create intersections list
+            pointerNodeIntersections = new List<Intersection.ObjectIntersection<QuadNode>>();
+
             // Load effects
             terrainEffect = core.ContentManager.Load<Effect>("Effects/RenderTerrain");
 
-            // Create intersections list
-            pointerNodeIntersections = new List<Intersection.ObjectIntersection<QuadNode>>();
+            // Get effect parameters
+            terrainEffect_View = terrainEffect.Parameters["View"];
+            terrainEffect_Projection = terrainEffect.Parameters["Projection"];
+            terrainEffect_World = terrainEffect.Parameters["World"];
+            terrainEffect_VertexTexture = terrainEffect.Parameters["VertexTexture"];
+            terrainEffect_BlendTexture0 = terrainEffect.Parameters["BlendTexture0"];
+            terrainEffect_BlendTexture1 = terrainEffect.Parameters["BlendTexture1"];
+            terrainEffect_Texture0 = terrainEffect.Parameters["Texture0"];
+            terrainEffect_Texture1 = terrainEffect.Parameters["Texture1"];
+            terrainEffect_Texture2 = terrainEffect.Parameters["Texture2"];
+            terrainEffect_Texture3 = terrainEffect.Parameters["Texture3"];
+            terrainEffect_Texture4 = terrainEffect.Parameters["Texture4"];
+            terrainEffect_Texture5 = terrainEffect.Parameters["Texture5"];
+            terrainEffect_Texture6 = terrainEffect.Parameters["Texture6"];
+            terrainEffect_Texture7 = terrainEffect.Parameters["Texture7"];
+            terrainEffect_Texture8 = terrainEffect.Parameters["Texture8"];
+            terrainEffect_MaxHeight = terrainEffect.Parameters["MaxHeight"];
+            terrainEffect_SampleScale = terrainEffect.Parameters["SampleScale"];
+            terrainEffect_SampleOffset = terrainEffect.Parameters["SampleOffset"];
+            terrainEffect_TextureRepeat = terrainEffect.Parameters["TextureRepeat"];
         }
 
         #endregion
@@ -283,6 +380,24 @@ namespace DeepEngine.Components
                 terrainVertexMapUpdated = temp;
                 flipFlopHeightMaps = false;
             }
+
+            // Set effect paramaters
+            terrainEffect_View.SetValue(core.ActiveScene.Camera.ViewMatrix);
+            terrainEffect_Projection.SetValue(core.ActiveScene.Camera.ProjectionMatrix);
+            terrainEffect_VertexTexture.SetValue(terrainVertexMap);
+            terrainEffect_BlendTexture0.SetValue(terrainBlendMap0);
+            terrainEffect_BlendTexture1.SetValue(terrainBlendMap1);
+            terrainEffect_Texture0.SetValue(Texture0);
+            terrainEffect_Texture1.SetValue(Texture1);
+            terrainEffect_Texture2.SetValue(Texture2);
+            terrainEffect_Texture3.SetValue(Texture3);
+            terrainEffect_Texture4.SetValue(Texture4);
+            terrainEffect_Texture5.SetValue(Texture5);
+            terrainEffect_Texture6.SetValue(Texture6);
+            terrainEffect_Texture7.SetValue(Texture7);
+            terrainEffect_Texture8.SetValue(Texture8);
+            terrainEffect_MaxHeight.SetValue(mapHeight);
+            terrainEffect_TextureRepeat.SetValue(textureRepeat);
 
             // Draw
             if (enablePicking)
@@ -309,6 +424,22 @@ namespace DeepEngine.Components
         #region Public Methods
 
         /// <summary>
+        /// Gets height data as an array of floats.
+        /// </summary>
+        /// <returns>Height data array.</returns>
+        public float[] GetHeight()
+        {
+            // Create data buffer
+            float[] buffer = new float[terrainData.Length];
+            for (int i = 0; i < terrainData.Length; i++)
+            {
+                buffer[i] = terrainData[i].W;
+            }
+
+            return buffer;
+        }
+
+        /// <summary>
         /// Gets value from height data.
         ///  Coordinates are clamped to within valid range.
         /// </summary>
@@ -321,11 +452,11 @@ namespace DeepEngine.Components
                 return 0;
 
             // Clamp X & Y
-            if (x < 0) x = 0; else if (x >= dimension) x = dimension - 1;
-            if (y < 0) y = 0; else if (y >= dimension) y = dimension - 1;
+            if (x < 0) x = 0; else if (x >= mapDimension) x = mapDimension - 1;
+            if (y < 0) y = 0; else if (y >= mapDimension) y = mapDimension - 1;
 
             // Get position
-            int pos = y * dimension + x;
+            int pos = y * mapDimension + x;
 
             return terrainData[pos].W;
         }
@@ -337,8 +468,8 @@ namespace DeepEngine.Components
         public void SetHeight(Texture2D heightMap)
         {
             // Esnure source dimensions are equal to terrain dimensions
-            if (heightMap.Width != dimension ||
-                heightMap.Height != dimension)
+            if (heightMap.Width != mapDimension ||
+                heightMap.Height != mapDimension)
             {
                 throw new Exception(errorInvalidDimensions);
             }
@@ -348,12 +479,12 @@ namespace DeepEngine.Components
             heightMap.GetData<Color>(heightData);
 
             // Compute heights
-            for (int y = 0; y < dimension; y++)
+            for (int y = 0; y < mapDimension; y++)
             {
-                for (int x = 0; x < dimension; x++)
+                for (int x = 0; x < mapDimension; x++)
                 {
                     // Set height as average of colour image
-                    int pos = y * dimension + x;
+                    int pos = y * mapDimension + x;
                     terrainData[pos].W = ((heightData[pos].R + heightData[pos].G + heightData[pos].B) / 3) / 255.0f;
                 }
             }
@@ -371,13 +502,13 @@ namespace DeepEngine.Components
         public void SetHeight(float[] heightData)
         {
             // Esnure source dimensions are equal to terrain dimensions
-            if (heightData.Length != dimension * dimension)
+            if (heightData.Length != mapDimension * mapDimension)
             {
                 throw new Exception(errorInvalidDimensions);
             }
 
             // Assign heights
-            for (int pos = 0; pos < dimension * dimension; pos++)
+            for (int pos = 0; pos < mapDimension * mapDimension; pos++)
             {
                 terrainData[pos].W = heightData[pos];
             }
@@ -389,19 +520,71 @@ namespace DeepEngine.Components
         }
 
         /// <summary>
+        /// Sets entire height map to a single float value;
+        /// </summary>
+        /// <param name="height">Height of terrain.</param>
+        public void SetHeight(float height)
+        {
+            // Clamp to valid range
+            height = MathHelper.Clamp(height, -1.0f, 1.0f);
+
+            // Assign height
+            for (int pos = 0; pos < mapDimension * mapDimension; pos++)
+            {
+                terrainData[pos].W = height;
+            }
+
+            // Update other data
+            UpdateNormalData();
+            UpdateTerrainVertexTexture();
+            UpdateBoundingSphere();
+        }
+
+        /// <summary>
+        /// Gets blend map as an array of RGBA bytes.
+        /// </summary>
+        /// <param name="index">Index of blend map.</param>
+        /// <returns>RGBA byte array.</returns>
+        public byte[] GetBlend(int index)
+        {
+            byte[] buffer = new byte[mapDimension * mapDimension * formatWidth];
+            GetBlendMapFromIndex(index).GetData<byte>(buffer);
+
+            return buffer;
+        }
+
+        /// <summary>
         /// Sets blend map from an RGBA byte[] array.
         /// </summary>
+        /// <param name="index">Index of blend map.</param>
         /// <param name="blendData">Array of blend values.</param>
-        public void SetBlend(byte[] blendData)
+        public void SetBlend(int index, byte[] blendData)
         {
-            // Esnure source dimensions are equal to terrain dimensions
-            if (blendData.Length != (dimension * dimension * 4))
+            // Ensure source dimensions are equal to terrain dimensions
+            if (blendData.Length != (mapDimension * mapDimension * formatWidth))
             {
                 throw new Exception(errorInvalidDimensions);
             }
-
+            
             // Set blend data
-            terrainBlendMap.SetData<byte>(blendData);
+            GetBlendMapFromIndex(index).SetData<byte>(blendData);
+        }
+
+        /// <summary>
+        /// Clears blend maps.
+        /// </summary>
+        public void ClearBlendMaps()
+        {
+            // Create array of transparent colours
+            Color[] colors = new Color[mapDimension * mapDimension];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                colors[i] = Color.Transparent;
+            }
+
+            // Apply to blend maps
+            terrainBlendMap0.SetData<Color>(colors);
+            terrainBlendMap1.SetData<Color>(colors);
         }
 
         /// <summary>
@@ -413,9 +596,9 @@ namespace DeepEngine.Components
                 return;
 
             // Compute normals
-            for (int y = 0; y < dimension; y++)
+            for (int y = 0; y < mapDimension; y++)
             {
-                for (int x = 0; x < dimension; x++)
+                for (int x = 0; x < mapDimension; x++)
                 {
                     // Look up the heights to either side of this pixel
                     float left = GetHeight(x - 1, y);
@@ -430,7 +613,7 @@ namespace DeepEngine.Components
                     normal.Normalize();
 
                     // Store result
-                    int pos = y * dimension + x;
+                    int pos = y * mapDimension + x;
                     terrainData[pos].X = normal.X;
                     terrainData[pos].Y = normal.Z;
                     terrainData[pos].Z = normal.Y;
@@ -451,8 +634,8 @@ namespace DeepEngine.Components
             {
                 terrainVertexMapUpdated = new Texture2D(
                     core.GraphicsDevice,
-                    dimension,
-                    dimension,
+                    mapDimension,
+                    mapDimension,
                     false,
                     SurfaceFormat.Vector4);
             }
@@ -472,9 +655,9 @@ namespace DeepEngine.Components
         private void UpdateBoundingSphere()
         {
             // Set bounding sphere
-            float diameter = (mapHeight > dimension) ? mapHeight : dimension;
+            float diameter = (mapHeight > mapDimension) ? mapHeight : mapDimension;
             this.boundingSphere = new BoundingSphere(
-                new Vector3(dimension / 2, 0, dimension / 2),
+                new Vector3(mapDimension / 2, 0, mapDimension / 2),
                 diameter * 0.70f);
         }
 
@@ -484,7 +667,7 @@ namespace DeepEngine.Components
         private void BuildQuadTree()
         {
             // Create parent node
-            rootNode = new QuadNode(dimension, mapHeight);
+            rootNode = new QuadNode(mapDimension, mapHeight);
             AddQuadChildren(rootNode);
         }
 
@@ -495,7 +678,7 @@ namespace DeepEngine.Components
         private void AddQuadChildren(QuadNode parent)
         {
             // Add children
-            if (parent.Level < levels)
+            if (parent.Level < levelCount)
             {
                 // North-West
                 QuadNode nw = new QuadNode(parent, QuadNode.Quadrants.NW);
@@ -531,6 +714,31 @@ namespace DeepEngine.Components
             this.matrix = Matrix.CreateScale(scale) * Matrix.CreateTranslation(translation);
         }
 
+        /// <summary>
+        /// Gets blend map from index.
+        /// </summary>
+        /// <param name="index">Index of blend map</param>
+        /// <returns>Blend map texture.</returns>
+        private Texture2D GetBlendMapFromIndex(int index)
+        {
+            // Ensure blend map index in range
+            if (index < 0 || index > 1)
+            {
+                throw new Exception(errorInvalidBlendMapndex);
+            }
+
+            // Return texture
+            switch (index)
+            {
+                case 0:
+                    return terrainBlendMap0;
+                case 1:
+                    return terrainBlendMap1;
+                default:
+                    return null;
+            }
+        }
+
         #endregion
 
         #region Drawing Methods
@@ -563,7 +771,7 @@ namespace DeepEngine.Components
 
             // Calculate sample scale
             Vector2 sampleScale;
-            sampleScale.X = (float)leafDimension / (float)dimension;
+            sampleScale.X = (float)leafDimension / (float)mapDimension;
             sampleScale.Y = sampleScale.X;
 
             // Only draw terrain grid for leaf nodes
@@ -582,28 +790,15 @@ namespace DeepEngine.Components
                     }
                 }
 
-                // Set effect paramaters
-                terrainEffect.Parameters["View"].SetValue(core.ActiveScene.Camera.ViewMatrix);
-                terrainEffect.Parameters["Projection"].SetValue(core.ActiveScene.Camera.ProjectionMatrix);
-                terrainEffect.Parameters["VertexTexture"].SetValue(terrainVertexMap);
-                terrainEffect.Parameters["BlendTexture"].SetValue(terrainBlendMap);
-                terrainEffect.Parameters["Diffuse1Texture"].SetValue(Diffuse1);
-                terrainEffect.Parameters["Diffuse2Texture"].SetValue(Diffuse2);
-                terrainEffect.Parameters["Diffuse3Texture"].SetValue(Diffuse3);
-                terrainEffect.Parameters["Diffuse4Texture"].SetValue(Diffuse4);
-                terrainEffect.Parameters["Diffuse5Texture"].SetValue(Diffuse5);
-                terrainEffect.Parameters["MaxHeight"].SetValue(mapHeight);
-                terrainEffect.Parameters["SampleScale"].SetValue(sampleScale);
-                terrainEffect.Parameters["TextureRepeat"].SetValue(textureRepeat);
-
                 // Calculate sample offset
                 Vector2 sampleOffset;
-                sampleOffset.X = node.X / dimension;
-                sampleOffset.Y = node.Y / dimension;
+                sampleOffset.X = node.X / mapDimension;
+                sampleOffset.Y = node.Y / mapDimension;
 
-                // Set effect textures for this quad
-                terrainEffect.Parameters["SampleOffset"].SetValue(sampleOffset);
-                terrainEffect.Parameters["World"].SetValue(node.WorldMatrix);
+                // Set effect parameters for this quad
+                terrainEffect_SampleScale.SetValue(sampleScale);
+                terrainEffect_SampleOffset.SetValue(sampleOffset);
+                terrainEffect_World.SetValue(node.WorldMatrix);
 
                 // Apply effect
                 terrainEffect.Techniques[0].Passes[0].Apply();
@@ -681,8 +876,8 @@ namespace DeepEngine.Components
                 // Get position
                 position.X = ray.Position.X + node.Rectangle.X;
                 position.Y = ray.Position.Z + node.Rectangle.Y;
-                if (position.X < 0 || position.X > dimension - 1 ||
-                    position.Y < 0 || position.Y > dimension - 1)
+                if (position.X < 0 || position.X > mapDimension - 1 ||
+                    position.Y < 0 || position.Y > mapDimension - 1)
                 {
                     found = false;
                     continue;
@@ -692,7 +887,7 @@ namespace DeepEngine.Components
                 found = true;
 
                 // Get index into arrays
-                index = (int)position.Y * (int)dimension + (int)position.X;
+                index = (int)position.Y * (int)mapDimension + (int)position.X;
 
                 // Get height of terrain at this position
                 height = terrainData[index].W * mapHeight;
@@ -713,8 +908,8 @@ namespace DeepEngine.Components
             }
 
             // Store map collision in 0,1 space
-            terrainCollisionData.MapPosition.X = position.X / dimension;
-            terrainCollisionData.MapPosition.Y = position.Y / dimension;
+            terrainCollisionData.MapPosition.X = position.X / mapDimension;
+            terrainCollisionData.MapPosition.Y = position.Y / mapDimension;
 
             // Store world collision in world space
             Vector3 worldPosition = new Vector3

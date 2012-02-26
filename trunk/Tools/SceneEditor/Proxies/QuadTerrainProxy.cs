@@ -70,7 +70,7 @@ namespace SceneEditor.Proxies
         [Category(categoryName), Description("Horizontal dimension of map along each side. Set at creation.")]
         public int MapDimension
         {
-            get { return quadTerrain.Dimension; }
+            get { return quadTerrain.MapDimension; }
         }
 
         /// <summary>

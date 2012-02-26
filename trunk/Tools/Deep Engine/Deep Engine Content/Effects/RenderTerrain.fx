@@ -8,12 +8,17 @@ float4x4 Projection;
 
 // Textures
 texture2D VertexTexture;
-texture2D BlendTexture;
-texture2D Diffuse1Texture;
-texture2D Diffuse2Texture;
-texture2D Diffuse3Texture;
-texture2D Diffuse4Texture;
-texture2D Diffuse5Texture;
+texture2D BlendTexture0;
+texture2D BlendTexture1;
+texture2D Texture0;
+texture2D Texture1;
+texture2D Texture2;
+texture2D Texture3;
+texture2D Texture4;
+texture2D Texture5;
+texture2D Texture6;
+texture2D Texture7;
+texture2D Texture8;
 
 // Vertical scale
 float2 SampleOffset;
@@ -35,14 +40,19 @@ sampler VertexSampler = sampler_state
 	AddressV = Clamp;
 };
 
-sampler BlendSampler = sampler_state
+sampler BlendSampler1 = sampler_state
 {
-    Texture = <BlendTexture>;
+    Texture = <BlendTexture0>;
 };
 
-sampler Diffuse1Sampler = sampler_state
+sampler BlendSampler2 = sampler_state
 {
-    Texture = <Diffuse1Texture>;
+    Texture = <BlendTexture1>;
+};
+
+sampler Texture0Sampler = sampler_state
+{
+    Texture = <Texture0>;
 	MipFilter = Linear;
     MinFilter = Linear;
     MagFilter = Linear;
@@ -50,9 +60,9 @@ sampler Diffuse1Sampler = sampler_state
     AddressV  = Wrap;
 };
 
-sampler Diffuse2Sampler = sampler_state
+sampler Texture1Sampler = sampler_state
 {
-    Texture = <Diffuse2Texture>;
+    Texture = <Texture1>;
 	MipFilter = Linear;
     MinFilter = Linear;
     MagFilter = Linear;
@@ -60,9 +70,9 @@ sampler Diffuse2Sampler = sampler_state
     AddressV  = Wrap;
 };
 
-sampler Diffuse3Sampler = sampler_state
+sampler Texture2Sampler = sampler_state
 {
-    Texture = <Diffuse3Texture>;
+    Texture = <Texture2>;
 	MipFilter = Linear;
     MinFilter = Linear;
     MagFilter = Linear;
@@ -70,9 +80,9 @@ sampler Diffuse3Sampler = sampler_state
     AddressV  = Wrap;
 };
 
-sampler Diffuse4Sampler = sampler_state
+sampler Texture3Sampler = sampler_state
 {
-    Texture = <Diffuse4Texture>;
+    Texture = <Texture3>;
 	MipFilter = Linear;
     MinFilter = Linear;
     MagFilter = Linear;
@@ -80,9 +90,49 @@ sampler Diffuse4Sampler = sampler_state
     AddressV  = Wrap;
 };
 
-sampler Diffuse5Sampler = sampler_state
+sampler Texture4Sampler = sampler_state
 {
-    Texture = <Diffuse5Texture>;
+    Texture = <Texture4>;
+	MipFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU  = Wrap;
+    AddressV  = Wrap;
+};
+
+sampler Texture5Sampler = sampler_state
+{
+    Texture = <Texture5>;
+	MipFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU  = Wrap;
+    AddressV  = Wrap;
+};
+
+sampler Texture6Sampler = sampler_state
+{
+    Texture = <Texture6>;
+	MipFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU  = Wrap;
+    AddressV  = Wrap;
+};
+
+sampler Texture7Sampler = sampler_state
+{
+    Texture = <Texture7>;
+	MipFilter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU  = Wrap;
+    AddressV  = Wrap;
+};
+
+sampler Texture8Sampler = sampler_state
+{
+    Texture = <Texture8>;
 	MipFilter = Linear;
     MinFilter = Linear;
     MagFilter = Linear;
@@ -154,31 +204,48 @@ Default_PSO RenderTerrain_PS(Default_VSO input)
 	// Get sample point
 	float2 blenduv = input.TexCoord * SampleScale + SampleOffset;
 
-	// Sample blend texture
+	// Sample blend textures
 	float blendfactor = 1.0f;
-	float4 blendlayers = tex2D(BlendSampler, blenduv);
+	float4 blendlayers1 = tex2D(BlendSampler1, blenduv);
+	float4 blendlayers2 = tex2D(BlendSampler2, blenduv);
 
 	// Scale diffuse coordinates
 	float2 uv = input.TexCoord * TextureRepeat;
 	
 	// Texture1
-	float3 diffuse = tex2D(Diffuse1Sampler, uv) * blendfactor * blendlayers.x;
-	blendfactor = saturate(blendfactor - blendlayers.x);
+	float3 diffuse = tex2D(Texture1Sampler, uv) * blendfactor * blendlayers1.x;
+	blendfactor = saturate(blendfactor - blendlayers1.x);
 	
 	// Texture2
-	diffuse += tex2D(Diffuse2Sampler, uv) * blendfactor * blendlayers.y;
-	blendfactor = saturate(blendfactor - blendlayers.y);
+	diffuse += tex2D(Texture2Sampler, uv) * blendfactor * blendlayers1.y;
+	blendfactor = saturate(blendfactor - blendlayers1.y);
 	
 	// Texture3
-	diffuse += tex2D(Diffuse3Sampler, uv) * blendfactor * blendlayers.z;
-	blendfactor = saturate(blendfactor - blendlayers.z);
+	diffuse += tex2D(Texture3Sampler, uv) * blendfactor * blendlayers1.z;
+	blendfactor = saturate(blendfactor - blendlayers1.z);
 	
 	// Texture4
-	diffuse += tex2D(Diffuse4Sampler, uv) * blendfactor * blendlayers.w;
-	blendfactor = saturate(blendfactor - blendlayers.w);
-	
+	diffuse += tex2D(Texture4Sampler, uv) * blendfactor * blendlayers1.w;
+	blendfactor = saturate(blendfactor - blendlayers1.w);
+
 	// Texture5
-	diffuse += tex2D(Diffuse5Sampler, uv) * blendfactor;
+	diffuse += tex2D(Texture5Sampler, uv) * blendfactor * blendlayers2.x;
+	blendfactor = saturate(blendfactor - blendlayers2.x);
+	
+	// Texture6
+	diffuse += tex2D(Texture6Sampler, uv) * blendfactor * blendlayers2.y;
+	blendfactor = saturate(blendfactor - blendlayers2.y);
+	
+	// Texture7
+	diffuse += tex2D(Texture7Sampler, uv) * blendfactor * blendlayers2.z;
+	blendfactor = saturate(blendfactor - blendlayers2.z);
+	
+	// Texture8
+	diffuse += tex2D(Texture8Sampler, uv) * blendfactor * blendlayers2.w;
+	blendfactor = saturate(blendfactor - blendlayers2.w);
+	
+	// Texture0
+	diffuse += tex2D(Texture0Sampler, uv) * blendfactor;
 
 	// Set output
 	output.Color = float4(diffuse, 0);

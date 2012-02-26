@@ -11,10 +11,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DeepEngine.Core;
+using DeepEngine.Components;
 #endregion
 
 namespace SceneEditor.UserControls
@@ -29,6 +32,7 @@ namespace SceneEditor.UserControls
         #region Fields
 
         const int previewDimension = 64;
+        const int formatWidth = 4;
 
         int mapDimension;
         int leafDimension;
@@ -36,10 +40,14 @@ namespace SceneEditor.UserControls
         int levelCount;
 
         Bitmap previewImage;
+        byte[] previewImageData;
 
-        float[] perlinMapData;
+        QuadTerrainComponent terrain = null;
+
+        //float[] perlinMapData;
         float[] heightMapData;
-        byte[] blendMapData;
+        byte[] blendMap0Data;
+        byte[] blendMap1Data;
 
         bool manuallyPainted = false;
 
@@ -99,15 +107,17 @@ namespace SceneEditor.UserControls
         public TerrainEditor()
         {
             InitializeComponent();
-
-            // Set default maps
-            InitialiseMaps(512);
             
             // Set default values
             DeformRadiusTextBox.Text = deformRadius.ToString();
 
             // Create initial brush
             radialBrush = CreateRadialBrush(deformRadius);
+
+            // Create preview image
+            previewImage = new Bitmap(previewDimension, previewDimension, PixelFormat.Format32bppArgb);
+            previewImageData = new byte[previewDimension * previewDimension * formatWidth];
+            HeightMapPreview.Image = previewImage;
         }
 
         #endregion
@@ -115,16 +125,24 @@ namespace SceneEditor.UserControls
         #region Public Methods
 
         /// <summary>
-        /// Clears the cursor position.
+        /// Sets terrain component to edit.
         /// </summary>
-        public void ClearCursorPosition()
+        /// <param name="terrain">Terrain component.</param>
+        public void SetTerrain(QuadTerrainComponent terrain)
         {
-            // Cannot change while deforming up and down
-            if (deformInProgress)
-                return;
+            // Store reference to terrain
+            this.terrain = terrain;
 
-            cursorPosition = null;
-            CrosshairImage.Visible = false;
+            // Load terrain maps
+            InitialiseMaps(terrain);
+        }
+
+        /// <summary>
+        /// Stop editing a terrain.
+        /// </summary>
+        public void ClearTerrain()
+        {
+            this.terrain = null;
         }
 
         /// <summary>
@@ -134,6 +152,10 @@ namespace SceneEditor.UserControls
         /// <param name="v">V position.</param>
         public void SetCursorPosition(float u, float v)
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
             // Cannot change while deforming up and down
             if (deformInProgress)
                 return;
@@ -149,11 +171,32 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
+        /// Clears the cursor position.
+        /// </summary>
+        public void ClearCursorPosition()
+        {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
+            // Cannot change while deforming up and down
+            if (deformInProgress)
+                return;
+
+            cursorPosition = null;
+            CrosshairImage.Visible = false;
+        }
+
+        /// <summary>
         /// Begins deforming terrain at current cursor position.
         /// </summary>
         /// <param name="startValue">Starting value for relative deformation.</param>
         public void BeginDeformUpDown(float startValue)
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
             // Cursor position must be valid
             if (cursorPosition == null)
                 return;
@@ -173,6 +216,10 @@ namespace SceneEditor.UserControls
         /// <param name="currentValue">Current value for deformation relative to start value.</param>
         public void SetDeformUpDown(float currentValue)
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
             // Must be in correct edit action
             if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
             {
@@ -185,10 +232,17 @@ namespace SceneEditor.UserControls
         /// </summary>
         public void EndDeformUpDown()
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
             // Must be in correct edit action
             if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
             {
                 deformInProgress = false;
+
+                // Update preview
+                UpdatePreview();
             }
         }
 
@@ -197,6 +251,10 @@ namespace SceneEditor.UserControls
         /// </summary>
         public void CancelDeformUpDown()
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
             // Must be in correct edit action
             if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
             {
@@ -207,18 +265,42 @@ namespace SceneEditor.UserControls
         /// Gets heightmap data.
         ///  Array is equal to MapDimension*MapDimension elements.
         /// </summary>
+        /// <returns>Height map array, or NULL if no terrain set.</returns>
         public float[] GetHeightMapData()
         {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return null;
+
             return heightMapData;
         }
 
         /// <summary>
-        /// Gets blendmap as an RGBA byte array.
+        /// Gets blendmap0 as an RGBA byte array.
         ///  Array is equal to MapDimension*MapDimension elements long.
         /// </summary>
-        public byte[] GetBlendMapData()
+        /// <returns>Blend map array, or NULL if no terrain set.</returns>
+        public byte[] GetBlendMap0Data()
         {
-            return blendMapData;
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return null;
+
+            return blendMap0Data;
+        }
+
+        /// <summary>
+        /// Gets blendmap1 as an RGBA byte array.
+        ///  Array is equal to MapDimension*MapDimension elements long.
+        /// </summary>
+        /// <returns>Blend map array, or NULL if no terrain set.</returns>
+        public byte[] GetBlendMap1Data()
+        {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return null;
+
+            return blendMap1Data;
         }
 
         #endregion
@@ -229,37 +311,26 @@ namespace SceneEditor.UserControls
         /// Creates a new set of maps with the specified dimension and levels.
         ///  Any current maps will be lost.
         /// </summary>
-        /// <param name="dimension">Dimension of map.</param>
-        private void InitialiseMaps(int dimension)
+        /// <param name="terrain">Terrain to get maps from.</param>
+        private void InitialiseMaps(QuadTerrainComponent terrain)
         {
-            // Maps must always subdivide into 128x128 or smaller leaf nodes.
-            // This is to ensure each leaf tile fits within a single vertex buffer.
-            int leafDimension = dimension;
-            int levelCount = 0;
-            while (leafDimension > 128)
-            {
-                levelCount++;
-                leafDimension /= 2;
-            }
-
             // Store values
-            this.mapDimension = dimension;
-            this.leafDimension = leafDimension;
-            this.gridDivisions = dimension / leafDimension;
-            this.levelCount = levelCount;
+            this.mapDimension = terrain.MapDimension;
+            this.leafDimension = terrain.LeafDimension;
+            this.gridDivisions = mapDimension / leafDimension;
+            this.levelCount = terrain.LevelCount;
 
-            // Create map data
-            perlinMapData = new float[dimension * dimension];
-            heightMapData = new float[dimension * dimension];
-            blendMapData = new byte[dimension * dimension * 4];
+            // Create perlin map data
+            //perlinMapData = new float[mapDimension * mapDimension];
 
-            // Create preview image
-            previewImage = new Bitmap(previewDimension, previewDimension);
-            HeightMapPreview.Image = previewImage;
+            // Get map data
+            heightMapData = terrain.GetHeight();
+            blendMap0Data = terrain.GetBlend(0);
+            blendMap1Data = terrain.GetBlend(1);
 
             // Create initial perlin map
-            GenerateNoise((int)GlobalSeedUpDown.Value);
-            GeneratePerlinMap();
+            //GenerateNoise((int)GlobalSeedUpDown.Value);
+            //GeneratePerlinMap();
 
             // Set initial preview
             UpdatePreview();
@@ -375,10 +446,10 @@ namespace SceneEditor.UserControls
                     a = (byte)(255f * w1);
 
                     // Set blend pixel
-                    blendMapData[pos++] = r;
-                    blendMapData[pos++] = g;
-                    blendMapData[pos++] = b;
-                    blendMapData[pos++] = a;
+                    blendMap0Data[pos++] = r;
+                    blendMap0Data[pos++] = g;
+                    blendMap0Data[pos++] = b;
+                    blendMap0Data[pos++] = a;
                 }
             }
         }
@@ -389,6 +460,7 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void GeneratePerlinMap()
         {
+            /*
             // Generate perlin map
             for (int y = 0; y < mapDimension; y++)
             {
@@ -398,6 +470,7 @@ namespace SceneEditor.UserControls
                         GetRandomHeight(x, y, 1.0f, (float)GlobalFrequencyUpDown.Value, (float)GlobalAmplitudeUpDown.Value, 0.5f, 8);
                 }
             }
+            */
         }
 
         /// <summary>
@@ -420,23 +493,27 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void UpdatePreview()
         {
-            // Create grayscale preview of heightmap data
-            for (int y = 0; y < mapDimension; y++)
+            const float halfByte = 127.5f;
+
+            // Get bitmap rectangle
+            Rectangle rect = new Rectangle(0, 0, previewImage.Width, previewImage.Height);
+
+            // Create preview data
+            for (int y = 0; y < rect.Height; y++)
             {
-                float v = (float)y / (float)mapDimension;
-                for (int x = 0; x < mapDimension; x++)
+                float v = (float)y / (float)rect.Height;
+
+                for (int x = 0; x < rect.Width; x++)
                 {
-                    float u = (float)x / (float)mapDimension;
+                    float u = (float)x / (float)rect.Width;
 
-                    // Get source colour value
-                    float half = (float)byte.MaxValue / 2f;
-                    byte value = (byte)(half * heightMapData[y * mapDimension + x] + half);
-                    Color color = Color.FromArgb(value, value, value);
+                    // Get source data value
+                    int xpos = (int)(mapDimension * u);
+                    int ypos = (int)(mapDimension * v);
+                    byte value = (byte)(halfByte * heightMapData[ypos * mapDimension + xpos] + halfByte);
 
-                    // Calculate destination position and set colour
-                    int xpos = (int)((float)previewImage.Width * u);
-                    int ypos = (int)((float)previewImage.Height * v);
-                    previewImage.SetPixel(xpos, ypos, color);
+                    // Set preview pixel
+                    previewImage.SetPixel(x, y, Color.FromArgb(value, value, value));
                 }
             }
 
@@ -506,12 +583,14 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void PerlinTerrainButton_Click(object sender, EventArgs e)
         {
+            /*
             if (WarnOverwrite())
             {
                 // Copy map from perlin settings
                 heightMapData = (float[])perlinMapData.Clone();
                 UpdateHeightMapGlobal();
             }
+            */
         }
 
         /// <summary>
