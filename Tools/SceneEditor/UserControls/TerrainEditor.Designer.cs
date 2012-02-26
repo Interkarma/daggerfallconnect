@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TerrainEditor));
             this.panel1 = new System.Windows.Forms.Panel();
             this.CrosshairImage = new System.Windows.Forms.PictureBox();
             this.HeightMapPreview = new System.Windows.Forms.PictureBox();
@@ -49,16 +50,36 @@
             this.GlobalAmplitudeUpDown = new System.Windows.Forms.NumericUpDown();
             this.GlobalFrequencyUpDown = new System.Windows.Forms.NumericUpDown();
             this.GlobalStepUpDown = new System.Windows.Forms.NumericUpDown();
-            this.DeformationsGroupBox = new System.Windows.Forms.GroupBox();
+            this.PaintingGroupBox = new System.Windows.Forms.GroupBox();
             this.DeformationsToolStrip = new System.Windows.Forms.ToolStrip();
-            this.DeformUpDownButton = new System.Windows.Forms.ToolStripButton();
-            this.DeformSmoothButton = new System.Windows.Forms.ToolStripButton();
-            this.DeformBumpsButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.DeformRadiusTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.DeformUpDownButton = new System.Windows.Forms.ToolStripButton();
+            this.DeformSmoothButton = new System.Windows.Forms.ToolStripButton();
+            this.DeformBumpsButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.DeformFromImageButton = new System.Windows.Forms.ToolStripButton();
+            this.TexturePaintButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.TexturesGroupBox = new System.Windows.Forms.GroupBox();
+            this.radioButton4 = new System.Windows.Forms.RadioButton();
+            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.radioButton2 = new System.Windows.Forms.RadioButton();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.Texture4RadioButton = new System.Windows.Forms.RadioButton();
+            this.Texture3RadioButton = new System.Windows.Forms.RadioButton();
+            this.Texture2RadioButton = new System.Windows.Forms.RadioButton();
+            this.Texture1RadioButton = new System.Windows.Forms.RadioButton();
+            this.Texture1PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture2PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture3PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture4PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture5PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture6PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture7PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture8PictureBox = new System.Windows.Forms.PictureBox();
+            this.Texture0PictureBox = new System.Windows.Forms.PictureBox();
+            this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).BeginInit();
@@ -67,8 +88,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalStepUpDown)).BeginInit();
-            this.DeformationsGroupBox.SuspendLayout();
+            this.PaintingGroupBox.SuspendLayout();
             this.DeformationsToolStrip.SuspendLayout();
+            this.TexturesGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture1PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture2PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture3PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture4PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture5PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture6PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture7PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture8PictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture0PictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -325,15 +356,15 @@
             0,
             0});
             // 
-            // DeformationsGroupBox
+            // PaintingGroupBox
             // 
-            this.DeformationsGroupBox.Controls.Add(this.DeformationsToolStrip);
-            this.DeformationsGroupBox.Location = new System.Drawing.Point(3, 380);
-            this.DeformationsGroupBox.Name = "DeformationsGroupBox";
-            this.DeformationsGroupBox.Size = new System.Drawing.Size(256, 46);
-            this.DeformationsGroupBox.TabIndex = 9;
-            this.DeformationsGroupBox.TabStop = false;
-            this.DeformationsGroupBox.Text = "Deformations";
+            this.PaintingGroupBox.Controls.Add(this.DeformationsToolStrip);
+            this.PaintingGroupBox.Location = new System.Drawing.Point(3, 472);
+            this.PaintingGroupBox.Name = "PaintingGroupBox";
+            this.PaintingGroupBox.Size = new System.Drawing.Size(256, 46);
+            this.PaintingGroupBox.TabIndex = 9;
+            this.PaintingGroupBox.TabStop = false;
+            this.PaintingGroupBox.Text = "Painting";
             // 
             // DeformationsToolStrip
             // 
@@ -346,12 +377,32 @@
             this.DeformSmoothButton,
             this.DeformBumpsButton,
             this.toolStripSeparator1,
-            this.DeformFromImageButton});
+            this.TexturePaintButton,
+            this.toolStripSeparator3});
             this.DeformationsToolStrip.Location = new System.Drawing.Point(3, 16);
             this.DeformationsToolStrip.Name = "DeformationsToolStrip";
             this.DeformationsToolStrip.Size = new System.Drawing.Size(250, 25);
             this.DeformationsToolStrip.TabIndex = 0;
             this.DeformationsToolStrip.Text = "toolStrip1";
+            // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(45, 22);
+            this.toolStripLabel1.Text = "Radius:";
+            // 
+            // DeformRadiusTextBox
+            // 
+            this.DeformRadiusTextBox.Name = "DeformRadiusTextBox";
+            this.DeformRadiusTextBox.Size = new System.Drawing.Size(50, 25);
+            this.DeformRadiusTextBox.Text = "32";
+            this.DeformRadiusTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DeformRadiusTextBox_KeyPress);
+            this.DeformRadiusTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.DeformRadiusTextBox_Validating);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
             // DeformUpDownButton
             // 
@@ -382,48 +433,243 @@
             this.DeformBumpsButton.Size = new System.Drawing.Size(23, 22);
             this.DeformBumpsButton.Text = "Bumps";
             // 
-            // toolStripLabel1
-            // 
-            this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(45, 22);
-            this.toolStripLabel1.Text = "Radius:";
-            // 
-            // DeformRadiusTextBox
-            // 
-            this.DeformRadiusTextBox.Name = "DeformRadiusTextBox";
-            this.DeformRadiusTextBox.Size = new System.Drawing.Size(50, 25);
-            this.DeformRadiusTextBox.Text = "32";
-            this.DeformRadiusTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DeformRadiusTextBox_KeyPress);
-            this.DeformRadiusTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.DeformRadiusTextBox_Validating);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // DeformFromImageButton
+            // TexturePaintButton
             // 
-            this.DeformFromImageButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.DeformFromImageButton.Image = global::SceneEditor.Properties.Resources.image;
-            this.DeformFromImageButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.DeformFromImageButton.Name = "DeformFromImageButton";
-            this.DeformFromImageButton.Size = new System.Drawing.Size(23, 22);
-            this.DeformFromImageButton.Text = "Deform From Image";
+            this.TexturePaintButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.TexturePaintButton.Image = ((System.Drawing.Image)(resources.GetObject("TexturePaintButton.Image")));
+            this.TexturePaintButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.TexturePaintButton.Name = "TexturePaintButton";
+            this.TexturePaintButton.Size = new System.Drawing.Size(23, 22);
+            this.TexturePaintButton.Text = "Paint Texture";
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // TexturesGroupBox
+            // 
+            this.TexturesGroupBox.Controls.Add(this.Texture0PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.radioButton5);
+            this.TexturesGroupBox.Controls.Add(this.Texture8PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture7PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture6PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture5PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture4PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture3PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture2PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.Texture1PictureBox);
+            this.TexturesGroupBox.Controls.Add(this.radioButton4);
+            this.TexturesGroupBox.Controls.Add(this.radioButton3);
+            this.TexturesGroupBox.Controls.Add(this.radioButton2);
+            this.TexturesGroupBox.Controls.Add(this.radioButton1);
+            this.TexturesGroupBox.Controls.Add(this.Texture4RadioButton);
+            this.TexturesGroupBox.Controls.Add(this.Texture3RadioButton);
+            this.TexturesGroupBox.Controls.Add(this.Texture2RadioButton);
+            this.TexturesGroupBox.Controls.Add(this.Texture1RadioButton);
+            this.TexturesGroupBox.Location = new System.Drawing.Point(3, 380);
+            this.TexturesGroupBox.Name = "TexturesGroupBox";
+            this.TexturesGroupBox.Size = new System.Drawing.Size(256, 86);
+            this.TexturesGroupBox.TabIndex = 10;
+            this.TexturesGroupBox.TabStop = false;
+            this.TexturesGroupBox.Text = "Textures";
+            // 
+            // radioButton4
+            // 
+            this.radioButton4.AutoSize = true;
+            this.radioButton4.Location = new System.Drawing.Point(156, 54);
+            this.radioButton4.Name = "radioButton4";
+            this.radioButton4.Size = new System.Drawing.Size(14, 13);
+            this.radioButton4.TabIndex = 18;
+            this.radioButton4.TabStop = true;
+            this.radioButton4.UseVisualStyleBackColor = true;
+            // 
+            // radioButton3
+            // 
+            this.radioButton3.AutoSize = true;
+            this.radioButton3.Location = new System.Drawing.Point(106, 54);
+            this.radioButton3.Name = "radioButton3";
+            this.radioButton3.Size = new System.Drawing.Size(14, 13);
+            this.radioButton3.TabIndex = 17;
+            this.radioButton3.TabStop = true;
+            this.radioButton3.UseVisualStyleBackColor = true;
+            // 
+            // radioButton2
+            // 
+            this.radioButton2.AutoSize = true;
+            this.radioButton2.Location = new System.Drawing.Point(56, 54);
+            this.radioButton2.Name = "radioButton2";
+            this.radioButton2.Size = new System.Drawing.Size(14, 13);
+            this.radioButton2.TabIndex = 16;
+            this.radioButton2.TabStop = true;
+            this.radioButton2.UseVisualStyleBackColor = true;
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Location = new System.Drawing.Point(6, 54);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(14, 13);
+            this.radioButton1.TabIndex = 15;
+            this.radioButton1.TabStop = true;
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // Texture4RadioButton
+            // 
+            this.Texture4RadioButton.AutoSize = true;
+            this.Texture4RadioButton.Location = new System.Drawing.Point(156, 25);
+            this.Texture4RadioButton.Name = "Texture4RadioButton";
+            this.Texture4RadioButton.Size = new System.Drawing.Size(14, 13);
+            this.Texture4RadioButton.TabIndex = 3;
+            this.Texture4RadioButton.TabStop = true;
+            this.Texture4RadioButton.UseVisualStyleBackColor = true;
+            // 
+            // Texture3RadioButton
+            // 
+            this.Texture3RadioButton.AutoSize = true;
+            this.Texture3RadioButton.Location = new System.Drawing.Point(106, 25);
+            this.Texture3RadioButton.Name = "Texture3RadioButton";
+            this.Texture3RadioButton.Size = new System.Drawing.Size(14, 13);
+            this.Texture3RadioButton.TabIndex = 2;
+            this.Texture3RadioButton.TabStop = true;
+            this.Texture3RadioButton.UseVisualStyleBackColor = true;
+            // 
+            // Texture2RadioButton
+            // 
+            this.Texture2RadioButton.AutoSize = true;
+            this.Texture2RadioButton.Location = new System.Drawing.Point(56, 25);
+            this.Texture2RadioButton.Name = "Texture2RadioButton";
+            this.Texture2RadioButton.Size = new System.Drawing.Size(14, 13);
+            this.Texture2RadioButton.TabIndex = 1;
+            this.Texture2RadioButton.TabStop = true;
+            this.Texture2RadioButton.UseVisualStyleBackColor = true;
+            // 
+            // Texture1RadioButton
+            // 
+            this.Texture1RadioButton.AutoSize = true;
+            this.Texture1RadioButton.Location = new System.Drawing.Point(6, 25);
+            this.Texture1RadioButton.Name = "Texture1RadioButton";
+            this.Texture1RadioButton.Size = new System.Drawing.Size(14, 13);
+            this.Texture1RadioButton.TabIndex = 0;
+            this.Texture1RadioButton.TabStop = true;
+            this.Texture1RadioButton.UseVisualStyleBackColor = true;
+            // 
+            // Texture1PictureBox
+            // 
+            this.Texture1PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture1PictureBox.Location = new System.Drawing.Point(26, 19);
+            this.Texture1PictureBox.Name = "Texture1PictureBox";
+            this.Texture1PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture1PictureBox.TabIndex = 19;
+            this.Texture1PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture1PictureBox, "Texture 1");
+            // 
+            // Texture2PictureBox
+            // 
+            this.Texture2PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture2PictureBox.Location = new System.Drawing.Point(76, 19);
+            this.Texture2PictureBox.Name = "Texture2PictureBox";
+            this.Texture2PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture2PictureBox.TabIndex = 20;
+            this.Texture2PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture2PictureBox, "Texture 2");
+            // 
+            // Texture3PictureBox
+            // 
+            this.Texture3PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture3PictureBox.Location = new System.Drawing.Point(126, 19);
+            this.Texture3PictureBox.Name = "Texture3PictureBox";
+            this.Texture3PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture3PictureBox.TabIndex = 21;
+            this.Texture3PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture3PictureBox, "Texture 3");
+            // 
+            // Texture4PictureBox
+            // 
+            this.Texture4PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture4PictureBox.Location = new System.Drawing.Point(176, 19);
+            this.Texture4PictureBox.Name = "Texture4PictureBox";
+            this.Texture4PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture4PictureBox.TabIndex = 22;
+            this.Texture4PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture4PictureBox, "Texture 4");
+            // 
+            // Texture5PictureBox
+            // 
+            this.Texture5PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture5PictureBox.Location = new System.Drawing.Point(26, 49);
+            this.Texture5PictureBox.Name = "Texture5PictureBox";
+            this.Texture5PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture5PictureBox.TabIndex = 23;
+            this.Texture5PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture5PictureBox, "Texture 5");
+            // 
+            // Texture6PictureBox
+            // 
+            this.Texture6PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture6PictureBox.Location = new System.Drawing.Point(76, 49);
+            this.Texture6PictureBox.Name = "Texture6PictureBox";
+            this.Texture6PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture6PictureBox.TabIndex = 24;
+            this.Texture6PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture6PictureBox, "Texture 6");
+            // 
+            // Texture7PictureBox
+            // 
+            this.Texture7PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture7PictureBox.Location = new System.Drawing.Point(126, 49);
+            this.Texture7PictureBox.Name = "Texture7PictureBox";
+            this.Texture7PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture7PictureBox.TabIndex = 25;
+            this.Texture7PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture7PictureBox, "Texture 7");
+            // 
+            // Texture8PictureBox
+            // 
+            this.Texture8PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture8PictureBox.Location = new System.Drawing.Point(176, 49);
+            this.Texture8PictureBox.Name = "Texture8PictureBox";
+            this.Texture8PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture8PictureBox.TabIndex = 26;
+            this.Texture8PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture8PictureBox, "Texture 8");
+            // 
+            // Texture0PictureBox
+            // 
+            this.Texture0PictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Texture0PictureBox.Location = new System.Drawing.Point(226, 49);
+            this.Texture0PictureBox.Name = "Texture0PictureBox";
+            this.Texture0PictureBox.Size = new System.Drawing.Size(24, 24);
+            this.Texture0PictureBox.TabIndex = 29;
+            this.Texture0PictureBox.TabStop = false;
+            this.TerrainEditorToolTips.SetToolTip(this.Texture0PictureBox, "Texture 0 (Clear Texture)");
+            // 
+            // radioButton5
+            // 
+            this.radioButton5.AutoSize = true;
+            this.radioButton5.Checked = true;
+            this.radioButton5.Location = new System.Drawing.Point(206, 54);
+            this.radioButton5.Name = "radioButton5";
+            this.radioButton5.Size = new System.Drawing.Size(14, 13);
+            this.radioButton5.TabIndex = 28;
+            this.radioButton5.TabStop = true;
+            this.radioButton5.UseVisualStyleBackColor = true;
             // 
             // TerrainEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.DeformationsGroupBox);
+            this.Controls.Add(this.TexturesGroupBox);
+            this.Controls.Add(this.PaintingGroupBox);
             this.Controls.Add(this.GlobalGroupBox);
             this.Controls.Add(this.panel1);
             this.Name = "TerrainEditor";
-            this.Size = new System.Drawing.Size(260, 549);
+            this.Size = new System.Drawing.Size(260, 605);
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.CrosshairImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightMapPreview)).EndInit();
@@ -433,10 +679,21 @@
             ((System.ComponentModel.ISupportInitialize)(this.GlobalAmplitudeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalFrequencyUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.GlobalStepUpDown)).EndInit();
-            this.DeformationsGroupBox.ResumeLayout(false);
-            this.DeformationsGroupBox.PerformLayout();
+            this.PaintingGroupBox.ResumeLayout(false);
+            this.PaintingGroupBox.PerformLayout();
             this.DeformationsToolStrip.ResumeLayout(false);
             this.DeformationsToolStrip.PerformLayout();
+            this.TexturesGroupBox.ResumeLayout(false);
+            this.TexturesGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture1PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture2PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture3PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture4PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture5PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture6PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture7PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture8PictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Texture0PictureBox)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -463,7 +720,7 @@
         private System.Windows.Forms.Button PerlinTerrainButton;
         private System.Windows.Forms.Button AutoPaintButton;
         private System.Windows.Forms.Button SmoothButton;
-        private System.Windows.Forms.GroupBox DeformationsGroupBox;
+        private System.Windows.Forms.GroupBox PaintingGroupBox;
         private System.Windows.Forms.ToolStrip DeformationsToolStrip;
         private System.Windows.Forms.ToolStripButton DeformUpDownButton;
         private System.Windows.Forms.ToolStripButton DeformSmoothButton;
@@ -472,6 +729,26 @@
         private System.Windows.Forms.ToolStripTextBox DeformRadiusTextBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton DeformFromImageButton;
+        private System.Windows.Forms.GroupBox TexturesGroupBox;
+        private System.Windows.Forms.RadioButton radioButton4;
+        private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton Texture4RadioButton;
+        private System.Windows.Forms.RadioButton Texture3RadioButton;
+        private System.Windows.Forms.RadioButton Texture2RadioButton;
+        private System.Windows.Forms.RadioButton Texture1RadioButton;
+        private System.Windows.Forms.ToolStripButton TexturePaintButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.PictureBox Texture0PictureBox;
+        private System.Windows.Forms.RadioButton radioButton5;
+        private System.Windows.Forms.PictureBox Texture8PictureBox;
+        private System.Windows.Forms.PictureBox Texture7PictureBox;
+        private System.Windows.Forms.PictureBox Texture6PictureBox;
+        private System.Windows.Forms.PictureBox Texture5PictureBox;
+        private System.Windows.Forms.PictureBox Texture4PictureBox;
+        private System.Windows.Forms.PictureBox Texture3PictureBox;
+        private System.Windows.Forms.PictureBox Texture2PictureBox;
+        private System.Windows.Forms.PictureBox Texture1PictureBox;
     }
 }

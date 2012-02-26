@@ -349,7 +349,7 @@
             this.TerrainEditorPanel.Controls.Add(this.terrainEditor1);
             this.TerrainEditorPanel.Location = new System.Drawing.Point(0, 25);
             this.TerrainEditorPanel.Name = "TerrainEditorPanel";
-            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 437);
+            this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 594);
             this.TerrainEditorPanel.TabIndex = 3;
             // 
             // WorldToolStrip
@@ -448,7 +448,7 @@
             // 
             this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
             this.terrainEditor1.Name = "terrainEditor1";
-            this.terrainEditor1.Size = new System.Drawing.Size(260, 430);
+            this.terrainEditor1.Size = new System.Drawing.Size(260, 588);
             this.terrainEditor1.TabIndex = 0;
             this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
             this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);

@@ -176,8 +176,8 @@ namespace SceneEditor
                 ToggleTerrainEditorButton.Checked = true;
                 terrainEditMode = true;
                 currentTerrainProxy = (QuadTerrainProxy)proxy;
+                terrainEditor1.SetTerrain(currentTerrainProxy.Component);
                 (proxy as QuadTerrainProxy).Component.EnablePicking = true;
-                
             }
             else
             {
@@ -189,8 +189,8 @@ namespace SceneEditor
                 {
                     currentTerrainProxy.Component.EnablePicking = false;
                     currentTerrainProxy = null;
+                    terrainEditor1.ClearTerrain();
                 }
-
             }
         }
 
@@ -311,7 +311,8 @@ namespace SceneEditor
             if (currentTerrainProxy != null)
             {
                 // Set blend data
-                currentTerrainProxy.Component.SetBlend(terrainEditor1.GetBlendMapData());
+                currentTerrainProxy.Component.SetBlend(0, terrainEditor1.GetBlendMap0Data());
+                currentTerrainProxy.Component.SetBlend(1, terrainEditor1.GetBlendMap1Data());
             }
         }
 
@@ -444,12 +445,8 @@ namespace SceneEditor
         /// </summary>
         private QuadTerrainProxy AddQuadTerrainComponentProxy(EntityProxy parent)
         {
-            // Create default textures
-            Texture2D heightMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
-            Texture2D blendMap = new Texture2D(worldControl.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
-
             // Create new quad terrain
-            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, heightMap, blendMap, 2);
+            QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, QuadTerrainComponent.TerrainSize.Small);
 
             // Add to parent entity
             parent.Entity.Components.Add(quadTerrain);
