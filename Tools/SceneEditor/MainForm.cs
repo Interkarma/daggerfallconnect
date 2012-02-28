@@ -397,7 +397,7 @@ namespace SceneEditor
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
             terrainProxy.Position = new Vector3(-512, 0, -512);
-            terrainProxy.Scale = new Vector3(2, 0.08f, 2);
+            terrainProxy.Scale = new Vector3(2, 0.16f, 2);
             terrainProxy.NormalStrength = 0.01f;
 
             // Add light component

@@ -16,6 +16,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using DaggerfallConnect;
+using DaggerfallConnect.Arena2;
+using DaggerfallConnect.Utility;
 using DeepEngine.Core;
 using DeepEngine.Components;
 #endregion
@@ -33,6 +36,9 @@ namespace SceneEditor.UserControls
 
         const int previewDimension = 64;
         const int formatWidth = 4;
+
+        string arena2Path;
+        ImageFileReader imageReader = new ImageFileReader();
 
         int mapDimension;
         int leafDimension;
@@ -53,7 +59,8 @@ namespace SceneEditor.UserControls
 
         PointF? cursorPosition = null;
         CursorEditAction currentEditAction = CursorEditAction.DeformUpDown;
-        int deformRadius = 32;
+        int brushRadius = 32;
+        float brushStrength = 0.5f;
         bool deformInProgress = false;
         float deformStartValue;
 
@@ -109,10 +116,11 @@ namespace SceneEditor.UserControls
             InitializeComponent();
             
             // Set default values
-            DeformRadiusTextBox.Text = deformRadius.ToString();
+            BrushRadiusUpDown.Value = brushRadius;
+            BrushStrengthUpDown.Value = (decimal)brushStrength;
 
             // Create initial brush
-            radialBrush = CreateRadialBrush(deformRadius);
+            radialBrush = CreateRadialBrush(brushRadius);
 
             // Create preview image
             previewImage = new Bitmap(previewDimension, previewDimension, PixelFormat.Format32bppArgb);
@@ -133,8 +141,15 @@ namespace SceneEditor.UserControls
             // Store reference to terrain
             this.terrain = terrain;
 
+            // Get arena2 path from active core
+            this.arena2Path = terrain.Core.Arena2Path;
+            this.imageReader.Arena2Path = this.arena2Path;
+
             // Load terrain maps
             InitialiseMaps(terrain);
+
+            // Load texture previews
+            InitialiseTexturePreviews(terrain);
         }
 
         /// <summary>
@@ -308,10 +323,9 @@ namespace SceneEditor.UserControls
         #region Private Methods
 
         /// <summary>
-        /// Creates a new set of maps with the specified dimension and levels.
-        ///  Any current maps will be lost.
+        /// Sync editor maps with terrain maps.
         /// </summary>
-        /// <param name="terrain">Terrain to get maps from.</param>
+        /// <param name="terrain">Terrain to sync maps from.</param>
         private void InitialiseMaps(QuadTerrainComponent terrain)
         {
             // Store values
@@ -334,6 +348,45 @@ namespace SceneEditor.UserControls
 
             // Set initial preview
             UpdatePreview();
+        }
+
+        /// <summary>
+        /// Sync editor textures with terrain.
+        /// </summary>
+        /// <param name="terrain">Terrain to sync textures from.</param>
+        private void InitialiseTexturePreviews(QuadTerrainComponent terrain)
+        {
+            // Set each texture preview
+            SetTexturePreview(terrain, 0, Texture0PictureBox);
+            SetTexturePreview(terrain, 1, Texture1PictureBox);
+            SetTexturePreview(terrain, 2, Texture2PictureBox);
+            SetTexturePreview(terrain, 3, Texture3PictureBox);
+            SetTexturePreview(terrain, 4, Texture4PictureBox);
+            SetTexturePreview(terrain, 5, Texture5PictureBox);
+            SetTexturePreview(terrain, 6, Texture6PictureBox);
+            SetTexturePreview(terrain, 7, Texture7PictureBox);
+            SetTexturePreview(terrain, 8, Texture8PictureBox);
+        }
+
+        /// <summary>
+        /// Sets the texture preview from specified index.
+        /// </summary>
+        /// <param name="terrain">Terrain component.</param>
+        /// <param name="index">Texture index.</param>
+        /// <param name="pictureBox">Picture box to receive image.</param>
+        private void SetTexturePreview(QuadTerrainComponent terrain, int index, PictureBox pictureBox)
+        {
+            // Get texture description from index
+            QuadTerrainComponent.DaggerfallTerrainTexture textureDesc = terrain.GetDaggerfallTexture(index);
+
+            // Get Daggerfall image file
+            imageReader.LibraryType = LibraryTypes.Texture;
+            DFImageFile imageFile = imageReader.GetImageFile(TextureFile.IndexToFileName(textureDesc.Archive));
+
+            // Get managed bitmap and set on picture box
+            Bitmap textureBitmap = imageFile.GetManagedBitmap(textureDesc.Record, 0, true, false);
+            pictureBox.Image = textureBitmap;
+            pictureBox.Refresh();
         }
 
         /// <summary>
@@ -523,7 +576,7 @@ namespace SceneEditor.UserControls
 
         #endregion
 
-        #region Global Editor Events
+        #region Global Toolbox Events
 
         /// <summary>
         /// Seed value changed.
@@ -619,64 +672,23 @@ namespace SceneEditor.UserControls
 
         #endregion
 
-        #region Deformation Editor Events
+        #region Brush Toolbox Events
 
         /// <summary>
-        /// Called when key pressed.
+        /// Called when brush radius changed.
         /// </summary>
-        private void DeformRadiusTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        private void BrushRadiusUpDown_ValueChanged(object sender, EventArgs e)
         {
-            // Handle enter key
-            if (e.KeyChar == '\r')
-            {
-                this.Validate();
-                e.Handled = true;
-                return;
-            }
-
-            // Only allow numerical
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
+            brushRadius = (int)BrushRadiusUpDown.Value;
+            radialBrush = CreateRadialBrush(brushRadius);
         }
 
         /// <summary>
-        /// Called when validating.
+        /// Called when brush strength changed.
         /// </summary>
-        private void DeformRadiusTextBox_Validating(object sender, CancelEventArgs e)
+        private void BrushStrengthUpDown_ValueChanged(object sender, EventArgs e)
         {
-            // Attempt to parse into an integer
-            int result;
-            if (int.TryParse(DeformRadiusTextBox.Text, out result))
-            {
-                // Clamp value
-                deformRadius = ClampDeformRadiusValue(result);
-
-                // Update text to clamped value
-                DeformRadiusTextBox.Text = deformRadius.ToString();
-
-                // Update brush with new radius
-                radialBrush = CreateRadialBrush(deformRadius);
-            }
-            else
-            {
-                e.Cancel = true;
-            }
-        }
-
-        /// <summary>
-        /// Clamps deform radius to valid range.
-        /// </summary>
-        /// <param name="value">Value to test.</param>
-        /// <returns>Clamped value.</returns>
-        private int ClampDeformRadiusValue(int value)
-        {
-            // Clamp radius to valid range
-            if (value <= 0) value = 1;
-            if (value > 256) value = 256;
-
-            return value;
+            brushStrength = (float)BrushStrengthUpDown.Value;
         }
 
         #endregion
@@ -800,9 +812,9 @@ namespace SceneEditor.UserControls
                 return;
 
             // Get start position of rectangle
-            int dimension = deformRadius * 2;
-            int xs = (int)(mapDimension * cursorPosition.Value.X - deformRadius);
-            int ys = (int)(mapDimension * cursorPosition.Value.Y - deformRadius);
+            int dimension = brushRadius * 2;
+            int xs = (int)(mapDimension * cursorPosition.Value.X - brushRadius);
+            int ys = (int)(mapDimension * cursorPosition.Value.Y - brushRadius);
 
             // Deform all valid height pixels
             for (int y = ys; y < ys + dimension; y++)
@@ -822,7 +834,7 @@ namespace SceneEditor.UserControls
                     int brushy = (y - ys);
                     if (brushx < 0 || brushx >= dimension) continue;
                     if (brushy < 0 || brushy >= dimension) continue;
-                    float brushValue = radialBrush[brushy * dimension + brushx];
+                    float brushValue = radialBrush[brushy * dimension + brushx] * brushStrength;
 
                     // Get start value
                     float startValue = heightMapUndo[brushy * dimension + brushx];
@@ -852,12 +864,12 @@ namespace SceneEditor.UserControls
                 return;
 
             // Create undo array
-            int dimension = deformRadius * 2;
+            int dimension = brushRadius * 2;
             float[] undo = new float[dimension * dimension];
 
             // Get start position of rectangle
-            int xs = (int)(mapDimension * cursorPosition.Value.X - deformRadius);
-            int ys = (int)(mapDimension * cursorPosition.Value.Y - deformRadius);
+            int xs = (int)(mapDimension * cursorPosition.Value.X - brushRadius);
+            int ys = (int)(mapDimension * cursorPosition.Value.Y - brushRadius);
 
             // Capture all valid height pixels
             for (int y = ys; y < ys + dimension; y++)
