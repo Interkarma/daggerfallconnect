@@ -36,6 +36,7 @@ namespace DeepEngine.Components
 
         // Strings
         const string errorInvalidDimensions = "Source texture must equal terrain dimensions.";
+        const string errorInvalidTextureIndex = "Invalid texture index.";
         const string errorInvalidBlendMapndex = "Invalid blend map index.";
 
         // Constants
@@ -94,6 +95,9 @@ namespace DeepEngine.Components
         EffectParameter terrainEffect_SampleOffset;
         EffectParameter terrainEffect_TextureRepeat;
 
+        // Daggerfall textures
+        DaggerfallTerrainTexture[] daggerfallTerrainTextures = new DaggerfallTerrainTexture[9];
+
         #endregion
 
         #region Class Structures
@@ -106,6 +110,17 @@ namespace DeepEngine.Components
             Small = 512,
             Medium = 1024,
             Large = 2048,
+        }
+
+        /// <summary>
+        /// Defines a Daggerfall terrain texture.
+        /// </summary>
+        public struct DaggerfallTerrainTexture
+        {
+            /// <summary>Archive index.</summary>
+            public int Archive;
+            /// <summary>Record index.</summary>
+            public int Record;
         }
 
         /// <summary>
@@ -307,16 +322,11 @@ namespace DeepEngine.Components
                 SurfaceFormat.Vector4);
 
             // Set default textures
-            Texture0 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Texture1 = core.MaterialManager.CreateDaggerfallMaterialEffect(102, 1, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Texture2 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 2, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Texture3 = core.MaterialManager.CreateDaggerfallMaterialEffect(302, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Texture4 = core.MaterialManager.CreateDaggerfallMaterialEffect(303, 3, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-
-            //Texture5 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            //Texture6 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            //Texture7 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
-            Texture8 = core.MaterialManager.CreateDaggerfallMaterialEffect(002, 0, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+            SetDaggerfallTexture(0, 302, 1);
+            SetDaggerfallTexture(1, 102, 1);
+            SetDaggerfallTexture(2, 302, 2);
+            SetDaggerfallTexture(3, 302, 3);
+            SetDaggerfallTexture(4, 303, 3);
 
             // Create arrays
             terrainData = new Vector4[mapDimension * mapDimension];
@@ -643,6 +653,76 @@ namespace DeepEngine.Components
             // Update destination texture
             terrainVertexMapUpdated.SetData<Vector4>(terrainData);
             flipFlopHeightMaps = true;
+        }
+
+        /// <summary>
+        /// Sets a Daggerfall texture to index.
+        /// </summary>
+        /// <param name="index">Index of texture to set.</param>
+        /// <param name="archive">Archive of texture.</param>
+        /// <param name="record">Record of texture to set.</param>
+        public void SetDaggerfallTexture(int index, int archive, int record)
+        {
+            // Validate index
+            if (index < 0 || index > 8)
+            {
+                throw new Exception(errorInvalidTextureIndex);
+            }
+
+            // Get texture
+            Texture2D texture = core.MaterialManager.CreateDaggerfallMaterialEffect(archive, record, null, MaterialManager.DefaultTerrainFlags).DiffuseTexture;
+
+            // Store texture information
+            daggerfallTerrainTextures[index].Archive = archive;
+            daggerfallTerrainTextures[index].Record = record;
+
+            // Apply texture to index
+            switch (index)
+            {
+                case 0:
+                    Texture0 = texture;
+                    break;
+                case 1:
+                    Texture1 = texture;
+                    break;
+                case 2:
+                    Texture2 = texture;
+                    break;
+                case 3:
+                    Texture3 = texture;
+                    break;
+                case 4:
+                    Texture4 = texture;
+                    break;
+                case 5:
+                    Texture5 = texture;
+                    break;
+                case 6:
+                    Texture6 = texture;
+                    break;
+                case 7:
+                    Texture7 = texture;
+                    break;
+                case 8:
+                    Texture8 = texture;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Daggerfall terrain texture set at index.
+        /// </summary>
+        /// <param name="index">Index of terrain texture.</param>
+        /// <returns>Texture definition.</returns>
+        public DaggerfallTerrainTexture GetDaggerfallTexture(int index)
+        {
+            // Validate index
+            if (index < 0 || index > 8)
+            {
+                throw new Exception(errorInvalidTextureIndex);
+            }
+
+            return daggerfallTerrainTextures[index];
         }
 
         #endregion

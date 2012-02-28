@@ -121,6 +121,9 @@
   <data name="vector" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\vector.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="radialBrush" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\radialBrush.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="lightbulb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\lightbulb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -132,9 +135,6 @@
   </data>
   <data name="arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Smooth1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Smooth1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="bullet_arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bullet_arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -157,8 +157,8 @@
   <data name="bullet_arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bullet_arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Smooth1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Smooth1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="textfield_rename" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\textfield_rename.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -168,6 +168,9 @@
   </data>
   <data name="Crosshair" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Crosshair.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow_undo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_undo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="control_stop_blue" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\control_stop_blue.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -183,6 +186,9 @@
   </data>
   <data name="folder_page" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\folder_page.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="contrast_low" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\contrast_low.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -220,8 +226,8 @@
   <data name="database" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\database.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="arrow_undo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_undo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="image" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\image.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Bumps" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Bumps.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -250,7 +256,7 @@
   <data name="chart_curve" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\chart_curve.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="image" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\image.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="paintcan" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\paintcan.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

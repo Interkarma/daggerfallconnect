@@ -319,6 +319,20 @@ namespace SceneEditor.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap paintcan {
+            get {
+                object obj = ResourceManager.GetObject("paintcan", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap radialBrush {
+            get {
+                object obj = ResourceManager.GetObject("radialBrush", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap RaiseLower {
             get {
                 object obj = ResourceManager.GetObject("RaiseLower", resourceCulture);
