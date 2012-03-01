@@ -245,10 +245,7 @@ namespace SceneEditor
             {
                 QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
                 if (pi.Distance != null)
-                {
-                    deformStartY = e.Y;
-                    terrainEditor1.BeginDeformUpDown(0);
-                }
+                    EditStart(e.X, e.Y);
             }
         }
 
@@ -260,11 +257,9 @@ namespace SceneEditor
             // Set current deformation
             if (e.Button == MouseButtons.Left &&
                 currentTerrainProxy != null &&
-                terrainEditMode &&
-                terrainEditor1.DeformInProgress)
+                terrainEditMode)
             {
-                float amount = (float)(deformStartY - e.Y) * 0.002f;
-                terrainEditor1.SetDeformUpDown(amount);
+                EditContinue(e.X, e.Y);
             }
         }
 
@@ -369,6 +364,43 @@ namespace SceneEditor
             proxy.TreeNode = node;
 
             return node;
+        }
+
+        /// <summary>
+        /// Start editing terrain.
+        /// </summary>
+        /// <param name="x">Mouse X.</param>
+        /// <param name="y">Mouse Y.</param>
+        private void EditStart(int x, int y)
+        {
+            if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.DeformUpDown)
+            {
+                deformStartY = y;
+                terrainEditor1.BeginDeformUpDown(0);
+            }
+            else if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.Paint)
+            {
+                terrainEditor1.PaintTerrain();
+            }
+        }
+
+        /// <summary>
+        /// Continue editing terrain.
+        /// </summary>
+        /// <param name="x">Mouse X.</param>
+        /// <param name="y">Mouse Y.</param>
+        private void EditContinue(int x, int y)
+        {
+            if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.DeformUpDown &&
+                terrainEditor1.DeformInProgress)
+            {
+                float amount = (float)(deformStartY - y) * 0.002f;
+                terrainEditor1.SetDeformUpDown(amount);
+            }
+            else if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.Paint)
+            {
+                terrainEditor1.PaintTerrain();
+            }
         }
 
         #endregion

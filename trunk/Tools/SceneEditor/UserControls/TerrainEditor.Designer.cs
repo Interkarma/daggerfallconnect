@@ -526,6 +526,7 @@
             this.DeformUpDownButton.Name = "DeformUpDownButton";
             this.DeformUpDownButton.Size = new System.Drawing.Size(23, 22);
             this.DeformUpDownButton.Text = "Deform Up Down";
+            this.DeformUpDownButton.Click += new System.EventHandler(this.DeformUpDownButton_Click);
             // 
             // DeformSmoothButton
             // 
@@ -535,6 +536,7 @@
             this.DeformSmoothButton.Name = "DeformSmoothButton";
             this.DeformSmoothButton.Size = new System.Drawing.Size(23, 22);
             this.DeformSmoothButton.Text = "Smooth";
+            this.DeformSmoothButton.Click += new System.EventHandler(this.DeformSmoothButton_Click);
             // 
             // DeformBumpsButton
             // 
@@ -544,6 +546,7 @@
             this.DeformBumpsButton.Name = "DeformBumpsButton";
             this.DeformBumpsButton.Size = new System.Drawing.Size(23, 22);
             this.DeformBumpsButton.Text = "Bumps";
+            this.DeformBumpsButton.Click += new System.EventHandler(this.DeformBumpsButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -565,6 +568,7 @@
             this.ManualPaintButton.Size = new System.Drawing.Size(23, 22);
             this.ManualPaintButton.Text = "Paint";
             this.ManualPaintButton.ToolTipText = "Manual Paint";
+            this.ManualPaintButton.Click += new System.EventHandler(this.ManualPaintButton_Click);
             // 
             // TexturesGroupBox
             // 

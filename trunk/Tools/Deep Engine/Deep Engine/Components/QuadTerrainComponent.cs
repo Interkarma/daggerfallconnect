@@ -327,6 +327,10 @@ namespace DeepEngine.Components
             SetDaggerfallTexture(2, 302, 2);
             SetDaggerfallTexture(3, 302, 3);
             SetDaggerfallTexture(4, 303, 3);
+            SetDaggerfallTexture(5, 003, 3);
+            SetDaggerfallTexture(6, 003, 46);
+            SetDaggerfallTexture(7, 302, 46);
+            SetDaggerfallTexture(8, 404, 46);
 
             // Create arrays
             terrainData = new Vector4[mapDimension * mapDimension];
