@@ -77,11 +77,12 @@ namespace SceneEditor.UserControls
         /// <summary>
         /// Edit action to perform under the cursor.
         /// </summary>
-        private enum CursorEditAction
+        public enum CursorEditAction
         {
             DeformUpDown,
             DeformSmooth,
             DeformBumps,
+            Paint,
         }
 
         #endregion
@@ -102,6 +103,14 @@ namespace SceneEditor.UserControls
         public bool DeformInProgress
         {
             get { return deformInProgress; }
+        }
+
+        /// <summary>
+        /// Gets current edit action.
+        /// </summary>
+        public CursorEditAction CurrentEditAction
+        {
+            get { return currentEditAction; }
         }
 
         #endregion
@@ -216,6 +225,10 @@ namespace SceneEditor.UserControls
             if (cursorPosition == null)
                 return;
 
+            // Must be in deform up/down mode
+            if (currentEditAction != CursorEditAction.DeformUpDown)
+                return;
+
             // Store height map data under cursor
             SaveHeightMapUndo();
 
@@ -277,6 +290,22 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
+        /// Paints the terrain at cursor using brush and texture.
+        /// </summary>
+        public void PaintTerrain()
+        {
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
+            // Must be in correct edit action
+            if (currentEditAction == CursorEditAction.Paint)
+            {
+                PaintBlendMap();
+            }
+        }
+
+        /// <summary>
         /// Gets heightmap data.
         ///  Array is equal to MapDimension*MapDimension elements.
         /// </summary>
@@ -288,6 +317,77 @@ namespace SceneEditor.UserControls
                 return null;
 
             return heightMapData;
+        }
+
+        /// <summary>
+        /// Gets blend map data based on selected texture.
+        /// </summary>
+        /// <param name="data">Blend data array out.</param>
+        /// <param name="channel">Blend channel offset out.</param>
+        /// <param name="texture">Texture index out.</param>
+        public void GetBlendMapData(out byte[] data, out int channel, out int texture)
+        {
+            data = null;
+            channel = -1;
+            texture = -1;
+
+            // Do nothing if no terrain set
+            if (terrain == null)
+                return;
+
+            // Get based on texture index
+            if (Texture0RadioButton.Checked)
+            {
+                texture = 0;
+            }
+            else if (Texture1RadioButton.Checked)
+            {
+                data = GetBlendMap0Data();
+                channel = 0;
+                texture = 1;
+            }
+            else if (Texture2RadioButton.Checked)
+            {
+                data = GetBlendMap0Data();
+                channel = 1;
+                texture = 2;
+            }
+            else if (Texture3RadioButton.Checked)
+            {
+                data = GetBlendMap0Data();
+                channel = 2;
+                texture = 3;
+            }
+            else if (Texture4RadioButton.Checked)
+            {
+                data = GetBlendMap0Data();
+                channel = 3;
+                texture = 4;
+            }
+            else if (Texture5RadioButton.Checked)
+            {
+                data = GetBlendMap1Data();
+                channel = 0;
+                texture = 5;
+            }
+            else if (Texture6RadioButton.Checked)
+            {
+                data = GetBlendMap1Data();
+                channel = 1;
+                texture = 6;
+            }
+            else if (Texture7RadioButton.Checked)
+            {
+                data = GetBlendMap1Data();
+                channel = 2;
+                texture = 7;
+            }
+            else if (Texture8RadioButton.Checked)
+            {
+                data = GetBlendMap1Data();
+                channel = 3;
+                texture = 8;
+            }
         }
 
         /// <summary>
@@ -693,6 +793,61 @@ namespace SceneEditor.UserControls
 
         #endregion
 
+        #region Action Toolbox Events
+
+        /// <summary>
+        /// Clear existing check from action buttons.
+        /// </summary>
+        private void ClearActionButtonChecks()
+        {
+            DeformUpDownButton.Checked = false;
+            DeformSmoothButton.Checked = false;
+            DeformBumpsButton.Checked = false;
+            ManualPaintButton.Checked = false;
+        }
+
+        /// <summary>
+        /// Deform up/down button clicked.
+        /// </summary>
+        private void DeformUpDownButton_Click(object sender, EventArgs e)
+        {
+            ClearActionButtonChecks();
+            currentEditAction = CursorEditAction.DeformUpDown;
+            DeformUpDownButton.Checked = true;
+        }
+
+        /// <summary>
+        /// Deform smooth button clicked.
+        /// </summary>
+        private void DeformSmoothButton_Click(object sender, EventArgs e)
+        {
+            ClearActionButtonChecks();
+            currentEditAction = CursorEditAction.DeformSmooth;
+            DeformSmoothButton.Checked = true;
+        }
+
+        /// <summary>
+        /// Deform bumps button clicked.
+        /// </summary>
+        private void DeformBumpsButton_Click(object sender, EventArgs e)
+        {
+            ClearActionButtonChecks();
+            currentEditAction = CursorEditAction.DeformBumps;
+            DeformBumpsButton.Checked = true;
+        }
+
+        /// <summary>
+        /// Deform paint button clicked.
+        /// </summary>
+        private void ManualPaintButton_Click(object sender, EventArgs e)
+        {
+            ClearActionButtonChecks();
+            currentEditAction = CursorEditAction.Paint;
+            ManualPaintButton.Checked = true;
+        }
+
+        #endregion
+
         #region Perlin Noise
 
         // Thanks to James Craig for this Perlin Noise code.
@@ -802,6 +957,123 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
+        /// Removes blend evenly across all channels at index position.
+        /// </summary>
+        /// <param name="mapPos">Position in blend map to descale.</param>
+        /// <param name="excludedChannel">Channel to exclude. Use -1 to descale all channels.</param>
+        /// <param name="amount">Amount to descale by.</param>
+        private void DescaleBlendMaps(int mapPos, int excludedTexture, float amount)
+        {
+            // Amount to change in byte form
+            byte change = (byte)(255.0f * amount);
+
+            // Descale blend map 0
+            for (int channel = 0; channel < 4; channel++)
+            {
+                // Skip excluded channel.
+                if ((channel + 1) == excludedTexture)
+                    continue;
+
+                // Descale channel at position
+                int value = blendMap0Data[mapPos + channel] - change;
+                if (value < 0) value = 0;
+                blendMap0Data[mapPos + channel] = (byte)value;
+            }
+
+            // Descale blend map 1
+            for (int channel = 0; channel < 4; channel++)
+            {
+                // Skip excluded channel.
+                if ((channel + 5) == excludedTexture)
+                    continue;
+
+                // Descale channel at position
+                int value = blendMap1Data[mapPos + channel] - change;
+                if (value < 0) value = 0;
+                blendMap1Data[mapPos + channel] = (byte)value;
+            }
+        }
+
+        /// <summary>
+        /// Paints the terrain at cursor using selected texture.
+        /// </summary>
+        public void PaintBlendMap()
+        {
+            // Cannot do anything if cursor position invalid
+            if (cursorPosition == null)
+                return;
+
+            // Get target blend map
+            byte[] blendMapData;
+            int channel = 0;
+            int texture = 0;
+            GetBlendMapData(out blendMapData, out channel, out texture);
+
+            // Get start position of brush rectangle
+            int brushDimension = brushRadius * 2;
+            int brushStride = brushDimension * formatWidth;
+            int xs = (int)(mapDimension * cursorPosition.Value.X - brushRadius);
+            int ys = (int)(mapDimension * cursorPosition.Value.Y - brushRadius);
+
+            // Get stride of blend map
+            int blendMapStride = mapDimension * formatWidth;
+            
+            // Paint all valid blend pixels
+            int brushx, brushy, brushPos, mapPos;
+            float brushValue, startValue, newValue;
+            for (int y = ys; y < ys + brushDimension; y++)
+            {
+                // Cannot go out of bounds
+                if (y < 0 || y >= mapDimension)
+                    continue;
+
+                for (int x = xs; x < xs + brushDimension; x++)
+                {
+                    // Cannot go out of bounds
+                    if (x < 0 || x >= mapDimension)
+                        continue;
+
+                    // Get map position
+                    mapPos = (y * blendMapStride) + (x * formatWidth);
+
+                    // Get brush value
+                    brushx = (x - xs);
+                    brushy = (y - ys);
+                    if (brushx < 0 || brushx >= brushDimension) continue;
+                    if (brushy < 0 || brushy >= brushDimension) continue;
+                    brushPos = brushy * brushDimension + brushx;
+                    brushValue = radialBrush[brushPos] * brushStrength * 0.05f;
+
+                    if (blendMapData == null)
+                    {
+                        // Just descale everything when no blend map specified
+                        DescaleBlendMaps(mapPos, -1, brushValue);
+                    }
+                    else
+                    {
+                        // Descale other channels to make room for new colour
+                        DescaleBlendMaps(mapPos, texture, brushValue);
+
+                        // Get start value
+                        startValue = (float)blendMapData[mapPos + channel] / 255.0f;
+
+                        // Get new value
+                        newValue = Microsoft.Xna.Framework.MathHelper.Clamp(startValue + brushValue, 0.0f, 1.0f);
+
+                        // Set new value
+                        blendMapData[mapPos + channel] = (byte)(newValue * 255.0f);
+                    }
+                }
+            }
+
+            // Set manually painted flag
+            manuallyPainted = true;
+
+            // Raise update event
+            OnBlendMapChanged(this, null);
+        }
+
+        /// <summary>
         /// Deforms the height map at cursor using brush.
         /// </summary>
         /// <param name="scale">Scale of deform operation.</param>
@@ -811,7 +1083,7 @@ namespace SceneEditor.UserControls
             if (cursorPosition == null)
                 return;
 
-            // Get start position of rectangle
+            // Get start position of brush rectangle
             int dimension = brushRadius * 2;
             int xs = (int)(mapDimension * cursorPosition.Value.X - brushRadius);
             int ys = (int)(mapDimension * cursorPosition.Value.Y - brushRadius);
