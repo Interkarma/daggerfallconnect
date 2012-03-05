@@ -26,7 +26,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Defines base requirements of editor proxies.
     /// </summary>
-    internal abstract class BaseEditorProxy : IBaseEditorProxy
+    public abstract class BaseEditorProxy : IBaseEditorProxy
     {
 
         #region Fields

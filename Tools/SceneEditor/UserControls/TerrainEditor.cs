@@ -6,14 +6,13 @@
 // Contact:         Gavin Clayton (interkarma@dfworkshop.net)
 // Project Page:    http://code.google.com/p/daggerfallconnect/
 
-#region Using Statement
+#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Data;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using DaggerfallConnect;
@@ -29,7 +28,7 @@ namespace SceneEditor.UserControls
     /// <summary>
     /// Terrain editor control.
     /// </summary>
-    public partial class TerrainEditor : UserControl
+    public partial class TerrainEditor : BaseToolboxControl
     {
 
         #region Fields
@@ -61,10 +60,11 @@ namespace SceneEditor.UserControls
         CursorEditAction currentEditAction = CursorEditAction.DeformUpDown;
         int brushRadius = 32;
         float brushStrength = 0.5f;
+
         bool deformInProgress = false;
         float deformStartValue;
 
-        float[] heightMapUndo = null;
+        float[] deformStart = null;
         float[] radialBrush = null;
 
         public event EventHandler OnHeightMapChanged;
@@ -214,8 +214,9 @@ namespace SceneEditor.UserControls
         /// <summary>
         /// Begins deforming terrain at current cursor position.
         /// </summary>
+        /// <param name="document">Scene document.</param>
         /// <param name="startValue">Starting value for relative deformation.</param>
-        public void BeginDeformUpDown(float startValue)
+        public void BeginDeformUpDown(Documents.SceneDocument document, float startValue)
         {
             // Do nothing if no terrain set
             if (terrain == null)
@@ -229,8 +230,16 @@ namespace SceneEditor.UserControls
             if (currentEditAction != CursorEditAction.DeformUpDown)
                 return;
 
-            // Store height map data under cursor
-            SaveHeightMapUndo();
+            // Get brush undo information
+            Documents.SceneDocument.TerrainDeformUndoInfo? undoInfo = GetBrushHeightMapUndo();
+            if (undoInfo == null)
+                return;
+
+            // Push undo information
+            document.PushUndo(undoInfo.Value);
+
+            // Assign start buffer from undo buffer
+            deformStart = undoInfo.Value.UndoBuffer;
 
             // Start deform
             deformInProgress = true;
@@ -271,21 +280,6 @@ namespace SceneEditor.UserControls
 
                 // Update preview
                 UpdatePreview();
-            }
-        }
-
-        /// <summary>
-        /// Cancels a deformation process and restores starting height pixels.
-        /// </summary>
-        public void CancelDeformUpDown()
-        {
-            // Do nothing if no terrain set
-            if (terrain == null)
-                return;
-
-            // Must be in correct edit action
-            if (currentEditAction == CursorEditAction.DeformUpDown && deformInProgress)
-            {
             }
         }
 
@@ -1109,7 +1103,7 @@ namespace SceneEditor.UserControls
                     float brushValue = radialBrush[brushy * dimension + brushx] * brushStrength;
 
                     // Get start value
-                    float startValue = heightMapUndo[brushy * dimension + brushx];
+                    float startValue = deformStart[brushy * dimension + brushx];
 
                     // Get new value
                     float newValue = Microsoft.Xna.Framework.MathHelper.Clamp(startValue + brushValue * scale, -1.0f, 1.0f);
@@ -1126,22 +1120,43 @@ namespace SceneEditor.UserControls
             OnHeightMapChanged(this, null);
         }
 
+        #endregion
+
+        #region Undo-Redo
+
         /// <summary>
         /// Saves the height map data under the brush.
         /// </summary>
-        private void SaveHeightMapUndo()
+        /// <returns>Undo buffer information.</returns>
+        private Documents.SceneDocument.TerrainDeformUndoInfo? GetBrushHeightMapUndo()
         {
             // Cannot do anything if cursor position invalid
             if (cursorPosition == null)
-                return;
+                return null;
 
-            // Create undo array
-            int dimension = brushRadius * 2;
-            float[] undo = new float[dimension * dimension];
-
-            // Get start position of rectangle
+            // Define undo area from brush
             int xs = (int)(mapDimension * cursorPosition.Value.X - brushRadius);
             int ys = (int)(mapDimension * cursorPosition.Value.Y - brushRadius);
+            int dimension = brushRadius * 2;
+            
+            return GetHeightMapUndo(this.terrain, xs, ys, dimension);
+        }
+
+        /// <summary>
+        /// Saves the height map data at the specified position and area.
+        /// </summary>
+        /// <returns>Undo buffer information.</returns>
+        /// <param name="terrain">Terrain to get undo information from.</param>
+        /// <param name="xs">X position of top-left corner.</param>
+        /// <param name="ys">Y position of top-left corner.</param>
+        /// <param name="dimension">Dimension of undo area.</param>
+        public Documents.SceneDocument.TerrainDeformUndoInfo? GetHeightMapUndo(QuadTerrainComponent terrain, int xs, int ys, int dimension)
+        {
+            // Create undo array
+            float[] undo = new float[dimension * dimension];
+
+            // Get data
+            float[] data = terrain.GetHeight();
 
             // Capture all valid height pixels
             for (int y = ys; y < ys + dimension; y++)
@@ -1157,7 +1172,7 @@ namespace SceneEditor.UserControls
                         continue;
 
                     // Get height pixel
-                    float value = heightMapData[y * mapDimension + x];
+                    float value = data[y * mapDimension + x];
 
                     // Save height pixel
                     int xd = (x - xs);
@@ -1168,8 +1183,67 @@ namespace SceneEditor.UserControls
                 }
             }
 
-            // Assign undo array
-            heightMapUndo = undo;
+            // Create undo information
+            Documents.SceneDocument.TerrainDeformUndoInfo undoInfo = new Documents.SceneDocument.TerrainDeformUndoInfo
+            {
+                TerrainEditor = this,
+                TerrainComponent = terrain,
+                HeightMap = heightMapData,
+                UndoBuffer = undo,
+                Position = new Microsoft.Xna.Framework.Point(xs, ys),
+                Dimension = dimension,
+            };
+
+            return undoInfo;
+        }
+
+        /// <summary>
+        /// Restores undo information to the height map.
+        /// </summary>
+        /// <param name="undoInfo">Undo information.</param>
+        public void RestoreHeightMapUndo(Documents.SceneDocument.TerrainDeformUndoInfo undoInfo)
+        {
+            // Get area of undo operation
+            int xs = undoInfo.Position.X;
+            int ys = undoInfo.Position.Y;
+            int dimension = undoInfo.Dimension;
+
+            // Set all valid height pixels
+            QuadTerrainComponent terrain = undoInfo.TerrainComponent;
+            float[] data = terrain.GetHeight();
+            for (int y = ys; y < ys + dimension; y++)
+            {
+                // Cannot go out of bounds
+                if (y < 0 || y >= mapDimension)
+                    continue;
+
+                for (int x = xs; x < xs + dimension; x++)
+                {
+                    // Cannot go out of bounds
+                    if (x < 0 || x >= mapDimension)
+                        continue;
+
+                    // Get height pixel
+                    int xd = (x - xs);
+                    int yd = (y - ys);
+                    if (xd < 0 || xd >= dimension) continue;
+                    if (yd < 0 || yd >= dimension) continue;
+                    float value = undoInfo.UndoBuffer[yd * dimension + xd];
+
+                    // Set height pixel
+                    data[y * terrain.MapDimension + x] = value;
+                }
+            }
+
+            // Set height back in editor if this is active terrain
+            if (terrain == this.terrain)
+            {
+                heightMapData = data;
+                UpdatePreview();
+            }
+
+            // Set data back on terrain
+            terrain.SetHeight(data);
         }
 
         #endregion
