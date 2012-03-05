@@ -78,6 +78,9 @@
     <Compile Include="Proxies\IEditorProxy.cs" />
     <Compile Include="Proxies\SphereProxy.cs" />
     <Compile Include="Proxies\EntityProxy.cs" />
+    <Compile Include="UserControls\BaseToolboxControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="UserControls\TerrainEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>

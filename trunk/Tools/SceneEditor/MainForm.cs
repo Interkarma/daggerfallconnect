@@ -376,7 +376,7 @@ namespace SceneEditor
             if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.DeformUpDown)
             {
                 deformStartY = y;
-                terrainEditor1.BeginDeformUpDown(0);
+                terrainEditor1.BeginDeformUpDown(document, 0);
             }
             else if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.Paint)
             {
