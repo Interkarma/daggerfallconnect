@@ -101,8 +101,9 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
-        public BaseDrawableProxy(SceneDocument document)
-            : base(document)
+        /// <param name="entity">Entity owning this proxy.</param>
+        public BaseDrawableProxy(SceneDocument document, DynamicEntity entity)
+            : base(document, entity)
         {
         }
 

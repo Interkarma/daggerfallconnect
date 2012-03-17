@@ -156,9 +156,12 @@ namespace SceneEditor.Documents
             // Create scene objects
             editorScene = new Scene(core);
 
+            // Set camera view distance
+            editorScene.Camera.FarPlane = 5000f;
+
             // Create large initial undo/redo stacks
-            undoStack = new Stack<UndoInfo>(1000);
-            redoStack = new Stack<UndoInfo>(1000);
+            undoStack = new Stack<UndoInfo>(100);
+            redoStack = new Stack<UndoInfo>(100);
         }
 
         #endregion
@@ -174,6 +177,11 @@ namespace SceneEditor.Documents
             // Do nothing if locked
             if (lockUndoRedo)
                 return;
+
+            // Making a change invalidates redo.
+            // This is to prevent inconsistent redo operations.
+            if (redoStack.Count > 0)
+                redoStack.Clear();
 
             // Set undo information
             UndoInfo undoInfo = new UndoInfo
@@ -201,6 +209,11 @@ namespace SceneEditor.Documents
             // Do nothing if locked
             if (lockUndoRedo)
                 return;
+
+            // Making a change invalidates redo.
+            // This is to prevent inconsistent redo operations.
+            if (redoStack.Count > 0)
+                redoStack.Clear();
 
             // Set undo information
             UndoInfo undoInfo = new UndoInfo

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
+using DeepEngine.World;
 using SceneEditor.Documents;
 #endregion
 
@@ -36,6 +37,7 @@ namespace SceneEditor.Proxies
         protected string name;
         protected TreeNode treeNode;
         protected SceneDocument document;
+        protected DynamicEntity entity;
 
         #endregion
 
@@ -60,6 +62,15 @@ namespace SceneEditor.Proxies
             set { treeNode = value; }
         }
 
+        /// <summary>
+        /// Gets the owning entity, or null if not related to an entity.
+        /// </summary>
+        [Browsable(false)]
+        public DynamicEntity Entity
+        {
+            get { return entity; }
+        }
+
         #endregion
 
         #region Editor Properties
@@ -82,10 +93,12 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
-        public BaseEditorProxy(SceneDocument document)
+        /// <param name="entity">Entity owning this proxy.</param>
+        public BaseEditorProxy(SceneDocument document, DynamicEntity entity)
         {
             // Save references
             this.document = document;
+            this.entity = entity;
         }
 
         #endregion
@@ -107,6 +120,13 @@ namespace SceneEditor.Proxies
             this.name = name;
             if (treeNode != null)
                 treeNode.Text = name;
+        }
+
+        /// <summary>
+        /// Removes this proxy from editor.
+        /// </summary>
+        public virtual void Remove()
+        {
         }
 
         #endregion

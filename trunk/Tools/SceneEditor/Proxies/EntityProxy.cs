@@ -39,21 +39,7 @@ namespace SceneEditor.Proxies
         const string defaultName = "Entity";
         const string behaviourCategoryName = "Behaviour";
 
-        DynamicEntity entity;
         bool makeStatic = false;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets entity.
-        /// </summary>
-        [Browsable(false)]
-        public DynamicEntity Entity
-        {
-            get { return entity; }
-        }
 
         #endregion
 
@@ -83,7 +69,7 @@ namespace SceneEditor.Proxies
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity to proxy.</param>
         public EntityProxy(SceneDocument document, DynamicEntity entity)
-            : base(document)
+            : base(document, entity)
         {
             base.name = defaultName;
             this.entity = entity;

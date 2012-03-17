@@ -48,13 +48,14 @@ namespace SceneEditor.UserControls
         byte[] previewImageData;
 
         QuadTerrainComponent terrain = null;
+        Documents.SceneDocument document = null;
 
-        //float[] perlinMapData;
+        float[] perlinMapData;
         float[] heightMapData;
         byte[] blendMap0Data;
         byte[] blendMap1Data;
 
-        bool manuallyPainted = false;
+        bool manuallyDeformed = false;
 
         PointF? cursorPosition = null;
         CursorEditAction currentEditAction = CursorEditAction.DeformUpDown;
@@ -145,10 +146,11 @@ namespace SceneEditor.UserControls
         /// Sets terrain component to edit.
         /// </summary>
         /// <param name="terrain">Terrain component.</param>
-        public void SetTerrain(QuadTerrainComponent terrain)
+        public void SetTerrain(QuadTerrainComponent terrain, Documents.SceneDocument document)
         {
             // Store reference to terrain
             this.terrain = terrain;
+            this.document = document;
 
             // Get arena2 path from active core
             this.arena2Path = terrain.Core.Arena2Path;
@@ -212,11 +214,48 @@ namespace SceneEditor.UserControls
         }
 
         /// <summary>
+        /// Begins brush operation.
+        /// </summary>
+        public void BeginBrushOperation()
+        {
+            // Get undo information
+            Documents.SceneDocument.TerrainDeformUndoInfo? undoInfo = GetHeightMapUndo(terrain, 0, 0, mapDimension);
+            if (undoInfo == null)
+                return;
+
+            // Assign start buffer from undo buffer
+            deformStart = undoInfo.Value.UndoBuffer;
+        }
+
+        /// <summary>
+        /// Ends brush operation.
+        /// </summary>
+        public void EndBrushOperation()
+        {
+            // Fit rectangle around area edited by looking for changes
+            int minx = 0, maxx = 0, miny = 0, maxy = 0;
+            for (int y = 0; y < mapDimension; y++)
+            {
+                for (int x = 0; x < mapDimension; x++)
+                {
+                    int position = y * mapDimension + x;
+                    if (deformStart[position] != heightMapData[position])
+                    {
+                        if (x < minx) minx = x;
+                        if (x > maxx) maxx = x;
+                        if (y < miny) miny = y;
+                        if (y > maxy) maxy = y;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Begins deforming terrain at current cursor position.
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="startValue">Starting value for relative deformation.</param>
-        public void BeginDeformUpDown(Documents.SceneDocument document, float startValue)
+        public void BeginDeformUpDown(float startValue)
         {
             // Do nothing if no terrain set
             if (terrain == null)
@@ -230,7 +269,7 @@ namespace SceneEditor.UserControls
             if (currentEditAction != CursorEditAction.DeformUpDown)
                 return;
 
-            // Get brush undo information
+            // Get undo information
             Documents.SceneDocument.TerrainDeformUndoInfo? undoInfo = GetBrushHeightMapUndo();
             if (undoInfo == null)
                 return;
@@ -429,7 +468,7 @@ namespace SceneEditor.UserControls
             this.levelCount = terrain.LevelCount;
 
             // Create perlin map data
-            //perlinMapData = new float[mapDimension * mapDimension];
+            perlinMapData = new float[mapDimension * mapDimension];
 
             // Get map data
             heightMapData = terrain.GetHeight();
@@ -437,8 +476,8 @@ namespace SceneEditor.UserControls
             blendMap1Data = terrain.GetBlend(1);
 
             // Create initial perlin map
-            //GenerateNoise((int)GlobalSeedUpDown.Value);
-            //GeneratePerlinMap();
+            GenerateNoise((int)GlobalSeedUpDown.Value);
+            GeneratePerlinMap();
 
             // Set initial preview
             UpdatePreview();
@@ -486,14 +525,14 @@ namespace SceneEditor.UserControls
         /// <summary>
         /// Warn user a change is about to overwrite their manually painted changes.
         /// </summary>
-        private bool WarnOverwrite()
+        private bool WarnDeformOverwrite()
         {
-            if (manuallyPainted)
+            if (manuallyDeformed)
             {
-                DialogResult result = MessageBox.Show("Your manually painted changes will be overwritten.", "Overwrite Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                DialogResult result = MessageBox.Show("Your manual deformations will be overwritten.", "Overwrite Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.OK)
                 {
-                    manuallyPainted = false;
+                    manuallyDeformed = false;
                     return true;
                 }
                 else
@@ -607,7 +646,6 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void GeneratePerlinMap()
         {
-            /*
             // Generate perlin map
             for (int y = 0; y < mapDimension; y++)
             {
@@ -617,7 +655,6 @@ namespace SceneEditor.UserControls
                         GetRandomHeight(x, y, 1.0f, (float)GlobalFrequencyUpDown.Value, (float)GlobalAmplitudeUpDown.Value, 0.5f, 8);
                 }
             }
-            */
         }
 
         /// <summary>
@@ -730,14 +767,20 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void PerlinTerrainButton_Click(object sender, EventArgs e)
         {
-            /*
-            if (WarnOverwrite())
+            if (WarnDeformOverwrite())
             {
+                // Get undo information
+                Documents.SceneDocument.TerrainDeformUndoInfo? undoInfo = GetHeightMapUndo(terrain, 0, 0, mapDimension);
+                if (undoInfo == null)
+                    return;
+
+                // Push undo information
+                document.PushUndo(undoInfo.Value);
+
                 // Copy map from perlin settings
                 heightMapData = (float[])perlinMapData.Clone();
                 UpdateHeightMapGlobal();
             }
-            */
         }
 
         /// <summary>
@@ -745,11 +788,16 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void SmoothButton_Click(object sender, EventArgs e)
         {
-            if (WarnOverwrite())
-            {
-                SmoothHeightMap();
-                UpdateHeightMapGlobal();
-            }
+            // Get undo information
+            Documents.SceneDocument.TerrainDeformUndoInfo? undoInfo = GetHeightMapUndo(terrain, 0, 0, mapDimension);
+            if (undoInfo == null)
+                return;
+
+            // Push undo information
+            document.PushUndo(undoInfo.Value);
+
+            SmoothHeightMap();
+            UpdateHeightMapGlobal();
         }
 
         /// <summary>
@@ -757,11 +805,8 @@ namespace SceneEditor.UserControls
         /// </summary>
         private void AutoPaintButton_Click(object sender, EventArgs e)
         {
-            if (WarnOverwrite())
-            {
-                RepaintBlendMap();
-                UpdateBlendMapGlobal();
-            }
+            RepaintBlendMap();
+            UpdateBlendMapGlobal();
         }
 
         #endregion
@@ -964,7 +1009,7 @@ namespace SceneEditor.UserControls
             // Descale blend map 0
             for (int channel = 0; channel < 4; channel++)
             {
-                // Skip excluded channel.
+                // Skip excluded channel
                 if ((channel + 1) == excludedTexture)
                     continue;
 
@@ -977,7 +1022,7 @@ namespace SceneEditor.UserControls
             // Descale blend map 1
             for (int channel = 0; channel < 4; channel++)
             {
-                // Skip excluded channel.
+                // Skip excluded channel
                 if ((channel + 5) == excludedTexture)
                     continue;
 
@@ -1060,9 +1105,6 @@ namespace SceneEditor.UserControls
                 }
             }
 
-            // Set manually painted flag
-            manuallyPainted = true;
-
             // Raise update event
             OnBlendMapChanged(this, null);
         }
@@ -1114,7 +1156,7 @@ namespace SceneEditor.UserControls
             }
 
             // Set manually painted flag
-            manuallyPainted = true;
+            manuallyDeformed = true;
 
             // Raise update event
             OnHeightMapChanged(this, null);
