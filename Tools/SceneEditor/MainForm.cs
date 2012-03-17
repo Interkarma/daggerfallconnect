@@ -159,6 +159,15 @@ namespace SceneEditor
         #region SceneTreeView Events
 
         /// <summary>
+        /// Tree view has been clicked.
+        /// </summary>
+        private void DocumentTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            // Select clicked node
+            DocumentTreeView.SelectedNode = e.Node;
+        }
+
+        /// <summary>
         /// A tree view item has been selected.
         /// </summary>
         private void SceneTreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -176,7 +185,7 @@ namespace SceneEditor
                 ToggleTerrainEditorButton.Checked = true;
                 terrainEditMode = true;
                 currentTerrainProxy = (QuadTerrainProxy)proxy;
-                terrainEditor1.SetTerrain(currentTerrainProxy.Component);
+                terrainEditor1.SetTerrain(currentTerrainProxy.Component, document);
                 (proxy as QuadTerrainProxy).Component.EnablePicking = true;
             }
             else
@@ -245,7 +254,7 @@ namespace SceneEditor
             {
                 QuadTerrainComponent.TerrainIntersectionData pi = currentTerrainProxy.Component.PointerIntersection;
                 if (pi.Distance != null)
-                    EditStart(e.X, e.Y);
+                    DeformStart(e.X, e.Y);
             }
         }
 
@@ -259,7 +268,7 @@ namespace SceneEditor
                 currentTerrainProxy != null &&
                 terrainEditMode)
             {
-                EditContinue(e.X, e.Y);
+                DeformContinue(e.X, e.Y);
             }
         }
 
@@ -367,16 +376,16 @@ namespace SceneEditor
         }
 
         /// <summary>
-        /// Start editing terrain.
+        /// Start deforming terrain.
         /// </summary>
         /// <param name="x">Mouse X.</param>
         /// <param name="y">Mouse Y.</param>
-        private void EditStart(int x, int y)
+        private void DeformStart(int x, int y)
         {
             if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.DeformUpDown)
             {
                 deformStartY = y;
-                terrainEditor1.BeginDeformUpDown(document, 0);
+                terrainEditor1.BeginDeformUpDown(0);
             }
             else if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.Paint)
             {
@@ -389,7 +398,7 @@ namespace SceneEditor
         /// </summary>
         /// <param name="x">Mouse X.</param>
         /// <param name="y">Mouse Y.</param>
-        private void EditContinue(int x, int y)
+        private void DeformContinue(int x, int y)
         {
             if (terrainEditor1.CurrentEditAction == UserControls.TerrainEditor.CursorEditAction.DeformUpDown &&
                 terrainEditor1.DeformInProgress)
@@ -426,10 +435,14 @@ namespace SceneEditor
             SphereProxy sphereProxy = AddSphereProxy(entityProxy);
             sphereProxy.Position = new Vector3(0, 0.5f, 0);
 
+            // Add model component
+            DaggerfallModelProxy modelProxy = AddModelProxy(entityProxy, 456);
+
             // Add quad terrain component
             QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entityProxy);
-            terrainProxy.Position = new Vector3(-512, 0, -512);
-            terrainProxy.Scale = new Vector3(2, 0.16f, 2);
+            terrainProxy.Position = new Vector3(-1024f, 0, -1024f);
+            terrainProxy.Scale = new Vector3(4, 0.16f, 4);
+            terrainProxy.TextureRepeat = 100f;
             terrainProxy.NormalStrength = 0.01f;
 
             // Add light component
@@ -442,7 +455,7 @@ namespace SceneEditor
             entityProxy.TreeNode.Expand();
 
             // Select terrain node
-            DocumentTreeView.SelectedNode = terrainProxy.TreeNode;
+            //DocumentTreeView.SelectedNode = terrainProxy.TreeNode;
 
             // Unlock stacks
             document.LockUndoRedo = false;
@@ -480,11 +493,8 @@ namespace SceneEditor
             // Create new quad terrain
             QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, QuadTerrainComponent.TerrainSize.Small);
 
-            // Add to parent entity
-            parent.Entity.Components.Add(quadTerrain);
-
             // Create new quad terrain proxy
-            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, quadTerrain);
+            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, parent.Entity, quadTerrain);
 
             // Add new quad terrain proxy to tree view
             TreeNode quadTerrainNode = AddTreeNode(parent.TreeNode, quadTerrainProxy);
@@ -493,6 +503,23 @@ namespace SceneEditor
             quadTerrainProxy.TreeNode = quadTerrainNode;
 
             return quadTerrainProxy;
+        }
+
+        /// <summary>
+        /// Creates a new model component proxy.
+        /// </summary>
+        private DaggerfallModelProxy AddModelProxy(EntityProxy parent, uint id)
+        {
+            // Create new model
+            DaggerfallModelComponent model = new DaggerfallModelComponent(worldControl.Core, id);
+
+            // Create proxy for component
+            DaggerfallModelProxy modelProxy = new DaggerfallModelProxy(document, parent.Entity, model);
+
+            // Add new proxy to tree view
+            TreeNode node = AddTreeNode(parent.TreeNode, modelProxy);
+
+            return modelProxy;
         }
 
         /// <summary>
@@ -515,6 +542,118 @@ namespace SceneEditor
             TreeNode node = AddTreeNode(parent.TreeNode, light);
 
             return light;
+        }
+
+        #endregion
+
+        #region Scene Context Menu Events
+
+        /// <summary>
+        /// Called when context menu is opened.
+        /// </summary>
+        private void SceneContextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            // Check if user has opened context menu on an entity node
+            bool enableComponentMenus = false;
+            BaseEditorProxy proxy = GetSelectedProxy();
+            if (proxy != null && proxy is EntityProxy)
+                enableComponentMenus = true;
+
+            // Disable/Enable component menus
+            EnableComponentsMenu(enableComponentMenus);
+
+            // Cannot delete scene document proxy
+            if (proxy is SceneDocumentProxy)
+                DeleteSceneObjectMenu.Enabled = false;
+            else
+                DeleteSceneObjectMenu.Enabled = true;
+        }
+
+        /// <summary>
+        /// Called when a new entity is requested.
+        /// </summary>
+        private void AddEntityMenuItem_Click(object sender, EventArgs e)
+        {
+            EntityProxy entity = AddEntityProxy();
+        }
+
+        /// <summary>
+        /// Called when an object is deleted.
+        /// </summary>
+        private void DeleteSceneObjectMenu_Click(object sender, EventArgs e)
+        {
+            // Get editor proxy
+            BaseEditorProxy proxy = GetSelectedProxy();
+
+            // Cannot delete scene proxy or null proxy
+            if (proxy == null || proxy is SceneDocumentProxy)
+                return;
+
+            // Select parent node based on type
+            TreeNode parentNode = null;
+            if (proxy is EntityProxy)
+                parentNode = documentProxy.TreeNode;
+            else
+                parentNode = proxy.TreeNode.Parent;
+
+            // Change selected item to parent
+            DocumentTreeView.SelectedNode = parentNode;
+
+            // Delete selected item
+            RemoveSceneItem(proxy);
+        }
+
+        /// <summary>
+        /// Removes scene item from document and scene.
+        /// </summary>
+        /// <param name="proxy">Proxy to delete.</param>
+        private void RemoveSceneItem(BaseEditorProxy proxy)
+        {
+            // Cannot delete scene proxy or null proxy
+            if (proxy == null || proxy is SceneDocumentProxy)
+                return;
+
+            // Handle removing entity
+            if (proxy is EntityProxy)
+            {
+                // Remove all child proxies
+                foreach (TreeNode node in proxy.TreeNode.Nodes)
+                {
+                    (node.Tag as BaseEditorProxy).Remove();
+                }
+            }
+            else
+            {
+                // Just remove this proxy
+                proxy.Remove();
+            }
+
+            // Delete tree node
+            DocumentTreeView.Nodes.Remove(proxy.TreeNode);
+        }
+
+        /// <summary>
+        /// Gets selected editor proxy in scene view.
+        /// </summary>
+        /// <returns>Editor proxy.</returns>
+        private BaseEditorProxy GetSelectedProxy()
+        {
+            // Get selected proxy
+            BaseEditorProxy proxy = null;
+            if (DocumentTreeView.SelectedNode != null)
+                proxy = DocumentTreeView.SelectedNode.Tag as BaseEditorProxy;
+
+            return proxy;
+        }
+
+        /// <summary>
+        /// Enable or disable components context menu.
+        /// </summary>
+        /// <param name="enable">Enable or disable flag.</param>
+        private void EnableComponentsMenu(bool enable)
+        {
+            AddPrimitiveMenuItem.Enabled = enable;
+            AddQuadTerrainMenuItem.Enabled = enable;
         }
 
         #endregion

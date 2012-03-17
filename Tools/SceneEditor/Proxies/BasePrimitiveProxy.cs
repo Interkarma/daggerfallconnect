@@ -86,8 +86,8 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Parent entity</param>
-        public BasePrimitiveProxy(SceneDocument document, BaseEntity entity)
-            : base(document)
+        public BasePrimitiveProxy(SceneDocument document, DynamicEntity entity)
+            : base(document, entity)
         {
             primitive = new GeometricPrimitiveComponent(document.EditorScene.Core);
             this.ColorRGB = System.Drawing.Color.White;
@@ -95,6 +95,22 @@ namespace SceneEditor.Proxies
             UpdatePrimitive();
 
             entity.Components.Add(primitive);
+        }
+
+        #endregion
+
+        #region BaseEditorProxy Overrides
+
+        /// <summary>
+        /// Removes this proxy from editor.
+        /// </summary>
+        public override void Remove()
+        {
+            // Remove from entity
+            if (entity != null)
+            {
+                entity.Components.Remove(primitive);
+            }
         }
 
         #endregion

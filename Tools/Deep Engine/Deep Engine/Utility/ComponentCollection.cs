@@ -84,6 +84,16 @@ namespace DeepEngine.Utility
         }
 
         /// <summary>
+        /// Removes component from collection.
+        /// </summary>
+        /// <param name="component"></param>
+        public void Remove(BaseComponent component)
+        {
+            // Remove component
+            components.Remove(component);
+        }
+
+        /// <summary>
         /// Clears the collection.
         /// </summary>
         public void Clear()

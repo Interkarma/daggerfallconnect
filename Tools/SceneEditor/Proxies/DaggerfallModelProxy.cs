@@ -37,7 +37,7 @@ namespace SceneEditor.Proxies
         const string defaultName = "Model";
         const string categoryName = "Model";
 
-        uint modelId = 456;
+        DaggerfallModelComponent model;
 
         #endregion
 
@@ -49,11 +49,11 @@ namespace SceneEditor.Proxies
         [Category(categoryName), Description("ModelID of Daggerfall model.")]
         public uint ModelID
         {
-            get { return modelId; }
+            get { return model.ModelID; }
             set
             {
                 base.SceneDocument.PushUndo(this, this.GetType().GetProperty("ModelID"));
-                modelId = value;
+                model.LoadModel(value);
             }
         }
 
@@ -65,11 +65,46 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
-        /// <param name="entity">Parent entity</param>
-        public DaggerfallModelProxy(SceneDocument document, BaseEntity entity)
-            : base(document)
+        /// <param name="entity">Entity owning this proxy.</param>
+        /// <param name="model">Model to proxy.</param>
+        public DaggerfallModelProxy(SceneDocument document, DynamicEntity entity, DaggerfallModelComponent model)
+            : base(document, entity)
         {
             base.name = defaultName;
+            this.model = model;
+
+            // Add to parent entity
+            entity.Components.Add(model);
+        }
+
+        #endregion
+
+        #region BaseEditorProxy Overrides
+
+        /// <summary>
+        /// Removes this proxy from editor.
+        /// </summary>
+        public override void Remove()
+        {
+            // Remove from entity
+            if (entity != null)
+            {
+                entity.Components.Remove(model);
+            }
+        }
+
+        #endregion
+
+        #region BaseDrawableProxy Overrides
+
+        /// <summary>
+        /// Updates matrix.
+        /// </summary>
+        protected override void UpdateMatrix()
+        {
+            base.UpdateMatrix();
+
+            this.model.Matrix = base.matrix;
         }
 
         #endregion

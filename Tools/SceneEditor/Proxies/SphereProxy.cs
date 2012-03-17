@@ -88,7 +88,7 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Parent entity</param>
-        public SphereProxy(SceneDocument document, BaseEntity entity)
+        public SphereProxy(SceneDocument document, DynamicEntity entity)
             : base(document, entity)
         {
             base.name = defaultName;

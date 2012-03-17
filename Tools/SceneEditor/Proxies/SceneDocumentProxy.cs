@@ -209,7 +209,7 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         public SceneDocumentProxy(SceneDocument document)
-            : base(document)
+            : base(document, null)
         {
             base.name = defaultName;
             this.document = document;

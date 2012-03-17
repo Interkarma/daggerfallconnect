@@ -141,12 +141,16 @@ namespace SceneEditor.Proxies
         /// Constructor.
         /// </summary>
         /// <param name="document">Scene document.</param>
+        /// <param name="entity">Entity owning this proxy.</param>
         /// <param name="quadTerrain">Quad terrain to proxy.</param>
-        public QuadTerrainProxy(SceneDocument document, QuadTerrainComponent quadTerrain)
-            : base(document)
+        public QuadTerrainProxy(SceneDocument document, DynamicEntity entity, QuadTerrainComponent quadTerrain)
+            : base(document, entity)
         {
             base.name = defaultName;
             this.quadTerrain = quadTerrain;
+
+            // Add to entity
+            entity.Components.Add(quadTerrain);
         }
 
         #endregion
@@ -165,6 +169,22 @@ namespace SceneEditor.Proxies
             // Set matrix
             matrix = scale * translation;
             quadTerrain.Matrix = matrix;
+        }
+
+        #endregion
+
+        #region BaseEditorProxy Overrides
+
+        /// <summary>
+        /// Removes this proxy from editor.
+        /// </summary>
+        public override void Remove()
+        {
+            // Remove from entity
+            if (entity != null)
+            {
+                entity.Components.Remove(quadTerrain);
+            }
         }
 
         #endregion

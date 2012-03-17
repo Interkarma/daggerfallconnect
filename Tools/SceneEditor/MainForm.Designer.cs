@@ -43,10 +43,7 @@
             this.AddSphereMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddQuadTerrainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.makePrefabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DeleteSceneObjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.DocumentImageList = new System.Windows.Forms.ImageList(this.components);
             this.SceneToolStrip = new System.Windows.Forms.ToolStrip();
             this.NewSceneButton = new System.Windows.Forms.ToolStripButton();
@@ -137,18 +134,17 @@
             this.DocumentTreeView.Size = new System.Drawing.Size(309, 452);
             this.DocumentTreeView.TabIndex = 4;
             this.DocumentTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SceneTreeView_AfterSelect);
+            this.DocumentTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.DocumentTreeView_NodeMouseClick);
             // 
             // SceneContextMenuStrip
             // 
             this.SceneContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
             this.toolStripSeparator5,
-            this.renameToolStripMenuItem,
-            this.makePrefabToolStripMenuItem,
-            this.toolStripSeparator6,
-            this.deleteToolStripMenuItem});
+            this.DeleteSceneObjectMenu});
             this.SceneContextMenuStrip.Name = "SceneContextMenuStrip";
-            this.SceneContextMenuStrip.Size = new System.Drawing.Size(141, 104);
+            this.SceneContextMenuStrip.Size = new System.Drawing.Size(153, 76);
+            this.SceneContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.SceneContextMenuStrip_Opening);
             // 
             // newToolStripMenuItem
             // 
@@ -159,20 +155,21 @@
             this.AddQuadTerrainMenuItem});
             this.newToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.page_white;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // AddEntityMenuItem
             // 
             this.AddEntityMenuItem.Image = global::SceneEditor.Properties.Resources.link;
             this.AddEntityMenuItem.Name = "AddEntityMenuItem";
-            this.AddEntityMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.AddEntityMenuItem.Size = new System.Drawing.Size(152, 22);
             this.AddEntityMenuItem.Text = "Entity";
+            this.AddEntityMenuItem.Click += new System.EventHandler(this.AddEntityMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(137, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
             // 
             // AddPrimitiveMenuItem
             // 
@@ -181,7 +178,7 @@
             this.AddSphereMenuItem});
             this.AddPrimitiveMenuItem.Image = global::SceneEditor.Properties.Resources.brick;
             this.AddPrimitiveMenuItem.Name = "AddPrimitiveMenuItem";
-            this.AddPrimitiveMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.AddPrimitiveMenuItem.Size = new System.Drawing.Size(152, 22);
             this.AddPrimitiveMenuItem.Text = "Primitive";
             // 
             // AddCubeMenuItem
@@ -202,39 +199,21 @@
             // 
             this.AddQuadTerrainMenuItem.Image = global::SceneEditor.Properties.Resources.color_swatch;
             this.AddQuadTerrainMenuItem.Name = "AddQuadTerrainMenuItem";
-            this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(152, 22);
             this.AddQuadTerrainMenuItem.Text = "QuadTerrain";
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(137, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(149, 6);
             // 
-            // renameToolStripMenuItem
+            // DeleteSceneObjectMenu
             // 
-            this.renameToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.textfield_rename;
-            this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
-            this.renameToolStripMenuItem.Text = "Rename";
-            // 
-            // makePrefabToolStripMenuItem
-            // 
-            this.makePrefabToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.cog;
-            this.makePrefabToolStripMenuItem.Name = "makePrefabToolStripMenuItem";
-            this.makePrefabToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
-            this.makePrefabToolStripMenuItem.Text = "Make Prefab";
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(137, 6);
-            // 
-            // deleteToolStripMenuItem
-            // 
-            this.deleteToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.cross;
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
-            this.deleteToolStripMenuItem.Text = "Delete";
+            this.DeleteSceneObjectMenu.Image = global::SceneEditor.Properties.Resources.cross;
+            this.DeleteSceneObjectMenu.Name = "DeleteSceneObjectMenu";
+            this.DeleteSceneObjectMenu.Size = new System.Drawing.Size(152, 22);
+            this.DeleteSceneObjectMenu.Text = "Delete";
+            this.DeleteSceneObjectMenu.Click += new System.EventHandler(this.DeleteSceneObjectMenu_Click);
             // 
             // DocumentImageList
             // 
@@ -522,10 +501,7 @@
         private System.Windows.Forms.ToolStripMenuItem AddEntityMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem makePrefabToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem DeleteSceneObjectMenu;
         private System.Windows.Forms.ToolStripMenuItem AddQuadTerrainMenuItem;
         private System.Windows.Forms.ToolStripSplitButton SaveSceneButton;
         private System.Windows.Forms.ToolStripMenuItem SaveSceneMenuItem;

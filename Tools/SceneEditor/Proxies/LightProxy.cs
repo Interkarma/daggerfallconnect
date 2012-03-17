@@ -157,8 +157,8 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Parent entity</param>
-        public LightProxy(SceneDocument document, BaseEntity entity)
-            : base(document)
+        public LightProxy(SceneDocument document, DynamicEntity entity)
+            : base(document, entity)
         {
             base.Name = defaultName;
             this.light = new LightComponent(document.EditorScene.Core);
@@ -190,6 +190,22 @@ namespace SceneEditor.Proxies
                 case LightProxyTypes.Point:
                     light.MakePoint(light.Position, light.PointRadius, light.Color, light.Intensity);
                     break;
+            }
+        }
+
+        #endregion
+
+        #region BaseEditorProxy Overrides
+
+        /// <summary>
+        /// Removes this proxy from editor.
+        /// </summary>
+        public override void Remove()
+        {
+            // Remove from entity
+            if (entity != null)
+            {
+                entity.Components.Remove(light);
             }
         }
 

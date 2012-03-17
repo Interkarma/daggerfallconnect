@@ -107,6 +107,7 @@ namespace DeepEngine.Components
         /// </summary>
         public enum TerrainSize
         {
+            Tiny = 256,
             Small = 512,
             Medium = 1024,
             Large = 2048,
@@ -375,6 +376,13 @@ namespace DeepEngine.Components
         #endregion
 
         #region DrawableComponents Overrides
+
+        /// <summary>
+        /// Frees resources used by this object when they are no longer needed.
+        /// </summary>
+        public override void Dispose()
+        {
+        }
 
         /// <summary>
         /// Draws component.

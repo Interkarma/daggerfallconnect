@@ -29,12 +29,21 @@ namespace DeepEngine.Components
 
         #region Fields
 
+        uint id;
         ModelManager.ModelData modelData;
         BoundingBox boundingBox;
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets ID of currently loaded model.
+        /// </summary>
+        public uint ModelID
+        {
+            get { return id; }
+        }
 
         /// <summary>
         /// Gets reference to loaded model.
@@ -72,6 +81,7 @@ namespace DeepEngine.Components
         {
             // Load model
             LoadModel(id);
+            this.id = id;
         }
 
         #endregion
@@ -84,8 +94,12 @@ namespace DeepEngine.Components
         /// <param name="caller">Entity calling the draw operation.</param>
         public override void Draw(BaseEntity caller)
         {
-            // Do nothing if disabled
-            if (!enabled)
+            // Do nothing if disabled or no model data
+            if (!enabled || modelData == null)
+                return;
+
+            // Exit if model data is empty
+            if (modelData.SubMeshes == null)
                 return;
 
             // Calculate world matrix
@@ -150,6 +164,7 @@ namespace DeepEngine.Components
                 modelData = core.ModelManager.GetModelData(id);
                 this.BoundingSphere = modelData.BoundingSphere;
                 this.boundingBox = modelData.BoundingBox;
+                this.id = id;
             }
             catch (Exception e)
             {
