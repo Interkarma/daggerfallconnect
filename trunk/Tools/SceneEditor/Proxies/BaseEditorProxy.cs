@@ -20,7 +20,7 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// Base proxy interface.
+    /// Base proxy interface for items common to all editor proxies.
     /// </summary>
     internal interface IBaseEditorProxy : IEditorProxy { }
 
@@ -38,6 +38,7 @@ namespace SceneEditor.Proxies
         protected TreeNode treeNode;
         protected SceneDocument document;
         protected DynamicEntity entity;
+        protected EntityProxy entityProxy;
 
         #endregion
 
@@ -71,6 +72,15 @@ namespace SceneEditor.Proxies
             get { return entity; }
         }
 
+        /// <summary>
+        /// Gets the owning entity proxy, or null if not related to an entity proxy.
+        /// </summary>
+        [Browsable(false)]
+        public EntityProxy EntityProxy
+        {
+            get { return entityProxy; }
+        }
+
         #endregion
 
         #region Editor Properties
@@ -94,11 +104,12 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity owning this proxy.</param>
-        public BaseEditorProxy(SceneDocument document, DynamicEntity entity)
+        public BaseEditorProxy(SceneDocument document, EntityProxy entity)
         {
             // Save references
             this.document = document;
-            this.entity = entity;
+            this.entityProxy = entity;
+            if (entity != null) this.entity = entity.Entity;
         }
 
         #endregion

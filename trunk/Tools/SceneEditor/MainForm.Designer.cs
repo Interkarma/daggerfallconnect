@@ -38,9 +38,13 @@
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddEntityMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.AddDaggerfallMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AddDaggerfallModelMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AddDaggerfallBlockMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddPrimitiveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddCubeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddSphereMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AddLightMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AddQuadTerrainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.DeleteSceneObjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,6 +59,8 @@
             this.PropertiesPanel = new System.Windows.Forms.Panel();
             this.WorldPanel = new System.Windows.Forms.Panel();
             this.TerrainEditorPanel = new System.Windows.Forms.Panel();
+            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
+            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
             this.ToggleTerrainEditorButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -65,8 +71,6 @@
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
-            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.ToolboxPanel.SuspendLayout();
             this.ResourceTabControl.SuspendLayout();
             this.SceneTabPage.SuspendLayout();
@@ -151,7 +155,9 @@
             this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.AddEntityMenuItem,
             this.toolStripSeparator2,
+            this.AddDaggerfallMenuItem,
             this.AddPrimitiveMenuItem,
+            this.AddLightMenuItem,
             this.AddQuadTerrainMenuItem});
             this.newToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.page_white;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
@@ -170,6 +176,29 @@
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            // 
+            // AddDaggerfallMenuItem
+            // 
+            this.AddDaggerfallMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.AddDaggerfallModelMenuItem,
+            this.AddDaggerfallBlockMenuItem});
+            this.AddDaggerfallMenuItem.Name = "AddDaggerfallMenuItem";
+            this.AddDaggerfallMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddDaggerfallMenuItem.Text = "Daggerfall";
+            // 
+            // AddDaggerfallModelMenuItem
+            // 
+            this.AddDaggerfallModelMenuItem.Name = "AddDaggerfallModelMenuItem";
+            this.AddDaggerfallModelMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.AddDaggerfallModelMenuItem.Text = "Model";
+            this.AddDaggerfallModelMenuItem.Click += new System.EventHandler(this.AddDaggerfallModelMenuItem_Click);
+            // 
+            // AddDaggerfallBlockMenuItem
+            // 
+            this.AddDaggerfallBlockMenuItem.Name = "AddDaggerfallBlockMenuItem";
+            this.AddDaggerfallBlockMenuItem.Size = new System.Drawing.Size(108, 22);
+            this.AddDaggerfallBlockMenuItem.Text = "Block";
+            this.AddDaggerfallBlockMenuItem.Click += new System.EventHandler(this.AddDaggerfallBlockMenuItem_Click);
             // 
             // AddPrimitiveMenuItem
             // 
@@ -195,12 +224,21 @@
             this.AddSphereMenuItem.Size = new System.Drawing.Size(110, 22);
             this.AddSphereMenuItem.Text = "Sphere";
             // 
+            // AddLightMenuItem
+            // 
+            this.AddLightMenuItem.Image = global::SceneEditor.Properties.Resources.lightbulb;
+            this.AddLightMenuItem.Name = "AddLightMenuItem";
+            this.AddLightMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddLightMenuItem.Text = "Light";
+            this.AddLightMenuItem.Click += new System.EventHandler(this.AddLightMenuItem_Click);
+            // 
             // AddQuadTerrainMenuItem
             // 
             this.AddQuadTerrainMenuItem.Image = global::SceneEditor.Properties.Resources.color_swatch;
             this.AddQuadTerrainMenuItem.Name = "AddQuadTerrainMenuItem";
             this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(152, 22);
             this.AddQuadTerrainMenuItem.Text = "QuadTerrain";
+            this.AddQuadTerrainMenuItem.Click += new System.EventHandler(this.AddQuadTerrainMenuItem_Click);
             // 
             // toolStripSeparator5
             // 
@@ -331,6 +369,30 @@
             this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 606);
             this.TerrainEditorPanel.TabIndex = 3;
             // 
+            // terrainEditor1
+            // 
+            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
+            this.terrainEditor1.Name = "terrainEditor1";
+            this.terrainEditor1.Size = new System.Drawing.Size(260, 601);
+            this.terrainEditor1.TabIndex = 0;
+            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
+            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
+            // 
+            // worldControl
+            // 
+            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.worldControl.Location = new System.Drawing.Point(0, 25);
+            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
+            this.worldControl.Name = "worldControl";
+            this.worldControl.Size = new System.Drawing.Size(1099, 813);
+            this.worldControl.TabIndex = 0;
+            this.worldControl.Text = "DeepEngine - WorldControl";
+            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
+            this.worldControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseDown);
+            this.worldControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseMove);
+            this.worldControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseUp);
+            // 
             // WorldToolStrip
             // 
             this.WorldToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -423,30 +485,6 @@
             this.MainStatusStrip.TabIndex = 2;
             this.MainStatusStrip.Text = "statusStrip1";
             // 
-            // terrainEditor1
-            // 
-            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
-            this.terrainEditor1.Name = "terrainEditor1";
-            this.terrainEditor1.Size = new System.Drawing.Size(260, 601);
-            this.terrainEditor1.TabIndex = 0;
-            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
-            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
-            // 
-            // worldControl
-            // 
-            this.worldControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.worldControl.Location = new System.Drawing.Point(0, 25);
-            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
-            this.worldControl.Name = "worldControl";
-            this.worldControl.Size = new System.Drawing.Size(1099, 813);
-            this.worldControl.TabIndex = 0;
-            this.worldControl.Text = "DeepEngine - WorldControl";
-            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
-            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
-            this.worldControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseDown);
-            this.worldControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseMove);
-            this.worldControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseUp);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -514,6 +552,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.Panel TerrainEditorPanel;
         private UserControls.TerrainEditor terrainEditor1;
+        private System.Windows.Forms.ToolStripMenuItem AddDaggerfallMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AddDaggerfallModelMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AddDaggerfallBlockMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AddLightMenuItem;
     }
 }
 

@@ -32,7 +32,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Common items to encapsulate for all geometric primitive proxies.
     /// </summary>
-    internal abstract class BasePrimitiveProxy : BaseDrawableProxy, IBasePrimitiveProxy
+    internal abstract class BasePrimitiveProxy : BaseComponentProxy, IBaseComponentProxy
     {
 
         #region Fields
@@ -86,7 +86,7 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Parent entity</param>
-        public BasePrimitiveProxy(SceneDocument document, DynamicEntity entity)
+        public BasePrimitiveProxy(SceneDocument document, EntityProxy entity)
             : base(document, entity)
         {
             primitive = new GeometricPrimitiveComponent(document.EditorScene.Core);
@@ -94,7 +94,7 @@ namespace SceneEditor.Proxies
             this.ColorW = 0.0f;
             UpdatePrimitive();
 
-            entity.Components.Add(primitive);
+            base.Entity.Components.Add(primitive);
         }
 
         #endregion

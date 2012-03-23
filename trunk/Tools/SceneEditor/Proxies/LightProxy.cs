@@ -32,7 +32,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Encapsulate a versatile light component.
     /// </summary>
-    internal sealed class LightProxy : BaseEditorProxy, ILightProxy
+    internal sealed class LightProxy : BaseComponentProxy, IBaseComponentProxy
     {
 
         #region Fields
@@ -124,7 +124,7 @@ namespace SceneEditor.Proxies
         /// Gets or sets position of light.
         /// </summary>
         [Category(pointCategoryName), Description("Position of point light.")]
-        public Vector3 Position
+        public new Vector3 Position
         {
             get { return light.Position; }
             set
@@ -132,6 +132,26 @@ namespace SceneEditor.Proxies
                 base.SceneDocument.PushUndo(this, this.GetType().GetProperty("Position"));
                 light.Position = value;
             }
+        }
+
+        /// <summary>
+        /// Hide base rotation.
+        /// </summary>
+        [Browsable(false)]
+        public new Vector3 Rotation
+        {
+            get { return base.Rotation; }
+            set { base.Rotation = value; }
+        }
+
+        /// <summary>
+        /// Hide base scale.
+        /// </summary>
+        [Browsable(false)]
+        public new Vector3 Scale
+        {
+            get { return base.Scale; }
+            set { base.Scale = value; }
         }
 
         /// <summary>
@@ -157,7 +177,7 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Parent entity</param>
-        public LightProxy(SceneDocument document, DynamicEntity entity)
+        public LightProxy(SceneDocument document, EntityProxy entity)
             : base(document, entity)
         {
             base.Name = defaultName;
@@ -167,7 +187,7 @@ namespace SceneEditor.Proxies
             this.lightType = LightProxyTypes.Ambient;
             UpdateLight();
 
-            entity.Components.Add(light);
+            base.Entity.Components.Add(light);
         }
 
         #endregion
