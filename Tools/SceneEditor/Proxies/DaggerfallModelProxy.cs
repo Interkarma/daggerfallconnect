@@ -29,7 +29,7 @@ namespace SceneEditor.Proxies
     /// </summary>
     internal interface IDaggerfallModelProxy : IEditorProxy { }
 
-    internal sealed class DaggerfallModelProxy : BaseDrawableProxy, IDaggerfallModelProxy
+    internal sealed class DaggerfallModelProxy : BaseComponentProxy, IBaseComponentProxy
     {
 
         #region Fields
@@ -67,14 +67,14 @@ namespace SceneEditor.Proxies
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity owning this proxy.</param>
         /// <param name="model">Model to proxy.</param>
-        public DaggerfallModelProxy(SceneDocument document, DynamicEntity entity, DaggerfallModelComponent model)
+        public DaggerfallModelProxy(SceneDocument document, EntityProxy entity, DaggerfallModelComponent model)
             : base(document, entity)
         {
             base.name = defaultName;
             this.model = model;
 
             // Add to parent entity
-            entity.Components.Add(model);
+            base.Entity.Components.Add(model);
         }
 
         #endregion

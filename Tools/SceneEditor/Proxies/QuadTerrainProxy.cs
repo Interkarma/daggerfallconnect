@@ -32,7 +32,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Encapsulates a quad terrain component for the editor.
     /// </summary>
-    internal sealed class QuadTerrainProxy : BaseEditorProxy, IQuadTerrainProxy
+    internal sealed class QuadTerrainProxy : BaseComponentProxy, IBaseComponentProxy
     {
 
         #region Fields
@@ -43,9 +43,9 @@ namespace SceneEditor.Proxies
 
         QuadTerrainComponent quadTerrain;
 
-        Matrix matrix = Matrix.Identity;
-        Vector3 scale = Vector3.One;
-        Vector3 position = Vector3.Zero;
+        new Matrix matrix = Matrix.Identity;
+        new Vector3 scale = Vector3.One;
+        new Vector3 position = Vector3.Zero;
 
         #endregion
 
@@ -107,7 +107,7 @@ namespace SceneEditor.Proxies
         /// Gets or sets terrain scale.
         /// </summary>
         [Category(transformCategoryName), Description("Scaling of terrain.")]
-        public Vector3 Scale
+        public new Vector3 Scale
         {
             get { return scale; }
             set
@@ -122,7 +122,7 @@ namespace SceneEditor.Proxies
         /// Gets or sets terrain position.
         /// </summary>
         [Category(transformCategoryName), Description("Position of terrain.")]
-        public Vector3 Position
+        public new Vector3 Position
         {
             get { return position; }
             set
@@ -131,6 +131,16 @@ namespace SceneEditor.Proxies
                 position = value;
                 UpdateMatrix();
             }
+        }
+
+        /// <summary>
+        /// Hide base rotation.
+        /// </summary>
+        [Browsable(false)]
+        public new Vector3 Rotation
+        {
+            get { return base.Rotation; }
+            set { base.Rotation = value; }
         }
 
         #endregion
@@ -143,14 +153,14 @@ namespace SceneEditor.Proxies
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity owning this proxy.</param>
         /// <param name="quadTerrain">Quad terrain to proxy.</param>
-        public QuadTerrainProxy(SceneDocument document, DynamicEntity entity, QuadTerrainComponent quadTerrain)
+        public QuadTerrainProxy(SceneDocument document, EntityProxy entity, QuadTerrainComponent quadTerrain)
             : base(document, entity)
         {
             base.name = defaultName;
             this.quadTerrain = quadTerrain;
 
             // Add to entity
-            entity.Components.Add(quadTerrain);
+            base.Entity.Components.Add(quadTerrain);
         }
 
         #endregion
@@ -160,7 +170,7 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Updates matrix using current scale and position.
         /// </summary>
-        private void UpdateMatrix()
+        private new void UpdateMatrix()
         {
             // Create matrices
             Matrix scale = Matrix.CreateScale(Scale);

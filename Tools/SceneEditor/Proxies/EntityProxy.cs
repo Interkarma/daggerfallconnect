@@ -31,7 +31,7 @@ namespace SceneEditor.Proxies
     /// <summary>
     /// Encapsulates an entity for the editor.
     /// </summary>
-    internal sealed class EntityProxy : BaseDrawableProxy, IEntityProxy
+    public sealed class EntityProxy : BaseTransformableProxy, IEntityProxy
     {
 
         #region Fields
@@ -69,10 +69,11 @@ namespace SceneEditor.Proxies
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity to proxy.</param>
         public EntityProxy(SceneDocument document, DynamicEntity entity)
-            : base(document, entity)
+            : base(document, null)
         {
             base.name = defaultName;
             this.entity = entity;
+            this.entityProxy = this;
         }
 
         #endregion

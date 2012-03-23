@@ -33,6 +33,8 @@ namespace SceneEditor
 
         #region Fields
 
+        const uint defaultModelId = 456;
+
         SceneDocument document;
         SceneDocumentProxy documentProxy;
         PropertyGrid propertyGrid;
@@ -494,7 +496,7 @@ namespace SceneEditor
             QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, QuadTerrainComponent.TerrainSize.Small);
 
             // Create new quad terrain proxy
-            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, parent.Entity, quadTerrain);
+            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, parent, quadTerrain);
 
             // Add new quad terrain proxy to tree view
             TreeNode quadTerrainNode = AddTreeNode(parent.TreeNode, quadTerrainProxy);
@@ -514,7 +516,7 @@ namespace SceneEditor
             DaggerfallModelComponent model = new DaggerfallModelComponent(worldControl.Core, id);
 
             // Create proxy for component
-            DaggerfallModelProxy modelProxy = new DaggerfallModelProxy(document, parent.Entity, model);
+            DaggerfallModelProxy modelProxy = new DaggerfallModelProxy(document, parent, model);
 
             // Add new proxy to tree view
             TreeNode node = AddTreeNode(parent.TreeNode, modelProxy);
@@ -527,7 +529,7 @@ namespace SceneEditor
         /// </summary>
         private SphereProxy AddSphereProxy(EntityProxy parent)
         {
-            SphereProxy sphere = new SphereProxy(document, parent.Entity);
+            SphereProxy sphere = new SphereProxy(document, parent);
             TreeNode node = AddTreeNode(parent.TreeNode, sphere);
 
             return sphere;
@@ -538,7 +540,7 @@ namespace SceneEditor
         /// </summary>
         private LightProxy AddLightProxy(EntityProxy parent)
         {
-            LightProxy light = new LightProxy(document, parent.Entity);
+            LightProxy light = new LightProxy(document, parent);
             TreeNode node = AddTreeNode(parent.TreeNode, light);
 
             return light;
@@ -556,7 +558,8 @@ namespace SceneEditor
             // Check if user has opened context menu on an entity node
             bool enableComponentMenus = false;
             BaseEditorProxy proxy = GetSelectedProxy();
-            if (proxy != null && proxy is EntityProxy)
+            EntityProxy entity = GetSelectedEntity();
+            if (entity != null)
                 enableComponentMenus = true;
 
             // Disable/Enable component menus
@@ -567,14 +570,6 @@ namespace SceneEditor
                 DeleteSceneObjectMenu.Enabled = false;
             else
                 DeleteSceneObjectMenu.Enabled = true;
-        }
-
-        /// <summary>
-        /// Called when a new entity is requested.
-        /// </summary>
-        private void AddEntityMenuItem_Click(object sender, EventArgs e)
-        {
-            EntityProxy entity = AddEntityProxy();
         }
 
         /// <summary>
@@ -647,13 +642,104 @@ namespace SceneEditor
         }
 
         /// <summary>
+        /// Gets selected entity in editor, either from directly
+        ///  selecting entity or one of its child proxies.
+        /// </summary>
+        /// <returns></returns>
+        private EntityProxy GetSelectedEntity()
+        {
+            // Get selected proxy
+            BaseEditorProxy proxy = GetSelectedProxy();
+
+            // Return entity directly
+            if (proxy is EntityProxy)
+                return proxy as EntityProxy;
+
+            // Return entity from component
+            if (proxy is BaseComponentProxy)
+            {
+                return proxy.EntityProxy;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Enable or disable components context menu.
         /// </summary>
         /// <param name="enable">Enable or disable flag.</param>
         private void EnableComponentsMenu(bool enable)
         {
-            AddPrimitiveMenuItem.Enabled = enable;
+            AddDaggerfallModelMenuItem.Enabled = enable;
+            AddDaggerfallBlockMenuItem.Enabled = enable;
+            AddCubeMenuItem.Enabled = enable;
+            AddSphereMenuItem.Enabled = enable;
+            AddLightMenuItem.Enabled = enable;
             AddQuadTerrainMenuItem.Enabled = enable;
+        }
+
+        /// <summary>
+        /// Called when a new entity is requested.
+        /// </summary>
+        private void AddEntityMenuItem_Click(object sender, EventArgs e)
+        {
+            // Add entity
+            EntityProxy entity = AddEntityProxy();
+        }
+
+        /// <summary>
+        /// Called when a new Daggerfall model is requested.
+        /// </summary>
+        private void AddDaggerfallModelMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get selected entity
+            EntityProxy entity = GetSelectedEntity();
+            if (entity == null)
+                return;
+
+            // Add model
+            DaggerfallModelProxy modelProxy = AddModelProxy(entity, defaultModelId);
+        }
+
+        /// <summary>
+        /// Called when a new Daggerfall block is requested.
+        /// </summary>
+        private void AddDaggerfallBlockMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get selected entity
+            EntityProxy entity = GetSelectedEntity();
+            if (entity == null)
+                return;
+        }
+
+        /// <summary>
+        /// Called when a new terrain is requested.
+        /// </summary>
+        private void AddQuadTerrainMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get selected entity
+            EntityProxy entity = GetSelectedEntity();
+            if (entity == null)
+                return;
+
+            // Add quad terrain
+            QuadTerrainProxy terrainProxy = AddQuadTerrainComponentProxy(entity);
+        }
+
+        /// <summary>
+        /// Called when a new light is requested.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AddLightMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get selected entity
+            EntityProxy entity = GetSelectedEntity();
+            if (entity == null)
+                return;
+
+            // Add light
+            LightProxy lightProxy = AddLightProxy(entity);
         }
 
         #endregion

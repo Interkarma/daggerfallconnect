@@ -25,14 +25,14 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// Drawable item proxy interface.
+    /// Items common to all transformable editor proxies.
     /// </summary>
-    internal interface IBaseDrawableProxy : IEditorProxy { }
+    internal interface IBaseTransformableProxy : IEditorProxy { }
 
     /// <summary>
-    /// Common items to encapsulate for all drawable proxies.
+    /// Common items to encapsulate for all drawable component proxies.
     /// </summary>
-    internal abstract class BaseDrawableProxy : BaseEditorProxy, IBaseDrawableProxy
+    public abstract class BaseTransformableProxy : BaseEditorProxy, IBaseEditorProxy
     {
 
         #region Fields
@@ -51,7 +51,7 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Gets or sets scale.
         /// </summary>
-        [Category(transformCategoryName), Description("Scaling of entity.")]
+        [Category(transformCategoryName), Description("Scale of item.")]
         public Vector3 Scale
         {
             get { return scale; }
@@ -66,7 +66,7 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Gets or sets rotation in degrees.
         /// </summary>
-        [Category(transformCategoryName), Description("Rotation of entity in degrees.")]
+        [Category(transformCategoryName), Description("Rotation of item in degrees.")]
         public Vector3 Rotation
         {
             get { return rotation; }
@@ -81,7 +81,7 @@ namespace SceneEditor.Proxies
         /// <summary>
         /// Gets or sets position.
         /// </summary>
-        [Category(transformCategoryName), Description("Position of entity.")]
+        [Category(transformCategoryName), Description("Position of item.")]
         public Vector3 Position
         {
             get { return position; }
@@ -102,7 +102,7 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity owning this proxy.</param>
-        public BaseDrawableProxy(SceneDocument document, DynamicEntity entity)
+        public BaseTransformableProxy(SceneDocument document, EntityProxy entity)
             : base(document, entity)
         {
         }
