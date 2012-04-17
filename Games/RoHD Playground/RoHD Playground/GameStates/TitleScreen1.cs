@@ -113,8 +113,8 @@ namespace RoHD_Playground.GameStates
             DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
-            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
-            block.LoadBlock("CASTAA26.RMB", climateSettings);
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
+            block.LoadBlock("CASTAA26.RMB", climateSettings, core.ActiveScene);
             level.Components.Add(block);
 
             // Attach block flats

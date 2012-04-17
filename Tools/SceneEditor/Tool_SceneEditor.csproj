@@ -71,6 +71,7 @@
     <Compile Include="Proxies\BaseComponentProxy.cs" />
     <Compile Include="Proxies\BaseTransformableProxy.cs" />
     <Compile Include="Proxies\BaseEditorProxy.cs" />
+    <Compile Include="Proxies\DaggerfallBlockProxy.cs" />
     <Compile Include="Proxies\LightProxy.cs" />
     <Compile Include="Proxies\BasePrimitiveProxy.cs" />
     <Compile Include="Proxies\DaggerfallModelProxy.cs" />

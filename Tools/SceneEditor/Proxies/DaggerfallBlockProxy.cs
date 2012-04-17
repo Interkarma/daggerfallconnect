@@ -25,35 +25,34 @@ namespace SceneEditor.Proxies
 {
 
     /// <summary>
-    /// Daggerfall model proxy interface.
+    /// Daggerfall block proxy interface.
     /// </summary>
-    internal interface IDaggerfallModelProxy : IEditorProxy { }
+    internal interface IDaggerfallBlockProxy : IEditorProxy { }
 
-    internal sealed class DaggerfallModelProxy : BaseComponentProxy, IBaseComponentProxy
+    internal sealed class DaggerfallBlockProxy : BaseComponentProxy, IBaseComponentProxy
     {
 
         #region Fields
 
-        const string defaultName = "Model";
-        const string categoryName = "Model";
+        const string defaultName = "Block";
+        const string categoryName = "Block";
 
-        DaggerfallModelComponent model;
+        DaggerfallBlockComponent block;
 
         #endregion
 
         #region Editor Properties
 
         /// <summary>
-        /// Gets or sets model id.
+        /// Gets or sets sphere radius.
         /// </summary>
-        [Category(categoryName), Description("ModelID of Daggerfall model.")]
-        public uint ModelID
+        [Category(categoryName), Description("Name of Daggerfall block.")]
+        public string BlockName
         {
-            get { return model.ModelID; }
+            get { return block.BlockName; }
             set
             {
-                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("ModelID"));
-                model.LoadModel(value);
+                base.SceneDocument.PushUndo(this, this.GetType().GetProperty("BlockName"));
             }
         }
 
@@ -66,15 +65,15 @@ namespace SceneEditor.Proxies
         /// </summary>
         /// <param name="document">Scene document.</param>
         /// <param name="entity">Entity owning this proxy.</param>
-        /// <param name="model">Model to proxy.</param>
-        public DaggerfallModelProxy(SceneDocument document, EntityProxy entity, DaggerfallModelComponent model)
+        /// <param name="block">Block to proxy.</param>
+        public DaggerfallBlockProxy(SceneDocument document, EntityProxy entity, DaggerfallBlockComponent block)
             : base(document, entity)
         {
             base.name = defaultName;
-            this.model = model;
+            this.block = block;
 
             // Add to parent entity
-            base.Entity.Components.Add(model);
+            base.Entity.Components.Add(block);
         }
 
         #endregion
@@ -89,7 +88,7 @@ namespace SceneEditor.Proxies
             // Remove from entity
             if (entity != null)
             {
-                entity.Components.Remove(model);
+                entity.Components.Remove(block);
             }
         }
 
@@ -104,7 +103,7 @@ namespace SceneEditor.Proxies
         {
             base.UpdateMatrix();
 
-            this.model.Matrix = base.matrix;
+            this.block.Matrix = base.matrix;
         }
 
         #endregion

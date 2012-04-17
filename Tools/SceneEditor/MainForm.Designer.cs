@@ -62,7 +62,7 @@
             this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
             this.worldControl = new SceneEditor.Controls.WorldControl();
             this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
-            this.ToggleTerrainEditorButton = new System.Windows.Forms.ToolStripButton();
+            this.ToggleToolPaletteButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.PlayButton = new System.Windows.Forms.ToolStripButton();
             this.RestartPlayButton = new System.Windows.Forms.ToolStripButton();
@@ -147,7 +147,7 @@
             this.toolStripSeparator5,
             this.DeleteSceneObjectMenu});
             this.SceneContextMenuStrip.Name = "SceneContextMenuStrip";
-            this.SceneContextMenuStrip.Size = new System.Drawing.Size(153, 76);
+            this.SceneContextMenuStrip.Size = new System.Drawing.Size(108, 54);
             this.SceneContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.SceneContextMenuStrip_Opening);
             // 
             // newToolStripMenuItem
@@ -161,21 +161,21 @@
             this.AddQuadTerrainMenuItem});
             this.newToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.page_white;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // AddEntityMenuItem
             // 
             this.AddEntityMenuItem.Image = global::SceneEditor.Properties.Resources.link;
             this.AddEntityMenuItem.Name = "AddEntityMenuItem";
-            this.AddEntityMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddEntityMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddEntityMenuItem.Text = "Entity";
             this.AddEntityMenuItem.Click += new System.EventHandler(this.AddEntityMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(137, 6);
             // 
             // AddDaggerfallMenuItem
             // 
@@ -183,7 +183,7 @@
             this.AddDaggerfallModelMenuItem,
             this.AddDaggerfallBlockMenuItem});
             this.AddDaggerfallMenuItem.Name = "AddDaggerfallMenuItem";
-            this.AddDaggerfallMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddDaggerfallMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddDaggerfallMenuItem.Text = "Daggerfall";
             // 
             // AddDaggerfallModelMenuItem
@@ -207,7 +207,7 @@
             this.AddSphereMenuItem});
             this.AddPrimitiveMenuItem.Image = global::SceneEditor.Properties.Resources.brick;
             this.AddPrimitiveMenuItem.Name = "AddPrimitiveMenuItem";
-            this.AddPrimitiveMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddPrimitiveMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddPrimitiveMenuItem.Text = "Primitive";
             // 
             // AddCubeMenuItem
@@ -228,7 +228,7 @@
             // 
             this.AddLightMenuItem.Image = global::SceneEditor.Properties.Resources.lightbulb;
             this.AddLightMenuItem.Name = "AddLightMenuItem";
-            this.AddLightMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddLightMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddLightMenuItem.Text = "Light";
             this.AddLightMenuItem.Click += new System.EventHandler(this.AddLightMenuItem_Click);
             // 
@@ -236,20 +236,20 @@
             // 
             this.AddQuadTerrainMenuItem.Image = global::SceneEditor.Properties.Resources.color_swatch;
             this.AddQuadTerrainMenuItem.Name = "AddQuadTerrainMenuItem";
-            this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddQuadTerrainMenuItem.Text = "QuadTerrain";
             this.AddQuadTerrainMenuItem.Click += new System.EventHandler(this.AddQuadTerrainMenuItem_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(104, 6);
             // 
             // DeleteSceneObjectMenu
             // 
             this.DeleteSceneObjectMenu.Image = global::SceneEditor.Properties.Resources.cross;
             this.DeleteSceneObjectMenu.Name = "DeleteSceneObjectMenu";
-            this.DeleteSceneObjectMenu.Size = new System.Drawing.Size(152, 22);
+            this.DeleteSceneObjectMenu.Size = new System.Drawing.Size(107, 22);
             this.DeleteSceneObjectMenu.Text = "Delete";
             this.DeleteSceneObjectMenu.Click += new System.EventHandler(this.DeleteSceneObjectMenu_Click);
             // 
@@ -396,7 +396,7 @@
             // WorldToolStrip
             // 
             this.WorldToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToggleTerrainEditorButton,
+            this.ToggleToolPaletteButton,
             this.toolStripSeparator4,
             this.PlayButton,
             this.RestartPlayButton,
@@ -410,14 +410,14 @@
             this.WorldToolStrip.TabIndex = 1;
             this.WorldToolStrip.Text = "toolStrip2";
             // 
-            // ToggleTerrainEditorButton
+            // ToggleToolPaletteButton
             // 
-            this.ToggleTerrainEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToggleTerrainEditorButton.Image = global::SceneEditor.Properties.Resources.color_swatch;
-            this.ToggleTerrainEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToggleTerrainEditorButton.Name = "ToggleTerrainEditorButton";
-            this.ToggleTerrainEditorButton.Size = new System.Drawing.Size(23, 22);
-            this.ToggleTerrainEditorButton.Text = "Toggle Terrain Editor";
+            this.ToggleToolPaletteButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToggleToolPaletteButton.Image = global::SceneEditor.Properties.Resources.color_swatch;
+            this.ToggleToolPaletteButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToggleToolPaletteButton.Name = "ToggleToolPaletteButton";
+            this.ToggleToolPaletteButton.Size = new System.Drawing.Size(23, 22);
+            this.ToggleToolPaletteButton.Text = "Toggle Tool Palette";
             // 
             // toolStripSeparator4
             // 
@@ -427,20 +427,22 @@
             // PlayButton
             // 
             this.PlayButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.PlayButton.Enabled = false;
             this.PlayButton.Image = global::SceneEditor.Properties.Resources.control_play_blue;
             this.PlayButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(23, 22);
-            this.PlayButton.Text = "Play Scene";
+            this.PlayButton.Text = "Resume Scene";
             // 
             // RestartPlayButton
             // 
             this.RestartPlayButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.RestartPlayButton.Enabled = false;
             this.RestartPlayButton.Image = global::SceneEditor.Properties.Resources.control_repeat_blue;
             this.RestartPlayButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RestartPlayButton.Name = "RestartPlayButton";
             this.RestartPlayButton.Size = new System.Drawing.Size(23, 22);
-            this.RestartPlayButton.Text = "Replay Scene";
+            this.RestartPlayButton.Text = "Restart Scene";
             // 
             // toolStripSeparator3
             // 
@@ -548,7 +550,7 @@
         private System.Windows.Forms.ToolStripMenuItem AddPrimitiveMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AddCubeMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AddSphereMenuItem;
-        private System.Windows.Forms.ToolStripButton ToggleTerrainEditorButton;
+        private System.Windows.Forms.ToolStripButton ToggleToolPaletteButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.Panel TerrainEditorPanel;
         private UserControls.TerrainEditor terrainEditor1;

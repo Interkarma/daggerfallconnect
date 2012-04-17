@@ -38,9 +38,6 @@ namespace DeepEngine.Components
         // Constant strings
         const string unknownBlockError = "Error loading an unknown or unsupported block.";
 
-        // References
-        Scene scene;
-
         // Variables
         string blockName;
 
@@ -188,13 +185,9 @@ namespace DeepEngine.Components
         /// Constructor.
         /// </summary>
         /// <param name="core">Engine core.</param>
-        /// <param name="scene">Scene to add physics properties.</param>
-        public DaggerfallBlockComponent(DeepCore core, Scene scene)
+        public DaggerfallBlockComponent(DeepCore core)
             : base(core)
         {
-            // Save references
-            this.scene = scene;
-
             // Create static geometry builder
             staticGeometry = new StaticGeometryBuilder(core.GraphicsDevice);
         }
@@ -228,7 +221,8 @@ namespace DeepEngine.Components
                 return;
 
             // Ensure component is aligned to physics entity
-            this.matrix = physicsMesh.WorldTransform.Matrix;
+            if (physicsMesh != null)
+                this.matrix = physicsMesh.WorldTransform.Matrix;
         }
 
         /// <summary>
@@ -300,8 +294,9 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="blockName">Name of block to load.</param>
         /// <param name="climateSettings">Desired climate settings for block.</param>
+        /// <param name="scene">Scene to add physics properties.</param>
         /// <returns>True if successful.</returns>
-        public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings)
+        public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings, Scene scene)
         {
             // Set climate
             core.MaterialManager.ClimateType = climateSettings.ClimateType;
@@ -314,10 +309,10 @@ namespace DeepEngine.Components
             switch (blockData.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    BuildRMB(ref blockData, climateSettings);
+                    BuildRMB(ref blockData, climateSettings, scene);
                     break;
                 case DFBlock.BlockTypes.Rdb:
-                    BuildRDB(ref blockData);
+                    BuildRDB(ref blockData, scene);
                     break;
                 default:
                     throw new Exception(unknownBlockError);
@@ -351,7 +346,7 @@ namespace DeepEngine.Components
         /// Completes static geometry build process.
         ///  Submits static geometry to physics scene.
         /// </summary>
-        private void Seal()
+        private void Seal(Scene scene)
         {
             // Seal static geometry
             staticGeometry.ApplyBuilder();
@@ -364,7 +359,8 @@ namespace DeepEngine.Components
                 new AffineTransform(this.matrix.Translation));
 
             // Add static mesh to physics space
-            scene.Space.Add(physicsMesh);
+            if (scene != null)
+                scene.Space.Add(physicsMesh);
         }
 
         #endregion
@@ -376,7 +372,8 @@ namespace DeepEngine.Components
         /// </summary>
         /// <param name="climateSettings">Desired climate settings for block.</param>
         /// <param name="blockData">Block data.</param>
-        private void BuildRMB(ref DFBlock blockData, DFLocation.ClimateSettings climateSettings )
+        /// <param name="scene">Scene to add physics properties.</param>
+        private void BuildRMB(ref DFBlock blockData, DFLocation.ClimateSettings climateSettings, Scene scene)
         {
             // Add RMB data
             AddRMBGroundTiles(ref blockData);
@@ -386,7 +383,7 @@ namespace DeepEngine.Components
             AddRMBSceneryFlats(ref blockData, climateSettings);
 
             // Finish batch building
-            Seal();
+            Seal(scene);
 
             // Set component bounding sphere
             this.BoundingSphere = new BoundingSphere(
@@ -401,13 +398,14 @@ namespace DeepEngine.Components
         /// Builds an RDB block.
         /// </summary>
         /// <param name="blockData">Block data.</param>
-        private void BuildRDB(ref DFBlock blockData)
+        /// <param name="scene">Scene to add physics properties.</param>
+        private void BuildRDB(ref DFBlock blockData, Scene scene)
         {
             // Add RDB data
             AddRDBObjects(ref blockData);
 
             // Finish batch building
-            Seal();
+            Seal(scene);
 
             // Set component bounding sphere
             this.BoundingSphere = new BoundingSphere(

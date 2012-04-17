@@ -187,8 +187,8 @@ namespace RoHD_Playground.GameStates
             DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
-            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
-            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings);
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
+            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings, core.ActiveScene);
 
             // Increase bounding sphere radius as block component does not current calculate properly
             block.BoundingSphere = new BoundingSphere(block.BoundingSphere.Center, block.BoundingSphere.Radius * 2);
