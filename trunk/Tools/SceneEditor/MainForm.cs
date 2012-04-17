@@ -17,6 +17,8 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using DaggerfallConnect;
+using DaggerfallConnect.Arena2;
 using DeepEngine.Player;
 using DeepEngine.World;
 using DeepEngine.Components;
@@ -34,6 +36,7 @@ namespace SceneEditor
         #region Fields
 
         const uint defaultModelId = 456;
+        const string defaultBlockName = "MAGEAA13.RMB";
 
         SceneDocument document;
         SceneDocumentProxy documentProxy;
@@ -62,8 +65,8 @@ namespace SceneEditor
             
             // Init terrain editor panel
             TerrainEditorPanel.Visible = false;
-            ToggleTerrainEditorButton.Enabled = false;
-            ToggleTerrainEditorButton.Checked = false;
+            ToggleToolPaletteButton.Enabled = false;
+            ToggleToolPaletteButton.Checked = false;
         }
 
         #endregion
@@ -182,9 +185,9 @@ namespace SceneEditor
             // Enable/disable terrain editor
             if (proxy is QuadTerrainProxy)
             {
-                ToggleTerrainEditorButton.Enabled = true;
+                ToggleToolPaletteButton.Enabled = true;
                 TerrainEditorPanel.Visible = true;
-                ToggleTerrainEditorButton.Checked = true;
+                ToggleToolPaletteButton.Checked = true;
                 terrainEditMode = true;
                 currentTerrainProxy = (QuadTerrainProxy)proxy;
                 terrainEditor1.SetTerrain(currentTerrainProxy.Component, document);
@@ -192,9 +195,9 @@ namespace SceneEditor
             }
             else
             {
-                ToggleTerrainEditorButton.Enabled = false;
+                ToggleToolPaletteButton.Enabled = false;
                 TerrainEditorPanel.Visible = false;
-                ToggleTerrainEditorButton.Checked = false;
+                ToggleToolPaletteButton.Checked = false;
                 terrainEditMode = false;
                 if (currentTerrainProxy != null)
                 {
@@ -525,6 +528,24 @@ namespace SceneEditor
         }
 
         /// <summary>
+        /// Creates a new block component proxy.
+        /// </summary>
+        private DaggerfallBlockProxy AddBlockProxy(EntityProxy parent, string name)
+        {
+            // Create new block
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(worldControl.Core);
+            block.LoadBlock(defaultBlockName, MapsFile.DefaultClimateSettings, worldControl.Core.ActiveScene);
+
+            // Create proxy for component
+            DaggerfallBlockProxy blockProxy = new DaggerfallBlockProxy(document, parent, block);
+
+            // Add new proxy to tree view
+            TreeNode node = AddTreeNode(parent.TreeNode, blockProxy);
+
+            return blockProxy;
+        }
+
+        /// <summary>
         /// Creates a new sphere primitive proxy.
         /// </summary>
         private SphereProxy AddSphereProxy(EntityProxy parent)
@@ -710,6 +731,9 @@ namespace SceneEditor
             EntityProxy entity = GetSelectedEntity();
             if (entity == null)
                 return;
+
+            // Add block
+            DaggerfallBlockProxy blockProxy = AddBlockProxy(entity, defaultBlockName);
         }
 
         /// <summary>

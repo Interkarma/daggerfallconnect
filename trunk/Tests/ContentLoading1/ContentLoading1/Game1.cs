@@ -271,8 +271,8 @@ namespace ContentLoading1
                     Vector3 blockPosition = new Vector3(x * BlocksFile.RMBDimension, 0f, -(y * BlocksFile.RMBDimension)) * ModelManager.GlobalScale;
 
                     // Attach block component
-                    DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
-                    block.LoadBlock(name, location.Climate);
+                    DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
+                    block.LoadBlock(name, location.Climate, core.ActiveScene);
                     block.Matrix = Matrix.CreateTranslation(blockPosition);
                     level.Components.Add(block);
 
@@ -303,12 +303,12 @@ namespace ContentLoading1
             DynamicEntity level = new DynamicEntity(core.ActiveScene);
 
             // Create block component
-            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core, core.ActiveScene);
+            DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
             //block.LoadBlock("MAGEAA13.RMB", MapsFile.DefaultClimateSettings);
             //block.LoadBlock("BOOKAL02.RMB", MapsFile.DefaultClimateSettings);
             //block.LoadBlock("S0000040.RDB", MapsFile.DefaultClimateSettings);
             //block.LoadBlock("S0000999.RDB", MapsFile.DefaultClimateSettings);
-            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings);
+            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings, core.ActiveScene);
             //block.LoadBlock("N0000002.RDB", MapsFile.DefaultClimateSettings);
             //block.LoadBlock("N0000000.RDB", MapsFile.DefaultClimateSettings);
             level.Components.Add(block);
