@@ -114,7 +114,7 @@ namespace RoHD_Playground.GameStates
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
-            block.LoadBlock("CASTAA26.RMB", climateSettings, core.ActiveScene);
+            block.LoadBlock("CASTAA26.RMB", climateSettings, core.ActiveScene, true);
             level.Components.Add(block);
 
             // Attach block flats

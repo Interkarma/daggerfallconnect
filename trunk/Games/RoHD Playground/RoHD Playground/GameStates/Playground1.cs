@@ -188,7 +188,7 @@ namespace RoHD_Playground.GameStates
 
             // Create block component
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(core);
-            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings, core.ActiveScene);
+            block.LoadBlock("S0000181.RDB", MapsFile.DefaultClimateSettings, core.ActiveScene, true);
 
             // Increase bounding sphere radius as block component does not current calculate properly
             block.BoundingSphere = new BoundingSphere(block.BoundingSphere.Center, block.BoundingSphere.Radius * 2);

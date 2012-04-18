@@ -44,7 +44,7 @@ namespace SceneEditor.Proxies
         #region Editor Properties
 
         /// <summary>
-        /// Gets or sets sphere radius.
+        /// Gets or sets block name.
         /// </summary>
         [Category(categoryName), Description("Name of Daggerfall block.")]
         public string BlockName
