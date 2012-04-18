@@ -433,7 +433,10 @@ namespace SceneEditor
             document.EditorScene.Camera.Position = new Vector3(0, 2, 50);
             document.EditorScene.Camera.Update();
 
-            // Create entity
+            // Add lighting rig
+            AddDefaultLightingRig();
+
+            // Create entities
             EntityProxy entityProxy = AddEntityProxy();
 
             // Add sphere primitive component
@@ -450,17 +453,9 @@ namespace SceneEditor
             terrainProxy.TextureRepeat = 100f;
             terrainProxy.NormalStrength = 0.01f;
 
-            // Add light component
-            LightProxy lightProxy = AddLightProxy(entityProxy);
-            lightProxy.LightType = LightProxy.LightProxyTypes.Directional;
-            lightProxy.Direction = new Vector3(0.25f, -1.0f, 0f);
-
             // Expand nodes
             documentProxy.TreeNode.Expand();
             entityProxy.TreeNode.Expand();
-
-            // Select terrain node
-            //DocumentTreeView.SelectedNode = terrainProxy.TreeNode;
 
             // Unlock stacks
             document.LockUndoRedo = false;
@@ -488,6 +483,51 @@ namespace SceneEditor
             entityProxy.TreeNode = entityNode;
 
             return entityProxy;
+        }
+
+        /// <summary>
+        /// Creates a new default lighting rig entity.
+        /// </summary>
+        private EntityProxy AddDefaultLightingRig()
+        {
+            // Create lighting rig entity
+            EntityProxy lightingRig = AddEntityProxy();
+            lightingRig.Name = "Default Lighting";
+
+            // Attach lights to rig entity
+            LightProxy keyLight = AddLightProxy(lightingRig);
+            LightProxy fillLight = AddLightProxy(lightingRig);
+            LightProxy backLight = AddLightProxy(lightingRig);
+            LightProxy ambientLight = AddLightProxy(lightingRig);
+
+            // Key light
+            keyLight.Name = "Key Light";
+            keyLight.LightType = LightProxy.LightProxyTypes.Directional;
+            keyLight.Direction = Vector3.Normalize(new Vector3(1.0f, -0.5f, -1.0f));
+            keyLight.Intensity = 1.0f;
+            keyLight.Color = System.Drawing.Color.White;
+            
+            // Fill light
+            fillLight.Name = "Fill Light";
+            fillLight.LightType = LightProxy.LightProxyTypes.Directional;
+            fillLight.Direction = Vector3.Normalize(new Vector3(-1.0f, -0.5f, -1.0f));
+            fillLight.Intensity = 0.5f;
+            fillLight.Color = System.Drawing.Color.White;
+
+            // Back light
+            backLight.Name = "Back Light";
+            backLight.LightType = LightProxy.LightProxyTypes.Directional;
+            backLight.Direction = Vector3.Normalize(new Vector3(0.0f, -0.5f, 1.0f));
+            backLight.Intensity = 0.5f;
+            backLight.Color = System.Drawing.Color.White;
+
+            // Ambient light
+            ambientLight.Name = "Ambient Light";
+            ambientLight.LightType = LightProxy.LightProxyTypes.Ambient;
+            ambientLight.Intensity = 0.1f;
+            ambientLight.Color = System.Drawing.Color.White;
+
+            return lightingRig;
         }
 
         /// <summary>
@@ -534,7 +574,7 @@ namespace SceneEditor
         {
             // Create new block
             DaggerfallBlockComponent block = new DaggerfallBlockComponent(worldControl.Core);
-            block.LoadBlock(defaultBlockName, MapsFile.DefaultClimateSettings, worldControl.Core.ActiveScene);
+            block.LoadBlock(defaultBlockName, MapsFile.DefaultClimateSettings, worldControl.Core.ActiveScene, false);
 
             // Create proxy for component
             DaggerfallBlockProxy blockProxy = new DaggerfallBlockProxy(document, parent, block);

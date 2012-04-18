@@ -295,8 +295,9 @@ namespace DeepEngine.Components
         /// <param name="blockName">Name of block to load.</param>
         /// <param name="climateSettings">Desired climate settings for block.</param>
         /// <param name="scene">Scene to add physics properties.</param>
+        /// <param name="groundTiles">True to add ground plane tiles.</param>
         /// <returns>True if successful.</returns>
-        public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings, Scene scene)
+        public bool LoadBlock(string blockName, DFLocation.ClimateSettings climateSettings, Scene scene, bool groundTiles)
         {
             // Set climate
             core.MaterialManager.ClimateType = climateSettings.ClimateType;
@@ -309,7 +310,7 @@ namespace DeepEngine.Components
             switch (blockData.Type)
             {
                 case DFBlock.BlockTypes.Rmb:
-                    BuildRMB(ref blockData, climateSettings, scene);
+                    BuildRMB(ref blockData, climateSettings, scene, groundTiles);
                     break;
                 case DFBlock.BlockTypes.Rdb:
                     BuildRDB(ref blockData, scene);
@@ -373,10 +374,11 @@ namespace DeepEngine.Components
         /// <param name="climateSettings">Desired climate settings for block.</param>
         /// <param name="blockData">Block data.</param>
         /// <param name="scene">Scene to add physics properties.</param>
-        private void BuildRMB(ref DFBlock blockData, DFLocation.ClimateSettings climateSettings, Scene scene)
+        /// <param name="groundTiles">True to add ground plane tiles to scene.</param>
+        private void BuildRMB(ref DFBlock blockData, DFLocation.ClimateSettings climateSettings, Scene scene, bool groundTiles)
         {
             // Add RMB data
-            AddRMBGroundTiles(ref blockData);
+            if (groundTiles) AddRMBGroundTiles(ref blockData);
             AddRMBModels(ref blockData);
             AddRMBMiscModels(ref blockData);
             AddRMBMiscFlats(ref blockData);
