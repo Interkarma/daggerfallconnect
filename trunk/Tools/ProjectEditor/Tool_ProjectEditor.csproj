@@ -38,6 +38,10 @@
     <Reference Include="BEPUphysics">
       <HintPath>..\Deep Engine\Deep Engine\Dependencies\BEPUphysics.dll</HintPath>
     </Reference>
+    <Reference Include="ImageListView, Version=10.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dependencies\ImageListView.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
@@ -59,6 +63,7 @@
     <Compile Include="Controls\WorldControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Documents\ProjectDocument.cs" />
     <Compile Include="Documents\SceneDocument.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -266,6 +271,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\paintcan.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dependencies\ImageListView.dll" />
+    <None Include="Resources\database_go.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
