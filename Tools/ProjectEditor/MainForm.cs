@@ -17,6 +17,7 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Manina.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
 using DeepEngine.Player;
@@ -38,7 +39,8 @@ namespace SceneEditor
         const uint defaultModelId = 456;
         const string defaultBlockName = "MAGEAA13.RMB";
 
-        SceneDocument document;
+        ProjectDocument project;
+        SceneDocument sceneDocument;
         SceneDocumentProxy documentProxy;
         PropertyGrid propertyGrid;
 
@@ -61,12 +63,10 @@ namespace SceneEditor
             // Create property grid
             propertyGrid = new PropertyGrid();
             propertyGrid.Dock = DockStyle.Fill;
-            PropertiesPanel.Controls.Add(propertyGrid);
+            ScenePropertiesPanel.Controls.Add(propertyGrid);
             
             // Init terrain editor panel
             TerrainEditorPanel.Visible = false;
-            ToggleToolPaletteButton.Enabled = false;
-            ToggleToolPaletteButton.Checked = false;
         }
 
         #endregion
@@ -79,13 +79,13 @@ namespace SceneEditor
         private void NewSceneDocument()
         {
             // Create document
-            document = new SceneDocument(worldControl.Core);
+            sceneDocument = new SceneDocument(worldControl.Core);
 
             // Create standard proxies
-            documentProxy = new SceneDocumentProxy(document);
+            documentProxy = new SceneDocumentProxy(sceneDocument);
 
             // Add new document to tree view
-            DocumentTreeView.Nodes.Clear();
+            SceneTreeView.Nodes.Clear();
             TreeNode sceneNode = AddTreeNode(null, documentProxy);
             sceneNode.Expand();
 
@@ -93,7 +93,7 @@ namespace SceneEditor
             documentProxy.TreeNode = sceneNode;
 
             // Subscribe events
-            document.OnPushUndo += new EventHandler(Document_OnPushUndo);
+            sceneDocument.OnPushUndo += new EventHandler(Document_OnPushUndo);
 
             // Update toolbars
             UpdateUndoRedoToolbarItems();
@@ -124,14 +124,14 @@ namespace SceneEditor
         private void UpdatePropertyGrid()
         {
             // If nothing selected attach properties to scene environment
-            if (DocumentTreeView.SelectedNode == null)
+            if (SceneTreeView.SelectedNode == null)
             {
                 propertyGrid.SelectedObject = documentProxy;
                 return;
             }
             else
             {
-                propertyGrid.SelectedObject = DocumentTreeView.SelectedNode.Tag as BaseEditorProxy;
+                propertyGrid.SelectedObject = SceneTreeView.SelectedNode.Tag as BaseEditorProxy;
             }
         }
 
@@ -144,7 +144,10 @@ namespace SceneEditor
         /// </summary>
         private void UndoButton_Click(object sender, EventArgs e)
         {
-            document.PopUndo();
+            if (sceneDocument == null)
+                return;
+
+            sceneDocument.PopUndo();
             UpdateUndoRedoToolbarItems();
             propertyGrid.Refresh();
         }
@@ -154,7 +157,10 @@ namespace SceneEditor
         /// </summary>
         private void RedoButton_Click(object sender, EventArgs e)
         {
-            document.PopRedo();
+            if (sceneDocument == null)
+                return;
+
+            sceneDocument.PopRedo();
             UpdateUndoRedoToolbarItems();
             propertyGrid.Refresh();
         }
@@ -169,7 +175,7 @@ namespace SceneEditor
         private void DocumentTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             // Select clicked node
-            DocumentTreeView.SelectedNode = e.Node;
+            SceneTreeView.SelectedNode = e.Node;
         }
 
         /// <summary>
@@ -180,24 +186,20 @@ namespace SceneEditor
             UpdatePropertyGrid();
 
             // Get selected proxy
-            BaseEditorProxy proxy = DocumentTreeView.SelectedNode.Tag as BaseEditorProxy;
+            BaseEditorProxy proxy = SceneTreeView.SelectedNode.Tag as BaseEditorProxy;
             
             // Enable/disable terrain editor
             if (proxy is QuadTerrainProxy)
             {
-                ToggleToolPaletteButton.Enabled = true;
                 TerrainEditorPanel.Visible = true;
-                ToggleToolPaletteButton.Checked = true;
                 terrainEditMode = true;
                 currentTerrainProxy = (QuadTerrainProxy)proxy;
-                terrainEditor1.SetTerrain(currentTerrainProxy.Component, document);
+                terrainEditor1.SetTerrain(currentTerrainProxy.Component, sceneDocument);
                 (proxy as QuadTerrainProxy).Component.EnablePicking = true;
             }
             else
             {
-                ToggleToolPaletteButton.Enabled = false;
                 TerrainEditorPanel.Visible = false;
-                ToggleToolPaletteButton.Checked = false;
                 terrainEditMode = false;
                 if (currentTerrainProxy != null)
                 {
@@ -218,11 +220,14 @@ namespace SceneEditor
         private void WorldControl_InitializeCompleted(object sender, EventArgs e)
         {
             // Create scene document
-            NewSceneDocument();
+            //NewSceneDocument();
             UpdatePropertyGrid();
 
             // Set core to render new scene
-            worldControl.Core.ActiveScene = document.EditorScene;
+            //worldControl.Core.ActiveScene = document.EditorScene;
+
+            // Update toolbars
+            UpdateUndoRedoToolbarItems();
         }
 
         /// <summary>
@@ -334,8 +339,16 @@ namespace SceneEditor
         /// </summary>
         private void UpdateUndoRedoToolbarItems()
         {
-            UndoButton.Enabled = (document.UndoCount > 0) ? true : false;
-            RedoButton.Enabled = (document.RedoCount > 0) ? true : false;
+            if (sceneDocument == null)
+            {
+                UndoButton.Enabled = false;
+                RedoButton.Enabled = false;
+            }
+            else
+            {
+                UndoButton.Enabled = (sceneDocument.UndoCount > 0) ? true : false;
+                RedoButton.Enabled = (sceneDocument.RedoCount > 0) ? true : false;
+            }
         }
 
         /// <summary>
@@ -370,7 +383,7 @@ namespace SceneEditor
 
             // Add new tree node
             if (parent == null)
-                DocumentTreeView.Nodes.Add(node);
+                SceneTreeView.Nodes.Add(node);
             else
                 parent.Nodes.Add(node);
 
@@ -427,11 +440,11 @@ namespace SceneEditor
         private void CreateDefaultDocument()
         {
             // Lock stacks
-            document.LockUndoRedo = true;
+            sceneDocument.LockUndoRedo = true;
 
             // Set camera position
-            document.EditorScene.Camera.Position = new Vector3(0, 2, 50);
-            document.EditorScene.Camera.Update();
+            sceneDocument.EditorScene.Camera.Position = new Vector3(0, 2, 50);
+            sceneDocument.EditorScene.Camera.Update();
 
             // Add lighting rig
             AddDefaultLightingRig();
@@ -458,7 +471,7 @@ namespace SceneEditor
             entityProxy.TreeNode.Expand();
 
             // Unlock stacks
-            document.LockUndoRedo = false;
+            sceneDocument.LockUndoRedo = false;
         }
 
         #endregion
@@ -471,10 +484,10 @@ namespace SceneEditor
         private EntityProxy AddEntityProxy()
         {
             // Create new entity
-            DynamicEntity entity = new DynamicEntity(document.EditorScene);
+            DynamicEntity entity = new DynamicEntity(sceneDocument.EditorScene);
 
             // Create new entity proxy
-            EntityProxy entityProxy = new EntityProxy(document, entity);
+            EntityProxy entityProxy = new EntityProxy(sceneDocument, entity);
 
             // Add new entity proxy to tree view
             TreeNode entityNode = AddTreeNode(documentProxy.TreeNode, entityProxy);
@@ -539,7 +552,7 @@ namespace SceneEditor
             QuadTerrainComponent quadTerrain = new QuadTerrainComponent(worldControl.Core, QuadTerrainComponent.TerrainSize.Small);
 
             // Create new quad terrain proxy
-            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(document, parent, quadTerrain);
+            QuadTerrainProxy quadTerrainProxy = new QuadTerrainProxy(sceneDocument, parent, quadTerrain);
 
             // Add new quad terrain proxy to tree view
             TreeNode quadTerrainNode = AddTreeNode(parent.TreeNode, quadTerrainProxy);
@@ -559,7 +572,7 @@ namespace SceneEditor
             DaggerfallModelComponent model = new DaggerfallModelComponent(worldControl.Core, id);
 
             // Create proxy for component
-            DaggerfallModelProxy modelProxy = new DaggerfallModelProxy(document, parent, model);
+            DaggerfallModelProxy modelProxy = new DaggerfallModelProxy(sceneDocument, parent, model);
 
             // Add new proxy to tree view
             TreeNode node = AddTreeNode(parent.TreeNode, modelProxy);
@@ -577,7 +590,7 @@ namespace SceneEditor
             block.LoadBlock(defaultBlockName, MapsFile.DefaultClimateSettings, worldControl.Core.ActiveScene, false);
 
             // Create proxy for component
-            DaggerfallBlockProxy blockProxy = new DaggerfallBlockProxy(document, parent, block);
+            DaggerfallBlockProxy blockProxy = new DaggerfallBlockProxy(sceneDocument, parent, block);
 
             // Add new proxy to tree view
             TreeNode node = AddTreeNode(parent.TreeNode, blockProxy);
@@ -590,7 +603,7 @@ namespace SceneEditor
         /// </summary>
         private SphereProxy AddSphereProxy(EntityProxy parent)
         {
-            SphereProxy sphere = new SphereProxy(document, parent);
+            SphereProxy sphere = new SphereProxy(sceneDocument, parent);
             TreeNode node = AddTreeNode(parent.TreeNode, sphere);
 
             return sphere;
@@ -601,7 +614,7 @@ namespace SceneEditor
         /// </summary>
         private LightProxy AddLightProxy(EntityProxy parent)
         {
-            LightProxy light = new LightProxy(document, parent);
+            LightProxy light = new LightProxy(sceneDocument, parent);
             TreeNode node = AddTreeNode(parent.TreeNode, light);
 
             return light;
@@ -653,7 +666,7 @@ namespace SceneEditor
                 parentNode = proxy.TreeNode.Parent;
 
             // Change selected item to parent
-            DocumentTreeView.SelectedNode = parentNode;
+            SceneTreeView.SelectedNode = parentNode;
 
             // Delete selected item
             RemoveSceneItem(proxy);
@@ -685,7 +698,7 @@ namespace SceneEditor
             }
 
             // Delete tree node
-            DocumentTreeView.Nodes.Remove(proxy.TreeNode);
+            SceneTreeView.Nodes.Remove(proxy.TreeNode);
         }
 
         /// <summary>
@@ -696,8 +709,8 @@ namespace SceneEditor
         {
             // Get selected proxy
             BaseEditorProxy proxy = null;
-            if (DocumentTreeView.SelectedNode != null)
-                proxy = DocumentTreeView.SelectedNode.Tag as BaseEditorProxy;
+            if (SceneTreeView.SelectedNode != null)
+                proxy = SceneTreeView.SelectedNode.Tag as BaseEditorProxy;
 
             return proxy;
         }
