@@ -1,4 +1,4 @@
-﻿namespace SceneEditor.UserControls
+﻿namespace ProjectEditor.UserControls
 {
     partial class TerrainEditor
     {
@@ -121,7 +121,7 @@
             // 
             // CrosshairImage
             // 
-            this.CrosshairImage.Image = global::SceneEditor.Properties.Resources.Crosshair;
+            this.CrosshairImage.Image = global::ProjectEditor.Properties.Resources.Crosshair;
             this.CrosshairImage.Location = new System.Drawing.Point(124, 132);
             this.CrosshairImage.Name = "CrosshairImage";
             this.CrosshairImage.Size = new System.Drawing.Size(3, 3);
@@ -281,7 +281,7 @@
             // 
             // SmoothButton
             // 
-            this.SmoothButton.Image = global::SceneEditor.Properties.Resources.contrast_low;
+            this.SmoothButton.Image = global::ProjectEditor.Properties.Resources.contrast_low;
             this.SmoothButton.Location = new System.Drawing.Point(35, 77);
             this.SmoothButton.Name = "SmoothButton";
             this.SmoothButton.Size = new System.Drawing.Size(23, 23);
@@ -292,7 +292,7 @@
             // 
             // AutoPaintButton
             // 
-            this.AutoPaintButton.Image = global::SceneEditor.Properties.Resources.paintcan;
+            this.AutoPaintButton.Image = global::ProjectEditor.Properties.Resources.paintcan;
             this.AutoPaintButton.Location = new System.Drawing.Point(64, 77);
             this.AutoPaintButton.Name = "AutoPaintButton";
             this.AutoPaintButton.Size = new System.Drawing.Size(23, 23);
@@ -303,7 +303,7 @@
             // 
             // PerlinTerrainButton
             // 
-            this.PerlinTerrainButton.Image = global::SceneEditor.Properties.Resources.chart_curve;
+            this.PerlinTerrainButton.Image = global::ProjectEditor.Properties.Resources.chart_curve;
             this.PerlinTerrainButton.Location = new System.Drawing.Point(6, 77);
             this.PerlinTerrainButton.Name = "PerlinTerrainButton";
             this.PerlinTerrainButton.Size = new System.Drawing.Size(23, 23);
@@ -314,7 +314,7 @@
             // 
             // UniformLowerButton
             // 
-            this.UniformLowerButton.Image = global::SceneEditor.Properties.Resources.arrow_down;
+            this.UniformLowerButton.Image = global::ProjectEditor.Properties.Resources.arrow_down;
             this.UniformLowerButton.Location = new System.Drawing.Point(6, 48);
             this.UniformLowerButton.Name = "UniformLowerButton";
             this.UniformLowerButton.Size = new System.Drawing.Size(23, 23);
@@ -325,7 +325,7 @@
             // 
             // UniformRaiseButton
             // 
-            this.UniformRaiseButton.Image = global::SceneEditor.Properties.Resources.arrow_up;
+            this.UniformRaiseButton.Image = global::ProjectEditor.Properties.Resources.arrow_up;
             this.UniformRaiseButton.Location = new System.Drawing.Point(6, 19);
             this.UniformRaiseButton.Name = "UniformRaiseButton";
             this.UniformRaiseButton.Size = new System.Drawing.Size(23, 23);
@@ -336,7 +336,7 @@
             // 
             // PerlinLowerButton
             // 
-            this.PerlinLowerButton.Image = global::SceneEditor.Properties.Resources.bullet_arrow_down;
+            this.PerlinLowerButton.Image = global::ProjectEditor.Properties.Resources.bullet_arrow_down;
             this.PerlinLowerButton.Location = new System.Drawing.Point(35, 48);
             this.PerlinLowerButton.Name = "PerlinLowerButton";
             this.PerlinLowerButton.Size = new System.Drawing.Size(23, 23);
@@ -347,7 +347,7 @@
             // 
             // PerlinRaiseButton
             // 
-            this.PerlinRaiseButton.Image = global::SceneEditor.Properties.Resources.bullet_arrow_up;
+            this.PerlinRaiseButton.Image = global::ProjectEditor.Properties.Resources.bullet_arrow_up;
             this.PerlinRaiseButton.Location = new System.Drawing.Point(35, 19);
             this.PerlinRaiseButton.Name = "PerlinRaiseButton";
             this.PerlinRaiseButton.Size = new System.Drawing.Size(23, 23);
@@ -521,7 +521,7 @@
             this.DeformUpDownButton.Checked = true;
             this.DeformUpDownButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.DeformUpDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.DeformUpDownButton.Image = global::SceneEditor.Properties.Resources.RaiseLower;
+            this.DeformUpDownButton.Image = global::ProjectEditor.Properties.Resources.RaiseLower;
             this.DeformUpDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.DeformUpDownButton.Name = "DeformUpDownButton";
             this.DeformUpDownButton.Size = new System.Drawing.Size(23, 22);
@@ -531,7 +531,7 @@
             // DeformSmoothButton
             // 
             this.DeformSmoothButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.DeformSmoothButton.Image = global::SceneEditor.Properties.Resources.Smooth1;
+            this.DeformSmoothButton.Image = global::ProjectEditor.Properties.Resources.Smooth1;
             this.DeformSmoothButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.DeformSmoothButton.Name = "DeformSmoothButton";
             this.DeformSmoothButton.Size = new System.Drawing.Size(23, 22);
@@ -541,7 +541,7 @@
             // DeformBumpsButton
             // 
             this.DeformBumpsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.DeformBumpsButton.Image = global::SceneEditor.Properties.Resources.Bumps;
+            this.DeformBumpsButton.Image = global::ProjectEditor.Properties.Resources.Bumps;
             this.DeformBumpsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.DeformBumpsButton.Name = "DeformBumpsButton";
             this.DeformBumpsButton.Size = new System.Drawing.Size(23, 22);
@@ -562,7 +562,7 @@
             // ManualPaintButton
             // 
             this.ManualPaintButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ManualPaintButton.Image = global::SceneEditor.Properties.Resources.paintbrush;
+            this.ManualPaintButton.Image = global::ProjectEditor.Properties.Resources.paintbrush;
             this.ManualPaintButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ManualPaintButton.Name = "ManualPaintButton";
             this.ManualPaintButton.Size = new System.Drawing.Size(23, 22);
@@ -769,7 +769,7 @@
             this.RadialBrushButton.Checked = true;
             this.RadialBrushButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.RadialBrushButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.RadialBrushButton.Image = global::SceneEditor.Properties.Resources.radialBrush;
+            this.RadialBrushButton.Image = global::ProjectEditor.Properties.Resources.radialBrush;
             this.RadialBrushButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RadialBrushButton.Name = "RadialBrushButton";
             this.RadialBrushButton.Size = new System.Drawing.Size(23, 22);

@@ -10,10 +10,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SceneEditor.Documents;
+using ProjectEditor.Documents;
 #endregion
 
-namespace SceneEditor.Proxies
+namespace ProjectEditor.Proxies
 {
 
     /// <summary>

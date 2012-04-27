@@ -20,11 +20,11 @@ using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Components;
 using DeepEngine.World;
-using SceneEditor.Proxies;
-using SceneEditor.UserControls;
+using ProjectEditor.Proxies;
+using ProjectEditor.UserControls;
 #endregion
 
-namespace SceneEditor.Documents
+namespace ProjectEditor.Documents
 {
 
     /// <summary>

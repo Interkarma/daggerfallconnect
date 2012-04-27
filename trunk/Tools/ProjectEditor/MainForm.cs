@@ -20,15 +20,17 @@ using Microsoft.Xna.Framework.Graphics;
 using Manina.Windows.Forms;
 using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
+using DaggerfallConnect.Utility;
+using DeepEngine.Core;
 using DeepEngine.Player;
 using DeepEngine.World;
 using DeepEngine.Components;
-using SceneEditor.Documents;
-using SceneEditor.Proxies;
+using ProjectEditor.Documents;
+using ProjectEditor.Proxies;
 using DeepEngine.Utility;
 #endregion
 
-namespace SceneEditor
+namespace ProjectEditor
 {
 
     public partial class MainForm : Form
@@ -39,6 +41,11 @@ namespace SceneEditor
         const uint defaultModelId = 456;
         const string defaultBlockName = "MAGEAA13.RMB";
 
+        // Settings
+        ConfigManager ini = new ConfigManager();
+        string arena2Path;
+
+        // Project
         ProjectDocument project;
         SceneDocument sceneDocument;
         SceneDocumentProxy documentProxy;
@@ -59,6 +66,12 @@ namespace SceneEditor
         public MainForm()
         {
             InitializeComponent();
+            
+            // Read settings
+            ReadINISettings();
+
+            // Assign arena2
+            worldControl.Arena2Path = arena2Path;
 
             // Create property grid
             propertyGrid = new PropertyGrid();
@@ -817,6 +830,56 @@ namespace SceneEditor
 
             // Add light
             LightProxy lightProxy = AddLightProxy(entity);
+        }
+
+        #endregion
+
+        #region INI File
+
+        /// <summary>
+        /// Read INI file settings.
+        /// </summary>
+        private void ReadINISettings()
+        {
+            try
+            {
+                // Open config file
+                string appName = "Ruins of Hill Deep Playgrounds";
+                string configName = "config.ini";
+                string defaultsName = "default_config.ini";
+                ini.LoadFile(appName, configName, defaultsName);
+
+                // Read settings
+                arena2Path = ini.GetValue("Daggerfall", "arena2Path");
+
+                // Validate arena2 path
+                DFValidator.ValidationResults results;
+                DFValidator.ValidateArena2Folder(arena2Path, out results);
+                if (!results.AppearsValid)
+                    throw new Exception("The specified Arena2 path is invalid or incomplete.");
+            }
+            catch (Exception e)
+            {
+                System.Windows.Forms.MessageBox.Show(e.Message, "Error Parsing INI File", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                this.Close();
+            }
+        }
+
+        #endregion
+
+        #region Project Toolbar
+
+        /// <summary>
+        /// User clicked new project button.
+        /// </summary>
+        private void NewProjectButton_Click(object sender, EventArgs e)
+        {
+            // Show new project dialog
+            Dialogs.NewProjectDialog dlg = new Dialogs.NewProjectDialog();
+            if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            // TODO: Create new project in folder
         }
 
         #endregion

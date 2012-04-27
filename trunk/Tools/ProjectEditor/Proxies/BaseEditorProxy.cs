@@ -13,10 +13,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 using DeepEngine.World;
-using SceneEditor.Documents;
+using ProjectEditor.Documents;
 #endregion
 
-namespace SceneEditor.Proxies
+namespace ProjectEditor.Proxies
 {
 
     /// <summary>

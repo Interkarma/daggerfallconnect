@@ -8,7 +8,7 @@
     <ProjectGuid>{EDD0042D-4137-4F78-8AEC-116870E9744F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SceneEditor</RootNamespace>
+    <RootNamespace>ProjectEditor</RootNamespace>
     <AssemblyName>SceneEditor</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
@@ -57,11 +57,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\XmlHelper.cs" />
     <Compile Include="Controls\GraphicsDeviceControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\WorldControl.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Dialogs\NewProjectDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\NewProjectDialog.Designer.cs">
+      <DependentUpon>NewProjectDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Documents\ProjectDocument.cs" />
     <Compile Include="Documents\SceneDocument.cs" />
@@ -94,6 +101,9 @@
     <Compile Include="UserControls\TerrainEditor.Designer.cs">
       <DependentUpon>TerrainEditor.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Dialogs\NewProjectDialog.resx">
+      <DependentUpon>NewProjectDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -276,6 +286,7 @@
     <Content Include="Dependencies\ImageListView.dll" />
     <None Include="Resources\database_go.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
