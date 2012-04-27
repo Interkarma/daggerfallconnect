@@ -15,6 +15,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
@@ -22,7 +23,7 @@ using DeepEngine.Components;
 using DeepEngine.World;
 #endregion
 
-namespace SceneEditor.Controls
+namespace ProjectEditor.Controls
 {
 
     /// <summary>
@@ -50,6 +51,16 @@ namespace SceneEditor.Controls
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets Arena2 path.
+        /// </summary>
+        [Browsable(false)]
+        public string Arena2Path
+        {
+            get { return arena2Path; }
+            set { arena2Path = value; }
+        }
 
         /// <summary>
         /// Gets engine core.
@@ -115,9 +126,6 @@ namespace SceneEditor.Controls
         /// </summary>
         protected override void Initialize()
         {
-            // Read Arena2Path from settings
-            arena2Path = Properties.Settings.Default.Arena2Path;
-
             // Get start times
             startTime = stopwatch.Elapsed;
             lastTime = stopwatch.Elapsed;

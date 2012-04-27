@@ -17,7 +17,7 @@ using System.Text;
 using System.Windows.Forms;
 #endregion
 
-namespace SceneEditor.UserControls
+namespace ProjectEditor.UserControls
 {
 
     /// <summary>

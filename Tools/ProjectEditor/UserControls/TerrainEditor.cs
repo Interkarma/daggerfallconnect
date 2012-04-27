@@ -22,7 +22,7 @@ using DeepEngine.Core;
 using DeepEngine.Components;
 #endregion
 
-namespace SceneEditor.UserControls
+namespace ProjectEditor.UserControls
 {
 
     /// <summary>

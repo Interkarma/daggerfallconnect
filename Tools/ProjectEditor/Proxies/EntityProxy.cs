@@ -17,10 +17,10 @@ using Microsoft.Xna.Framework.Graphics;
 using DeepEngine.Core;
 using DeepEngine.Components;
 using DeepEngine.World;
-using SceneEditor.Documents;
+using ProjectEditor.Documents;
 #endregion
 
-namespace SceneEditor.Proxies
+namespace ProjectEditor.Proxies
 {
 
     /// <summary>

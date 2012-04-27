@@ -1,4 +1,4 @@
-﻿namespace SceneEditor
+﻿namespace ProjectEditor
 {
     partial class MainForm
     {
@@ -37,7 +37,7 @@
             this.OpenProjectButton = new System.Windows.Forms.ToolStripButton();
             this.SaveProjectButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.DocumentImageList = new System.Windows.Forms.ImageList(this.components);
+            this.SceneImageList = new System.Windows.Forms.ImageList(this.components);
             this.SceneTreeView = new System.Windows.Forms.TreeView();
             this.SceneContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,6 +57,8 @@
             this.WorldPanel = new System.Windows.Forms.Panel();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.TerrainEditorPanel = new System.Windows.Forms.Panel();
+            this.terrainEditor1 = new ProjectEditor.UserControls.TerrainEditor();
+            this.worldControl = new ProjectEditor.Controls.WorldControl();
             this.WorldToolStrip = new System.Windows.Forms.ToolStrip();
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
@@ -66,8 +68,6 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.ScenePanel = new System.Windows.Forms.Panel();
             this.SceneToolStrip = new System.Windows.Forms.ToolStrip();
-            this.terrainEditor1 = new SceneEditor.UserControls.TerrainEditor();
-            this.worldControl = new SceneEditor.Controls.WorldControl();
             this.ProjectPanel.SuspendLayout();
             this.ProjectToolStrip.SuspendLayout();
             this.SceneContextMenuStrip.SuspendLayout();
@@ -115,16 +115,17 @@
             // NewProjectButton
             // 
             this.NewProjectButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.NewProjectButton.Image = global::SceneEditor.Properties.Resources.database_add;
+            this.NewProjectButton.Image = global::ProjectEditor.Properties.Resources.database_add;
             this.NewProjectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.NewProjectButton.Name = "NewProjectButton";
             this.NewProjectButton.Size = new System.Drawing.Size(23, 22);
             this.NewProjectButton.Text = "New Project";
+            this.NewProjectButton.Click += new System.EventHandler(this.NewProjectButton_Click);
             // 
             // OpenProjectButton
             // 
             this.OpenProjectButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.OpenProjectButton.Image = global::SceneEditor.Properties.Resources.folder_page;
+            this.OpenProjectButton.Image = global::ProjectEditor.Properties.Resources.folder_page;
             this.OpenProjectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.OpenProjectButton.Name = "OpenProjectButton";
             this.OpenProjectButton.Size = new System.Drawing.Size(23, 22);
@@ -134,7 +135,7 @@
             // 
             this.SaveProjectButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.SaveProjectButton.Enabled = false;
-            this.SaveProjectButton.Image = global::SceneEditor.Properties.Resources.disk;
+            this.SaveProjectButton.Image = global::ProjectEditor.Properties.Resources.disk;
             this.SaveProjectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveProjectButton.Name = "SaveProjectButton";
             this.SaveProjectButton.Size = new System.Drawing.Size(23, 22);
@@ -145,25 +146,25 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // DocumentImageList
+            // SceneImageList
             // 
-            this.DocumentImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("DocumentImageList.ImageStream")));
-            this.DocumentImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this.DocumentImageList.Images.SetKeyName(0, "Unknown");
-            this.DocumentImageList.Images.SetKeyName(1, "Scene");
-            this.DocumentImageList.Images.SetKeyName(2, "Environment");
-            this.DocumentImageList.Images.SetKeyName(3, "Entity");
-            this.DocumentImageList.Images.SetKeyName(4, "ScreenScene");
-            this.DocumentImageList.Images.SetKeyName(5, "Light");
-            this.DocumentImageList.Images.SetKeyName(6, "Geometry");
-            this.DocumentImageList.Images.SetKeyName(7, "PhysicsCollider");
-            this.DocumentImageList.Images.SetKeyName(8, "Panel");
-            this.DocumentImageList.Images.SetKeyName(9, "StackPanel");
-            this.DocumentImageList.Images.SetKeyName(10, "Text");
-            this.DocumentImageList.Images.SetKeyName(11, "Script");
-            this.DocumentImageList.Images.SetKeyName(12, "Prefab");
-            this.DocumentImageList.Images.SetKeyName(13, "Folder");
-            this.DocumentImageList.Images.SetKeyName(14, "QuadTerrain");
+            this.SceneImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("SceneImageList.ImageStream")));
+            this.SceneImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.SceneImageList.Images.SetKeyName(0, "Unknown");
+            this.SceneImageList.Images.SetKeyName(1, "Scene");
+            this.SceneImageList.Images.SetKeyName(2, "Environment");
+            this.SceneImageList.Images.SetKeyName(3, "Entity");
+            this.SceneImageList.Images.SetKeyName(4, "ScreenScene");
+            this.SceneImageList.Images.SetKeyName(5, "Light");
+            this.SceneImageList.Images.SetKeyName(6, "Geometry");
+            this.SceneImageList.Images.SetKeyName(7, "PhysicsCollider");
+            this.SceneImageList.Images.SetKeyName(8, "Panel");
+            this.SceneImageList.Images.SetKeyName(9, "StackPanel");
+            this.SceneImageList.Images.SetKeyName(10, "Text");
+            this.SceneImageList.Images.SetKeyName(11, "Script");
+            this.SceneImageList.Images.SetKeyName(12, "Prefab");
+            this.SceneImageList.Images.SetKeyName(13, "Folder");
+            this.SceneImageList.Images.SetKeyName(14, "QuadTerrain");
             // 
             // SceneTreeView
             // 
@@ -174,7 +175,7 @@
             this.SceneTreeView.ContextMenuStrip = this.SceneContextMenuStrip;
             this.SceneTreeView.HideSelection = false;
             this.SceneTreeView.ImageIndex = 0;
-            this.SceneTreeView.ImageList = this.DocumentImageList;
+            this.SceneTreeView.ImageList = this.SceneImageList;
             this.SceneTreeView.Location = new System.Drawing.Point(0, 25);
             this.SceneTreeView.Margin = new System.Windows.Forms.Padding(0);
             this.SceneTreeView.Name = "SceneTreeView";
@@ -203,14 +204,14 @@
             this.AddPrimitiveMenuItem,
             this.AddLightMenuItem,
             this.AddQuadTerrainMenuItem});
-            this.newToolStripMenuItem.Image = global::SceneEditor.Properties.Resources.page_white;
+            this.newToolStripMenuItem.Image = global::ProjectEditor.Properties.Resources.page_white;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // AddEntityMenuItem
             // 
-            this.AddEntityMenuItem.Image = global::SceneEditor.Properties.Resources.link;
+            this.AddEntityMenuItem.Image = global::ProjectEditor.Properties.Resources.link;
             this.AddEntityMenuItem.Name = "AddEntityMenuItem";
             this.AddEntityMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddEntityMenuItem.Text = "Entity";
@@ -249,28 +250,28 @@
             this.AddPrimitiveMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.AddCubeMenuItem,
             this.AddSphereMenuItem});
-            this.AddPrimitiveMenuItem.Image = global::SceneEditor.Properties.Resources.brick;
+            this.AddPrimitiveMenuItem.Image = global::ProjectEditor.Properties.Resources.brick;
             this.AddPrimitiveMenuItem.Name = "AddPrimitiveMenuItem";
             this.AddPrimitiveMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddPrimitiveMenuItem.Text = "Primitive";
             // 
             // AddCubeMenuItem
             // 
-            this.AddCubeMenuItem.Image = global::SceneEditor.Properties.Resources.vector;
+            this.AddCubeMenuItem.Image = global::ProjectEditor.Properties.Resources.vector;
             this.AddCubeMenuItem.Name = "AddCubeMenuItem";
             this.AddCubeMenuItem.Size = new System.Drawing.Size(110, 22);
             this.AddCubeMenuItem.Text = "Cube";
             // 
             // AddSphereMenuItem
             // 
-            this.AddSphereMenuItem.Image = global::SceneEditor.Properties.Resources.vector;
+            this.AddSphereMenuItem.Image = global::ProjectEditor.Properties.Resources.vector;
             this.AddSphereMenuItem.Name = "AddSphereMenuItem";
             this.AddSphereMenuItem.Size = new System.Drawing.Size(110, 22);
             this.AddSphereMenuItem.Text = "Sphere";
             // 
             // AddLightMenuItem
             // 
-            this.AddLightMenuItem.Image = global::SceneEditor.Properties.Resources.lightbulb;
+            this.AddLightMenuItem.Image = global::ProjectEditor.Properties.Resources.lightbulb;
             this.AddLightMenuItem.Name = "AddLightMenuItem";
             this.AddLightMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddLightMenuItem.Text = "Light";
@@ -278,7 +279,7 @@
             // 
             // AddQuadTerrainMenuItem
             // 
-            this.AddQuadTerrainMenuItem.Image = global::SceneEditor.Properties.Resources.color_swatch;
+            this.AddQuadTerrainMenuItem.Image = global::ProjectEditor.Properties.Resources.color_swatch;
             this.AddQuadTerrainMenuItem.Name = "AddQuadTerrainMenuItem";
             this.AddQuadTerrainMenuItem.Size = new System.Drawing.Size(140, 22);
             this.AddQuadTerrainMenuItem.Text = "QuadTerrain";
@@ -291,7 +292,7 @@
             // 
             // DeleteSceneObjectMenu
             // 
-            this.DeleteSceneObjectMenu.Image = global::SceneEditor.Properties.Resources.cross;
+            this.DeleteSceneObjectMenu.Image = global::ProjectEditor.Properties.Resources.cross;
             this.DeleteSceneObjectMenu.Name = "DeleteSceneObjectMenu";
             this.DeleteSceneObjectMenu.Size = new System.Drawing.Size(107, 22);
             this.DeleteSceneObjectMenu.Text = "Delete";
@@ -341,6 +342,33 @@
             this.TerrainEditorPanel.Size = new System.Drawing.Size(270, 606);
             this.TerrainEditorPanel.TabIndex = 3;
             // 
+            // terrainEditor1
+            // 
+            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
+            this.terrainEditor1.Name = "terrainEditor1";
+            this.terrainEditor1.Size = new System.Drawing.Size(260, 601);
+            this.terrainEditor1.TabIndex = 0;
+            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
+            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
+            // 
+            // worldControl
+            // 
+            this.worldControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.worldControl.Arena2Path = "";
+            this.worldControl.Location = new System.Drawing.Point(0, 25);
+            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
+            this.worldControl.Name = "worldControl";
+            this.worldControl.Size = new System.Drawing.Size(776, 813);
+            this.worldControl.TabIndex = 0;
+            this.worldControl.Text = "DeepEngine - WorldControl";
+            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
+            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
+            this.worldControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseDown);
+            this.worldControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseMove);
+            this.worldControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseUp);
+            // 
             // WorldToolStrip
             // 
             this.WorldToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -359,7 +387,7 @@
             // UndoButton
             // 
             this.UndoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.UndoButton.Image = global::SceneEditor.Properties.Resources.arrow_undo;
+            this.UndoButton.Image = global::ProjectEditor.Properties.Resources.arrow_undo;
             this.UndoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.UndoButton.Name = "UndoButton";
             this.UndoButton.Size = new System.Drawing.Size(23, 22);
@@ -369,7 +397,7 @@
             // RedoButton
             // 
             this.RedoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.RedoButton.Image = global::SceneEditor.Properties.Resources.arrow_redo;
+            this.RedoButton.Image = global::ProjectEditor.Properties.Resources.arrow_redo;
             this.RedoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RedoButton.Name = "RedoButton";
             this.RedoButton.Size = new System.Drawing.Size(23, 22);
@@ -385,7 +413,7 @@
             // 
             this.PlayButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.PlayButton.Enabled = false;
-            this.PlayButton.Image = global::SceneEditor.Properties.Resources.control_play_blue;
+            this.PlayButton.Image = global::ProjectEditor.Properties.Resources.control_play_blue;
             this.PlayButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(23, 22);
@@ -395,7 +423,7 @@
             // 
             this.RestartPlayButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.RestartPlayButton.Enabled = false;
-            this.RestartPlayButton.Image = global::SceneEditor.Properties.Resources.control_repeat_blue;
+            this.RestartPlayButton.Image = global::ProjectEditor.Properties.Resources.control_repeat_blue;
             this.RestartPlayButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RestartPlayButton.Name = "RestartPlayButton";
             this.RestartPlayButton.Size = new System.Drawing.Size(23, 22);
@@ -425,32 +453,6 @@
             this.SceneToolStrip.Size = new System.Drawing.Size(317, 25);
             this.SceneToolStrip.TabIndex = 5;
             this.SceneToolStrip.Text = "toolStrip1";
-            // 
-            // terrainEditor1
-            // 
-            this.terrainEditor1.Location = new System.Drawing.Point(3, 3);
-            this.terrainEditor1.Name = "terrainEditor1";
-            this.terrainEditor1.Size = new System.Drawing.Size(260, 601);
-            this.terrainEditor1.TabIndex = 0;
-            this.terrainEditor1.OnHeightMapChanged += new System.EventHandler(this.TerrainEditor_OnHeightMapChanged);
-            this.terrainEditor1.OnBlendMapChanged += new System.EventHandler(this.TerrainEditor_OnBlendMapChanged);
-            // 
-            // worldControl
-            // 
-            this.worldControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.worldControl.Location = new System.Drawing.Point(0, 25);
-            this.worldControl.MinimumSize = new System.Drawing.Size(320, 200);
-            this.worldControl.Name = "worldControl";
-            this.worldControl.Size = new System.Drawing.Size(776, 813);
-            this.worldControl.TabIndex = 0;
-            this.worldControl.Text = "DeepEngine - WorldControl";
-            this.worldControl.InitializeCompleted += new System.EventHandler(this.WorldControl_InitializeCompleted);
-            this.worldControl.OnTick += new System.EventHandler(this.WorldControl_OnTick);
-            this.worldControl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseDown);
-            this.worldControl.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseMove);
-            this.worldControl.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldControl_MouseUp);
             // 
             // MainForm
             // 
@@ -497,7 +499,7 @@
         private System.Windows.Forms.StatusStrip MainStatusStrip;
         private System.Windows.Forms.ToolStripButton UndoButton;
         private System.Windows.Forms.ToolStripButton RedoButton;
-        private System.Windows.Forms.ImageList DocumentImageList;
+        private System.Windows.Forms.ImageList SceneImageList;
         private System.Windows.Forms.ContextMenuStrip SceneContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem AddEntityMenuItem;
