@@ -29,7 +29,7 @@ namespace ProjectEditor.Dialogs
         /// <summary>
         /// Gets or sets project name.
         /// </summary>
-        string ProjectName
+        public string ProjectName
         {
             get { return ProjectNameTextBox.Text; }
             set { ProjectNameTextBox.Text = value; }
@@ -38,7 +38,7 @@ namespace ProjectEditor.Dialogs
         /// <summary>
         /// Gets or sets project parent path.
         /// </summary>
-        string ProjectPath
+        public string ProjectPath
         {
             get { return ProjectPathTextBox.Text; }
             set { ProjectPathTextBox.Text = value; }
@@ -47,7 +47,7 @@ namespace ProjectEditor.Dialogs
         /// <summary>
         /// Gets combined projectpath\projectname path.
         /// </summary>
-        string ProjectFolder
+        public string ProjectFolder
         {
             get { return Path.Combine(ProjectPath, ProjectName); }
         }

@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Manina.Windows.Forms;
@@ -46,7 +47,7 @@ namespace ProjectEditor
         string arena2Path;
 
         // Project
-        ProjectDocument project;
+        ProjectDocument projectDocument;
         SceneDocument sceneDocument;
         SceneDocumentProxy documentProxy;
         PropertyGrid propertyGrid;
@@ -80,6 +81,9 @@ namespace ProjectEditor
             
             // Init terrain editor panel
             TerrainEditorPanel.Visible = false;
+
+            // Create empty project document
+            projectDocument = new ProjectDocument();
         }
 
         #endregion
@@ -874,12 +878,29 @@ namespace ProjectEditor
         /// </summary>
         private void NewProjectButton_Click(object sender, EventArgs e)
         {
-            // Show new project dialog
-            Dialogs.NewProjectDialog dlg = new Dialogs.NewProjectDialog();
+            // Browse for new project file
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.DefaultExt = ProjectDocument.Extension;
+            dlg.Filter = ProjectDocument.Filter;
+            dlg.OverwritePrompt = false;
+            dlg.Title = "Create Project File";
             if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                 return;
 
-            // TODO: Create new project in folder
+            // Cannot overwrite an existing project file.
+            // This is to protect user from accidentally killing all their work
+            // by creating instead of opening.
+            if (File.Exists(dlg.FileName))
+            {
+                // Show error
+                MessageBox.Show("Cannot overwrite existing project file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            else
+            {
+                // Create new project file
+                projectDocument.CreateProjectFile(dlg.FileName);
+            }
         }
 
         #endregion
