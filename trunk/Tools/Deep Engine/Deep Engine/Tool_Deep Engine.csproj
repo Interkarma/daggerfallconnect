@@ -130,6 +130,7 @@
     <Compile Include="Utility\ScreenComponentCollection.cs" />
     <Compile Include="Utility\StarFactory.cs" />
     <Compile Include="Utility\StaticGeometryBuilder.cs" />
+    <Compile Include="Utility\XmlHelper.cs" />
     <Compile Include="WinForms\GraphicsDeviceControl.cs">
       <SubType>Component</SubType>
     </Compile>
